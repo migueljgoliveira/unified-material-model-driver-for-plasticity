@@ -1,0 +1,93 @@
+*Heading
+UMMDp Simple exampe (3D Solid / Disp. Control )
+**
+*Parameter
+R=5.0e-3
+**
+*Node, nset=nall
+ 1, 0.0, 0.0, 0.0
+ 2, 1.0, 0.0, 0.0
+ 3, 1.0, 1.0, 0.0
+ 4, 0.0, 1.0, 0.0
+ 5, 0.0, 0.0, 1.0
+ 6, 1.0, 0.0, 1.0
+ 7, 1.0, 1.0, 1.0
+ 8, 0.0, 1.0, 1.0
+*Nset, nset=LEFT
+1, 4, 5, 8
+*Nset, nset=BOTTOM
+1, 2, 5, 6
+*Nset, nset=FRONT
+5, 6, 7, 8
+*Nset, nset=RIGHT
+2, 3, 6, 7
+*Nset, nset=TOP
+3, 4, 7, 8
+*Nset, nset=BACK
+1, 2, 3, 4
+**
+*Nset, nset=RIGHT_NODE
+2, 3, 6
+*Nset, nset=TOP_NODE
+3, 4, 8
+*Nset, nset=FRONT_NODE
+5, 6, 8
+**
+*Element, type=C3D8, elset=UMMDp
+1, 1, 2, 3, 4, 5, 6, 7, 8
+**
+*Solid Section, material=UMMDp, elset=UMMDp, orientation=ORI1
+**
+*Orientation, name=ORI1
+1.0, 0.0, 0.0, 0.0, 1.0, 0.0
+3, 0.0
+**
+*Material, name=UMMDp
+*User Material, constants=26
+0,        1000.0,   0.3,      2,       -0.069888, 0.936408, 0.079143, 1.003060
+0.524741, 1.363180, 0.954322, 1.023770, 1.069060, 0.981171, 0.476741, 0.575316
+0.866827, 1.145010,-0.079294, 1.404620, 1.051660, 1.147100, 8.0,      0
+1.0,      0
+*Depvar
+7, 
+*User Output Variables
+2, 
+**
+*Equation
+2, 
+RIGHT_NODE, 1, 1.0,  7, 1, -1.0
+2, 
+TOP_NODE,   2, 1.0,  7, 2, -1.0
+2, 
+FRONT_NODE, 3, 1.0,  7, 3, -1.0
+**
+*Amplitude, name=Amp-x
+ 0.0, 0.0,   1.0, 1.0,   2.0, 2.0,   3.0, 2.0
+ 4.0, 1.0,   5.0, 0.0,   6.0,-1.0,   7.0,-1.0
+ 8.0, 0.0,   9.0, 1.0
+*Amplitude, name=Amp-y
+ 0.0, 0.0,   1.0, 0.0,   2.0, 1.0,   3.0, 2.0
+ 4.0, 3.0,   5.0, 3.0,   6.0, 2.0,   7.0, 1.0
+ 8.0, 0.0,   9.0, 0.0
+**
+*Step, inc=900
+*Static, Direct
+0.1, 9.0
+**
+*Boundary
+LEFT,   1, 1
+BOTTOM, 2, 2
+BACK,   3, 3
+**
+*Boundary, amplitude=Amp-x
+ 7, 1, 1, <R>
+*Boundary, amplitude=Amp-y
+ 7, 2, 2, <R>
+**
+*Output, Field, variable=preselect
+*Element Output
+S, E, SDV, UVARM
+*Output, History
+*Element Output, elset=UMMDp
+S, MISES, SDV1
+*End Step

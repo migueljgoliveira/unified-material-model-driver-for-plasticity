@@ -1,0 +1,123 @@
+# Project Title
+
+    UMMDp - UNIFIED MATERIAL MODEL DRIVER for PLASTICITY
+
+    Developed by JANCAE - Japan Association of Nonlinear CAE
+
+## Getting Started
+
+    These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+
+### Prerequisites
+
+    - Fortran Compiler
+    - Abaqus
+
+### Installing
+
+    To compile subroutines in one file execute the following commands:
+
+        - Linux/Mac
+            1. cp plug_ummdp_abaqus.f <new_file_name>.f
+            2. cat ummdp*.f >> <new_file_name>.f
+        - Windows
+            1. copy plug_ummdp_abaqus.f <new_file_name>.f
+            2. type ummdp*.f >> <new_file_name>.f
+
+### Debug and Print Mode
+
+    - MsRM : Multistage Return Mapping
+    - NR   : Newton-Raphson
+
+        ( 0 ) : error message only
+        ( 1 ) : summary of MsRM
+        ( 2 ) : detail of MsRM and summary of NR
+        ( 3 ) : detail of NR
+        ( 4 ) : input/output
+        ( 5 ) : all status for debug
+
+### UMMDp Options
+
+    - Yield Function:
+        ( 0 ) : von Mises Isotropic (1913)
+        ( 1 ) : Hill Quadratic (1948)
+        ( 2 ) : Barlat Yld2004-18p (2005)
+        ( 3 ) : Cazacu (2006)
+        ( 4 ) : Karafillis-Boyce (1993)
+        ( 5 ) : Hu (2005)
+        ( 6 ) : Yoshida (2011)
+        (-1 ) : Gotoh Biquadratic (1978)
+        (-2 ) : Barlat Yld2000-2d (2000)
+        (-3 ) : Vegter
+        (-4 ) : Banabic BBC2005
+        (-5 ) : Barlat Yld89
+        (-6 ) : Banabic BBC2008
+        (-7 ) : Hill 1990
+
+    - Isotropic Hardening:
+        ( 0 ) : Perfectly Plastic
+        ( 1 ) : Linear
+        ( 2 ) : Swift
+        ( 3 ) : Ludwick
+        ( 4 ) : Voce
+        ( 5 ) : Voce + Linear
+        ( 6 ) : Voce + Swift
+
+    - Kinematic Hardening:
+        ( 0 ) : No Kinematic Hardening
+        ( 1 ) : Prager (1949)
+        ( 2 ) : Ziegler (1959)
+        ( 3 ) : Armstrong-Frederick (1966)
+        ( 4 ) : Chaboche (1979)
+	( 5 ) : Chaboche (1979) - Ziegler Model
+        ( 6 ) : Yoshida-Uemori
+
+    - For more information about parameters refer to files:
+        - ummdp_yfunc_*.f      (* - yield function)
+        - ummdp_curve.f        (isotropic hardening)
+        - ummdp_kinematic.f    (kinematic hardening)
+
+
+### Solution-Dependent State Variables
+
+     - STATEV(1) =    Equivalent plastic strain
+
+     - STATEV(2) = \
+     - .........    > Components of plastic strain tensor
+     - STATEV(7) = /
+
+     - STATEV(8) = \
+     - .........    > Components of partial back-stress tensor 1
+     - STATEV(13)= /
+
+     - STATEV(..)= \
+     - .........    > Components of partial back-stress tensor ...
+     - STATEV(..)= /
+
+
+### User Output Variables (UVARM)
+
+     - UVARM(1) =   Equivalent stress
+
+     - UVARM(2) =   Yield stress
+
+     - UVARM(3)= \
+     - .......    > Components of total back-stress tensor
+     - UVARM(8)= /
+
+
+## Deployment
+
+Add additional notes about how to deploy this on a live system
+
+
+## Versioning
+
+## Authors
+
+
+## License
+
+    This project follows the "Terms of License for the Use of UMMDp" - see the LICENSE.md file for details.
+
+## Acknowledgments

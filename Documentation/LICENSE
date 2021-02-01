@@ -1,0 +1,60 @@
+Subject to the following provisions, NPO Japan Association of Nonlinear CAE ("JANCAE") grants the right to use UMMDp (a tool to integrate an arbitrary constitutive equation of materials into a structural analysis program by the finite element method, "this Software") which is published on a website to be developed in a directory under https://www.jancae.org/ managed by JANCAE ("JANCAE site," licensed person or company etc. hereinafter referred to as a "Licensee").
+
+1. Definition
+
+    In addition to a library program in which a constitutive equation of materials are written and a "source code" group of the program which causes the library program to work by connecting it with a widely-used structural analysis program, this Software includes documents such as "Terms of License for the Use of UMMDp" ("these Terms"), a "program manual" an "user's guide" etc. and sample data.
+
+2. Restriction of use
+
+    Licensee may use this Software for academic research or education and operation of the business of the company to which Licensee belongs. For commercial use, the procedures stipulated in Item 9 are necessary.
+
+3. Copyright
+
+    This Software is intellectual property which JANCAE owns. All rights including copyright remain with JANCAE. The rights of Licensee which are granted under these Terms shall be non-exclusive and non-transferrable.
+
+4. Freedom of modification and obligation of description
+
+    Licensee may modify this Software, produce a derivative program and deliver the derivative program to third parties freely. A license of this Software also applies to a derivative program. Licensee shall clearly indicate in a derivative program that the derivative program is not the same as the program provided by JANCAE. Licensee shall clearly indicate the following copyright expression in a derivative program:
+
+    Copyright (c) 2018 JANCAE
+    This software includes code developed by the Material Modeling Working group of JANCAE.
+
+5. Scope of Responsibility
+
+    This Software is provided as it is posted on the JANCAE web site. JANCAE makes no warranty on this Software explicitly or implicitly. JANCAE does not guarantee that this Software does not infringe on patents, copyright, trademarks and other rights of third parties. Licensee shall bear all responsibility for the performance and results of the use of this Software. JANCAE shall not be responsible for any direct, indirect, inevitable or accidental damages on Licensee or any third party due to the use or unavailability of this Software. JANCAE shall not be obliged to modify, maintain or support this Software. This Software might include a third party program. In such case, Licensee might be directly responsible to such third parties.
+
+6. Obligation of protection
+
+    When Licensee uses this program as a member of a body such as a company or an association, etc., and not as an individual, the member shall make other members of the body who have access to this Software comply with these Terms.
+
+7. Compliance with laws
+
+    Licensee who uses, copies or modifies etc. this Software, shall comply with the Copyright Act and all relevant laws.
+
+8. Reference in publication
+
+    When Licensee publishes the results of the use of this Software in a paper or report, Licensee shall describe the following:
+
+        i) As the software to be used:
+
+            The UMMDp was developed by the Material Modeling Working group of JANCAE.
+
+        ii) As a reference:
+
+            Takizawa, H., Kuwabara, T., Oide, K. and Yoshida, J.: Development of the subroutine library 'UMMDp' for anisotropic yield functions commonly applicable to commercial FEM codes, Proc. NUMISHEET 2016, Bristol, UK, 4-9 September, 2016, 032028. (Journal of Physics: Conference Series, Volume 734).
+
+9. Commercial use
+
+    When Licensee requests commercial use of this Software or a derivative program using this Software, Licensee shall contact the office of administration of JANCAE (ummd00@jancae.org) and make consultations regarding approval of commercial use.
+
+    Commercial use includes the following:
+        i) Business of sales of this Software or software which was made by modification of this Software;
+        ii) Business of sales of software in which this Software is integrated;
+        iii) Business of paid training using this Software as an educational material;
+        iv) Business of paid support in respect of the use of this Software;
+        v) Business of development of integration of this Software on behalf of Licensee; and
+        vi) Business of paid distribution such as delivering magazines or academic journals with CD-ROMs, etc. on which this Software is recorded.
+
+10. Contribution
+
+    JANCAE expects a contribution by Licensee regarding function enhancement and stabilization of this Software. When Licensee provides JANCAE with modified software, it shall be deemed that Licensee agrees to distribution of the provided software subject to these Terms.
