@@ -1,4 +1,4 @@
 #!/bin/sh
-cp _sourcecode/plug_ummdp_abaqus.f _sourcecode/tmp.f
-cat _sourcecode/ummdp*.f >> _sourcecode/tmp.f
-mv _sourcecode/tmp.f _compiled/UMMDp.f
+cp source/plug_ummdp_abaqus.f source/tmp.f
+cat source/ummdp*.f >> source/tmp.f
+mv source/tmp.f compiled/UMMDp.f
