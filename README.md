@@ -121,7 +121,7 @@ or 2. link the user subroutine previously compiled:
     $ abaqus job=jobname user=ummdp.o
     ````
 
-To compile the file ummdp.obj/o use:
+To compile the file ummdp.obj/o use
     ````
     $> abaqus make library=ummdp.f
     ````
