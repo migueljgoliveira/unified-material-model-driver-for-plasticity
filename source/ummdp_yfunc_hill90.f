@@ -21,11 +21,11 @@ c
 c     s(3) :stress 6-components -> in this program only use 3 stress
 c           components but we define that stress array has 6 components.
 c     pryld(ndyld)  : material parameter for yield function Hill's 1990
-c     pryld(1+1)= a
-c     pryld(1+2)= b
-c     pryld(1+3)= tau
-c     pryld(1+4)= sigb
-c     pryld(1+5)= m  (=>am)
+c     pryld(1+1) = a
+c     pryld(1+2) = b
+c     pryld(1+3) = tau
+c     pryld(1+4) = sigb
+c     pryld(1+5) = m  (=>am)
 c     nreq : request code = 0 ( output equivalent stress only)
 c          : request code = 1 ( output equivalent stress=se , dseds(3) )
 c          : request code = 2 ( output equivalent stress=se , dseds(3),
