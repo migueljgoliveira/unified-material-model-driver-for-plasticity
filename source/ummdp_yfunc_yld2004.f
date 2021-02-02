@@ -12,7 +12,7 @@ c
       dimension ctp2(6,6),psp1(3),psp2(3),hp1(3),hp2(3)
       dimension dfadpsp1(3),dfadpsp2(3),dpsdhp1(3,3),dpsdhp2(3,3)
       dimension dfadhp1(3),dfadhp2(3)
-      dimension dhdsp1(3,6),dhdsp2(3,6),dsdsp1(6,6), dsdsp2(6,6)
+      dimension dhdsp1(3,6),dhdsp2(3,6),dsdsp1(6,6),dsdsp2(6,6)
       dimension dfads(6)
       dimension d2fadpsp11(3,3),d2fadpsp22(3,3)
       dimension d2fadpsp12(3,3),d2fadpsp21(3,3)
