@@ -168,17 +168,17 @@ Only isotropic Hooke elastic properties can be defined. There are 2 ways to set 
 
 ID for yield criteria and original papers are introduced. Please refer to the original papers for more detail on the formulation and parameters.
 
-* von Mises (1913) :heavy_check_mark:
+* <sup>1</sup> von Mises (1913) :heavy_check_mark:
 
   ```
-  . ID = 0              # no parameters
+  . ID = 0                      # no parameters
   . pryld(1) = 0
   ```
   
-* Hill48 (1948) :heavy_check_mark:
+* <sup>2</sup> Hill48 (1948) :heavy_check_mark:
 
   ```
-  . ID = 1              # parameters: 6
+  . ID = 1                      # parameters: 6
   . pryld(1) = 1
   . pryld(2) = F
   . pryld(3) = G
@@ -190,10 +190,10 @@ ID for yield criteria and original papers are introduced. Please refer to the or
   
   The parameters ```FGHLMN``` are the same as Hill's original paper. When ```F=G=H=1``` and ```L=M=N=3```, Hill's function is identical to von Mises.
 
-* Yld2004-18p (2005) :heavy_check_mark:
+* <sup>3</sup> Yld2004-18p (2005) :heavy_check_mark:
 
   ```
-  . ID = 2              # parameters: 19
+  . ID = 2                      # parameters: 19
   . pryld(1)    = 2
   . pryld(1+1)  = c'12
   . pryld(1+2)  = c'13
@@ -213,15 +213,15 @@ ID for yield criteria and original papers are introduced. Please refer to the or
   . pryld(1+16) = c''44
   . pryld(1+17) = c''55
   . pryld(1+18) = c''66
-  . pryld(1+19) = a
+  . pryld(1+19) = a (exponent)
   ```
   
   The order of parameters given as input is the same as in the original paper.
   
-* CPB (2006) :heavy_check_mark:
+* <sup>4</sup> CPB (2006) :heavy_check_mark:
 
 ```
-  . ID = 3              # parameters: 14
+  . ID = 3                      # parameters: 14
   . pryld(1)    = 3
   . pryld(1+1)  = C11
   . pryld(1+2)  = C12
@@ -239,10 +239,10 @@ ID for yield criteria and original papers are introduced. Please refer to the or
   . pryld(1+14) = k (tension-compression ratio)
   ```
   
-* Karafillis-Boyce (1993) :grey_question:
+* <sup>5</sup> Karafillis-Boyce (1993) :grey_question:
 
   ```
-  . ID = 4              # parameters: 8
+  . ID = 4                      # parameters: 8
   . pryld(1)   = 4
   . pryld(1+1) = C
   . pryld(1+2) = a1
@@ -254,10 +254,10 @@ ID for yield criteria and original papers are introduced. Please refer to the or
   . pryld(1+8) = k (k of exponent 2k)
   ```
   
-* Hu (2005) :grey_question:
+* <sup>6</sup> Hu (2005) :grey_question:
 
   ```
-  . ID = 5              # parameters: 10
+  . ID = 5                      # parameters: 10
   . pryld(1)    = 5
   . pryld(1+1)  = X1
   . pryld(1+2)  = X2
@@ -271,9 +271,11 @@ ID for yield criteria and original papers are introduced. Please refer to the or
   . pryld(1+10) = C3
   ``` 
   
-* Yoshida 6th Polynomial (2011) :grey_question:
+    * 
+  
+* <sup>7</sup> Yoshida 6th Polynomial (2011) :grey_question:
   ```
-  . ID = 6              # parameters: 16
+  . ID = 6                      # parameters: 16
   . pryld(1)    = 6
   . pryld(1+1)  = C1
   . pryld(1+2)  = C2
@@ -292,11 +294,11 @@ ID for yield criteria and original papers are introduced. Please refer to the or
   . pryld(1+15) = C15
   . pryld(1+16) = C16
   ``` 
-  
-* Gotoh Biquadratic (1978) :grey_question:
+
+* <sup>8</sup> Gotoh Biquadratic (1978) :grey_question:
 
   ```
-  . ID = -1             # parameters: 9
+  . ID = -1                     # parameters: 9
   . pryld(1)   = -1
   . pryld(1+1) = A1
   . pryld(1+2) = A2
@@ -309,21 +311,124 @@ ID for yield criteria and original papers are introduced. Please refer to the or
   . pryld(1+9) = A9
   ``` 
 
-* Yld2000-2d (20003) :heavy_check_mark:
+* <sup>9</sup> Yld2000-2d (2003) :heavy_check_mark:
 
   ```
-  . ID = -2             # parameters: 9
-  . pryld(1)    = -2
-  . pryld(1+1)  = a1
-  . pryld(1+2)  = a2
-  . pryld(1+3)  = a3
-  . pryld(1+4)  = a4
-  . pryld(1+5)  = a5
-  . pryld(1+6)  = a6
-  . pryld(1+7)  = a7
-  . pryld(1+8)  = a8
-  . pryld(1+9)  = a (exponent)
+  . ID = -2                     # parameters: 9
+  . pryld(1)   = -2
+  . pryld(1+1) = a1
+  . pryld(1+2) = a2
+  . pryld(1+3) = a3
+  . pryld(1+4) = a4
+  . pryld(1+5) = a5
+  . pryld(1+6) = a6
+  . pryld(1+7) = a7
+  . pryld(1+8) = a8
+  . pryld(1+9) = a (exponent)
+  ```
+  
+* <sup>10</sup> Vegter (2006) :grey_question:
+
+  ```
+  . ID = -3                     # parameters: 3 + 4n
+  . pryld(1)             = -3
+  . pryld(1+1)           = n (max of i)
+  . pryld(1+2)           = f_bi0
+  . pryld(1+3)           = r_bi0
+  . pryld(1+3+(i-1)*4+1) = phi_uniaxial(i)
+  . pryld(1+3+(i-1)*4+2) = phi_shear(i)
+  . pryld(1+3+(i-1)*4+3) = phi_planestrain(i)
+  . pryld(1+3+(i-1)*4+4) = omega(i)
+  ```
+
+* <sup>11</sup> BBC2005 (2005) :grey_question:
+
+  ```
+  . ID = -4                     # parameters: 9
+  . pryld(1)   = -4
+  . pryld(1+1) = k (k of exponent 2k)
+  . pryld(1+2) = a
+  . pryld(1+3) = b
+  . pryld(1+4) = L
+  . pryld(1+5) = M
+  . pryld(1+6) = N
+  . pryld(1+7) = P
+  . pryld(1+8) = Q
+  . pryld(1+9) = R
+  ```
+  
+* <sup>12</sup> Yld89 (1989) :grey_question:
+
+  ```
+  . ID = -5                     # parameters: 4
+  . pryld(1)   = -5
+  . pryld(1+1) = M (exponent)
+  . pryld(1+2) = a
+  . pryld(1+3) = h
+  . pryld(1+4) = p
   ``` 
+    
+* <sup>13</sup> BBC2008 (2008) :grey_question:
+
+  ```
+  . ID = -6                     # parameters: 2 + 8s
+  . pryld(1)             = -6
+  . pryld(1+1)           = s (max of i)
+  . pryld(1+2)           = k (k of exponent 2k)
+  . pryld(1+2+(i-1)*8+1) = l1
+  . pryld(1+2+(i-1)*8+2) = l2
+  . pryld(1+2+(i-1)*8+3) = m1
+  . pryld(1+2+(i-1)*8+4) = m2
+  . pryld(1+2+(i-1)*8+5) = m3
+  . pryld(1+2+(i-1)*8+6) = n1
+  . pryld(1+2+(i-1)*8+7) = n2
+  . pryld(1+2+(i-1)*8+8) = n3
+  ```
+    
+* <sup>14</sup> Hill 1990 (1990) :grey_question:
+
+  ```
+  . ID = -6                     # parameters: 5
+  . pryld(1)   = -6
+  . pryld(1+1) = a
+  . pryld(1+2) = b
+  . pryld(1+3) = tau
+  . pryld(1+4) = sig_b
+  . pryld(1+5) = m
+  ``` 
+  
+   
 ### Isotropic Hardening
 
 ### Kinematic Hardening
+
+
+
+## References
+<sup>1</sup> R. von Mises. 1913. Mechanik der festen Korper im plastisch deformablen Zustand. Gottin. Nachr. Math. Phys., 1: 582-592.
+
+<sup>2</sup> R. Hill. 1948. A theory of the yielding and plastic flow of anisotropic metals. Proc. Roy. Soc. London, 193:281-297.
+
+<sup>3</sup> F. Barlat, H. Aretz, J.W. Yoon, M.E. Karabin, J.C. Brem, R.E. Dick. 2005. Linear transformation-based anisotropic yield functions. International Journal of Plasticity 21:1009-1039.
+
+<sup>4</sup> O. Cazacu, B. Plunkett, F. Barlat. 2006. Orthotropic yield criterion for hexagonal close packed metals. International Journal of Plasticity 22:1171-1194.
+
+<sup>5</sup> A.P. Karafillis, M.C. Boyce. 1993. A general anisotropic yield criterion using bounds and a transformation weighting tensor. Journal of the Mechanics of Physics and Solids 41:1859-1886.
+
+<sup>6</sup> W. Hu. 2005. An orthotropic yield criterion in a 3-D general stress state. International Journal of Plasticity 21:1771-1796.
+
+<sup>7</sup> F. Yoshida, H. Hamasaki, T. Uemori. 2013. A user-friendly 3D yield function to describe anisotropy of steel sheets. International Journal of Plasticity 45:119-139.
+
+<sup>8</sup> M. Gotoh. 1977. A theory of plastic anisotropy based on a yield function of fourth order (plane stress state) - I. International Journal of Mechanical Sciences 19-9:505-512.
+
+<sup>9</sup> F. Barlat, J.C. Brem, J.W. Yoon, K. Chung, R.E. Dick, D.J. Lege, F. Pourboghrat, S.H. Choi, E. Chu. 2003. Plane stress yield function for aluminium alloy sheets-part 1: theory. International Journal of Plasticity 19:1297-1319.
+
+<sup>10</sup> H. Vegter, A.H. van den Boogaard. 2006. A plane stress yield function for anisotropic sheet material by interpolation of biaxial stress states. International Journal of Plasticity 22:557-580.
+
+<sup>11</sup> D. Banabic, D.S. Aretz, H. Comsa, L. Paraianu. 2005. An improved analytical description of orthotropy in metallic sheets. International Journal of Plasticity 21:493-512.
+
+<sup>12</sup> F. Barlat, J. Lian. 1989. Plastic behavior and stretchability of sheet metals. Part I: a yield function for orthotropic sheets under plane stress conditions. International Journal of Plasticity. 5:51-66.
+
+<sup>13</sup> D.S. Comsa, D. Banabic. 2008. Plane-stress yield criterion for highly-anisotropic sheet metals. Proceedings of NUMISHEET 2008.
+
+<sup>14</sup> R. Hill. 1990. Constitutive modelling of orthotropic plasticity in sheet metals. Journal of the Mechanics and Physics of Solids.
