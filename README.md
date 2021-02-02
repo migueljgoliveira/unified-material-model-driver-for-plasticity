@@ -1,10 +1,10 @@
 # UMMDp - Unified Material Model Driver for Plasticity
 
-## Pre-requisites
+## :wrench: Pre-requisites
 
 * Fortran compiler
 
-## Usage
+## :rocket: Usage
 
 ### Preparation of program source files
 
@@ -21,7 +21,7 @@ $ compile.sh
 ````
 $ cp source/plug_ummdp_abaqus.f source/tmp.f
 $ cat source/ummdp*.f >> source/tmp.f
-$ mv source/tmp.f compiled/UMMDp.f
+$ mv source/tmp.f compiled/ummdp.f
 ````
 
 #### Windows
@@ -35,7 +35,7 @@ $ compile.bat
 ````
 > copy "source\plug_ummdp_abaqus.f" "source\tmp.f"
 > type "source\ummdp*.f" >> "source\tmp.f"
-> move "source\tmp.f" "compiled\UMMDp.f"
+> move "source\tmp.f" "compiled\ummdp.f"
 ````
 
 ### Preparation of the input file
@@ -98,4 +98,27 @@ alent stress) for post processing.
 *OUTPUT, FIELD
 *ELEMENT OUTPUT
 SDV, UVARM
+````
+
+### Execution of the program
+ 
+ To execute the program there are two options: (a) link the user subroutine in source code
+and (b) link the user subroutine previously compiled.
+
+(a) To execute the program with the user subroutine in source code, execute the command:
+````
+$> abaqus job=jobname user=ummdp.f
+````
+
+(b) To execute the program with the user subroutine previously compiled, execute the commands:
+````
+> abaqus job=jobname user=ummdp.obj
+````
+````
+$ abaqus job=jobname user=ummdp.o
+````
+
+To compile the file ummdp.obj/o use:
+````
+$> abaqus make library=ummdp.f
 ````
