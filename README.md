@@ -38,7 +38,8 @@ $ compile.bat
 > move "source\tmp.f" "compiled\ummdp.f"
 ````
 </details>
-### Preparation of the input file
+
+<details><summary><b>Preparation of the input file</b></summary>
 
 This section describes the keywords in Abaqus input data file for use in the UMMDp.
 
@@ -100,7 +101,9 @@ alent stress) for post processing.
 SDV, UVARM
 ````
 
-### Execution of the program
+</details>
+
+<details><summary><b>Execution of the program</b></summary>
  
  To execute the program there are two options: (a) link the user subroutine in source code
 and (b) link the user subroutine previously compiled.
@@ -122,3 +125,5 @@ To compile the file ummdp.obj/o use:
 ````
 $> abaqus make library=ummdp.f
 ````
+
+</details>
