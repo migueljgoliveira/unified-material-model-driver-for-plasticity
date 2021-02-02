@@ -4,9 +4,9 @@
 
 * Fortran compiler
 
-## :rocket: Usage
+## :rocket: Setup
 
-<details><summary><b>Preparation of program source files</b></summary>
+### Source Files
 
 Concatenate the UMMDp source files into one single file with the plug-in file first. Simply use the batch files (.sh/.bat) or run each command separately.
 
@@ -37,9 +37,8 @@ $ mv source/tmp.f compiled/ummdp.f
 > type "source\ummdp*.f" >> "source\tmp.f"
 > move "source\tmp.f" "compiled\ummdp.f"
 ```
-</details>
 
-<details><summary><b>Preparation of the input file</b></summary>
+### Abaqus Input File
 
 This section describes the keywords in Abaqus input data file for use in the UMMDp.
 
@@ -101,9 +100,7 @@ This section describes the keywords in Abaqus input data file for use in the UMM
     SDV, UVARM
     ````
 
-</details>
-
-<details><summary><b>Execution of the program</b></summary>
+### Program Execution
   
 To execute the program there are two options: 1. link the user subroutine in source code
 or 2. link the user subroutine previously compiled:
@@ -126,13 +123,12 @@ To compile the file ummdp.obj/o use
     $> abaqus make library=ummdp.f
     ````
 
-</details>
-
 ## :computer: Setup
 
-<details><summary><b>Debug and print</b></summary>
+### Debug & Print
 
 The first input parameter corresponds to the definition of debug and print mode, defined by the variable nvbs0. It is a mandatory parameter and the options are:
+
   * 0 - Error messages only
   * 1 - Summary of multistage return mapping
   * 2 - Detail of multistage return mapping and summary of Newton-Raphson
@@ -140,9 +136,7 @@ The first input parameter corresponds to the definition of debug and print mode,
   * 4 - Input/Output
   * 5 - All status for debug and print
   
-</details>
-
-<details><summary><b>Elastic properties</b></summary>
+### Elastic Properties
 
   * prela(1) - ID for elastic properties
   * prela(2~) - Data depends on ID
@@ -161,16 +155,8 @@ Only isotropic Hooke elastic properties can be defined. There are 2 ways to set 
   * prela(2) = 166666.7 (Bulk modulus)
   * prela(3) = 76923.08 (Modulus of rigidity)
 
-</details>
+### Yield Criterion
 
-<details><summary><b>Yield criterion</b></summary>
+### Isotropic Hardening
 
-</details>
-
-<details><summary><b>Isotropic hardening</b></summary>
-
-</details>
-
-<details><summary><b>Kinematic hardening</b></summary>
-
-</details>
+### Kinematic Hardening
