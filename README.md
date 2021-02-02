@@ -404,7 +404,7 @@ ID for yield criteria and original papers are introduced. Please refer to the or
 
 
 
-## References
+## :books: References
 <sup>1</sup> R. von Mises. 1913. Mechanik der festen Korper im plastisch deformablen Zustand. Gottin. Nachr. Math. Phys., 1: 582-592.
 
 <sup>2</sup> R. Hill. 1948. A theory of the yielding and plastic flow of anisotropic metals. Proc. Roy. Soc. London, 193:281-297.
