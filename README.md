@@ -6,7 +6,7 @@
 
 ## :rocket: Usage
 
-### Preparation of program source files
+<details><summary><b>Preparation of program source files</b></summary>
 
 Concatenate the UMMDp source files into one single file with the plug-in file first. Simply use the batch files (.sh/.bat) or run each command separately.
 
@@ -37,7 +37,7 @@ $ compile.bat
 > type "source\ummdp*.f" >> "source\tmp.f"
 > move "source\tmp.f" "compiled\ummdp.f"
 ````
-
+</details>
 ### Preparation of the input file
 
 This section describes the keywords in Abaqus input data file for use in the UMMDp.
