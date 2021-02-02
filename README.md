@@ -127,3 +127,50 @@ To compile the file ummdp.obj/o use:
     ````
 
 </details>
+
+## :computer: Setup
+
+<details><summary><b>Debug and print</b></summary>
+
+The first input parameter corresponds to the definition of debug and print mode, defined by the variable nvbs0. It is a mandatory parameter and the options are:
+  * 0 - Error messages only
+  * 1 - Summary of multistage return mapping
+  * 2 - Detail of multistage return mapping and summary of Newton-Raphson
+  * 3 - Detail of Newton-Raphson
+  * 4 - Input/Output
+  * 5 - All status for debug and print
+  
+</details>
+
+<details><summary><b>Elastic properties</b></summary>
+
+  * prela(1) - ID for elastic properties
+  * prela(2~) - Data depends on ID
+
+Only isotropic Hooke elastic properties can be defined. There are 2 ways to set them:
+
+* Young's Modulus and Poisson's Ratio
+  * ID = 0
+  * prela(1) = 0
+  * prela(2) = 200.0E+3 (Young's modulus)
+  * prela(3) = 0.3 (Poisson's ratio)
+
+* Bulk Modulus and Modulus of Rigidity
+  * ID = 1
+  * prela(1) = 0
+  * prela(2) = 166666.7 (Bulk modulus)
+  * prela(3) = 76923.08 (Modulus of rigidity)
+
+</details>
+
+<details><summary><b>Yield criterion</b></summary>
+
+</details>
+
+<details><summary><b>Isotropic hardening</b></summary>
+
+</details>
+
+<details><summary><b>Kinematic hardening</b></summary>
+
+</details>
