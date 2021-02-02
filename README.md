@@ -4,7 +4,7 @@
 
 * Fortran compiler
 
-## :rocket: Usage
+## Usage
 
 <details><summary><b>Preparation of program source files</b></summary>
 
@@ -128,7 +128,7 @@ To compile the file ummdp.obj/o use:
 
 </details>
 
-## :computer: Setup
+## Setup
 
 <details><summary><b>Debug and print</b></summary>
 
