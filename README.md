@@ -4,7 +4,7 @@
 
 * Fortran compiler
 
-## Usage
+## :rocket: Usage
 
 <details><summary><b>Preparation of program source files</b></summary>
 
@@ -121,14 +121,14 @@ or 2. link the user subroutine previously compiled:
     $ abaqus job=jobname user=ummdp.o
     ````
 
-To compile the file ummdp.obj/o use:
+To compile the file ummdp.obj/o use
     ````
     $> abaqus make library=ummdp.f
     ````
 
 </details>
 
-## Setup
+## :computer: Setup
 
 <details><summary><b>Debug and print</b></summary>
 
