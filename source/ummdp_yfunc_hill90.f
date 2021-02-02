@@ -16,32 +16,36 @@ c
       subroutine jancae_hill90 ( s,se,dseds,d2seds2,nreq,
      &                           pryld,ndyld )
 c-----------------------------------------------------------------------
-c                                                   ---- input arguments
+      implicit real*8 (a-h,o-z)
+      dimension s(3),dseds(3),d2seds2(3,3),pryld(ndyld)
 c
-c     s(3) :stress 6-components -> in this program only use 3 stress
-c           components but we define that stress array has 6 components.
-c     pryld(ndyld)  : material parameter for yield function Hill's 1990
+      dimension c(3,3),v(3)
+      dimension A1(3),A2(3,3),A3(3,3),A4(3,3)
+      dimension dfds1(3),dfds2(3),dfds3(3),dfds4(3)
+      dimension dfds_t(3)
+      dimension dxds1(3),dxds2(3),dxds3(3),dxds4(3)
+      dimension d2fds1(3,3),d2fds2(3,3),d2fds3(3,3),d2fds4(3,3)
+      dimension d2fds_t(3,3)
+      dimension dx1dx1(3,3),dx2dx2(3,3),dx3dx3(3,3),dx4dx4(3,3)
+      dimension df4df3(3,3),df3df4(3,3)
+      dimension d2xds1(3,3),d2xds2(3,3),d2xds3(3,3),d2xds4(3,3)
+      character text*32
+c
+c                                                         ---- variables
+c
+c     s(3) : stress
+c     pryld(ndyld) : material parameter for yield function Hill's 1990
 c     pryld(1+1) = a
 c     pryld(1+2) = b
 c     pryld(1+3) = tau
 c     pryld(1+4) = sigb
-c     pryld(1+5) = m  (=>am)
-c     nreq : request code = 0 ( output equivalent stress only)
-c          : request code = 1 ( output equivalent stress=se , dseds(3) )
-c          : request code = 2 ( output equivalent stress=se , dseds(3),
-c                           d2seds2(3,3) )
+c     pryld(1+5) = m (=>am)
 c
-c-----------------------------------------------------------------------
-c                                                  ---- output arguments
-c
-c     se       : equivalent stress
-c     dseds(3) : differential coefficient of first order
-c              : equivalent stress differentiated by stress (6 components)
+c     se           : equivalent stress
+c     dseds(3)     : differential coefficient of first order
 c     d2seds2(3,3) : differential coefficient of second order
-c              : equivalent stress differentiated by stress (6 components)
-c-----------------------------------------------------------------------
 c
-c     a1(3)        : vector to calc for equivalent stress
+c     a1(3)   : vector to calc for equivalent stress
 c     a2(3,3) : matrix to calc for equivalent stress
 c     a3(3,3) : matrix to calc for equivalent stress
 c     a4(3,3) : matrix to calc for equivalent stress
@@ -57,34 +61,13 @@ c     dxds2(3) : dx2/ds =x2 1st order derivative by stress
 c     dxds3(3) : dx3/ds =x3 1st order derivative by stress
 c     dxds4(3) : dx4/ds =x4 1st order derivative by stress
 c
-c     d2fds1(3,3) : d2f1/ds2 =fai1 2nd order derivative by stress
-c     d2fds2(3,3) : d2f2/ds2 =fai2 2nd order derivative by stress
-c     d2fds3(3,3) : d2f3/ds2 =fai3 2nd order derivative by stress
-c     d2fds4(3,3) : d2f4/ds2 =fai4 2nd order derivative by stress
+c     d2fds1(3,3)  : d2f1/ds2 =fai1 2nd order derivative by stress
+c     d2fds2(3,3)  : d2f2/ds2 =fai2 2nd order derivative by stress
+c     d2fds3(3,3)  : d2f3/ds2 =fai3 2nd order derivative by stress
+c     d2fds4(3,3)  : d2f4/ds2 =fai4 2nd order derivative by stress
 c     d2fds_t(3,3) : d2f/ds2 =fai  2nd order derivative by stress
 c
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-c
-      dimension s(3),dseds(3),d2seds2(3,3),pryld(ndyld)
-      dimension c(3,3),v(3)
-c
-      dimension A1(3),A2(3,3),A3(3,3),A4(3,3)
-c
-      dimension dfds1(3),dfds2(3),dfds3(3),dfds4(3),dfds_t(3)
-      dimension dxds1(3),dxds2(3),dxds3(3),dxds4(3)
-c
-      dimension d2fds1(3,3),d2fds2(3,3),d2fds3(3,3),d2fds4(3,3)
-     &         ,d2fds_t(3,3)
-c
-      dimension dx1dx1(3,3),dx2dx2(3,3),dx3dx3(3,3),dx4dx4(3,3)
-c
-      dimension df4df3(3,3),df3df4(3,3)
-c
-      dimension d2xds1(3,3),d2xds2(3,3),d2xds3(3,3),d2xds4(3,3)
-      character text*32
-c
-c                                      ---- define a1-matrix, a2-matrix
+c                                       ---- define a1-matrix, a2-matrix
       data a1/ 1.0d0 , 1.0d0 , 0.0d0 /,
      &     a2/ 1.0d0 ,-1.0d0 , 0.0d0 ,
      &        -1.0d0 , 1.0d0 , 0.d00 ,
@@ -92,12 +75,12 @@ c                                      ---- define a1-matrix, a2-matrix
      &     a3/ 1.0d0 , 0.0d0 , 0.0d0 ,
      &         0.0d0 , 1.0d0 , 0.0d0 ,
      &         0.0d0 , 0.0d0 , 2.0d0 /
-c                                            ---- anisotropic parameters
-      a = pryld(1+1)
-      b = pryld(1+2)
-      tau = pryld(1+3)
+c                                        ---- set anisotropic parameters
+      a    = pryld(1+1)
+      b    = pryld(1+2)
+      tau  = pryld(1+3)
       sigb = pryld(1+4)
-      am = pryld(1+5)
+      am   = pryld(1+5)
 c
       syini = 1.0d0
       sigbtm = (sigb/tau)**am
