@@ -12,13 +12,13 @@ Concatenate the UMMDp source files into one single file with the plug-in file fi
 
 ##### Unix/Linux
 
-```sh
+```
 $ compile.sh
 ```
 
   or
 
-```sh
+```
 $ cp source/plug_ummdp_abaqus.f source/tmp.f
 $ cat source/ummdp*.f >> source/tmp.f
 $ mv source/tmp.f compiled/ummdp.f
@@ -26,13 +26,13 @@ $ mv source/tmp.f compiled/ummdp.f
 
 ##### Windows
 
-```cmd
+```
 > compile.bat
 ```
 
   or
 
-```cmd
+```
 > copy "source\plug_ummdp_abaqus.f" "source\tmp.f"
 > type "source\ummdp*.f" >> "source\tmp.f"
 > move "source\tmp.f" "compiled\ummdp.f"
@@ -144,16 +144,19 @@ The first input parameter corresponds to the definition of debug and print mode,
 Only isotropic Hooke elastic properties can be defined. There are 2 ways to set them:
 
 * Young's Modulus and Poisson's Ratio
-  * ID = 0
-  * prela(1) = 0
-  * prela(2) = 200.0E+3 (Young's modulus)
-  * prela(3) = 0.3 (Poisson's ratio)
-
+  ```
+  . ID = 0
+  . prela(1) = 0
+  . prela(2) = 200.0E+3 (Young's modulus)
+  . prela(3) = 0.3 (Poisson's ratio)
+  ```
 * Bulk Modulus and Modulus of Rigidity
-  * ID = 1
-  * prela(1) = 0
-  * prela(2) = 166666.7 (Bulk modulus)
-  * prela(3) = 76923.08 (Modulus of rigidity)
+  ```
+  . ID = 1
+  . prela(1) = 0
+  . prela(2) = 166666.7 (Bulk modulus)
+  . prela(3) = 76923.08 (Modulus of rigidity)
+  ```
 
 ### Yield Criterion
 
