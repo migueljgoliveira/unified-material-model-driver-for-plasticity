@@ -144,13 +144,16 @@ The first input parameter corresponds to the definition of debug and print mode,
 Only isotropic Hooke elastic properties can be defined. There are 2 ways to set them:
 
 * Young's Modulus and Poisson's Ratio
+
   ```
   . ID = 0
   . prela(1) = 0
   . prela(2) = 200.0E+3 (Young's modulus)
   . prela(3) = 0.3 (Poisson's ratio)
   ```
+  
 * Bulk Modulus and Modulus of Rigidity
+
   ```
   . ID = 1
   . prela(1) = 0
@@ -160,6 +163,167 @@ Only isotropic Hooke elastic properties can be defined. There are 2 ways to set 
 
 ### Yield Criterion
 
+  * pryld(1) - ID for yield criterion (negative values indicates plane stress yield criteria)
+  * pryld(2~) - Data depends on ID
+
+ID for yield criteria and original papers are introduced. Please refer to the original papers for more detail on the formulation and parameters.
+
+* von Mises (1913) :heavy_check_mark:
+
+  ```
+  . ID = 0              # no parameters
+  . pryld(1) = 0
+  ```
+  
+* Hill48 (1948) :heavy_check_mark:
+
+  ```
+  . ID = 1              # parameters: 6
+  . pryld(1) = 1
+  . pryld(2) = F
+  . pryld(3) = G
+  . pryld(4) = H
+  . pryld(5) = L
+  . pryld(6) = M
+  . pryld(7) = N
+  ```
+  
+  The parameters ```FGHLMN``` are the same as Hill's original paper. When ```F=G=H=1``` and ```L=M=N=3```, Hill's function is identical to von Mises.
+
+* Yld2004-18p (2005) :heavy_check_mark:
+
+  ```
+  . ID = 2              # parameters: 19
+  . pryld(1)    = 2
+  . pryld(1+1)  = c'12
+  . pryld(1+2)  = c'13
+  . pryld(1+3)  = c'21
+  . pryld(1+4)  = c'23
+  . pryld(1+5)  = c'31
+  . pryld(1+6)  = c'32
+  . pryld(1+7)  = c'44
+  . pryld(1+8)  = c'55
+  . pryld(1+9)  = c'66
+  . pryld(1+10) = c''12
+  . pryld(1+11) = c''13
+  . pryld(1+12) = c''21
+  . pryld(1+13) = c''23
+  . pryld(1+14) = c''31
+  . pryld(1+15) = c''32
+  . pryld(1+16) = c''44
+  . pryld(1+17) = c''55
+  . pryld(1+18) = c''66
+  . pryld(1+19) = a
+  ```
+  
+  The order of parameters given as input is the same as in the original paper.
+  
+* CPB (2006) :heavy_check_mark:
+
+```
+  . ID = 3              # parameters: 14
+  . pryld(1)    = 3
+  . pryld(1+1)  = C11
+  . pryld(1+2)  = C12
+  . pryld(1+3)  = C13
+  . pryld(1+4)  = C21
+  . pryld(1+5)  = C22
+  . pryld(1+6)  = C23
+  . pryld(1+7)  = C31
+  . pryld(1+8)  = C32
+  . pryld(1+9)  = C33
+  . pryld(1+10) = C44
+  . pryld(1+11) = C55
+  . pryld(1+12) = C66
+  . pryld(1+13) = a (exponent)
+  . pryld(1+14) = k (tension-compression ratio)
+  ```
+  
+* Karafillis-Boyce (1993) :grey_question:
+
+  ```
+  . ID = 4              # parameters: 8
+  . pryld(1)   = 4
+  . pryld(1+1) = C
+  . pryld(1+2) = a1
+  . pryld(1+3) = a2
+  . pryld(1+4) = y1
+  . pryld(1+5) = y2
+  . pryld(1+6) = y3
+  . pryld(1+7) = c
+  . pryld(1+8) = k (k of exponent 2k)
+  ```
+  
+* Hu (2005) :grey_question:
+
+  ```
+  . ID = 5              # parameters: 10
+  . pryld(1)    = 5
+  . pryld(1+1)  = X1
+  . pryld(1+2)  = X2
+  . pryld(1+3)  = X3
+  . pryld(1+4)  = X4
+  . pryld(1+5)  = X5
+  . pryld(1+6)  = X6
+  . pryld(1+7)  = X7
+  . pryld(1+8)  = C1
+  . pryld(1+9)  = C2
+  . pryld(1+10) = C3
+  ``` 
+  
+* Yoshida 6th Polynomial (2011) :grey_question:
+  ```
+  . ID = 6              # parameters: 16
+  . pryld(1)    = 6
+  . pryld(1+1)  = C1
+  . pryld(1+2)  = C2
+  . pryld(1+3)  = C3
+  . pryld(1+4)  = C4
+  . pryld(1+5)  = C5
+  . pryld(1+6)  = C6
+  . pryld(1+7)  = C7
+  . pryld(1+8)  = C8
+  . pryld(1+9)  = C9
+  . pryld(1+10) = C10
+  . pryld(1+11) = C11
+  . pryld(1+12) = C12
+  . pryld(1+13) = C13
+  . pryld(1+13) = C14
+  . pryld(1+15) = C15
+  . pryld(1+16) = C16
+  ``` 
+  
+* Gotoh Biquadratic (1978) :grey_question:
+
+  ```
+  . ID = -1             # parameters: 9
+  . pryld(1)   = -1
+  . pryld(1+1) = A1
+  . pryld(1+2) = A2
+  . pryld(1+3) = A3
+  . pryld(1+4) = A4
+  . pryld(1+5) = A5
+  . pryld(1+6) = A6
+  . pryld(1+7) = A7
+  . pryld(1+8) = A8
+  . pryld(1+9) = A9
+  ``` 
+
+* Yld2000-2d (20003) :heavy_check_mark:
+
+  ```
+  . ID = -2             # parameters: 9
+  . pryld(1)    = -2
+  . pryld(1+1)  = a1
+  . pryld(1+2)  = a2
+  . pryld(1+3)  = a3
+  . pryld(1+4)  = a4
+  . pryld(1+5)  = a5
+  . pryld(1+6)  = a6
+  . pryld(1+7)  = a7
+  . pryld(1+8)  = a8
+  . pryld(1+9)  = a (exponent)
+  ``` 
 ### Isotropic Hardening
 
 ### Kinematic Hardening
