@@ -1,5 +1,5 @@
-c---------------------------------------------------------------(hill90)
-c     Hill-1990 anisotropic yield function and its dfferentials
+c-------------------------------------------------------------(hill1990)
+c     Hill 1990 anisotropic yield function and its dfferentials
 c
 c     ---( 1990 ) Pergamon Press Plc.
 c      by R.Hill (Department of Applied Mathematics and Theoretical
@@ -13,8 +13,8 @@ c-----------------------------------------------------------------------
 c     coded by Tatsuhiko Ine ( at NIED ), 22/11/2010
 c-----------------------------------------------------------------------
 c
-      subroutine jancae_hill90 ( s,se,dseds,d2seds2,nreq,
-     &                           pryld,ndyld )
+      subroutine jancae_hill1990 ( s,se,dseds,d2seds2,nreq,
+     &                             pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       dimension s(3),dseds(3),d2seds2(3,3),pryld(ndyld)
@@ -114,7 +114,7 @@ c
 c                                                 ---- equivalent stress
       se = (fyild/alarge)**(1.0d0/am)
 c
-      if ( nreq .eq. 0 ) return
+      if ( nreq .ge. 1 ) return
 
 c               ---- 1st order differential coefficient of yield fuction
 c     dfdsi(i) : diff. of fai-i(i) with respect to s(j)
@@ -129,41 +129,41 @@ c
       wrk = am * (abs(x1)**(am-2))*x1
       do i = 1,3
         dfds1(i) = wrk * dxds1(i)
-      enddo
+      end do
 c                                                          ---- dfai2/ds
       wrk = sigbtm * (am/2.0) * (x2)**(am/2.0-1.0)
       call jancae_mv( dxds2,a2,s,3,3 )
       do i = 1,3
         dxds2(i) = 2.0 * dxds2(i)
         dfds2(i) = wrk * dxds2(i)
-      enddo
+      end do
 c                                                          ---- dfai3/ds
       wrk = (am/2.0-1.0) * (x3)**(am/2.0-2.0)
       call jancae_mv( dxds3,a3,s,3,3 )
       do i = 1,3
         dxds3(i) = 2.0 * dxds3(i)
         dfds3(i) = wrk * dxds3(i)
-      enddo
+      end do
 c                                                          ---- dfai4/ds
       call jancae_mv( dxds4,a4,s,3,3 )
       do i = 1,3
         dxds4(i) = 2.0 * dxds4(i)
         dfds4(i) = dxds4(i)
-      enddo
+      end do
 c
 c        ---- 1st order differential coefficient of yield fuction result
 c                                     ---- dfai/ds()= result = dfds_t(i)
       do i = 1,3
         dfds_t(i) = dfds1(i) + dfds2(i) + dfds3(i)*fai4 + fai3*dfds4(i)
-      enddo
+      end do
 c           ---- 1st order differential coefficient of equivalent stress
       wrk = (abs(fyild/alarge))**(1.0/am-1.0) / (am*alarge)
       do i = 1,3
         dseds(i) = wrk * dfds_t(i)
-      enddo
+      end do
 c
 c
-      if ( nreq .eq. 1 ) return
+      if ( nreq .ge. 2 ) return
 c
 c            --- 2st order differential coefficient of equivalent stress
 c                                                   with respect to s(j)
@@ -177,8 +177,8 @@ c                                                        ---- d2fai1/ds2
       do i = 1,3
         do j = 1,3
           d2fds1(i,j) = wrk * dxds1(i) * dxds1(j)
-        enddo
-      enddo
+        end do
+      end do
 c                                                        ---- d2fai2/ds2
       wrk1 = sigbtm * (am/2.0)
       if ( abs(x2) .lt. 1e-10 ) x2 = 1e-10
@@ -192,8 +192,8 @@ c             ---- make [ dx2 * dx2(t) ] & [d2x/ds2] & make [d2fai2/ds2]
           dx2dx2(i,j) = dxds2(i) * dxds2(j)
           d2xds2(i,j) = 2.0 * a2(j,i)
           d2fds2(i,j) = wrk2 * dx2dx2(i,j) + wrk3 * d2xds2(i,j)
-        enddo
-      enddo
+        end do
+      end do
 c                                   ---- d2fai3/ds2   make   d2fds3(i,j)
       wrk1 = am/2.0 - 1.0
       wrk2 = (am/2.0-2.0) * (x3**(am/2.0-3.0))
@@ -206,27 +206,27 @@ c                                   ---- [d2x3/ds2] &  make [d2fai3/ds2]
             dx3dx3(i,j) = dxds3(i) * dxds3(j)
             d2xds3(i,j) = 2.0 * a3(j,i)
             d2fds3(i,j) = wrk2 * dx3dx3(i,j) + wrk3 * d2xds3(i,j)
-          enddo
-        enddo
+          end do
+        end do
 c                                                 ---- [d2fai3/ds2]*fai4
         do i = 1,3
           do j = 1,3
             d2fds3(i,j) = d2fds3(i,j) * fai4
-          enddo
-        enddo
+          end do
+        end do
 c                                          ---- [dfai4/ds]*[dfai3/ds](T)
         do i=1,3
           do j=1,3
             df4df3(i,j)= dfds4(i)*dfds3(j)
-          enddo
-        enddo
+          end do
+        end do
 c                                                        ---- d2fai4/ds2
 c                                                 ---- make [d2fai3/ds2]
         do i = 1,3
           do j = 1,3
             d2fds4(i,j) = 2.0 * a4(i,j)
-          enddo
-        enddo
+          end do
+        end do
 c
 c        ---- 2nd order differential coefficient of yield fuction result
 c                                  ---- d2fai/ds2()= result = d2fds_t(i)
@@ -236,8 +236,8 @@ c
             d2fds_t(i,j) = d2fds1(i,j) + d2fds2(i,j) + 
      &                     d2fds3(i,j)*fai4 + df4df3(i,j) + 
      &                     df4df3(j,i) + fai3*d2fds4(i,j)
-          enddo
-        enddo
+          end do
+        end do
 c
 c           ---- 2nd order differential coefficient of equivalent stress
 c                                                              by stress
@@ -252,8 +252,8 @@ c
           do j = 1,3
             d2seds2(i,j) = wrk2 * dfds_t(i) * dfds_t(j) + 
      &                     wrk4 * d2fds_t(i,j)
-          enddo
-        enddo
+          end do
+        end do
 c
       return
       end

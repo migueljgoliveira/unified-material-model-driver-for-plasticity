@@ -106,17 +106,17 @@ c     2015.2.25 new storage format : H.Takizawa
         phi_sh(i)=pryld(4+i*4+2)
         phi_ps(i)=pryld(4+i*4+3)
         omg(   i)=pryld(4+i*4+4)
-      enddo
+      end do
 c
 c
       se=0.0
       do i=1,3
         se=se+s(i)**2
-      enddo
+      end do
       if ( se.le.0.0 ) then
         se=0.0
         return
-      endif
+      end if
 
 c                                       ---- calc x(i) from eq.(14)~(17)
 c     x(i)    : Principal stress(i=1^2)
@@ -158,8 +158,8 @@ c                                                    ---- normal process
         vsin2t=x(4)
         theta=0.5d0*acos(vcos2t)
         theta_rv=0.5d0*pi-theta
-        endif
-      endif
+        end if
+      end if
 c
 c                        ---- calc fk(k=un,sh,ps,bi) , rk(k=un,sh,ps,bi)
 c
@@ -173,7 +173,7 @@ c                                                          ! un=uniaxial
         fun1r=fun1r+phi_un(m)*cos(2.0d0*dble(m)*theta_rv)
         run=run+omg(m)*cos(2.0d0*dble(m)*theta)
         runr=runr+omg(m)*cos(2.0d0*dble(m)*theta_rv)
-      enddo
+      end do
         fun2=0.0d0
         fun2r=0.0d0
 c                                                        ! sh=pure shear
@@ -182,7 +182,7 @@ c                                                        ! sh=pure shear
       do m=0,nf
         fsh1=fsh1+phi_sh(m)*cos(2.0d0*dble(m)*theta)
         fsh2=fsh2-phi_sh(m)*cos(2.0d0*dble(m)*theta_rv)
-      enddo
+      end do
         rsh=-1.0d0
 c                                                      ! ps=plane strain
         fps1=0.0d0
@@ -194,7 +194,7 @@ c                                                      ! ps=plane strain
         fps2=0.5d0*fps1
         fps1r=fps1r+phi_ps(m)*cos(2.0d0*dble(m)*theta_rv)
         fps2r=0.5d0*fps1r
-      enddo
+      end do
         rps=-0.0d0
         rpsr=0.0d0
 c                                                      ! bi=equi-biaxial
@@ -206,10 +206,10 @@ c
 c                                 ---- case distribution by stress state
       if(x(1).ne.0.0d0)then
         alfa=x(2)/x(1)
-      endif
+      end if
       if(x(2).ne.0.0d0)then
         beta=x(1)/x(2)
-      endif
+      end if
 c
 c     iareaflag    :stress state flag(i=0~6)
 c
@@ -234,7 +234,7 @@ c
 c
       else
         go to 100
-      endif
+      end if
 c
 c                                       ---- calc. hingepoint b(i,i=1~2)
       select case ( iareaflag )
@@ -327,7 +327,7 @@ c                                                 ---- equivalent stress
          se=x(2)/f(2)
       else
          se=x(1)/f(1)
-      endif
+      end if
 c
       go to 300
 c
@@ -355,25 +355,25 @@ c
           dadc(2)=dadc(2)+phi_sh(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
      &                             /sin(2.0d0*theta)
-        enddo
+        end do
        else
           do m=0,nf
               dadc(1)=dadc(1)+phi_sh(m)*dble(m)**2
               dadc(2)=dadc(2)+phi_sh(m)*dble(m)**2
-          enddo
-       endif
+          end do
+       end if
 c
        if(abs(vsin2t).ge.TOL) then
          do m=0,nf
           dcdc(1)=dcdc(1)+phi_un(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
      &                             /sin(2.0d0*theta)
-         enddo
+         end do
         else
           do m=0,nf
               dcdc(1)=dcdc(1)+phi_un(m)*dble(m)**2
-          enddo
-        endif
+          end do
+        end if
           dcdc(2)=0.0d0
 c
           dndc(1)=0.0d0
@@ -385,12 +385,12 @@ c
           dmdc(2)=dmdc(2)+omg(m)*dble(m)
      &                          *sin(2.0d0*dble(m)*theta)
      &                          /sin(2.0d0*theta)
-         enddo
+         end do
         else
           do m=0,nf
               dmdc(2)=dmdc(2)+omg(m)*dble(m)**2
-          enddo
-        endif
+          end do
+        end if
       call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      &                               dndc,dmdc,iareaflag,P,nnmm)
 c
@@ -401,12 +401,12 @@ c
           dadc(1)=dadc(1)+phi_un(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
      &                             /sin(2.0d0*theta)
-         enddo
+         end do
         else
          do m=0,nf
           dadc(1)=dadc(1)+phi_un(m)*dble(m)**2
-         enddo
-       endif
+         end do
+       end if
           dadc(2)=0.0d0
 c
        if(abs(vsin2t).ge.TOL) then
@@ -414,12 +414,12 @@ c
           dcdc(1)=dcdc(1)+phi_ps(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
      &                             /sin(2.0d0*theta)
-         enddo
+         end do
         else
          do m=0,nf
           dcdc(1)=dcdc(1)+phi_ps(m)*dble(m)**2
-         enddo
-       endif
+         end do
+       end if
           dcdc(2)=0.5d0*dcdc(1)
 c
           dndc(1)=0.0d0
@@ -428,12 +428,12 @@ c
           dndc(2)=dndc(2)+omg(m)*dble(m)
      &                           *sin(2.0d0*dble(m)*theta)
      &                           /sin(2.0d0*theta)
-         enddo
+         end do
         else
          do m=0,nf
           dndc(2)=dndc(2)+omg(m)*dble(m)**2
-         enddo
-       endif
+         end do
+       end if
 c
           dmdc(1)=0.0d0
           dmdc(2)=0.0d0
@@ -447,12 +447,12 @@ c
           dadc(1)=dadc(1)+phi_ps(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
      &                             /sin(2.0d0*theta)
-         enddo
+         end do
         else
          do m=0,nf
           dadc(1)=dadc(1)+phi_ps(m)*dble(m)**2
-         enddo
-       endif
+         end do
+       end if
           dadc(2)=0.5d0*dadc(1)
 c
           dcdc(1)=0.0d0
@@ -477,12 +477,12 @@ c
           dcdc(2)=dcdc(2)+phi_ps(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
      &                             /sin(2.0d0*theta)
-         enddo
+         end do
         else
          do m=0,nf
           dcdc(2)=dcdc(2)+phi_ps(m)*dble(m)**2
-         enddo
-       endif
+         end do
+       end if
           dcdc(1)=0.5d0*dcdc(2)
 c
           dndc(1)=0.0d0
@@ -501,12 +501,12 @@ c
           dadc(2)=dadc(2)+phi_ps(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
      &                             /sin(2.0d0*theta)
-         enddo
+         end do
         else
          do m=0,nf
           dadc(2)=dadc(2)+phi_ps(m)*dble(m)**2
-         enddo
-       endif
+         end do
+       end if
           dadc(1)=0.5d0*dadc(2)
 c
           dcdc(1)=0.0d0
@@ -515,12 +515,12 @@ c
           dcdc(2)=dcdc(2)+phi_un(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
      &                             /sin(2.0d0*theta)
-         enddo
+         end do
         else
          do m=0,nf
           dcdc(2)=dcdc(2)+phi_un(m)*dble(m)**2
-         enddo
-       endif
+         end do
+       end if
 c
           dndc(1)=0.0d0
           dndc(2)=0.0d0
@@ -530,12 +530,12 @@ c
           dmdc(1)=dmdc(1)+omg(m)*dble(m)
      &                          *sin(2.0d0*dble(m)*theta_rv)
      &                          /sin(2.0d0*theta)
-         enddo
+         end do
         else
          do m=0,nf
           dmdc(1)=dmdc(1)+omg(m)*dble(m)**2
-         enddo
-       endif
+         end do
+       end if
           dmdc(2)=0.0d0
       call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      &                               dndc,dmdc,iareaflag,P,nnmm)
@@ -548,12 +548,12 @@ c
           dadc(2)=dadc(2)+phi_un(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
      &                             /sin(2.0d0*theta)
-         enddo
+         end do
         else
          do m=0,nf
           dadc(2)=dadc(2)+phi_un(m)*dble(m)**2
-         enddo
-       endif
+         end do
+       end if
 c
        if(abs(vsin2t).ge.TOL) then
         do m=0,nf
@@ -563,25 +563,25 @@ c
           dcdc(2)=dcdc(2)+phi_sh(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
      &                             /sin(2.0d0*theta)
-         enddo
+         end do
         else
          do m=0,nf
           dcdc(1)=dcdc(1)+phi_sh(m)*dble(m)**2
           dcdc(2)=dcdc(2)+phi_sh(m)*dble(m)**2
-         enddo
-       endif
+         end do
+       end if
 c
        if(abs(vsin2t).ge.TOL) then
         do m=0,nf
           dndc(1)=dndc(1)+omg(m)*dble(m)
      &                          *sin(2.0d0*dble(m)*theta_rv)
      &                          /sin(2.0d0*theta)
-         enddo
+         end do
         else
          do m=0,nf
           dndc(1)=dndc(1)+omg(m)*dble(m)**2
-         enddo
-       endif
+         end do
+       end if
           dndc(2)=0.0d0
 c
           dmdc(1)=0.0d0
@@ -604,7 +604,7 @@ c                                   ---- calc. dseds(i) (i=1~3)  eq.(20)
       call jancae_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,vsin2t,
      &                                iareaflag,isflag,dxds)
 c
-      endif
+      end if
 c
 c
 c                                            ---- 2nd order differential
@@ -624,7 +624,7 @@ c
          ithetaflag=1
       else 
          ithetaflag=0
-      endif
+      end if
 c
       if(ithetaflag.eq.1) then
         vvtmp(0)=0.0d0
@@ -651,9 +651,9 @@ c
         vvtmp_rv(m)=cos(2.0d0*theta)*sin(2.0d0*dble(m)*theta_rv)/
      &       (sin(2.0d0*theta)**3)+dble(m)*cos(2.0d0*dble(m)*theta_rv)/
      &                                           (sin(2.0d0*theta)**2)
-       enddo
+       end do
 c
-      endif
+      end if
 c
       select case ( iareaflag )
 c                                            
@@ -661,11 +661,11 @@ c
          do m=0,nf
           d2adc2(1)=d2adc2(1)+phi_sh(m)*dble(m)*vvtmp(m)
           d2adc2(2)=d2adc2(2)+phi_sh(m)*dble(m)*vvtmp_rv(m)
-         enddo
+         end do
 c
          do m=0,nf
           d2cdc2(1)=d2cdc2(1)+phi_un(m)*dble(m)*vvtmp(m)
-         enddo
+         end do
           d2cdc2(2)=0.0d0
 c
           d2ndc2(1)=0.0d0
@@ -674,7 +674,7 @@ c
           d2mdc2(1)=0.0d0
          do m=0,nf
           d2mdc2(2)=d2mdc2(2)+omg(m)*dble(m)*vvtmp(m)
-         enddo
+         end do
       call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      &     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
@@ -682,18 +682,18 @@ c
       case ( 2 )                                           ! iareaflag=2
          do m=0,nf
           d2adc2(1)=d2adc2(1)+phi_un(m)*dble(m)*vvtmp(m)
-         enddo
+         end do
           d2adc2(2)=0.0d0
 c
          do m=0,nf
           d2cdc2(1)=d2cdc2(1)+phi_ps(m)*dble(m)*vvtmp(m)
-         enddo
+         end do
           d2cdc2(2)=0.5d0*d2cdc2(1)
 c
           d2ndc2(1)=0.0d0
          do m=0,nf
           d2ndc2(2)=d2ndc2(2)+omg(m)*dble(m)*vvtmp(m)
-         enddo
+         end do
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
@@ -704,7 +704,7 @@ c
       case ( 3 )                                           ! iareaflag=3
          do m=0,nf  
           d2adc2(1)=d2adc2(1)+phi_ps(m)*dble(m)*vvtmp(m)
-         enddo
+         end do
           d2adc2(2)=0.5d0*d2adc2(1)
 c
           d2cdc2(1)=0.0d0
@@ -727,7 +727,7 @@ c
 c
          do m=0,nf
           d2cdc2(2)=d2cdc2(2)+phi_ps(m)*dble(m)*vvtmp_rv(m)
-         enddo
+         end do
           d2cdc2(1)=0.5d0*d2cdc2(2)
 c
           d2ndc2(1)=0.0d0
@@ -744,20 +744,20 @@ c
       case ( 5 )                                           ! iareaflag=5
          do m=0,nf
           d2adc2(2)=d2adc2(2)+phi_ps(m)*dble(m)*vvtmp_rv(m)
-         enddo
+         end do
           d2adc2(1)=0.5d0*d2adc2(2)
 c
           d2cdc2(1)=0.0d0
          do m=0,nf
           d2cdc2(2)=d2cdc2(2)+phi_un(m)*dble(m)*vvtmp_rv(m)
-         enddo
+         end do
 c
           d2ndc2(1)=0.0d0
           d2ndc2(2)=0.0d0
 c
          do m=0,nf
           d2mdc2(1)=d2mdc2(1)+omg(m)*dble(m)*vvtmp_rv(m)
-         enddo
+         end do
           d2mdc2(2)=0.0d0
       call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      &     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
@@ -767,16 +767,16 @@ c
           d2adc2(1)=0.0d0
          do m=0,nf
           d2adc2(2)=d2adc2(2)+phi_un(m)*dble(m)*vvtmp_rv(m)
-         enddo
+         end do
 c
          do m=0,nf
           d2cdc2(1)=d2cdc2(1)+phi_sh(m)*dble(m)*vvtmp(m)
           d2cdc2(2)=d2cdc2(2)+phi_sh(m)*dble(m)*vvtmp_rv(m)
-         enddo
+         end do
 cn
          do m=0,nf
           d2ndc2(1)=d2ndc2(1)+omg(m)*dble(m)*vvtmp_rv(m)
-         enddo
+         end do
           d2ndc2(2)=0.0d0
 c
           d2mdc2(1)=0.0d0
@@ -801,7 +801,7 @@ c                                      ---- calc. d2seds2(i,j) (i,j=1~3)
      &         vcos2t,vsin2t,iareaflag,dxds,dphidx,isflag,s,dseds,
      &                                 pryld,ndyld)
 c
-      endif
+      end if
 c
       return
       end
@@ -830,7 +830,7 @@ c
       if(abs(bb).le.TOL) then
          write (6,*) 'hingepoint singular error! '
          call jancae_exit (9000)
-      endif
+      end if
 c
       b(1)=b1u/bb
       b(2)=b2u/bb
@@ -863,7 +863,7 @@ c
       if(abs(aa).le.TOL1) then
          write (6,*) 'calc. mu singular error! ',abs(aa),iareaflag
          call jancae_exit (9000)
-      endif
+      end if
 c
       dd=bb*bb-4.0d0*aa*cc
       if(dd.ge.0.0d0) then
@@ -873,7 +873,7 @@ c
       else
          write (6,*) 'negative dd ! ',dd,iareaflag
          call jancae_exit (9000)
-      endif
+      end if
 c
       if(xx(1).ge.0.0d0.and.xx(1).le.1.0000005d0) then
           mu=xx(1)
@@ -887,7 +887,7 @@ c
          write (6,*) 'can not find mu ! solve error ',iareaflag,xx(1)
      & ,xx(2)
          call jancae_exit (9000)
-      endif
+      end if
 c
       return
       end
@@ -907,7 +907,7 @@ c
 c
       do i=1,2
         f(i)=a(i)+2.0d0*mu*(b(i)-a(i))+mu*mu*(a(i)+c(i)-2.0d0*b(i))
-      enddo
+      end do
 c
       return
       end
@@ -940,7 +940,7 @@ c
          if(abs(nnmm).lt.TOL) then
             write (6,*) 'nnmm too small! ',nnmm
             call jancae_exit (9000)
-         endif
+         end if
       nminv=1.0d0/nnmm
 c
       dbdc(1)=nminv*(P(1)*mm(2)-P(2)*nn(2))
@@ -974,19 +974,19 @@ c                                    ---- calc. dfdc(i) (i=1~2)  eq.(23)
       do i=1,2
         dfdc(i)=dadc(i)+2.0d0*mu*(dbdc(i)-dadc(i))+mu*mu*(dadc(i)
      &                                       +dcdc(i)-2.0d0*dbdc(i))
-      enddo
+      end do
 c
 c                                   ---- calc. dfdmu(i) (i=1~2)  eq.(22)
       do i=1,2
         dfdmu(i)=2.0d0*(b(i)-a(i))+2.0d0*mu*(a(i)+c(i)-2.0d0*b(i))
-      enddo
+      end do
 c
 c                            ---- calc. dphidx(i) (i=1~3)  eq.(21),(C.1)
       dphidxcinv=f(1)*dfdmu(2)-f(2)*dfdmu(1)
          if(abs(dphidxcinv).lt.TOL3) then
             write (6,*) 'eq.(21) too small! ',dphidxcinv
             call jancae_exit (9000)
-         endif
+         end if
              dphidxcoe=1.0d0/dphidxcinv
 c
 c                            ---- if condition to avoid singular eq.(20)
@@ -1024,10 +1024,10 @@ c
       dphidxtmp(2)=-dfdmu(1)
       dphidxtmp(3)=se*(dfdc(2)*dfdmu(1)-dfdc(1)*dfdmu(2))
 c
-      endif
+      end if
       do i=1,3
         dphidx(i)=dphidxcoe*dphidxtmp(i)
-      enddo
+      end do
 c
       return
       end
@@ -1094,7 +1094,7 @@ c
         dxds(2,3)=-vsin2t
         dxds(3,3)=-2.0d0*vsin2t*vcos2t/(x(1)-x(2))
         dxds_t=transpose(dxds)
-      endif
+      end if
 c
 c                                   ---- calc. dseds(i) (1=1~3)  eq.(20)
       call jancae_clear1 ( dseds,3 )
@@ -1102,8 +1102,8 @@ c
       do i=1,3
         do j=1,3
           dseds(i)=dseds(i)+dxds_t(i,j)*dphidx(j)
-        enddo
-      enddo
+        end do
+      end do
 c
       return
       end
@@ -1197,30 +1197,30 @@ c
        dmudx(i)=0.5d0*daadx(i)*(bb+sqrt(dd))/(aa*aa)
      &         +0.5d0*(-dbbdx(i)-0.5d0/(sqrt(dd))*(2.0d0*bb*dbbdx(i)
      &           -4.0d0*daadx(i)*cc-4.0d0*aa*dccdx(i)))/aa
-      enddo
+      end do
 c
 c                                         ---- calc.  d2fdmu2(i) (i=1~2)
       do i=1,2
          d2fdmu2(i)=2.0d0*(a(i)+c(i)-2.0d0*b(i))
-      enddo
+      end do
 c
 c                                        ---- calc.  d2fdmudc(i) (i=1~2)
       do i=1,2
         d2fdmudc(i)=2.0d0*(dbdc(i)-dadc(i))+2.0d0*mu*(dadc(i)+dcdc(i)
      &                                             -2.0d0*dbdc(i))
-      enddo
+      end do
 c
 c                                        ---- calc.  d2fdcdmu(i) (i=1~2)
       do i=1,2
         d2fdcdmu(i)=2.0d0*(dbdc(i)-dadc(i))+2.0d0*mu*(dadc(i)+dcdc(i)
      &                                             -2.0d0*dbdc(i))
-      enddo
+      end do
 c
 c                                          ---- calc.  d2fdc2(i) (i=1~2)
       do i=1,2
         d2fdc2(i)=d2adc2(i)+2.0d0*mu*(d2bdc2(i)-d2adc2(i))
      &            +mu*mu*(d2adc2(i)+d2cdc2(i)-2.0d0*d2bdc2(i))
-      enddo
+      end do
 c
 c                                                 ---- for d2phidx2(k,l)
 c
@@ -1239,24 +1239,24 @@ c
 c
       do i=1,2
         dvadx(i)=-vtmp2*vcommon*vcommon*dmudx(i)
-      enddo
+      end do
         dvadx(3)=-vtmp1*vcommon*vcommon
      &           -vtmp2*vcommon*vcommon*dmudx(3)
 c
       do i=1,3
         dsedx(i)=dphidx(i)
-      enddo
+      end do
 c
       do i=1,2
         dvcdx(i)=vtmp3*dmudx(i)
-      enddo
+      end do
         dvcdx(3)=vtmp4+vtmp3*dmudx(3)
 c
 c                                    ---- calc.  d2phidx2(i,j) (i,j=1~3)
       do j=1,2
         d2phidx2(1,j)=(-dfdmu(2)*vtmp2*vcommon*vcommon
      &                             +d2fdmu2(2)*vcommon)*dmudx(j)
-      enddo
+      end do
         d2phidx2(1,3)=-dfdmu(2)*vtmp1*vcommon*vcommon
      &                +d2fdmudc(2)*vcommon+(-dfdmu(2)*vtmp2
      &                  *vcommon*vcommon+d2fdmu2(2)*vcommon)*dmudx(3)
@@ -1264,14 +1264,14 @@ c
       do j=1,2
         d2phidx2(2,j)=(dfdmu(1)*vtmp2*vcommon*vcommon
      &                             -d2fdmu2(1)*vcommon)*dmudx(j)
-      enddo
+      end do
         d2phidx2(2,3)=dfdmu(1)*vtmp1*vcommon*vcommon
      &                -d2fdmudc(1)*vcommon+(dfdmu(1)*vtmp2
      &                  *vcommon*vcommon-d2fdmu2(1)*vcommon)*dmudx(3)
 c
       do j=1,3
         d2phidx2(3,j)=dvadx(j)*se*vc+va*dsedx(j)*vc+va*se*dvcdx(j)
-      enddo
+      end do
 c
       return
       end
@@ -1323,7 +1323,7 @@ c
       else
       vx1x2=x(1)-x(2)
       iflag=0
-      endif
+      end if
 c
 c                                    ---- set d2xds2(k,i,j)  (k,i,j=1~3)
 c
@@ -1385,13 +1385,13 @@ c
             do l=1,3
               d2seds2(i,j)=d2seds2(i,j)
      &                    +d2phidx2(k,l)*dxds(l,j)*dxds(k,i)
-            enddo
+            end do
               d2seds2(i,j)=d2seds2(i,j)
      &                    +dphidx(k)*d2xds2(k,i,j)
-          enddo
-        enddo
-      enddo
-      endif
+          end do
+        end do
+      end do
+      end if
 c
       return
       end
@@ -1451,7 +1451,7 @@ c
              a=(seba-seaa)/(2.0d0*delta)
              b=(sebb-seab)/(2.0d0*delta)
              d2seds2(j,k)=(b-a)/(2.0d0*delta)
-           endif
+           end if
           end do
          end do
 c

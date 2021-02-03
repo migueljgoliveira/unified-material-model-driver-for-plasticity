@@ -36,11 +36,11 @@ c       respectively.
 c
       integer :: nds, ndk
 c
-      nds=nint(pryld(2))
-      ndk=nint(pryld(3))
+      nds = nint(pryld(2))
+      ndk = nint(pryld(3))
 c
-      call jancae_bbc2008_core (s,se,dseds,d2seds2,nreq,
-     &                          pryld,ndyld,nds,ndk)
+      call jancae_bbc2008_core ( s,se,dseds,d2seds2,nreq,
+     &                           pryld,ndyld,nds,ndk )
 c
       return
       end subroutine jancae_bbc2008
@@ -78,27 +78,27 @@ c     pryld(n0+5) = m_3^(i) -> Mp(i,1~3,1~3)
 c     pryld(n0+6) = n_1^(i) -> Np(i,1~3,1~3)
 c     pryld(n0+7) = n_2^(i) -> Np(i,1~3,1~3)
 c     pryld(n0+8) = n_3^(i) -> Np(i,1~3,1~3)   
-c   
+c
 c     Temporary variables.
 c      wpi(1) : wp^(i-1)
 c      wpi(2) : wp^(sp-i)
-c   
+c
 c      dFds(i) : dF/ds(i), see (x.y.2f)
 c      d2Fds2(i,j) : d2F/(ds(i)ds(j)), see (x.y.2g)
-c   
+c
 c      phiX, (X=L,M,N) : see (x.y.1o)
 c      dphiXds, (X=L,M,N): see (x.y.2d)
 c      d2phiXds2, (X=L,M,N): see (x.y.2e)
-c   
+c
 c      phiL_m, phiN_m: phi_L^m, phi_N^m
 c      phiM_kp_m : phi_M^(kp-m)
-c   
+c
 c     Here, (x.y.10), (x.y.2d) etc are equation numbering used in a 
 c       text / a paper which will be released by JANCAE.
-c   
+c
 c--------------------------------------------------------------(bbc2008)
-      subroutine jancae_bbc2008_core ( s , se , dseds , d2seds2 , nreq ,
-     &                                 pryld , ndyld , sp , kp )
+      subroutine jancae_bbc2008_core ( s,se,dseds,d2seds2,nreq,
+     &                                 pryld,ndyld,sp,kp )
 c
       implicit none
 c
@@ -131,39 +131,39 @@ c     ----------------
 c        parameters
 c     ----------------
 c
-      call jancae_bbc2008_setup (pryld, ndyld, sp, kp, wp,
-     &                           Lp, Mp, Np, kCm, se1)
+      call jancae_bbc2008_setup ( pryld,ndyld,sp,kp,wp,
+     &                            Lp,Mp,Np,kCm,se1)
 c
 c ----------------
 c  se section
 c ----------------
 c
 c                             ---- The unit of this se is (stress)^(2kp)
-      se = jancae_bbc2008_get_se (sp, kp, wp, s, Lp, Mp, Np, kCm)
+      se = jancae_bbc2008_get_se ( sp,kp,wp,s,Lp,Mp,Np,kCm)
 c
 c      ---- see eq.(x.y.2b) and eq.(x.y.2) for se2k and se, respectively
       se2k = se / se1
       se = se2k**(1.0d0 / (2.0d0*kp))
 c
 c   ---- If a main routine requests this subroutine to calculate se only
-      if (nreq.eq.0) then
+      if ( nreq .eq. 0 ) then
         return
-      endif
+      end if
 c
 c
 c --------------------------
 c  dseds & d2seds2 section
 c --------------------------
-      call jancae_clear1(dFds,3)
-      call jancae_clear2(d2Fds2,3,3)
+      call jancae_clear1 ( dFds,3 )
+      call jancae_clear2 ( d2Fds2,3,3 )
 
 c                              ---- long-long-long do loops starts here.
-      do csp=1,sp
+      do csp = 1,sp
 c
-        call jancae_bbc2008_get_w_phi (wpi,phiL,phiM,phiN,
-     &                                 csp,sp,wp,Lp,Mp,Np,s)
+        call jancae_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,
+     &                                  csp,sp,wp,Lp,Mp,Np,s )
 c
-        do m=0,kp
+        do m = 0,kp
 c
 c     phiM^m, phiL^(kp-m) and phiN^m terms sometimes become 0**0.
 c     To get consistency with the yield function and its differentials
@@ -171,20 +171,20 @@ c       disscussed by Banabic et al., 0**0 is required to be 1.
 c
           phiL_m = 1.0d0
           phiN_m = 1.0d0
-          if (m.ne.0) then
+          if ( m .ne. 0 ) then
             phiL_m = phiL**m
             phiN_m = phiN**m
-          endif
+          end if
 c
           phiM_kp_m = 1.0d0
-          if ((kp-m).ne.0) then
+          if ( (kp-m) .ne. 0 ) then
             phiM_kp_m = phiM**(kp-m)
-          endif
+          end if
 c
 c
-          call jancae_bbc2008_get_dphiXds (dphiLds,Lp,s,csp,m,sp)
-          call jancae_bbc2008_get_dphiXds (dphiMds,Mp,s,csp,(kp-m),sp)
-          call jancae_bbc2008_get_dphiXds (dphiNds,Np,s,csp,m,sp)
+          call jancae_bbc2008_get_dphiXds ( dphiLds,Lp,s,csp,m,sp )
+          call jancae_bbc2008_get_dphiXds ( dphiMds,Mp,s,csp,(kp-m),sp )
+          call jancae_bbc2008_get_dphiXds ( dphiNds,Np,s,csp,m,sp )
 c
 c                                             ---- <dseds>, see (x.y.2f)
           dFds(1:3) = dFds(1:3) + kCm(m) * 
@@ -195,14 +195,14 @@ c                                             ---- <dseds>, see (x.y.2f)
 c
 c
 c                     ---- <d2seds2>, see (x.y.2g), d2F/ds(eta)ds(gamma)
-          if (nreq.eq.2) then
+          if ( nreq .eq.2 ) then
 c
             call jancae_bbc2008_get_d2phiXds2 (d2phiLds2,Lp,s,csp,m,sp)
             call jancae_bbc2008_get_d2phiXds2 (d2phiMds2,Mp,s,csp,
      &                                                       (kp-m),sp)
             call jancae_bbc2008_get_d2phiXds2 (d2phiNds2,Np,s,csp,m,sp)
 c
-            do eta=1,3
+            do eta = 1,3
               d2Fds2(eta,1:3) = d2Fds2(eta,1:3) + kCm(m)
      &             * (  wpi(1) * (  d2phiMds2(eta,1:3) * phiL_m
      &                            + dphiMds(1:3) * dphiLds(eta)
@@ -212,31 +212,31 @@ c
      &                            + dphiMds(1:3) * dphiNds(eta)
      &                            + dphiNds(1:3) * dphiMds(eta)
      &                            + d2phiNds2(eta,1:3) * phiM_kp_m ))
-            enddo
+            end do
 c
-          endif
+          end if
 c
 c                                                ---- end of m=0,kp loop
-        enddo
+        end do
 c
 c                                                ---- end of i=1,sp loop
-      enddo
+      end do
 c
 c
 c                            ---- < dseds >, see (x.y.2f), se2k = se^2kp
       dseds(1:3) =  dFds(1:3) * se / (se1 * 2.0d0 * kp * se2k)
 
 c                  ---- < d2seds2 >, see (x.y.2g), d2se/ds(eta)ds(gamma)
-      if (nreq.eq.2) then
-        do eta=1,3
+      if ( nreq .eq. 2 ) then
+        do eta = 1,3
           d2seds2(eta,1:3) = 
      &            d2Fds2(eta,1:3) * se / (se1 * 2.0d0 * kp * se2k)
      &            - (2.0d0*kp-1.0d0) * dseds(eta) * dseds(1:3) / se
-        enddo
-      endif
+        end do
+      end if
 c
       return
-      end subroutine jancae_bbc2008_core
+      end
 c
 c
 c
@@ -244,9 +244,8 @@ c--------------------------------------------------------------(bbc2008)
 c     jancae_bbc2008_get_w_phi ()
 c     A subroutine to get w^(i-1), w^(s-i) and phiX variables
 c-----------------------------------------------------------------------
-      subroutine jancae_bbc2008_get_w_phi 
-     &                  (wpi, phiL, phiM, phiN,
-     &                   csp, sp, wp, Lp, Mp, Np, s)
+      subroutine jancae_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,
+     &                                      wp,Lp,Mp,Np,s )
 c
       implicit none
 c
@@ -265,7 +264,7 @@ c
       phiN = jancae_bbc2008_get_phiX (Np, s, csp , sp)
 c
       return
-      end subroutine jancae_bbc2008_get_w_phi
+      end
 c
 c
 c
@@ -276,7 +275,7 @@ c
 c     Caution!
 c      The unit of get_se is (stress)^(2*kp).
 c-----------------------------------------------------------------------
-      real*8 function jancae_bbc2008_get_se (sp,kp,wp,s,Lp,Mp,Np,kCm)
+      real*8 function jancae_bbc2008_get_se ( sp,kp,wp,s,Lp,Mp,Np,kCm )
 c
       implicit none
 c
@@ -292,33 +291,32 @@ c
 c
       jancae_bbc2008_get_se = 0.0d0
 c
-      do csp=1,sp
+      do csp = 1,sp
 c
-        call jancae_bbc2008_get_w_phi 
-     &                 (wpi, phiL, phiM, phiN,
-     &                  csp, sp, wp, Lp, Mp, Np, s)
+        call jancae_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,wp,
+     &                                  Lp,Mp,Np,s )
 c
-        do m=0,kp
+        do m = 0,kp
 c
           phiL_m = 1.0d0
           phiN_m = 1.0d0
-          if (m.ne.0) then
+          if ( m .ne. 0 ) then
             phiL_m = phiL**m
             phiN_m = phiN**m
-          endif
+          end if
 c
           phiM_kp_m = 1.0d0
-          if ((kp-m).ne.0) then
+          if ( (kp-m) .ne. 0 ) then
             phiM_kp_m = phiM**(kp-m)
-          endif
+          end if
 c
           jancae_bbc2008_get_se = 
      &    jancae_bbc2008_get_se 
      &     + kCm(m) * phiM_kp_m * ( wpi(1) * phiL_m + wpi(2) * phiN_m )
 c
-        enddo
+        end do
 c
-      enddo
+      end do
 c
       return
       end
@@ -338,7 +336,7 @@ c     nc: the number of components.
 c     XXp: = Xp(csp, nc, nc)
 c-----------------------------------------------------------------------
 c
-      real*8 function jancae_bbc2008_get_phiX (Xp, s, csp , sp)
+      real*8 function jancae_bbc2008_get_phiX ( Xp,s,csp,sp)
 c
       implicit none
       integer, parameter :: nc = 3
@@ -350,12 +348,12 @@ c
       real*8 XXp(nc, nc), v(nc)
 c
 c                                  ---- convert 3rd tensor to 2nd tensor
-      do i=1,nc
-        XXp(i,1:nc) = Xp(csp, i, 1:nc)
-      enddo
+      do i = 1,nc
+        XXp(i,1:nc) = Xp(csp,i,1:nc)
+      end do
 c
-      call jancae_mv (v, XXp, s, nc, nc)
-      call jancae_vvs (jancae_bbc2008_get_phiX, v, s, nc)
+      call jancae_mv ( v,XXp,s,nc,nc)
+      call jancae_vvs (jancae_bbc2008_get_phiX,v,s,nc)
 c
       return
       end
@@ -394,14 +392,14 @@ c
       call jancae_clear1(dphiXds,nc)
 c
 c                              ---- If lambda is 0, return dphiXds = {0}
-      if (lambda.eq.0) then
+      if ( lambda .eq. 0) then
         return
-      endif
+      end if
 c
 c                                  ---- convert 3rd tensor to 2nd tensor
-      do i=1,nc
+      do i = 1,nc
         XXp(i,1:nc) = Xp(csp, i, 1:nc)
-      enddo
+      end do
 c
 c     In the bbc2008 section of the document "User subroutines for 
 c       Metalic Plasticity model?", expression (x.y.2d) has 
@@ -411,15 +409,15 @@ c       from jancae_mv().
 c
       call jancae_mv (v, XXp, s, nc, nc)
 c
-      if (lambda.eq.1) then
+      if ( lambda .eq. 1 ) then
         dphiXds(1:nc) = 2.0d0 * v(1:nc)
       else
         call jancae_vvs (phi, v, s, nc)
         dphiXds(1:nc) = 2.0d0 * lambda * phi**(lambda-1) * v(1:nc)
-      endif
+      end if
 c
       return
-      end subroutine jancae_bbc2008_get_dphiXds
+      end
 c
 c
 c
@@ -454,36 +452,37 @@ c
       real*8 XXp(nc, nc), v(nc), phi, phi_lambda2
 c
 c                             ---- see eq.(x.y.2e), the case lambda <= 1
-      if (lambda.le.1) then
-        do i=1,nc
+      if ( lambda .le. 1 ) then
+        do i = 1,nc
           d2phiXds2(i,1:nc) = 2.0d0 * lambda * Xp(csp, i, 1:nc)
-        enddo
+        end do
         return
-      endif
+      end if
 c
 c
-      do i=1,nc
+      do i = 1,nc
         XXp(i,1:nc) = Xp(csp, i, 1:nc)
-      enddo
+      end do
 c
       call jancae_mv (v, XXp, s, nc, nc)
       call jancae_vvs (phi, v, s, nc)
 c
       phi_lambda2 = 1.0d0
-      if (lambda.ne.2) then
+      if ( lambda .ne. 2 ) then
         phi_lambda2 = phi**(lambda-2)
-      endif
+      end if
 c
-      call jancae_clear2(d2phiXds2, nc, nc)
+      call jancae_clear2 ( d2phiXds2,nc,nc )
 c
 c                                            ---- d2phiX/(ds(i)ds(1:nc))
-      do i=1,nc
+      do i = 1,nc
         d2phiXds2(i, 1:nc) = 2.0d0 * lambda * phi_lambda2 * 
      &   ( 2.0d0 * (lambda - 1) * v(1:nc) * v(i)
      &    + phi * XXp(1:nc, i) )
-      enddo
+      end do
 c
-      end subroutine jancae_bbc2008_get_d2phiXds2
+      return
+      end
 c
 c
 c
@@ -491,8 +490,8 @@ c--------------------------------------------------------------(bbc2008)
 c     setup_bbc2008_parameters()
 c     A routine to setup local variables.
 c-----------------------------------------------------------------------
-      subroutine jancae_bbc2008_setup (pryld, ndyld, sp, kp, wp,
-     &                                 Lp, Mp, Np, kCm, se1)
+      subroutine jancae_bbc2008_setup ( pryld,ndyld,sp,kp,wp,
+     &                                  Lp,Mp,Np,kCm,se1 )
 c
       implicit none
 c
@@ -519,13 +518,13 @@ c                                        ---- Combination variables, kCm
       kCm(0) = 1.0d0
       kCm(kp) = 1.0d0
 c
-      do k=1,2*kp
+      do k = 1,2*kp
 c                                    ---- caution: Comb has zero origin.
         Comb(k,0) = 1.0d0
         Comb(k,k) = 1.0d0
-        do m=1,k-1
+        do m = 1,k-1
           Comb(k, m) = Comb(k-1, m-1) + Comb(k-1, m)
-        enddo
+        end do
 c
 c     We need Comb(k=2kp,2m) array.
 c       Comb(k,0) --> kCm(0)  (which has already been setup)
@@ -537,19 +536,19 @@ c       Comb(k,4) --> kCm(2)
 c       ...
 c       Comb(k,k-2) --> kCm(kp-1)
 c
-        if (k.eq.(2*kp)) then
+        if ( k .eq. (2*kp) ) then
           n = 1
-          do m=2,k-2,2
+          do m = 2,k-2,2
             kCm(n) = Comb(k, m)
             n = n + 1
-          enddo
-        endif
+          end do
+        end if
 
-      enddo
+      end do
 c
 c
 c                                                           ---- tensors
-      do csp=1,sp
+      do csp = 1,sp
 c                                                      ---- L^(i) tensor
         l = 3 + 8 * (csp - 1)
         Lp(csp,1,1) = pryld(l+1)**2
@@ -567,7 +566,7 @@ c                                                      ---- M^(i) tensor
 c                                                      ---- N^(i) tensor
         n = m + 3
         call jancae_bbc2008_setup_MN_tensors (n,csp,pryld,ndyld,Np,sp)
-      enddo
+      end do
 c
 c
 c     equiv. stress in uniaxial stress state.
@@ -577,9 +576,9 @@ c
       call jancae_clear1 (dummy_s, 3)
       dummy_s(1) = 1.0d0
       se1 = jancae_bbc2008_get_se (sp, kp, wp, dummy_s, Lp, Mp, Np, kCm)
-
+c
       return
-      end subroutine jancae_bbc2008_setup
+      end
 c
 c
 c
@@ -591,8 +590,8 @@ c       This routine returns Mp or Np tensor.
 c       Mp and Np tensors are the same style,
 c       thus this subroutine has been created.
 c-----------------------------------------------------------------------
-      subroutine jancae_bbc2008_setup_MN_tensors (ic,csp,
-     &                                      pryld,ndyld,Xp,sp)
+      subroutine jancae_bbc2008_setup_MN_tensors ( ic,csp,
+     &                                             pryld,ndyld,Xp,sp )
 c
       implicit none
 c
@@ -611,7 +610,7 @@ c
       Xp(csp,3,2) = Xp(csp,2,3)
 c
       return
-      end subroutine jancae_bbc2008_setup_MN_tensors
+      end
 c
 c
 c

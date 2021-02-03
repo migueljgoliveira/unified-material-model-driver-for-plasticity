@@ -41,7 +41,7 @@ c
       if ( prop(1) .ge. 1000.0d+0 ) then
         mjac = -1
         prop(1) = prop(1) - 1000.0d+0
-      endif
+      end if
 c
       call jancae_prop_dim ( prop,nprop,propdim,
      &                       ndela,ndyld,ndihd,ndkin,
@@ -54,14 +54,14 @@ c
         write (6,*) 'n    =',n
         do i = 1,5
           write (6,*) 'prop(',i,')=',prop(i)
-        enddo
+        end do
         call jancae_exit ( 9000 )
-      endif
+      end if
       if ( nvbs .ge. 4 ) then
         do i = 1,n
           write (6,*) 'prop(',i,')=',prop(i)
-        enddo
-      endif
+        end do
+      end if
 c
       nnn=(npbs+1)*nttl
 c
@@ -232,33 +232,33 @@ c
       if ( n1234 .ne. 1234 ) then
         n1234 = 1234
         nout = 1
-      endif
+      end if
 c
       if ( ( nvbs .ge. 1 ) .or. ( nout .ne. 0 ) ) then
         write (6,*)
         write (6,*) '**************************************'
         write (6,*) '******* START OF JANCAE/UMMDp ********'
         write (6,*) '**************************************'
-      endif
+      end if
 c
 c                                          ---- copy material properties
       n = 0
       do i = 1,ndela
         n = n + 1
         prela(i) = prop(n)
-      enddo
+      end do
       do i = 1,ndyld
         n = n + 1
         pryld(i) = prop(n)
-      enddo
+      end do
       do i = 1,ndihd
         n = n+1
         prihd(i) = prop(n)
-      enddo
+      end do
       do i = 1,ndkin
         n = n + 1
         prkin(i) = prop(n)
-      enddo
+      end do
 c
       if ( nout .ne. 0 ) then
         write (6,*)
@@ -267,7 +267,7 @@ c
         call jancae_yfunc_print     ( pryld,ndyld )
         call jancae_harden_print    ( prihd,ndihd )
         call jancae_kinematic_print ( prkin,ndkin,npbs )
-      endif
+      end if
 c                                                           ---- set [U]
       call jancae_clear2( um,nttl,nnn )
       i1 = 1
@@ -279,29 +279,29 @@ c                                                           ---- set [U]
             um(k1,k2) = 1.0
           else
             um(k1,k2) = -1.0
-          endif
-        enddo
-      enddo
+          end if
+        end do
+      end do
 c                                                     ---- default value
       if ( npbs .eq. 0 ) then
         do n = 1,mxpbs
           do i = 1,nttl
             x2(n,i) = 0.0
             x1(n,i) = 0.0
-          enddo
-        enddo
-      endif
+          end do
+        end do
+      end if
 c
       de33 = 0.0
       dp = 0.0
       do i = 1,nttl
         dpe(i) = 0.0
-      enddo
+      end do
       do n = 1,npbs
         do i = 1,nttl
           x2(n,i) = x1(n,i)
-        enddo
-      enddo
+        end do
+      end do
       call jancae_backsum ( npbs,xt1,x1,nttl,mxpbs )
       call jancae_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
@@ -316,8 +316,8 @@ c                                                  ---- print out arrays
           call jancae_backprint ( text,npbs,x1,nttl,mxpbs )
           text = 'total  back stess (input)'
           call jancae_print1 ( text,xt1,nttl )
-        endif
-      endif
+        end if
+      end if
 c                                            ---- set elastic [D] matrix
       call jancae_setdelast ( delast,prela,ndela,
      &                        nttl,nnrm,nshr,d33d )
@@ -325,25 +325,25 @@ c                                             ---- copy delast to ddsdde
       do i = 1,nttl
         do j = 1,nttl
           ddsdde(i,j) = delast(i,j)
-        enddo
-      enddo
+        end do
+      end do
       if ( nvbs .ge. 5 ) then
         text = 'elastic matrix'
         call jancae_print2 ( text,ddsdde,nttl,nttl )
-      endif
+      end if
 c                                                ---- elastic prediction
       call jancae_mv ( vv,ddsdde,de,nttl,nttl )
       do i = 1,nttl
         s2(i) = s1(i) + vv(i)
-      enddo
+      end do
       if ( nvbs .ge. 5 ) then
         text = 'elastic predicted stress'
         call jancae_print1 ( text,s2,nttl )
-      endif
+      end if
 c                                                       ---- back stress
       do i = 1,nttl
         eta(i) = s2(i) - xt2(i)
-      enddo
+      end do
 c                                                       ---- check yield
       call jancae_yfunc  ( se,dseds,d2seds2,0,
      &                     eta,nttl,nnrm,nshr,
@@ -360,21 +360,21 @@ c
      &                         xt1,nttl,nnrm,nshr,
      &                         pryld,ndyld )
           write (6,*) 'equiv.back.s  xe=',xe
-        endif
-      endif
+        end if
+      end if
       if ( se .le. sy ) then
         if ( nvbs .ge. 3 ) write (6,*) 'judge : elastic'
         if ( ( nttl .eq. 3 ) .or. ( nttl .eq. 5 ) ) then
           de33 = 0.0
           do i = 1,nttl
             de33 = de33 + d33d(i)*de(i)
-          enddo
+          end do
           if ( nvbs .ge. 4 ) write (6,*) 'de33=',de33
-        endif
+        end if
         return
       else
         if ( nvbs .ge. 3 ) write (6,*) 'judge : plastic'
-      endif
+      end if
 c
 c                                                   ---- initialize loop
       do i = 1,nttl
@@ -383,8 +383,8 @@ c                                                   ---- initialize loop
         do j = 1,npbs
           x2(j,i) = x1(j,i)
           x2conv(j,i) = x1(j,i)
-        enddo
-      enddo
+        end do
+      end do
       dp = 0.0
       dpconv = 0.0
       nest = 0
@@ -398,8 +398,8 @@ c
       if ( nest .gt. 0 ) then
         if ( nvbs .ge. 2 ) then
           write (6,*) '********** Nest of Multistage :',nest
-        endif
-      endif
+        end if
+      end if
       mstg = newmstg
       dsgap = sgapb / float(mstg)
       sgap = sgapb
@@ -408,8 +408,8 @@ c
         s2(i) = s2conv(i)
         do n = 1,npbs
           x2(n,i) = x2conv(n,i)
-        enddo
-      enddo
+        end do
+      end do
       call jancae_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
 c                                          ---- start of multistage loop
@@ -422,15 +422,15 @@ c                                          ---- start of multistage loop
           if ( nvbs .ge. 2 ) then
             write (6,*) '******** Multistage :',m,'/',mstg
             write (6,*) 'gap% in stress =',sgap/sgapi*100.0d0
-          endif
-        endif
+          end if
+        end if
 c
         knr = 0
 c                                      ---- start of Newton-Raphson loop
         if ( nvbs .ge. 3 ) then
           write (6,*)
           write (6,*) '**** start of Newton-Raphson loop'
-        endif
+        end if
 c
   100   continue
         knr = knr + 1
@@ -438,13 +438,13 @@ c
         if ( nvbs .ge. 3 ) then
           write (6,*) '----- NR iteration',knr
           write (6,*) 'inc of p : dp   =',dp
-        endif
+        end if
 c
         pt = p + dp
 c                                        ---- calc. se and differentials
         do i = 1,nttl
           eta(i) = s2(i) - xt2(i)
-        enddo
+        end do
         call jancae_yfunc ( se,dseds,d2seds2,2,
      &                      eta,nttl,nnrm,nshr,
      &                      pryld,ndyld )
@@ -457,12 +457,12 @@ c
             call jancae_print1 ( text,xt2,nttl )
             text = 'eta'
             call jancae_print1 ( text,eta,nttl )
-          endif
+          end if
           text = 'dse/ds'
           call jancae_print1 ( text,dseds,nttl )
           text = 'd2se/ds2'
           call jancae_print2 ( text,d2seds2,nttl,nttl )
-        endif
+        end if
 c                                        ---- calc. sy and differentials
         call jancae_hardencurve ( sy,dsydp,d2sydp2,
      &                            1,pt,prihd,ndihd )
@@ -471,14 +471,14 @@ c                                        ---- calc. sy and differentials
           write (6,*) 'plastic strain p=',pt
           write (6,*) 'flow stress   sy=',sy
           write (6,*) 'hardening dsy/dp=',dsydp
-        endif
+        end if
 c                                                          ---- calc. g1
         g1 = se - sy - sgap
 c                                                          ---- calc. g2
         call jancae_mv ( vv,delast,dseds,nttl,nttl )
         do i = 1,nttl
           g2(i) = s2(i) - stry(i) + dp*vv(i)
-        enddo
+        end do
         call jancae_vvs ( g2n,g2,g2,nttl )
         g2n = sqrt(g2n)
 c                                                          ---- calc. g3
@@ -493,21 +493,21 @@ c                                                          ---- calc. g3
           do n = 1,npbs
             do i = 1,nttl
               g3(n,i) = x2(n,i) - x1(n,i) - dp*vk(n,i)
-            enddo
-          enddo
+            end do
+          end do
           g3nn = 0.0
           do n = 1,npbs
             g3n(n) = 0.0
             do i = 1,nttl
               g3n(n) = g3n(n) + g3(n,i)*g3(n,i)
-            enddo
+            end do
             g3n(n) = sqrt(g3n(n))
             g3nn = g3nn + g3n(n)*g3n(n)
-          enddo
+          end do
           g3nn = sqrt(g3nn)
         else
           g3nn = 0.0
-        endif
+        end if
 c
         if ( nvbs .ge. 3 ) then
           write (6,*) 'g1 (yield surf) =',g1
@@ -515,7 +515,7 @@ c
           if ( nvbs .ge. 5 ) then
             text = 'g2 vector'
             call jancae_print1 ( text,g2,nttl )
-          endif
+          end if
           if ( npbs .ne. 0 ) then
             if ( nvbs .ge. 4 ) then
               do n = 1,npbs
@@ -523,14 +523,14 @@ c
                 if ( nvbs .ge. 5 ) then
                   do i = 1,nttl
                     uv(i) = g3(n,i)
-                  enddo
+                  end do
                   text = 'g3 vector'
                   call jancae_print1 ( text,uv,nttl )
-                endif
-              enddo
-            endif
-          endif
-        endif
+                end if
+              end do
+            end if
+          end if
+        end if
 c                      ---- calc. dependencies common for NR and Dds/Dde
 c                                                              * set [A]
         call jancae_setunitm ( am,nnn )
@@ -546,7 +546,7 @@ c                                                              * set [A]
                     am(k1,k2) = am(k1,k2) + dp*em(j1,j2)
                   else
                     am(k1,k2) = am(k1,k2) - dp*em(j1,j2)
-                  endif
+                  end if
                 else
                   ip1 = i1 - 1
                   ip2 = i2 - 1
@@ -555,12 +555,12 @@ c                                                              * set [A]
                   else
                     am(k1,k2) = am(k1,k2) - dp*dvkdx(ip1,ip2,j1,j2)
      &                                    - dp*dvkdxt(ip1,j1,j2)
-                  endif
-                endif
-              enddo
-            enddo
-          enddo
-        enddo
+                  end if
+                end if
+              end do
+            end do
+          end do
+        end do
 c                                                           ---- set {W}
         call jancae_clear1( wv,nnn )
         do i1 = 1, npbs+1
@@ -569,13 +569,13 @@ c                                                           ---- set {W}
             if ( i1 .eq. 1 ) then
               do k2 = 1,nttl
                 wv(k1) = wv(k1) + delast(j1,k2)*dseds(k2)
-              enddo
+              end do
             else
               ip1 = i1-1
               wv(k1) = -vk(ip1,j1) - dp*dvkdp(ip1,j1)
-            endif
-          enddo
-        enddo
+            end if
+          end do
+        end do
 c                                                      ---- calc. [A]^-1
         call jancae_minv ( ami,am,nnn,det )
 c                                                     ---- [C]=[U][A]^-1
@@ -589,26 +589,26 @@ c                                                 ---- check convergence
 c
           if ( nvbs .ge. 2 ) then
             write (6,*) '**** Newton-Raphson converged.',knr
-          endif
+          end if
           dpconv = dp
           do i = 1,nttl
             s2conv(i) = s2(i)
             do j = 1,npbs
               x2conv(j,i) = x2(j,i)
-            enddo
-          enddo
+            end do
+          end do
           goto 200
-        endif
+        end if
 c                                                         ---- solve ddp
 c                                                           ---- set {G}
         do i = 1,nttl
           gv(i) = g2(i)
-        enddo
+        end do
         do n = 1,npbs
           do i = 1,nttl
             gv(n*nttl+i) = g3(n,i)
-          enddo
-        enddo
+          end do
+        end do
 c                              ---- ddp=(g1-{m}^T[C]{G})/(H+{m}^T[C]{W})
         call jancae_mv ( vv,cm,gv,nttl,nnn )
         call jancae_vvs ( top0,dseds,vv,nttl )
@@ -622,14 +622,14 @@ c                                                         ---- update dp
         if ( nvbs .ge. 3 ) then
           write (6,*) 'modification of dp:ddp=',ddp
           write (6,*) 'updated             dp=',dp
-        endif
+        end if
         if ( dp .le. 0.0 ) then
           if ( nvbs .ge. 3 ) then
             write (6,*) 'negative dp is detected.'
             write (6,*) 'multistage is subdivided.'
-          endif
+          end if
           goto 400
-        endif
+        end if
 c                                                  ---- update s2 and x2
         do i1 = 1,npbs+1
           call jancae_clear1( vv,nttl )
@@ -637,16 +637,16 @@ c                                                  ---- update s2 and x2
             k1 = (i1-1)*nttl + j1
             do k2 = 1,nnn
               vv(j1) = vv(j1) - ami(k1,k2)*(gv(k2)+ddp*wv(k2))
-            enddo
-          enddo
+            end do
+          end do
           do j1 = 1,nttl
             if ( i1 .eq. 1 ) then
               s2(j1) = s2(j1) + vv(j1)
             else
               x2(i1-1,j1) = x2(i1-1,j1) + vv(j1)
-            endif
-          enddo
-        enddo
+            end if
+          end do
+        end do
         call jancae_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
 c
@@ -657,7 +657,7 @@ c
         if ( nvbs .ge. 2 ) then
           write (6,*) 'Newton Raphson loop is over.',knr
           write (6,*) 'convergence is failed.'
-        endif
+        end if
         if ( nest .lt. maxnest ) then
           nest = nest + 1
           newmstg = (mstg-m+1) * ndiv
@@ -677,18 +677,18 @@ c
           write (6,*) ' increase maxnr   in program',maxnr
           write (6,*) ' increase tol     in program',tol
           call jancae_exit ( 9000 )
-        endif
+        end if
 c
   200   continue
 c
-      enddo
+      end do
 c                                            ---- end of multistage loop
 c
 c
 c                                                 ---- plast.strain inc.
       do i = 1,nttl
         dpe(i) = dp * dseds(i)
-      enddo
+      end do
 c                                               ---- print out converged
       if ( nvbs .ge. 4 ) then
         text = 'updated stress'
@@ -700,18 +700,18 @@ c                                               ---- print out converged
           call jancae_backprint ( text,npbs,x2,nttl,mxpbs )
           text = 'updated total back stess'
           call jancae_print1 ( text,xt2,nttl )
-        endif
-      endif
+        end if
+      end if
 c                                    ---- calc. strain inc. in thickness
       if ( ( nttl .eq. 3 ) .or. ( nttl .eq. 5 ) ) then
         de33 = -dpe(1) - dpe(2)
         do i = 1,nttl
           de33 = de33 + d33d(i)*(de(i)-dpe(i))
-        enddo
+        end do
         if ( nvbs .ge. 4 ) then
           write (6,*) 'de33=',de33
-        endif
-      endif
+        end if
+      end if
 c
       if ( nvbs .ge. 1 ) then
         if ( nest .ne. 0 ) then
@@ -722,26 +722,26 @@ c
           write (6,*) 'inc. of equiv.plast.strain :',dp
           write (6,*) 'equiv.plast.strain updated :',p+dp
           write (6,*) 'location ne,ip,lay         :',ne,ip,lay
-        endif
-      endif
+        end if
+      end if
 c
       if ( mjac .eq. 0 ) then
         do i = 1,nttl
           do j = 1,nttl
             ddsdde(i,j) = 0.0
-          enddo
-        enddo
+          end do
+        end do
         return
-      endif
+      end if
 c
       if ( mjac .eq. -1 ) then
         do i = 1,nttl
           do j = 1,nttl
             ddsdde(i,j) = delast(i,j)
-          enddo
-        enddo
+          end do
+        end do
         return
-      endif
+      end if
 c
 c                                      ---- consistent material jacobian
 c                                                           ---- set [B]
@@ -753,40 +753,40 @@ c                                                           ---- set [B]
           k1 = (i1-1)*nttl + j1
           k2 = (i2-1)*nttl + j2
           bm(k1,k2) = delast(j1,j2)
-        enddo
-      enddo
+        end do
+      end do
 c                                                       ---- [M1]=[N][C]
       call jancae_mm ( em1,d2seds2,cm,nttl,nnn,nttl )
 c                                               ---- {V1}={m}-dp*[M1]{W}
       call jancae_mv ( vv ,em1,wv,nttl,nnn )
       do i = 1,nttl
         v1(i) = dseds(i) - dp*vv(i)
-      enddo
+      end do
 c                                                 ---- [M2]={V1}{m}^T[C]
       call jancae_clear2 ( em2,nttl,nnn )
       do i = 1,nttl
         do j = 1,nnn
           do k = 1,nttl
             em2(i,j) = em2(i,j) + v1(i)*dseds(k)*cm(k,j)
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 c                                                  ---- S1=H+{m}^T[C]{W}
       sc1 = dsydp
       do i = 1,nttl
         do j = 1,nnn
           sc1 = sc1 + dseds(i)*cm(i,j)*wv(j)
-        enddo
-      enddo
+        end do
+      end do
 c                                     ---- [M3]=[I]-[dp*[M1]-[M2]/S1][B]
       call jancae_setunitm ( em3,nttl )
       do i = 1,nttl
         do j = 1,nttl
           do k = 1,nnn
             em3(i,j) = em3(i,j) - (dp*em1(i,k)+em2(i,k)/sc1)*bm(k,j)
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 c                                                     ---- [Dc]=[De][M3]
       call jancae_mm ( ddsdde,delast,em3,nttl,nttl,nttl )
 c
@@ -800,15 +800,15 @@ c                                                    ---- check symmetry
           aa = 0.5*(ddsdde(i,j)+ddsdde(i,j))
           d = d + dd*dd
           a = a + aa*aa
-        enddo
-      enddo
+        end do
+      end do
       a = sqrt(d/a)
       if ( a .gt. 1.0d-8 ) then
         if ( nvbs .ge. 4 ) then
           write (6,*) 'ddsdde is not symmetric.',a
           text = 'material jacobian (nonsym)'
           call jancae_print2 ( text,ddsdde,nttl,nttl )
-        endif
+        end if
 c                                                    ---- symmetrization
         if ( nsym .eq. 1 ) then
           do i = 1,nttl
@@ -816,15 +816,15 @@ c                                                    ---- symmetrization
               aaa = 0.5d0 * (ddsdde(i,j)+ddsdde(j,i))
               ddsdde(i,j) = aaa
               ddsdde(j,i) = aaa
-            enddo
-          enddo
-        endif
-      endif
+            end do
+          end do
+        end if
+      end if
 c
       if ( nvbs .ge. 4 ) then
         text = 'material jacobian (output)'
         call jancae_print2 ( text,ddsdde,nttl,nttl )
-      endif
+      end if
 c
       return
       end
@@ -861,8 +861,8 @@ c
      &       (ip .eq. ipchk ) .and.
      &       (lay .eq. laychk ) ) then
           nvbs = nvbs0
-        endif
-      endif
+        end if
+      end if
 c
       return
       end
@@ -895,7 +895,7 @@ c
           eyoung = 9.0d0*ek*eg / (3.0d0*ek+eg)        ! Young's modulus
           epoas = (eyoung-2.0d0*eg) / 2.0d0 / eg      ! Poisson's ratio
           erigid = eg
-        endif
+        end if
 c                                       ---- set 6*6 matrix for 3d solid
         call jancae_clear2( delast3d,6,6 )
         do i = 1,3
@@ -904,18 +904,18 @@ c                                       ---- set 6*6 matrix for 3d solid
               delast3d(i,j) = 1.0d0 - epoas
             else
               delast3d(i,j) = epoas
-            endif
-          enddo
-        enddo
+            end if
+          end do
+        end do
         do i = 4,6
           delast3d(i,i) = 0.5d0 - epoas
-        enddo
+        end do
         coef = erigid / (0.5d0-epoas)
         do i = 1,6
           do j = 1,6
             delast3d(i,j) = coef * delast3d(i,j)
-          enddo
-        enddo
+          end do
+        end do
 c
       case default                                              ! Error
         write (6,*) 'elasticity code error in jancae_setelast'
@@ -930,13 +930,13 @@ c                                       ---- condensation for 2D problem
           ni = nnrm
         else
           ni = nshr
-        endif
+        end if
         do jb = 1,2
           if ( jb .eq. 1 ) then
             nj = nnrm
           else
             nj = nshr
-          endif
+          end if
           do is = 1,ni
             i = (ib-1)*nnrm + is
             i3 = (ib-1)*3 + is
@@ -944,10 +944,10 @@ c                                       ---- condensation for 2D problem
               j = (jb-1)*nnrm + js
               j3 = (jb-1)*3    + js
               delast(i,j) = delast3d(i3,j3)
-            enddo
-          enddo
-        enddo
-      enddo
+            end do
+          end do
+        end do
+      end do
 c                                     ---- plane stress or shell element
       if ( nnrm .eq. 2 ) then
         d33 = delast3d(3,3)
@@ -956,13 +956,13 @@ c                                     ---- plane stress or shell element
             ni = nnrm
           else
             ni = nshr
-          endif
+          end if
           do jb = 1,2
             if ( jb .eq. 1 ) then
               nj = nnrm
             else
               nj = nshr
-            endif
+            end if
             do is = 1,ni
               i = (ib-1)*nnrm + is
               i3 = (ib-1)*3 + is
@@ -971,10 +971,10 @@ c                                     ---- plane stress or shell element
                 j3 = (jb-1)*3 + js
                 delast(i,j) = delast(i,j)
      &                      - delast3d(i3,3)*delast3d(3,j3)/d33
-              enddo
-            enddo
-          enddo
-        enddo
+              end do
+            end do
+          end do
+        end do
 c                         ---- elastic strain in thickness direction e_t
 c                                             ---- e_t=SUM(d33d(i)*e(i))
         do i = 1,nttl
@@ -982,10 +982,10 @@ c                                             ---- e_t=SUM(d33d(i)*e(i))
             id = i
           else
             id = i - nnrm + 3
-          endif
+          end if
           d33d(i) = -delast3d(3,id) / d33
-        enddo
-      endif
+        end do
+      end if
 c
       return
       end
@@ -1032,7 +1032,7 @@ c
         isvtnsr = nttl
       else
         isvtnsr = nttl * (1+npbs)
-      endif
+      end if
       isvttl = isvrsvd + isvsclr + isvtnsr
       if ( nisv .lt. isvttl ) then
         write (6,*) 'check number of internal state variables (isv)'
@@ -1043,7 +1043,7 @@ c
         write (6,*) 'isv : for scaler     ',isvsclr
         write (6,*) 'isv : for tensor     ',isvtnsr
         call jancae_exit ( 9000 )
-      endif
+      end if
 c
       return
       end
@@ -1065,16 +1065,16 @@ c                                                 ---- eq.plastic strain
 c                                              ---- plastic strain comp.
       do i = 1,nttl
         pe(i) = stv(isvrsvd+isvsclr+i)
-      enddo
+      end do
 c                                         ---- partial back stress comp.
       if ( npbs .ne. 0 ) then
         do nb = 1,npbs
           do i = 1,nttl
             it = isvrsvd + isvsclr + nttl*nb+i
             x(nb,i) = stv(it)
-          enddo
-        enddo
-      endif
+          end do
+        end do
+      end if
 c
       return
       end
@@ -1091,14 +1091,14 @@ c-----------------------------------------------------------------------
 c
       do i = 1,nttl
         xt(i) = 0.0
-      enddo
+      end do
       if ( npbs .eq. 0 ) return
 c
       do i = 1,nttl
         do j = 1,npbs
           xt(i) = xt(i) + x(j,i)
-        enddo
-      enddo
+        end do
+      end do
 c
       return
       end
@@ -1120,8 +1120,8 @@ c
       do i = 1,nttl
         do j = 1,npbs
           xx(j,i) = x(j,i)
-        enddo
-      enddo
+        end do
+      end do
       call jancae_print2 ( text,xx,npbs,nttl )
 c
       return

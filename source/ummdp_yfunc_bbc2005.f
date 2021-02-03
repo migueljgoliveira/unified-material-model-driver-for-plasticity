@@ -72,7 +72,7 @@ c
      &       *AA**(k-2*i)*BB**(2*i)
         oo = oo + fact(k)/(fact(k-2*i)*fact(2*i))
      &       *CC**(k-2*i)*DD**(2*i)
-      enddo
+      end do
 c
       fir = 2.0d0*a*nn
       las = 2.0d0*b*oo
@@ -81,7 +81,7 @@ c
 c
       kk = dble(k)
 c
-      Al=(a*(N+L)**(2*k)+a*(N-L)**(2*k)
+      Al = (a*(N+L)**(2*k)+a*(N-L)**(2*k)
      &   +b*(N+Q)**(2*k)+b*(N-Q)**(2*k))**(1.0d0/(2.0d0*kk))
 c
       se = phi**(1/(2*kk))/Al
@@ -91,10 +91,10 @@ c
 c
 c
 c                                           ----  1st order differential
-      if ( nreq.ge.1 ) then
+      if ( nreq .ge. 1 ) then
 c
       dsedphi = (1.0d0/(2.0d0*kk))*(phi**(1.0d0/(2.0d0*kk)-1.0d0)/Al)
-c      
+c
       lth(1) = (L*s(1)+M*s(2))**2
       lth(2) = (N*s(1)-P*s(2))**2+s(3)**2
       lth(3) = (Q*s(1)-R*s(2))**2+s(3)**2
@@ -103,15 +103,15 @@ c                    ----to avoid division by zero or zero of zero power
 c 
       if ( lth(1) < 1e-15 * se**2) then
         lth(1) = 1e-15 * se**2
-      endif
+      end if
 c
       if ( lth(2) < 1e-15 * se**2) then
         lth(2) = 1e-15 * se**2
-      endif
+      end if
 c
       if ( lth(3) < 1e-15 * se**2) then
         lth(3) = 1e-15 * se**2
-      endif
+      end if
 c
       lth1_2 = lth(1)+lth(2)
       lth12  = lth(1)*lth(2)
@@ -120,11 +120,11 @@ c
 c
       if (lth1_2 < 1e-15 * se**2) then
         lth1_2 = 1e-15 * se**2
-      endif
+      end if
 c
       if (lth2_3 < 1e-15 * se**2) then
         lth2_3 = 1e-15 * se**2
-      endif
+      end if
 c
       dphidlth(:) = 0.0d0
 c
@@ -144,7 +144,7 @@ c
         dphidlth(3) = dphidlth(3) + fact(k)/(fact(k-2*i)*fact(2*i))*
      &     (2*b*(i*4**i*lth(2)**i*lth(3)**(i-1)*lth2_3
      &     **(k-2*i)+(k-2*i)*4**i*lth23**i*lth2_3**(-2*i+k-1)))
-      enddo
+      end do
 c
       dlthds(1,1) = 2*L*(M*s(2)+L*s(1))
       dlthds(1,2) = 2*M*(M*s(2)+L*s(1))
@@ -160,16 +160,16 @@ c
         dseds(i) = 0.0d0
         do j = 1, 3
           dseds(i) = dseds(i) + dsedphi*dphidlth(j)*dlthds(j,i)
-        enddo
+        end do
 c        write (150,*) s(1), s(2), s(3), i, dseds(i)
-      enddo
+      end do
 c
-      endif
+      end if
 c
 c
 c                                            ---- 2nd order differential
 c
-      if ( nreq.ge.2 ) then
+      if ( nreq .ge. 2 ) then
 c
       d2sedphi2 = (1/kk/2.0d00-1)*phi**(1/kk/2.0d0-2)/
      &            (kk*Al)/2.0d0
@@ -212,7 +212,7 @@ c
      &     +2*k_b*lth(2)**i*lth(3)**(i-1)*lth2_3**(k-2*i-1)
      &     +k_c*lth23**i*lth2_3**(k-2*i-2))
 c
-      enddo
+      end do
 c
       d2phidlth2(2,1) = d2phidlth2(1,2)
       d2phidlth2(3,2) = d2phidlth2(2,3)
@@ -245,14 +245,14 @@ c
               d2seds2(i,j) = d2seds2(i,j)
      &+d2sedphi2*dphidlth(jj)*dlthds(jj,j) *dphidlth(ii)*dlthds(ii,i)
      &+dsedphi*     d2phidlth2(ii,jj)*dlthds(jj,j)     *dlthds(ii,i)  
-            enddo
+            end do
             d2seds2(i,j)= d2seds2(i,j)
      &+dsedphi*dphidlth(ii)                   *d2lthds2(ii,i,j)
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 c
-      endif
+      end if
 c
       end subroutine jancae_bbc2005
 c
@@ -265,8 +265,8 @@ c----  function to solve factorial ----------------------------(bbc2005)
       if ( n.ge.1 ) then
           do i = 1,n
             m = m * i
-          enddo
-      endif
+          end do
+      end if
       end function fact
 c
 c

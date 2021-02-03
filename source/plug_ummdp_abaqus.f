@@ -52,12 +52,12 @@ c                                       ---- output detailed information
         call jancae_printinfo  ( kinc,ndi,nshr )
         call jancae_printinout ( 0,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
-      endif
+      end if
 c
 c                                           ---- set material properties
       do i = 2,nprops
         prop(i-1) = props(i)
-      enddo
+      end do
 c
       call jancae_prop_dim ( prop,nprop,propdim,
      &                       ndela,ndyld,ndihd,ndkin,
@@ -88,7 +88,7 @@ c                             ---- update stress and set tangent modulus
 c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
-      enddo
+      end do
 c                                            ---- update eq.plast,strain
       statev(isvrsvd+1) = p + dp
 c                                         ---- update plast.strain comp.
@@ -97,21 +97,21 @@ c
       do i = 1,ntens
         is = isvrsvd + isvsclr + i
         statev(is) = ustatev(i) + dpe(i)
-      enddo
+      end do
 c                                       ---- update of back stress comp.
       if ( npbs .ne. 0 ) then
         do n = 1,npbs
           do i = 1,ntens
             is = isvrsvd + isvsclr + ntens*n + i
             statev(is) = x2(n,i)
-          enddo
-        enddo
-      endif
+          end do
+        end do
+      end if
 c                           ----  if debug mode, output return arguments
       if ( nvbs .ge. 4 ) then
         call jancae_printinout ( 1,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
-      endif
+      end if
 c
       return
       end
@@ -134,11 +134,11 @@ c
 c
       if ( ne*ip*lay .eq. 1 ) then
         write (6,*) 'SDVINI is called. '
-      endif
+      end if
 c
       do n = 1,nstatv
         statev(n) = 0.0
-      enddo
+      end do
 c
       return
       end
@@ -203,57 +203,57 @@ c                                                        ---- get stress
         write (6,*) 'request error in uvarm for s'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-      endif
+      end if
 c
       do i = 1,ndi
         s(i) = array(i)
-      enddo
+      end do
       do i = 1,nshr
         i1 = ndi + i
         i2 = 3 + i
         s(i1) = array(i2)
-      enddo
+      end do
 c                                               ---- get state variables
       if ( nsdv .gt. maxsdv ) then
         write (6,*) 'increase dimension of ARRAY2 and JARRAY2'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-      endif
+      end if
       CALL GETVRM ( 'SDV',ARRAY2,JARRAY2,FLGRAY2,JRCD,JMAC,JMATYP,
      &              MATLAYO,LACCFLA )
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sdv'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-      endif
+      end if
       do i = 1,nsdv
         sdv(i) = array2(i)
-      enddo
+      end do
 c                                           ---- set material properties
       call jancae_prop_dim ( prop,nprop,propdim,
      &                       ndela,ndyld,ndihd,ndkin,
      &                       npbs )
-      allocate( prela(ndela) )
-      allocate( pryld(ndyld) )
-      allocate( prihd(ndihd) )
-      allocate( prkin(ndkin) )
+      allocate ( prela(ndela) )
+      allocate ( pryld(ndyld) )
+      allocate ( prihd(ndihd) )
+      allocate ( prkin(ndkin) )
       k = 0
       do i = 1,ndela
         k = k+1
         prela(i) = prop(k)
-      enddo
+      end do
       do i = 1,ndyld
         k = k+1
         pryld(i) = prop(k)
-      enddo
+      end do
       do i = 1,ndihd
         k = k+1
         prihd(i) = prop(k)
-      enddo
+      end do
       do i = 1,ndkin
         k = k+1
         prkin(i) = prop(k)
-      enddo
+      end do
 c                                                  ---- calc back stress
       call jancae_isvprof ( isvrsvd,isvsclr )
       call jancae_isv2pex ( isvrsvd,isvsclr,
@@ -261,36 +261,36 @@ c                                                  ---- calc back stress
      &                      mxpbs,npbs )
       do i = 1,ntens
          xsum(i) = 0.0
-      enddo
+      end do
       if ( npbs .ne. 0 ) then
         do i = 1,ntens
           do nb = 1,npbs
             xsum(i) = xsum(i) + x(nb,i)
-          enddo
-        enddo
-      endif
+          end do
+        end do
+      end if
 c                                                 ---- equivalent stress
       if ( nuvarm .ge. 1 ) then
         do i = 1,ntens
           eta(i) = s(i) - xsum(i)
-        enddo
+        end do
         call jancae_yfunc ( se,dseds,d2seds2,0,eta,ntens,ndi,nshr,
      &                      pryld,ndyld )
         uvar(1) = se
-      endif
+      end if
 c                                                       ---- flow stress
       if ( nuvarm .ge. 2 ) then
         call jancae_hardencurve ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
         uvar(2) = sy
-      endif
+      end if
 c                                                       ---- back stress
       if ( npbs .ne. 0 ) then
         if ( nuvarm .ge. 3 ) then
           do i = 1,ntens
             uvar(2+i) = xsum(i)
-          enddo
-        endif
-      endif
+          end do
+        end if
+      end if
 c
       return
       end
@@ -303,7 +303,6 @@ c
       subroutine jancae_isvprof ( isvrsvd,isvsclr )
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
-c
 c
       isvrsvd = 0       ! no reserved variables
       isvsclr = 1       ! statev(1) is for equivalent plastic strain

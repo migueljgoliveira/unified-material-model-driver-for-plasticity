@@ -12,12 +12,12 @@ c                                                      ---- coef. matrix
       do i = 1,3
         do j = 1,3
           c(i,j) = -0.5d0
-        enddo
+        end do
         c(i,i) = 1.0d0
-      enddo
+      end do
       do i = 4,6
         c(i,i) = 3.0d0
-      enddo
+      end do
 c
       call jancae_mv  ( v,c,s,6,6 )
       call jancae_vvs ( phi,s,v,6 )
@@ -27,16 +27,16 @@ c                                            ---- 1st order differential
       if ( nreq .ge. 1 ) then
         do i = 1,6
           dseds(i) = v(i) / se
-        enddo
-      endif
+        end do
+      end if
 c                                            ---- 2nd order differential
       if ( nreq .ge. 2 ) then
         do i = 1,6
           do j = 1,6
             d2seds2(i,j) = (-v(i)*v(j)/phi+c(i,j)) / se
-          enddo
-        enddo
-      endif
+          end do
+        end do
+      end if
 c
       return
       end

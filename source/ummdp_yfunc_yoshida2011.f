@@ -20,12 +20,12 @@ c
       n = 0
       do it = 0,nd0
         n = n + (nd0-it)*2 + 1
-      enddo
+      end do
       nterms = n
       if ( maxa .lt. nterms ) then
         write (6,*) 'increase maxa :',maxa,nterms
         call jancae_exit ( 9000 )
-      endif
+      end if
 c
       n = 0
       ipow = 0
@@ -37,8 +37,8 @@ c
           ipow(n,1) = jx
           ipow(n,2) = jy
           ipow(n,3) = it
-        enddo
-      enddo
+        end do
+      end do
 c
       a = 0.0
       a(1) =  1.0d0 *          pryld(1+1)           !       c1
@@ -95,10 +95,10 @@ c
         do k = 1,3
           if ( ipow(n,k) .gt. 0 ) then
             q = q * sterm(k)**ipow(n,k)
-          endif
-        enddo
+          end if
+        end do
         fai = fai + q
-      enddo
+      end do
       se = fai ** dinv
       if ( nreq .eq. 0 ) return
 c
@@ -110,7 +110,7 @@ c
           do n = 1,nterms
             do k = 1,3
               ii(k) = ipow(n,k)
-            enddo
+            end do
             select case ( i )
             case ( 1,2 )
               dd = float(ii(i))
@@ -128,24 +128,24 @@ c
                 q = q * sterm(k)**ii(k)
               else if ( ii(k) .lt. 0 ) then
                 q = 0.0
-              endif
-            enddo
+              end if
+            end do
             v(i) = v(i) + q
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
       ff = dinv * fai**(dinv-1.0d0)
       do i = 1,6
         dseds(i) = ff * v(i)
-      enddo
+      end do
       if ( nreq .eq. 1 ) return
 c
       fff = dinv * (dinv-1.0d0) * fai**(dinv-2.0d0)
       do i = 1,6
         do j = 1,6
           d2seds2(i,j) = fff * v(i) * v(j)
-        enddo
-      enddo
+        end do
+      end do
       do i = 1,6
         idmax = 1
         if ( i .eq. 3 ) idmax = 2
@@ -158,7 +158,7 @@ c
               do n = 1,nterms
                 do k = 1,3
                   ii(k) = ipow(n,k)
-                enddo
+                end do
                 select case ( i )
                 case ( 1,2 )
                   ddi = float(ii(i))
@@ -184,7 +184,7 @@ c
                   else
                     ddi = 2.0d0 * float(ipow(n,3))
                     ddj = 1.0d0
-                  endif
+                  end if
                 end select
                 q = a(n) * ddi * ddj
                 do k = 1,3
@@ -192,14 +192,14 @@ c
                     q = q * sterm(k)**ii(k)
                   else if ( ii(k) .lt. 0 ) then
                     q = 0.0
-                  endif
-                enddo
+                  end if
+                end do
                 d2seds2(i,j) = d2seds2(i,j) + ff*q
-              enddo
-            enddo
-          enddo
-        enddo
-      enddo
+              end do
+            end do
+          end do
+        end do
+      end do
 c
       return
       end

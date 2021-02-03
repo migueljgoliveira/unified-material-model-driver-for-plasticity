@@ -21,85 +21,85 @@ c     d2tds2(i,j,k)
 c               : 2nd order diff. of t(i) w.r.t s(j) & s(k)
 c
 c                                            ---- anisotropic parameters
-      do i=1,9
-        a(i)=pryld(1+i)
-      enddo
+      do i = 1,9
+        a(i) = pryld(1+i)
+      end do
 c                                                      ---- coef. matrix
-      c(1,1)=a(1)
-      c(1,2)=a(2)*0.5d0
-      c(1,3)=0.0
-      c(1,4)=a(6)*0.5d0
-      c(2,2)=a(3)
-      c(2,3)=a(4)*0.5d0
-      c(2,4)=a(7)*0.5d0
-      c(3,3)=a(5)
-      c(3,4)=a(8)*0.5d0
-      c(4,4)=a(9)
-      do i=2,4
-        do j=1,i-1
-          c(i,j)=c(j,i)
-        enddo
-      enddo
+      c(1,1) = a(1)
+      c(1,2) = a(2)*0.5d0
+      c(1,3) = 0.0
+      c(1,4) = a(6)*0.5d0
+      c(2,2) = a(3)
+      c(2,3) = a(4)*0.5d0
+      c(2,4) = a(7)*0.5d0
+      c(3,3) = a(5)
+      c(3,4) = a(8)*0.5d0
+      c(4,4) = a(9)
+      do i = 2,4
+        do j = 1,i-1
+          c(i,j) = c(j,i)
+        end do
+      end do
 c                                                    ---- t-vector (s^2)
-      t(1)=s(1)*s(1)
-      t(2)=s(1)*s(2)
-      t(3)=s(2)*s(2)
-      t(4)=s(3)*s(3)
+      t(1) = s(1) * s(1)
+      t(2) = s(1) * s(2)
+      t(3) = s(2) * s(2)
+      t(4) = s(3) * s(3)
 c                                                 ---- equivalent stress
       call jancae_mv  ( v,c,t,4,4 )
       call jancae_vvs ( phi,t,v,4 )
 c
-      if ( phi.le.0.0 ) phi=0.0
-      se=sqrt(sqrt(phi))
+      if ( phi .le. 0.0 ) phi = 0.0
+      se = sqrt(sqrt(phi))
 c                                            ---- 1st order differential
-      if ( nreq.ge.1 ) then
+      if ( nreq .ge. 1 ) then
         call jancae_clear2 ( dtds,4,3 )
-        dtds(1,1)=s(1)*2.0d0
-        dtds(2,1)=s(2)
-        dtds(2,2)=s(1)
-        dtds(3,2)=s(2)*2.0d0
-        dtds(4,3)=s(3)*2.0d0
+        dtds(1,1) = s(1) * 2.0d0
+        dtds(2,1) = s(2)
+        dtds(2,2) = s(1)
+        dtds(3,2) = s(2) * 2.0d0
+        dtds(4,3) = s(3) * 2.0d0
         call jancae_clear1 ( v,4 )
-        do i=1,3
-          do j=1,4
-            do k=1,4
-              v(i)=v(i)+2.0d0*t(j)*c(j,k)*dtds(k,i)
-            enddo
-          enddo
-        enddo
-        q=0.25d0*phi**(-0.75d0)
-        do i=1,3
-          dseds(i)=q*v(i)
-        enddo
-      endif
+        do i = 1,3
+          do j = 1,4
+            do k = 1,4
+              v(i) = v(i) + 2.0d0*t(j)*c(j,k)*dtds(k,i)
+            end do
+          end do
+        end do
+        q = 0.25d0 * phi**(-0.75d0)
+        do i = 1,3
+          dseds(i) = q * v(i)
+        end do
+      end if
 c                                            ---- 2nd order differential
-      if ( nreq.ge.2 ) then
+      if ( nreq .ge. 2 ) then
         call jancae_clear3 ( d2tds2,4,3,3 )
-        d2tds2(1,1,1)=2.0d0
-        d2tds2(2,1,2)=1.0d0
-        d2tds2(2,2,1)=1.0d0
-        d2tds2(3,2,2)=2.0d0
-        d2tds2(4,3,3)=2.0d0
+        d2tds2(1,1,1) = 2.0d0
+        d2tds2(2,1,2) = 1.0d0
+        d2tds2(2,2,1) = 1.0d0
+        d2tds2(3,2,2) = 2.0d0
+        d2tds2(4,3,3) = 2.0d0
         call jancae_clear2 ( d2seds2,3,3 )
-        do i=1,3
-          do j=1,3
-            do m=1,4
-              do n=1,4
-                d2seds2(i,j)=d2seds2(i,j)+
+        do i = 1,3
+          do j = 1,3
+            do m = 1,4
+              do n = 1,4
+                d2seds2(i,j) = d2seds2(i,j)+
      &                       2.0d0*c(m          ,n       )*
      &                        ( dtds(m,i)*dtds(  n  ,j)+
      &                           t(  m)  *d2tds2(n,i,j)  )
-              enddo
-            enddo
-          enddo
-        enddo
-        do i=1,3
-          do j=1,3
-            d2seds2(i,j)=q*(d2seds2(  i,   j)
+              end do
+            end do
+          end do
+        end do
+        do i = 1,3
+          do j = 1,3
+            d2seds2(i,j) = q*(d2seds2(  i,   j)
      &                      -0.75d0*v(i)*v(j)/phi)
-          enddo
-        enddo
-      endif
+          end do
+        end do
+      end if
 c
       return
       end

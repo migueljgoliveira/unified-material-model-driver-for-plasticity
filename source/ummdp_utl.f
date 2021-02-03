@@ -44,7 +44,7 @@ c-----------------------------------------------------------------------
 c
       do i = 1,n
         a(i) = 0.0d0
-      enddo
+      end do
 c
       return
       end
@@ -62,8 +62,8 @@ c
       do i = 1,n
         do j = 1,m
           a(i,j) = 0.0d0
-        enddo
-      enddo
+        end do
+      end do
 c
       return
       end
@@ -82,9 +82,9 @@ c
         do j = 1,m
           do k = 1,l
             a(i,j,k) = 0.0d0
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 c
       return
       end
@@ -102,7 +102,7 @@ c
       call jancae_clear2 ( a,n,n )
       do i = 1,n
         a(i,i) = 1.0d0
-      enddo
+      end do
 c
       return
       end
@@ -139,7 +139,7 @@ c
       write (6,*) text
       do i = 1,n
         write (6,9000) (a(i,j),j=1,m)
-      enddo
+      end do
  9000 format (6e16.8)
 c
       return
@@ -160,8 +160,8 @@ c
       do i = 1,nv
         do j = 1,nu
           v(i) = v(i) + a(i,j)*u(j)
-        enddo
-      enddo
+        end do
+      end do
 c
       return
       end
@@ -182,9 +182,9 @@ c
         do j = 1,na2
           do k = 1,nbc
             a(i,j) = a(i,j) + b(i,k)*c(k,j)
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 c
       return
       end
@@ -203,7 +203,7 @@ c
       s = 0.0
       do i = 1,n
         s = s + u(i)*v(i)
-      enddo
+      end do
 c
       return
       end
@@ -230,28 +230,28 @@ c
       do i = 1,n
         do j = 1,n
           aorg(i,j) = a(i,j)
-        enddo
-      enddo
+        end do
+      end do
 c
       anorm = 0.0
       do i = 1,n
         do j = 1,n
           if ( anorm .lt. abs(a(i,j)) ) anorm = abs(a(i,j))
-        enddo
-      enddo
+        end do
+      end do
       do i = 1,n
         do j = 1,n
           a(i,j) = a(i,j) / anorm
-        enddo
-      enddo
+        end do
+      end do
 c
       if ( n .eq. 2 ) then
         call jancae_minv2 ( b,a,d,eps )
         goto 100
-      elseif ( n .eq. 3 ) then
+      else if ( n .eq. 3 ) then
         call jancae_minv3 ( b,a,d,eps )
         goto 100
-      endif
+      end if
 c
       call jancae_ludcmp ( a,n,indx,d,eps )
 c                                                 ---- check determinant
@@ -259,7 +259,7 @@ c                                                 ---- check determinant
          write (6,*) 'determinant det[a] error',d
          write (6,*) 'stop in minv'
          call jancae_exit(9000)
-      endif
+      end if
 c                                                            ---- B=A^-1
       do j = 1,n
         call jancae_clear1 ( y,n )
@@ -267,8 +267,8 @@ c                                                            ---- B=A^-1
         call jancae_lubksb ( a,n,indx,y,eps )
         do i = 1,n
           b(i,j) = y(i)
-        enddo
-      enddo
+        end do
+      end do
 c
   100 continue
       ani = 1.0d0/anorm
@@ -276,8 +276,8 @@ c
         do j = 1,n
           a(i,j) = aorg(i,j)
           b(i,j) = b(i,j) * ani
-        enddo
-      enddo
+        end do
+      end do
 c                                                             ---- check
       if ( check ) then
         write (6,*) 'check inverse matrix',n
@@ -290,12 +290,12 @@ c                                                             ---- check
           do j = 1,n
             do k = 1,n
               c(i,j) = c(i,j) + b(i,k)*a(k,j)
-            enddo
-          enddo
-        enddo
+            end do
+          end do
+        end do
         text = '[A]^-1*[A]=[I] ?'
         call jancae_print2 ( text,c,n,n )
-      endif
+      end if
 c
       return
       end
@@ -317,46 +317,46 @@ c
         aamax = 0.0d0
         do j = 1,n
           if ( abs(a(i,j)) .gt. aamax ) aamax = abs(a(i,j))
-        enddo
+        end do
         if ( aamax .le. eps ) then
           write (6,*) 'singular matrix in jancae_ludcmp'
           text = 'matrix detail'
           call jancae_print2 ( text,a,n,n )
           call jancae_exit ( 9000 )
-        endif
+        end if
         vtemp(i) = 1.0d0 / aamax
-      enddo
+      end do
 c
       do j = 1,n
         do i = 1,j-1
           sum = a(i,j)
           do k = 1,i-1
             sum = sum - a(i,k)*a(k,j)
-          enddo
+          end do
           a(i,j) = sum
-        enddo
+        end do
         aamax = 0.0d0
         do i = j,n
           sum = a(i,j)
           do k = 1,j-1
             sum = sum - a(i,k)*a(k,j)
-          enddo
+          end do
           a(i,j) = sum
           dum = vtemp(i)*abs(sum)
           if ( dum .ge. aamax ) then
             imax = i
             aamax = dum
-          endif
-        enddo
+          end if
+        end do
         if ( j .ne. imax ) then
           do k = 1,n
             dum = a(imax,k)
             a(imax,k) = a(j,k)
             a(j,k) = dum
-          enddo
+          end do
           d = -d
           vtemp(imax) = vtemp(j)
-        endif
+        end if
         indx(j) = imax
 c       if ( abs(a(i,j)) .le. eps ) a(i,j) = eps     !2010.07.02 c.out
         if ( j .ne. n ) then
@@ -365,13 +365,13 @@ c       if ( abs(a(i,j)) .le. eps ) a(i,j) = eps     !2010.07.02 c.out
           dum = 1.0d0 / ajj                          !2010.07.02 mod
           do i = j+1,n
             a(i,j) = a(i,j) * dum
-          enddo
-        endif
-      enddo
+          end do
+        end if
+      end do
 c                                                 ---- get the det. of A
       do j = 1,n
         d = d*a(j,j)
-      enddo
+      end do
 c
       return
       end
@@ -394,19 +394,19 @@ c
         if ( ii .ne. 0 ) then
           do j = ii,i-1
             sum = sum - a(i,j)*b(j)
-          enddo
+          end do
         else if ( abs(sum) .ge. eps ) then
           ii = i
-        endif
+        end if
         b(i) = sum
-      enddo
+      end do
       do i = n,1,-1
         sum = b(i)
         do j = i+1,n
           sum = sum - a(i,j)*b(j)
-        enddo
+        end do
         b(i) = sum / a(i,i)
-      enddo
+      end do
 c
       return
       end
@@ -428,7 +428,7 @@ c
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv2'
          call jancae_exit(9000)
-      endif
+      end if
 c
       detai = 1.0d0 / deta
       b(1,1) = a(2,2) * detai
@@ -457,7 +457,7 @@ c
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv3'
          call jancae_exit(9000)
-      endif
+      end if
 c
       detai = 1.0d0 / deta
       b(1,1) = ( a(2,2)*a(3,3) - a(2,3)*a(3,2) ) * detai
@@ -483,36 +483,36 @@ c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       common /jancae1/ne,ip,lay
 c
-      nttl=nnrm+nshr
+      nttl = nnrm + nshr
 c
       write (6,*) '----- JANCAE.UMMDp debug info. -----'
       write (6,*) 'increment=',inc
       write (6,*) 'elem,ip,lay=',ne,ip,lay
       write (6,*) 'nttl,nnrm,nshr=',nttl,nnrm,nshr
-      nerr=0
-      if ( nnrm.eq.3 ) then
-        if ( nshr.eq.3 ) then
+      nerr = 0
+      if ( nnrm .eq. 3 ) then
+        if ( nshr .eq. 3 ) then
           write (6,*) '3d solid element'
-        else if ( nshr.eq.1 ) then
+        else if ( nshr .eq. 1 ) then
           write (6,*) 'plane strain or axi-sym solid element'
         else
-          nerr=nerr+1
-        endif
-      else if ( nnrm.eq.2 ) then
-        if ( nshr.eq.1 ) then
+          nerr = nerr + 1
+        end if
+      else if ( nnrm .eq. 2 ) then
+        if ( nshr .eq. 1 ) then
           write (6,*) 'plane stress or thin shell element'
-        else if ( nshr.eq.3 ) then
+        else if ( nshr .eq. 3 ) then
           write (6,*) 'thick shell element'
         else
-          nerr=nerr+1
-        endif
+          nerr = nerr + 1
+        end if
       else
-        nerr=nerr+1
-      endif
-      if ( nerr.ne.0 ) then
+        nerr = nerr + 1
+      end if
+      if ( nerr .ne. 0 ) then
         write (6,*) 'no supported element type',nnrm,nshr
         call jancae_exit (9000)
-      endif
+      end if
 c
       return
       end
@@ -529,27 +529,27 @@ c-----------------------------------------------------------------------
       dimension s(nttl),de(nttl),d(nttl,nttl),stv(nstv)
       character text*32
 c
-      if ( io.eq.0 ) then
-        text='initial stresses'
+      if ( io .eq. 0 ) then
+        text = 'initial stresses'
       else
-        text='updated stresses'
-      endif
+        text = 'updated stresses'
+      end if
       call jancae_print1 ( text,s,nttl )
 c
-      if ( io.eq.0 ) then
-        text='initial internal state var.'
+      if ( io .eq. 0 ) then
+        text = 'initial internal state var.'
       else
-        text='updated internal state var.'
-      endif
+        text = 'updated internal state var.'
+      end if
       call jancae_print1 ( text,stv,nstv )
 c
       if ( io.eq.0 ) then
-        text='driving strain increment'
+        text = 'driving strain increment'
         call jancae_print1 ( text,de,nttl )
       else
-        text='tangent modulus matrix'
+        text = 'tangent modulus matrix'
         call jancae_print2 ( text,d,nttl,nttl )
-      endif
+      end if
 c
       return
       end
@@ -571,107 +571,107 @@ c-----------------------------------------------------------------------
       dimension   a(3,3),es(3),ev(3,3)
       dimension   w(3,3),prc(3,3)
 c
-      msweep=100
-      eps=1.0d-8
+      msweep = 100
+      eps = 1.0d-8
 c
 c                                                       ---- preparation
-      ax=0.0d0
-      er=0.0d0
-      do i=1,3
-        do j=1,3
-          if ( abs(a(i,j)).gt.ax ) ax=abs(a(i,j))
-          er=er+abs(a(i,j)-a(j,i))
-        enddo
-      enddo
-      if ( er/ax.gt.eps ) then
+      ax = 0.0d0
+      er = 0.0d0
+      do i = 1,3
+        do j = 1,3
+          if ( abs(a(i,j)) .gt. ax ) ax = abs(a(i,j))
+          er = er + abs(a(i,j)-a(j,i))
+        end do
+      end do
+      if ( er/ax .gt. eps ) then
         write (6,*) 'a is not symmetric'
         write (6,*) 'stop in jancae_eigen_sym3'
         call jancae_exit (9000)
-      endif
-      do i=1,3
-        do j=1,3
-          w(i,j)=a(i,j)/ax
-        enddo
-      enddo
-c                                    ---- initialise prc to the identity
-      do i=1,3
-        do j=1,3
-          prc(i,j)=0.0d0
+      end if
+      do i = 1,3
+        do j = 1,3
+          w(i,j) = a(i,j) / ax
         end do
-        prc(i,i)=1.0d0
-        es(i)=w(i,i)
-      enddo
+      end do
+c                                    ---- initialise prc to the identity
+      do i = 1,3
+        do j = 1,3
+          prc(i,j) = 0.0d0
+        end do
+        prc(i,i) = 1.0d0
+        es(i) = w(i,i)
+      end do
 c
 c                                                   ---- starts sweeping
 c
-      do is=1,msweep
+      do is = 1,msweep
 c
-        sum=0.0d0
-        do ip=1,2
-          do iq=ip+1,3
-            sum=sum+abs( w(ip,iq) )
-          enddo
-        enddo
+        sum = 0.0d0
+        do ip = 1,2
+          do iq = ip+1,3
+            sum = sum + abs( w(ip,iq) )
+          end do
+        end do
 c       write (6,*) 'ite',is,sum,eps
 c
 c            ---- if the sum of off-diagonal terms is zero evaluates the
 c                                                     esches and returns
 c
-        if ( abs(sum).lt.eps ) then
-          do i=1,3
-            do j=1,3
-              ev(i,j)=prc(j,i)
-            enddo
-            es(i)=es(i)*ax
-          enddo
+        if ( abs(sum) .lt. eps ) then
+          do i = 1,3
+            do j = 1,3
+              ev(i,j) = prc(j,i)
+            end do
+            es(i) = es(i)*ax
+          end do
           return
-        endif
+        end if
 c
 c                             ---- performs the sweep in three rotations
 c                                         ---- one per off diagonal term
 c
-        do ip=1,2
-          do iq=ip+1,3
-            od=100.0d0*abs( w(ip,iq) )
-            if ( abs(od).gt.eps ) then
-              hd=es(iq)-es(ip)
+        do ip = 1,2
+          do iq = ip+1,3
+            od = 100.0d0 * abs( w(ip,iq) )
+            if ( abs(od) .gt. eps ) then
+              hd = es(iq) - es(ip)
 c
 c                                      ---- evaluates the rotation angle
 c
-              theta=0.5d0*hd/w(ip,iq)
-              t=1.0d0/(abs(theta)+sqrt(1.0d0+theta**2))
-              if ( theta.lt.0.0d0 ) t=-t
+              theta = 0.5d0 * hd / w(ip,iq)
+              t = 1.0d0/(abs(theta) + sqrt(1.0d0+theta**2))
+              if ( theta .lt. 0.0d0 ) t = -t
 c
 c                                   ---- re-evaluates the diagonal terms
 c
-              c=1.0d0/sqrt(1.0d0+t**2)
-              s=t*c
-              tau=s/(1.0d0+c)
-              h=t*w(ip,iq)
-              es(ip)=es(ip)-h
-              es(iq)=es(iq)+h
+              c = 1.0d0 / sqrt(1.0d0+t**2)
+              s = t * c
+              tau = s / (1.0d0+c)
+              h = t * w(ip,iq)
+              es(ip) = es(ip) - h
+              es(iq) = es(iq) + h
 c
 c                     ---- re-evaluates the remaining off-diagonal terms
 c
-              ir=6-ip-iq
-              g=w( min(ir,ip),max(ir,ip) )
-              h=w( min(ir,iq),max(ir,iq) )
-              w( min(ir,ip),max(ir,ip) )=g-s*(h+g*tau)
-              w( min(ir,iq),max(ir,iq) )=h+s*(g-h*tau)
+              ir = 6 - ip - iq
+              g = w( min(ir,ip),max(ir,ip) )
+              h = w( min(ir,iq),max(ir,iq) )
+              w( min(ir,ip),max(ir,ip) ) = g - s*(h+g*tau)
+              w( min(ir,iq),max(ir,iq) ) = h + s*(g-h*tau)
 c
 c                                          ---- rotates the eigenvectors
 c
-              do ir=1,3
-                g=prc(ir,ip)
-                h=prc(ir,iq)
-                prc(ir,ip)=g-s*(h+g*tau)
-                prc(ir,iq)=h+s*(g-h*tau)
-              enddo
-            endif
-            w(ip,iq)=0.0d0
-          enddo
-        enddo
-      enddo
+              do ir = 1,3
+                g = prc(ir,ip)
+                h = prc(ir,iq)
+                prc(ir,ip) = g - s*(h+g*tau)
+                prc(ir,iq) = h + s*(g-h*tau)
+              end do
+            end if
+            w(ip,iq) = 0.0d0
+          end do
+        end do
+      end do
 c
 c                              ---- if convergence is not achieved stops
 c
@@ -694,14 +694,14 @@ c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       character   flname*16
 c
-      nio=616
-      open  ( nio,file=flname,status='old',err=10 )
+      nio = 616
+      open ( nio,file=flname,status='old',err=10 )
 c
       close ( nio,            status='keep' )
-      jancae_file_exist=.true.
+      jancae_file_exist = .true.
       return
 c
-   10 jancae_file_exist=.false.
+   10 jancae_file_exist = .false.
       return
 c
       end

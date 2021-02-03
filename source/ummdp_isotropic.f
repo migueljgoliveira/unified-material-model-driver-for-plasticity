@@ -28,85 +28,91 @@ c
           dsydp = 0.0
           if ( nreq .ge. 2 ) then
             d2sydp2 = 0.0
-          endif
-        endif
+          end if
+        end if
 c
       case ( 1 )                                                ! Linear
-        sy0 = prihd(1+1)
+        sy0  = prihd(1+1)
         hard = prihd(1+2)
+c
         sy = sy0 + hard*p
         if ( nreq .ge. 1 ) then
           dsydp = hard
           if ( nreq .ge. 2 ) then
             d2sydp2 = 0.0
-          endif
-        endif
+          end if
+        end if
 c
       case ( 2 )                                                 ! Swift
-        c = prihd(1+1)
+        c  = prihd(1+1)
         e0 = prihd(1+2)
         en = prihd(1+3)
+c
         sy = c*(e0+p)**en
         if ( nreq .ge. 1 ) then
           dsydp = en*c*(e0+p)**(en-1.0d0)
           if ( nreq .ge. 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*(e0+p)**(en-2.0d0)
-          endif
-        endif
+          end if
+        end if
 c
       case ( 3 )                                               ! Ludwick
         sy0 = prihd(1+1)
         c   = prihd(1+2)
         en  = prihd(1+3)
+c
         sy = sy0+c*p**en
         if ( nreq .ge. 1 ) then
           dsydp = en*c*p**(en-1.0d0)
           if ( nreq .ge. 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*p**(en-2.0d0)
-          endif
-        endif
+          end if
+        end if
 c
       case ( 4 )                                                  ! Voce
         sy0 = prihd(1+1)
-        q = prihd(1+2)
-        b = prihd(1+3)
+        q   = prihd(1+2)
+        b   = prihd(1+3)
+c
         sy = sy0+q*(1.0d0-exp(-b*p))
         if ( nreq .ge. 1 ) then
           dsydp = q*b*exp(-b*p)
           if ( nreq .ge. 2 ) then
             d2sydp2 = -q*b*b*exp(-b*p)
-          endif
-        endif
+          end if
+        end if
 c
       case ( 5 )                                         ! Voce + Linear
         sy0 = prihd(1+1)
-        q = prihd(1+2)
-        b = prihd(1+3)
-        c = prihd(1+4)
+        q   = prihd(1+2)
+        b   = prihd(1+3)
+        c   = prihd(1+4)
+c
         sy = sy0+q*(1.0d0-exp(-b*p))+c*p
         if ( nreq .ge. 1 ) then
           dsydp = q*b*exp(-b*p)+c
           if ( nreq .ge. 2 ) then
             d2sydp2 = -q*b*b*exp(-b*p)
-          endif
-        endif
+          end if
+        end if
 c
       case ( 6 )                                          ! Voce + Swift
-        a = prihd(1+1)
+        a   = prihd(1+1)
         sy0 = prihd(1+2)
-        q = prihd(1+3)
-        b = prihd(1+4)
-        c = prihd(1+5)
-        e0 = prihd(1+6)
-        en = prihd(1+7)
+        q   = prihd(1+3)
+        b   = prihd(1+4)
+        c   = prihd(1+5)
+        e0  = prihd(1+6)
+        en  = prihd(1+7)
+c
         sy = a*(sy0+q*(1.0d0-exp(-b*p))) + (1.0d0-a)*(c*(e0+p)**en)
         if ( nreq .ge. 1 ) then
-          dsydp = a*(q*b*exp(-b*p)) + (1.0d0-a)*(en*c*(e0+p)**(en-1.0d0))
+          dsydp = a*(q*b*exp(-b*p)) +(1.0d0-a)*(en*c*(e0+p)**(en-1.0d0))
           if ( nreq .ge. 2 ) then
             d2sydp2 = a*(-q*b*b*exp(-b*p)) + 
      &                (1.0d0-a)*(en*c*(en-1.0d0)*(e0+p)**(en-2.0d0))
-          endif
-        endif
+          end if
+        end if
 c
       case default
         write (6,*) 'hardening type error',ntihd
@@ -129,7 +135,7 @@ c-----------------------------------------------------------------------
 c
       ntihd = nint(prihd(1))
       write (6,*)
-      write (6,*) '*** Isotropic Hardening Law',ntihd
+      write (6,*) '*** Isotropic Hardening',ntihd
       select case ( ntihd )
       case ( 0 )
         write (6,*) 'Perfect Plasticity'

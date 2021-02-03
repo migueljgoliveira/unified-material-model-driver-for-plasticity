@@ -1,11 +1,11 @@
-c---------------------------------------------------------------(hill48)
-c     Hill(1948) yield function and its dfferentials
+c-------------------------------------------------------------(hill1948)
+c     Hill 1948 yield function and its dfferentials
 c     (  Proc. Roy. Soc. A193(1948) p281-297 )
 c
 c     ( flow curve must be defined in uniaxial sx vs ex )
 c
-      subroutine jancae_hill_1948 ( s,se,dseds,d2seds2,nreq,
-     &                              pryld,ndyld )
+      subroutine jancae_hill1948 ( s,se,dseds,d2seds2,nreq,
+     &                             pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       dimension s(6),dseds(6),d2seds2(6,6),pryld(ndyld)
@@ -40,8 +40,8 @@ c                                                      ---- coef. matrix
       do i = 1,6
         do j = 1,6
           c(i,j) = c(i,j) / (pg+ph)
-        enddo
-      enddo
+        end do
+      end do
 c
       call jancae_mv  ( v,c,s,6,6 )
       call jancae_vvs ( phi,s,v,6 )
@@ -52,16 +52,16 @@ c                                            ---- 1st order differential
       if ( nreq .ge. 1 ) then
         do i = 1,6
           dseds(i) = v(i) / se
-        enddo
-      endif
+        end do
+      end if
 c                                            ---- 2nd order differential
       if ( nreq .ge. 2 ) then
         do i = 1,6
           do j = 1,6
             d2seds2(i,j) = (-v(i)*v(j)/phi+c(i,j)) / se
-          enddo
-        enddo
-      endif
+          end do
+        end do
+      end if
 c
       return
       end

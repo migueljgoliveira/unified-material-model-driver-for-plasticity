@@ -4,19 +4,21 @@ c***********************************************************************
 c
 c      0 : von Mises (1913)
 c
-c      1 : Hill quadratic (1948)
-c      2 : Barlat Yld2004-18p (2005)
-c      3 : Cazacu (2006)
-c      4 : Karafillis-Boyce (1993)
-c      5 : Hu (2005)
-c      6 : Yohsida (2011)
+c    3D
+c      1 : Hill 1948
+c      2 : Yld2004-18p
+c      3 : CPB 2006
+c      4 : Karafillis-Boyce 1993
+c      5 : Hu 2005
+c      6 : Yoshida (2011)
 c
+c    2D
 c     -1 : Gotoh biquadratic (1978)
-c     -2 : Barlat Yld2000-2d (2000)
+c     -2 : Yld2000-2d
 c     -3 : Vegter
-c     -4 : Banabic BBC2005
-c     -5 : Barlat YLD89
-c     -6 : Banabic BBC2008
+c     -4 : BBC 2005
+c     -5 : YLD89
+c     -6 : BBC 2008
 c     -7 : Hill 1990
 c
 c-----------------------------------------------------------------------
@@ -39,71 +41,71 @@ c
           write (6,*) 'ntyld<0 for plane stress'
           write (6,*) 'nnrm,nshr,ntyld:',nnrm,nshr,ntyld
           call jancae_exit (9000)
-        endif
+        end if
         goto 100
-      endif
+      end if
 c
       ss = 0.0
       do i = 1,nttl
         ss = ss + cs(i)**2
-      enddo
+      end do
       if ( ( ss .le. 0.0 ) .and. ( nreq .eq. 0 ) ) then
         se = 0.0
         return
-      endif
+      end if
 c
 c                                                ---- 3D yield functions
 c
 c                                        ---- set index to s(i) to cs(i)
       do i = 1,6
         indx(i) = 0
-      enddo
+      end do
       if ( nnrm .eq. 3 ) then
         do i = 1,nttl
           indx(i) = i
-        enddo
+        end do
       else if ( nnrm .eq. 2 ) then
         indx(1) = 1
         indx(2) = 2
         indx(3) = 0
         do i = 1,nshr
           indx(3+i) = 2 + i
-        enddo
-      endif
+        end do
+      end if
 c                                                          ---- set s(i)
       call jancae_clear1 ( s,6 )
       do i = 1,6
         if ( indx(i) .ne. 0 ) then
           s(i) = cs(indx(i))
-        endif
-      enddo
+        end if
+      end do
 c
       select case ( ntyld )
       case ( 0 )                                             ! von Mises
         call jancae_mises ( s,se,dseds,d2seds2,nreq )
 c
       case ( 1 )                                             ! Hill 1948
-        call jancae_hill_1948 ( s,se,dseds,d2seds2,nreq,
+        call jancae_hill1948 ( s,se,dseds,d2seds2,nreq,
      &                          pryld,ndyld )
 c
       case ( 2 )                                           ! Yld2004-18p
         call jancae_yld2004_18p ( s,se,dseds,d2seds2,nreq,
      &                            pryld,ndyld )
 c
-      case ( 3 )                                         ! Cazacu (2006)
-        call jancae_cazacu2006 ( s,se,dseds,d2seds2,nreq,
-     &                           pryld,ndyld )
+      case ( 3 )                                              ! CPB 2006
+        call jancae_cpb2006 ( s,se,dseds,d2seds2,nreq,
+     &                         pryld,ndyld )
 c
-      case ( 4 )                                      ! Karafillis-Boyce
+      case ( 4 )                               ! Karafillis-Boyce (1993)
         call jancae_KarafillisBoyce ( s,se,dseds,d2seds2,nreq,
      &                                pryld,ndyld )
 c
       case ( 5 )                                             ! Hu (2005)
-        call jancae_hu_2005 ( s,se,dseds,d2seds2,nreq,
+        call jancae_hu2005 ( s,se,dseds,d2seds2,nreq,
      &                       pryld,ndyld )
 c
-      case ( 6 )                                      ! F.Yoshida (2011)
-        call jancae_yoshida_2011 ( s,se,dseds,d2seds2,nreq,
+      case ( 6 )                                        ! Yoshida (2011)
+        call jancae_yoshida2011 ( s,se,dseds,d2seds2,nreq,
      &                             pryld,ndyld )
 c
       case default
@@ -116,8 +118,8 @@ c                                                        ---- set dse/ds
       if ( nreq .ge. 1 ) then
         do i = 1,6
           if ( indx(i) .ne. 0 ) cdseds(indx(i)) = dseds(i)
-        enddo
-      endif
+        end do
+      end if
 c                                                      ---- set d2se/ds2
       if ( nreq .ge. 2 ) then
         do i = 1,6
@@ -125,11 +127,11 @@ c                                                      ---- set d2se/ds2
             do j = 1,6
               if ( indx(j) .ne. 0 ) then
                 cd2seds2(indx(i),indx(j)) = d2seds2(i,j)
-              endif
-            enddo
-          endif
-        enddo
-      endif
+              end if
+            end do
+          end if
+        end do
+      end if
 c
       return
 c
@@ -150,7 +152,7 @@ c
         call jancae_vegter ( cs,se,cdseds,cd2seds2,nreq,
      &                       pryld,ndyld )
 c
-      case ( -4 )                                              ! BBC2005
+      case ( -4 )                                             ! BBC 2005
         call jancae_bbc2005 ( cs,se,cdseds,cd2seds2,nreq,
      &                        pryld,ndyld )
 c
@@ -158,13 +160,13 @@ c
         call jancae_yld89 ( cs,se,cdseds,cd2seds2,nreq,
      &                      pryld,ndyld )
 c
-      case ( -6 )                                              ! BBC2008
+      case ( -6 )                                             ! BBC 2008
         call jancae_bbc2008 ( cs,se,cdseds,cd2seds2,nreq,
      &                        pryld,ndyld )
 c
       case ( -7 )                                            ! Hill 1990
-        call jancae_hill90  ( cs,se,cdseds,cd2seds2,nreq,
-     &                        pryld,ndyld )
+        call jancae_hill1990 ( cs,se,cdseds,cd2seds2,nreq,
+     &                         pryld,ndyld )
 c
       case default
         write (6,*) 'error in jancae_yfunc'
@@ -208,29 +210,29 @@ c
         do i = 1,18
            n0 = n0 + 1
            write (6,*) 'a(',i,')=',pryld(n0)
-        enddo
+        end do
         write (6,*) 'M=',pryld(1+18+1)
 c
-      case ( 3 )                                         ! Cazacu (2006)
-        write (6,*) 'Cazacu 2006'
+      case ( 3 )                                              ! CPB 2006
+        write (6,*) 'CPB 2006'
         n0 = 1
         do i = 1,3
           do j = 1,3
             n0 = n0 + 1
             write (6,*) 'c(',i,',',j,')=',pryld(n0)
-          enddo
-        enddo
+          end do
+        end do
         do i = 4,6
           n0 = n0 + 1
           write (6,*) 'c(',i,',',i,')=',pryld(n0)
-        enddo
+        end do
         n0 = n0 + 1
         write (6,*) 'a =',pryld(n0)
         n0 = n0 + 1
         write (6,*) 'ck=',pryld(n0)
 c
-      case ( 4 )                                      ! Karafillis-Boyce
-        write (6,*) 'Karafillis-Boyce'
+      case ( 4 )                                 ! Karafillis-Boyce 1993
+        write (6,*) 'Karafillis-Boyce 1993'
         n0 = 1
         do i = 1,6
           do j = i,6
@@ -243,19 +245,19 @@ c
         n0 = n0 + 1
         write (6,*) 'c =',pryld(n0)
 c
-      case ( 5 )                                             ! Hu (2005)
-        write (6,*) 'Weilong Hu 4th order (2005)'
+      case ( 5 )                                               ! Hu 2005
+        write (6,*) 'Hu 2005'
         n0 = 1
         do i = 1,5
           n0 = n0 + 1
           write (6,*) 'X(',i,')=',pryld(n0)
-        enddo
+        end do
         n0 = n0 + 1
         write (6,*) 'X(',7,')=',pryld(n0)
         do i = 1,3
           n0 = n0 + 1
           write (6,*) 'C(',i,')=',pryld(n0)
-        enddo
+        end do
 c
       case ( 6 )                                      ! F.Yoshida (2011)
         write (6,*) 'F.Yoshida 6th order (2011)'
@@ -263,19 +265,19 @@ c
         do i = 1,16
           n0 = n0+1
           write (6,*) 'c(',i,')=',pryld(n0)
-        enddo
+        end do
 c
       case ( -1 )                             ! Gotoh biquadratic (1978)
         write (6,*) 'Gotoh biquadratic'
         do i = 1,9
           write (6,*) 'A(',i,')=',pryld(i+1)
-        enddo
+        end do
 c
       case ( -2 )                                           ! Yld2000-2d
         write (6,*) 'Yld2000-2d'
         do i = 1,8
           write (6,*) 'a(',i,')=',pryld(i+1)
-        enddo
+        end do
         write (6,*) 'M=',pryld(9+1)
 c
       case ( -3 )                                               ! Vegter
@@ -289,19 +291,19 @@ c
           write (6,*) 'phi_sh(',i,')=',pryld(4+i*4+2)
           write (6,*) 'phi_ps(',i,')=',pryld(4+i*4+3)
           write (6,*) 'omg(   ',i,')=',pryld(4+i*4+4)
-        enddo
+        end do
 c       do i = 1,7
 c         write (6,*) 'phi_un(',i-1,')=',pryld(1+i   )
 c         write (6,*) 'phi_sh(',i-1,')=',pryld(1+i+ 7)
 c         write (6,*) 'phi_ps(',i-1,')=',pryld(1+i+14)
 c         write (6,*) 'omg   (',i-1,')=',pryld(1+i+23)
-c       enddo
+c       end do
 c       write (6,*)   'f_bi0=',pryld(1+22)
 c       write (6,*)   'r_bi0=',pryld(1+23)
 c       write (6,*)   'nf   =',nint(pryld(1+31))
 c
-      case ( -4 )                                              ! BBC2005
-        write (6,*) 'BBC2005'
+      case ( -4 )                                             ! BBC 2005
+        write (6,*) 'BBC 2005'
         write (6,*) 'k of order 2k',pryld(1+1)
         write (6,*) 'a=',pryld(1+2)
         write (6,*) 'b=',pryld(1+3)
@@ -319,8 +321,8 @@ c
         write (6,*) 'h      =',pryld(1+3)
         write (6,*) 'p      =',pryld(1+4)
 c
-      case ( -6 )                                              ! BBC2008
-        write (6,*) 'BBC2008'
+      case ( -6 )                                             ! BBC 2008
+        write (6,*) 'BBC 2008'
         write (6,*) 's      =',nint(pryld(1+1))
         write (6,*) 'k      =',nint(pryld(1+2))
         do i = 1,nint(pryld(1+1))
@@ -334,10 +336,10 @@ c
           write (6,*) 'n_1=',pryld(n+6)
           write (6,*) 'n_2=',pryld(n+7)
           write (6,*) 'n_3=',pryld(n+8)
-        enddo
+        end do
 c
       case ( -7 )                                            ! Hill 1990
-        write (6,*) 'Hill90'
+        write (6,*) 'Hill 1990'
         write (6,*) 'a   =',pryld(1+1)
         write (6,*) 'b   =',pryld(1+2)
         write (6,*) 'tau =',pryld(1+3)

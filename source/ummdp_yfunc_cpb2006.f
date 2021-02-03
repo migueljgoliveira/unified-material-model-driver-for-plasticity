@@ -1,12 +1,12 @@
-c-----------------------------------------------------------(cazacu2006)
+c--------------------------------------------------------------(cpb2006)
 c     Cazacu 2006 yield function and its dfferentials
 c     ( IJP v.22(2006) p1171-1194. )
 c
 c     !!! CAUTION !!!
 c     Plane stress condition is NOT implemented in this code.
 c
-      subroutine jancae_cazacu2006 ( s,se,dseds,d2seds2,nreq,
-     &                               pryld,ndyld )
+      subroutine jancae_cpb2006 ( s,se,dseds,d2seds2,nreq,
+     &                             pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       dimension s(6),dseds(6),d2seds2(6,6),pryld(ndyld)
@@ -192,7 +192,7 @@ c
      &                3.0d0*DFDpsigma(2)
             DFDH(2) = DpsigmaDH(1,2) * (DFDpsigma(1)-DFDpsigma(2))
             DFDH(3) = DpsigmaDH(1,3) * (DFDpsigma(1)-DFDpsigma(2))
-          elseif ( abs(psigma(2)-psigma(1)) / se <= eps ) then
+          else if ( abs(psigma(2)-psigma(1)) / se <= eps ) then
 c
 c                                          ---- Case2 S2=S1 ( theta=pi )
             denom = psigma(3)**2.0d0 - 2.0d0*H1*psigma(3) - H2
@@ -204,8 +204,8 @@ c
      &                3.0d0*DFDpsigma(2)
             DFDH(2) = DpsigmaDH(3,2) * (DFDpsigma(3)-DFDpsigma(2))
             DFDH(3) = DpsigmaDH(3,3) * (DFDpsigma(3)-DFDpsigma(2))
-          endif
-        endif
+          end if
+        end if
 c
 c                                     ---- D(H)/D(sigma) -> 3 x 6 Matrix
          call jancae_clear2 ( DHDsigma,3,6 )
@@ -402,9 +402,9 @@ c
             do j = 1,6
               if ( i == j ) then
                 s0(i) = s(i) - del
-                sea = cazacu2006_seND(s0,ct,phi,ck,a,ai)
+                sea = cpb2006_seND(s0,ct,phi,ck,a,ai)
                 s0(i) = s(i) + del
-                seb = cazacu2006_seND(s0,ct,phi,ck,a,ai)
+                seb = cpb2006_seND(s0,ct,phi,ck,a,ai)
 c
                 s0(i) = s(i)
                 abc1 = (se-sea) / del
@@ -413,19 +413,19 @@ c
               else
                 s0(i) = s(i) - del
                 s0(j) = s(j) - del
-                seaa = cazacu2006_seND(s0,ct,phi,ck,a,ai)
+                seaa = cpb2006_seND(s0,ct,phi,ck,a,ai)
 c
                 s0(i) = s(i) + del
                 s0(j) = s(j) - del
-                seba = cazacu2006_seND(s0,ct,phi,ck,a,ai)
+                seba = cpb2006_seND(s0,ct,phi,ck,a,ai)
 c
                 s0(i) = s(i) - del
                 s0(j) = s(j) + del
-                seab = cazacu2006_seND(s0,ct,phi,ck,a,ai)
+                seab = cpb2006_seND(s0,ct,phi,ck,a,ai)
 c
                 s0(i) = s(i) + del
                 s0(j) = s(j) + del
-                sebb = cazacu2006_seND(s0,ct,phi,ck,a,ai)
+                sebb = cpb2006_seND(s0,ct,phi,ck,a,ai)
 c
                 s0(i) = s(i)
                 s0(j) = s(j)
@@ -443,8 +443,8 @@ c
 c
 c
 c
-c-----------------------------------------------------------(cazacu2006)
-      double precision function cazacu2006_seND( s,ct,phi,ck,a,ai )
+c--------------------------------------------------------------(cpb2006)
+      double precision function cpb2006_seND ( s,ct,phi,ck,a,ai )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       dimension s(6),sigma(6),psigma(3)

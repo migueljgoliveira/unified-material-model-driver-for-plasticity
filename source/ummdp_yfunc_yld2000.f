@@ -35,7 +35,7 @@ c
 c                                            ---- anisotropic parameters
       do i = 1,8
         a(i) = pryld(i+1)
-      enddo
+      end do
       em = pryld(9+1)
 c                                         ---- set linear transf. matrix
       call jancae_yld2000_2d_am ( a,am )
@@ -56,11 +56,11 @@ c                                            ---- 1st order differential
               do i = 1,3
                 dseds(i) = dseds(i) + dsedphi(nd)*dphidx(nd,m)*
      &                                dxdy(nd,m,k)*dyds(nd,k,i)
-              enddo
-            enddo
-          enddo
-        enddo
-      endif
+              end do
+            end do
+          end do
+        end do
+      end if
 c                                            ---- 2nd order differential
       if ( nreq .ge. 2 ) then
         call jancae_yld2000_2d_ds2 ( phi,x,y,em,
@@ -80,12 +80,12 @@ c                                            ---- 2nd order differential
      &                          dxdy(nd1,k,m)*dyds(nd1,m,i)*
      &                          dphidx(nd2,l)*
      &                          dxdy(nd2,l,n)*dyds(nd2,n,j)
-              enddo
-              enddo
-            enddo
-            enddo
-          enddo
-          enddo
+              end do
+              end do
+            end do
+            end do
+          end do
+          end do
           do nd = 1,2
             do k = 1,2
             do l = 1,2
@@ -95,11 +95,11 @@ c                                            ---- 2nd order differential
      &                          d2phidx2(nd,k,l)*
      &                          dxdy(nd,k,m)*dyds(nd,m,i)*
      &                          dxdy(nd,l,n)*dyds(nd,n,j)
-              enddo
-              enddo
-            enddo
-            enddo
-          enddo
+              end do
+              end do
+            end do
+            end do
+          end do
           do nd = 1,2
             do k = 1,2
               do m = 1,3
@@ -107,13 +107,13 @@ c                                            ---- 2nd order differential
                 d2seds2(i,j) = d2seds2(i,j) + dsedphi(nd)*
      &                          dphidx(nd,k)*d2xdy2(nd,k,m,n)*
      &                          dyds(nd,m,i)*dyds(nd,n,j)
-              enddo
-              enddo
-            enddo
-          enddo
-        enddo
-        enddo
-      endif
+              end do
+              end do
+            end do
+          end do
+        end do
+        end do
+      end if
 c
       return
       end
@@ -153,8 +153,8 @@ c
         do j = 1,3
           am(1,i,j) = am(1,i,j) / 3.0d0
           am(2,i,j) = am(2,i,j) / 9.0d0
-        enddo
-      enddo
+        end do
+      end do
 c
       return
       end
@@ -178,17 +178,17 @@ c                                                       ---- {y}=[am]{s}
         do i = 1,3
           do j = 1,3
             y(nd,i) = y(nd,i) + am(nd,i,j)*s(j)
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 c                                        ---- {x}=principle value of {y}
       do nd = 1,2
         a = (y(nd,1)-y(nd,2))**2.d0 + 4.0d0*y(nd,3)**2.d0
         a = sqrt(a)
         do i = 1,2
           x(nd,i) = 0.5d0 * (y(nd,1)+y(nd,2)+p(i)*a)
-        enddo
-      enddo
+        end do
+      end do
 c                                                 ---- phi(1) and phi(2)
       nd = 1
       phi(nd) = abs(x(nd,1)-x(nd,2))**em
@@ -226,7 +226,7 @@ c                                                          ---- dse/dphi
       if ( q .le. 0.0 ) q = 0.0
       do nd = 1,2
         dsedphi(nd) = (0.5d0**emi) * emi * q**(emi-1.0d0)
-      enddo
+      end do
 c                                                           ---- dphi/dx
       nd = 1
       a0 = x(nd,1) - x(nd,2)
@@ -258,23 +258,23 @@ c
             dxdy(nd,j,1) = 0.5d0 * (1.0d0+p(j)*(y(nd,1)-y(nd,2))/a)
             dxdy(nd,j,2) = 0.5d0 * (1.0d0-p(j)*(y(nd,1)-y(nd,2))/a)
             dxdy(nd,j,3) = 2.0d0 *        p(j)* y(nd,3)         /a
-          enddo
+          end do
         else
           do j = 1,2
             dxdy(nd,j,1) = 0.5d0 * (1.0d0+0.0)
             dxdy(nd,j,2) = 0.5d0 * (1.0d0-0.0)
             dxdy(nd,j,3) = 2.0d0 *        0.0
-          enddo
-        endif
-      enddo
+          end do
+        end if
+      end do
 c
       do nd = 1,2
         do i = 1,3
           do j = 1,3
             dyds(nd,i,j) = am(nd,i,j)
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 c
       return
       end
@@ -306,8 +306,8 @@ c                                                        ---- d2se/dphi2
         do nd2 = 1,2
           a = 0.5d0**emi * emi * (emi-1.0d0) * q**(emi-2.0d0)
           d2sedphi2(nd1,nd2) = a
-        enddo
-      enddo
+        end do
+      end do
 c                                                         ---- d2phi/dx2
       nd = 1
       do i = 1,2
@@ -315,8 +315,8 @@ c                                                         ---- d2phi/dx2
           a = (em-1.0d0) * em * (abs(x(nd,1)-x(nd,2)))**(em-2.0d0)
           if ( i .ne. j ) a = -a
           d2phidx2(nd,i,j) = a
-        enddo
-      enddo
+        end do
+      end do
       nd = 2
       do i = 1,2
         do j = 1,2
@@ -329,15 +329,15 @@ c                                                         ---- d2phi/dx2
               a = (em-1.0d0)*em*
      &            (      (abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
      &            4.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
-            endif
+            end if
           else
             a = (em-1.0d0) * em * 
      &          (2.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
      &           2.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0) )
-          endif
+          end if
           d2phidx2(nd,i,j) = a
-        enddo
-      enddo
+        end do
+      end do
 c                                                           ---- d2x/dy2
       do nd = 1,2
         a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) +
@@ -358,21 +358,21 @@ c                                                           ---- d2x/dy2
                   q = y(nd,3) * (y(nd,1)-y(nd,2))
                 else
                   q = -y(nd,3) * (y(nd,1)-y(nd,2))
-                endif
+                end if
                 d2xdy2(nd,m,i,j) = 2.0d0 * a * p(m) * q
-              enddo
-            enddo
-          enddo
+              end do
+            end do
+          end do
         else
           do m = 1,2
             do i = 1,3
               do j = 1,3
                 d2xdy2(nd,m,i,j) = 0.0
-              enddo
-            enddo
-          enddo
-        endif
-      enddo
+              end do
+            end do
+          end do
+        end if
+      end do
 c
       return
       end
