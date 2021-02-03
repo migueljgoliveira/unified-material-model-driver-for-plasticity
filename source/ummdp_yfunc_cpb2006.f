@@ -482,7 +482,7 @@ c                                           ---- denominator coefficient
      &    (abs(phi(2))-ck*phi(2))**a +
      &    (abs(phi(3))-ck*phi(3))**a
 c
-      cazacu2006_seND = (F/D) ** ai
+      cpb2006_seND = (F/D) ** ai
 c
       return
       end

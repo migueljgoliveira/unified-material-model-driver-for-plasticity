@@ -4,7 +4,7 @@ c
 c     "An orthotropic yield criterion in a 3-D general stress state"
 c      IJP,v.21(2005), pp.1771-1796. )
 c
-      subroutine jancae_hu_2005 ( s,se,dseds,d2seds2,nreq,
+      subroutine jancae_hu2005 ( s,se,dseds,d2seds2,nreq,
      &                            pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)

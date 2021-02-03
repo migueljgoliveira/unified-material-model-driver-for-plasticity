@@ -6,7 +6,7 @@ c
 c     "A user-friendly 3D yield function to describe anisotropy of 
 c       steel sheets ",IJP,v.45(2013), pp.1119-139. )
 c
-      subroutine jancae_yoshida_2011 ( s,se,dseds,d2seds2,nreq,
+      subroutine jancae_yoshida2011 ( s,se,dseds,d2seds2,nreq,
      &                                 pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)

@@ -1159,18 +1159,18 @@ c
         case ( 0 ) ; nd = 0                   ! von Mises
         case ( 1 ) ; nd =  6                  ! Hill 1948
         case ( 2 ) ; nd = 19                  ! Yld2004-18p
-        case ( 3 ) ; nd = 14                  ! Cazacu (2006)
+        case ( 3 ) ; nd = 14                  ! CPB 2005
         case ( 4 ) ; nd = 8                   ! Karafillis-Boyce
-        case ( 5 ) ; nd = 10                  ! Hu (2005)
-        case ( 6 ) ; nd = 16                  ! Yoshida (2011)
+        case ( 5 ) ; nd = 10                  ! Hu 2005
+        case ( 6 ) ; nd = 16                  ! Yoshida 2011
 c
         case ( -1 ) ; nd = 9                  ! Gotoh biquadratic (1978)
         case ( -2 ) ; nd = 9                  ! Yld2000-2d
         case ( -3 )                           ! Vegter
           nd = 3 + 4*nint(prop(n+2))
-        case ( -4 ) ; nd = 9                  ! BBC2005
+        case ( -4 ) ; nd = 9                  ! BBC 2005
         case ( -5 ) ; nd = 4                  ! Yld89
-        case ( -6 )                           ! BBC2008
+        case ( -6 )                           ! BBC 2008
           nd = 2 + 8*nint(prop(n+2))
         case ( -7 ) ; nd = 0.5d0              ! Hill 1990
         case default
@@ -1201,11 +1201,11 @@ c
         case ( 0 ) ; nd = 0 ; npbs = 0    ! No Kinematic Hardening
         case ( 1 ) ; nd = 1 ; npbs = 1    ! Prager
         case ( 2 ) ; nd = 1 ; npbs = 1    ! Ziegler
-        case ( 3 ) ; nd = 2 ; npbs = 1    ! Armstrong & Frederick (1966)
-        case ( 4 )                        ! Chaboche (1979)
+        case ( 3 ) ; nd = 2 ; npbs = 1    ! Armstrong & Frederick
+        case ( 4 )                        ! Chaboche
           nd  = propdim - (n+1)
           npbs = n / 2
-        case ( 5 )                        ! Chaboche (1979) - Ziegler
+        case ( 5 )                        ! Chaboche - Ziegler
           nd = propdim - (n+1)
           npbs = nd / 2
         case ( 6 ) ; nd = 5 ; npbs = 2    ! Yoshida-Uemori
