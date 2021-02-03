@@ -136,45 +136,45 @@ To compile the file ummdp.obj/o use
   
 ### Elastic Properties
 
-  * 0 - Young's Modulus and Poisson's Ratio
-  * 1 -Bulk Modulus and Modulus of Rigidity
+  * Young's Modulus and Poisson's Ratio
+  * Bulk Modulus and Modulus of Rigidity
   
 ### Yield Criterion
 
-  *  0 - von Mises (1913) :heavy_check_mark:
-  *  1 - Hill48 (1948) :heavy_check_mark:
-  *  2 - Yld2004-18p (2005) :heavy_check_mark:
-  *  3 - CPB (2006) :heavy_check_mark:
-  *  4 - Karafillis-Boyce (1993) :grey_question:
-  *  5 - Hu (2005) :grey_question:
-  *  6 - Yoshida 6th Polynomial (2011) :grey_question:
-  * -1 - Gotoh Biquadratic (1978) :grey_question:
-  * -2 - Yld2000-2d (2003) :heavy_check_mark:
-  * -3 - Vegter (2006) :grey_question:
-  * -4 - BBC2005 (2005) :grey_question:
-  * -5 - Yld89 (1989) :grey_question:
-  * -6 - BBC2008 (2008) :grey_question:
-  * -7 - Hill 1990 (1990) :grey_question:
+  * von Mises (1913) :heavy_check_mark:
+  * Hill48 (1948) :heavy_check_mark:
+  * Yld2004-18p (2005) :heavy_check_mark:
+  * CPB (2006) :heavy_check_mark:
+  * Karafillis-Boyce (1993) :grey_question:
+  * Hu (2005) :grey_question:
+  * Yoshida 6th Polynomial (2011) :grey_question:
+  * Gotoh Biquadratic (1978) :grey_question:
+  * Yld2000-2d (2003) :heavy_check_mark:
+  * Vegter (2006) :grey_question:
+  * BBC2005 (2005) :grey_question:
+  * Yld89 (1989) :grey_question:
+  * BBC2008 (2008) :grey_question:
+  * Hill 1990 (1990) :grey_question:
   
 ### Isotropic Hardening
 
-  * 0 - Perfectly Plastic :heavy_check_mark:
-  * 1 - Linear Hardening :heavy_check_mark:
-  * 2 - Swift :heavy_check_mark:
-  * 3 - Ludwick :heavy_check_mark:
-  * 4 - Voce :heavy_check_mark:
-  * 5 - Voce + Linear :heavy_check_mark:
-  * 6 - Voce + Swift :heavy_check_mark:
+  * Perfectly Plastic :heavy_check_mark:
+  * Linear Hardening :heavy_check_mark:
+  * Swift :heavy_check_mark:
+  * Ludwick :heavy_check_mark:
+  * Voce :heavy_check_mark:
+  * Voce + Linear :heavy_check_mark:
+  * Voce + Swift :heavy_check_mark:
 
 ### Kinematic Hardening
 
-  * 0 - No Kinematic Hardening :heavy_check_mark:
-  * 1 - Prager (1949) :heavy_check_mark:
-  * 2 - Ziegler (1959) :heavy_check_mark:
-  * 3 - Armstrong-Frederick (1966) :heavy_check_mark:
-  * 4 - Chaboche (1979) :heavy_check_mark:
-  * 5 - Chaboche (1979) - Ziegler Type :heavy_check_mark:
-  * 6 - Yoshida-Uemori :grey_question:
+  * No Kinematic Hardening :heavy_check_mark:
+  * Prager (1949) :heavy_check_mark:
+  * Ziegler (1959) :heavy_check_mark:
+  * Armstrong-Frederick (1966) :heavy_check_mark:
+  * Chaboche (1979) :heavy_check_mark:
+  * Chaboche (1979) - Ziegler Type :heavy_check_mark:
+  * Yoshida-Uemori :grey_question:
 
 ## :books: References
 <sup>1</sup> R. von Mises. 1913. Mechanik der festen Korper im plastisch deformablen Zustand. Gottin. Nachr. Math. Phys., 1: 582-592.
