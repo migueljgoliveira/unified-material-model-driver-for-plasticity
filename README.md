@@ -146,19 +146,19 @@ Only isotropic Hooke elastic properties can be defined. There are 2 ways to set 
 * Young's Modulus and Poisson's Ratio
 
   ```
-  . ID = 0
-  . prela(1) = 0
-  . prela(2) = 200.0E+3 (Young's modulus)
-  . prela(3) = 0.3 (Poisson's ratio)
+  ID = 0
+  prela(1) = 0
+  prela(2) = 200.0E+3 (Young's modulus)
+  prela(3) = 0.3 (Poisson's ratio)
   ```
   
 * Bulk Modulus and Modulus of Rigidity
 
   ```
-  . ID = 1
-  . prela(1) = 0
-  . prela(2) = 166666.7 (Bulk modulus)
-  . prela(3) = 76923.08 (Modulus of rigidity)
+  ID = 1
+  prela(1) = 0
+  prela(2) = 166666.7 (Bulk modulus)
+  prela(3) = 76923.08 (Modulus of rigidity)
   ```
 
 ### Yield Criterion
@@ -171,21 +171,21 @@ ID for yield criteria and original papers are introduced. Please refer to the or
 * <sup>1</sup> von Mises (1913) :heavy_check_mark:
 
   ```
-  . ID = 0                      # no parameters
-  . pryld(1) = 0
+  ID = 0                      # no parameters
+  pryld(1) = 0
   ```
   
 * <sup>2</sup> Hill48 (1948) :heavy_check_mark:
 
   ```
-  . ID = 1                      # parameters: 6
-  . pryld(1) = 1
-  . pryld(2) = F
-  . pryld(3) = G
-  . pryld(4) = H
-  . pryld(5) = L
-  . pryld(6) = M
-  . pryld(7) = N
+  ID = 1                      # parameters: 6
+  pryld(1) = 1
+  pryld(2) = F
+  pryld(3) = G
+  pryld(4) = H
+  pryld(5) = L
+  pryld(6) = M
+  pryld(7) = N
   ```
   
   The parameters ```FGHLMN``` are the same as Hill's original paper. When ```F=G=H=1``` and ```L=M=N=3```, Hill's function is identical to von Mises.
@@ -193,208 +193,207 @@ ID for yield criteria and original papers are introduced. Please refer to the or
 * <sup>3</sup> Yld2004-18p (2005) :heavy_check_mark:
 
   ```
-  . ID = 2                      # parameters: 19
-  . pryld(1)    = 2
-  . pryld(1+1)  = c'12
-  . pryld(1+2)  = c'13
-  . pryld(1+3)  = c'21
-  . pryld(1+4)  = c'23
-  . pryld(1+5)  = c'31
-  . pryld(1+6)  = c'32
-  . pryld(1+7)  = c'44
-  . pryld(1+8)  = c'55
-  . pryld(1+9)  = c'66
-  . pryld(1+10) = c''12
-  . pryld(1+11) = c''13
-  . pryld(1+12) = c''21
-  . pryld(1+13) = c''23
-  . pryld(1+14) = c''31
-  . pryld(1+15) = c''32
-  . pryld(1+16) = c''44
-  . pryld(1+17) = c''55
-  . pryld(1+18) = c''66
-  . pryld(1+19) = a (exponent)
+  ID = 2                      # parameters: 19
+  pryld(1)    = 2
+  pryld(1+1)  = c'12
+  pryld(1+2)  = c'13
+  pryld(1+3)  = c'21
+  pryld(1+4)  = c'23
+  pryld(1+5)  = c'31
+  pryld(1+6)  = c'32
+  pryld(1+7)  = c'44
+  pryld(1+8)  = c'55
+  pryld(1+9)  = c'66
+  pryld(1+10) = c''12
+  pryld(1+11) = c''13
+  pryld(1+12) = c''21
+  pryld(1+13) = c''23
+  pryld(1+14) = c''31
+  pryld(1+15) = c''32
+  pryld(1+16) = c''44
+  pryld(1+17) = c''55
+  pryld(1+18) = c''66
+  pryld(1+19) = a (exponent)
   ```
   
   The order of parameters given as input is the same as in the original paper.
   
 * <sup>4</sup> CPB (2006) :heavy_check_mark:
 
-```
-  . ID = 3                      # parameters: 14
-  . pryld(1)    = 3
-  . pryld(1+1)  = C11
-  . pryld(1+2)  = C12
-  . pryld(1+3)  = C13
-  . pryld(1+4)  = C21
-  . pryld(1+5)  = C22
-  . pryld(1+6)  = C23
-  . pryld(1+7)  = C31
-  . pryld(1+8)  = C32
-  . pryld(1+9)  = C33
-  . pryld(1+10) = C44
-  . pryld(1+11) = C55
-  . pryld(1+12) = C66
-  . pryld(1+13) = a (exponent)
-  . pryld(1+14) = k (tension-compression ratio)
+  ```
+  ID = 3                      # parameters: 14
+  pryld(1)    = 3
+  pryld(1+1)  = C11
+  pryld(1+2)  = C12
+  pryld(1+3)  = C13
+  pryld(1+4)  = C21
+  pryld(1+5)  = C22
+  pryld(1+6)  = C23
+  pryld(1+7)  = C31
+  pryld(1+8)  = C32
+  pryld(1+9)  = C33
+  pryld(1+10) = C44
+  pryld(1+11) = C55
+  pryld(1+12) = C66
+  pryld(1+13) = a (exponent)
+  pryld(1+14) = k (tension-compression ratio)
   ```
   
 * <sup>5</sup> Karafillis-Boyce (1993) :grey_question:
 
   ```
-  . ID = 4                      # parameters: 8
-  . pryld(1)   = 4
-  . pryld(1+1) = C
-  . pryld(1+2) = a1
-  . pryld(1+3) = a2
-  . pryld(1+4) = y1
-  . pryld(1+5) = y2
-  . pryld(1+6) = y3
-  . pryld(1+7) = c
-  . pryld(1+8) = k (k of exponent 2k)
+  ID = 4                      # parameters: 8
+  pryld(1)   = 4
+  pryld(1+1) = C
+  pryld(1+2) = a1
+  pryld(1+3) = a2
+  pryld(1+4) = y1
+  pryld(1+5) = y2
+  pryld(1+6) = y3
+  pryld(1+7) = c
+  pryld(1+8) = k (k of exponent 2k)
   ```
   
 * <sup>6</sup> Hu (2005) :grey_question:
 
   ```
-  . ID = 5                      # parameters: 10
-  . pryld(1)    = 5
-  . pryld(1+1)  = X1
-  . pryld(1+2)  = X2
-  . pryld(1+3)  = X3
-  . pryld(1+4)  = X4
-  . pryld(1+5)  = X5
-  . pryld(1+6)  = X6
-  . pryld(1+7)  = X7
-  . pryld(1+8)  = C1
-  . pryld(1+9)  = C2
-  . pryld(1+10) = C3
+  ID = 5                      # parameters: 10
+  pryld(1)    = 5
+  pryld(1+1)  = X1
+  pryld(1+2)  = X2
+  pryld(1+3)  = X3
+  pryld(1+4)  = X4
+  pryld(1+5)  = X5
+  pryld(1+6)  = X6
+  pryld(1+7)  = X7
+  pryld(1+8)  = C1
+  pryld(1+9)  = C2
+  pryld(1+10) = C3
   ``` 
   
-    * 
-  
 * <sup>7</sup> Yoshida 6th Polynomial (2011) :grey_question:
+  
   ```
-  . ID = 6                      # parameters: 16
-  . pryld(1)    = 6
-  . pryld(1+1)  = C1
-  . pryld(1+2)  = C2
-  . pryld(1+3)  = C3
-  . pryld(1+4)  = C4
-  . pryld(1+5)  = C5
-  . pryld(1+6)  = C6
-  . pryld(1+7)  = C7
-  . pryld(1+8)  = C8
-  . pryld(1+9)  = C9
-  . pryld(1+10) = C10
-  . pryld(1+11) = C11
-  . pryld(1+12) = C12
-  . pryld(1+13) = C13
-  . pryld(1+13) = C14
-  . pryld(1+15) = C15
-  . pryld(1+16) = C16
+  ID = 6                      # parameters: 16
+  pryld(1)    = 6
+  pryld(1+1)  = C1
+  pryld(1+2)  = C2
+  pryld(1+3)  = C3
+  pryld(1+4)  = C4
+  pryld(1+5)  = C5
+  pryld(1+6)  = C6
+  pryld(1+7)  = C7
+  pryld(1+8)  = C8
+  pryld(1+9)  = C9
+  pryld(1+10) = C10
+  pryld(1+11) = C11
+  pryld(1+12) = C12
+  pryld(1+13) = C13
+  pryld(1+13) = C14
+  pryld(1+15) = C15
+  pryld(1+16) = C16
   ``` 
 
 * <sup>8</sup> Gotoh Biquadratic (1978) :grey_question:
 
   ```
-  . ID = -1                     # parameters: 9
-  . pryld(1)   = -1
-  . pryld(1+1) = A1
-  . pryld(1+2) = A2
-  . pryld(1+3) = A3
-  . pryld(1+4) = A4
-  . pryld(1+5) = A5
-  . pryld(1+6) = A6
-  . pryld(1+7) = A7
-  . pryld(1+8) = A8
-  . pryld(1+9) = A9
+  ID = -1                     # parameters: 9
+  pryld(1)   = -1
+  pryld(1+1) = A1
+  pryld(1+2) = A2
+  pryld(1+3) = A3
+  pryld(1+4) = A4
+  pryld(1+5) = A5
+  pryld(1+6) = A6
+  pryld(1+7) = A7
+  pryld(1+8) = A8
+  pryld(1+9) = A9
   ``` 
 
 * <sup>9</sup> Yld2000-2d (2003) :heavy_check_mark:
 
   ```
-  . ID = -2                     # parameters: 9
-  . pryld(1)   = -2
-  . pryld(1+1) = a1
-  . pryld(1+2) = a2
-  . pryld(1+3) = a3
-  . pryld(1+4) = a4
-  . pryld(1+5) = a5
-  . pryld(1+6) = a6
-  . pryld(1+7) = a7
-  . pryld(1+8) = a8
-  . pryld(1+9) = a (exponent)
+  ID = -2                     # parameters: 9
+  pryld(1)   = -2
+  pryld(1+1) = a1
+  pryld(1+2) = a2
+  pryld(1+3) = a3
+  pryld(1+4) = a4
+  pryld(1+5) = a5
+  pryld(1+6) = a6
+  pryld(1+7) = a7
+  pryld(1+8) = a8
+  pryld(1+9) = a (exponent)
   ```
   
 * <sup>10</sup> Vegter (2006) :grey_question:
 
   ```
-  . ID = -3                     # parameters: 3 + 4n
-  . pryld(1)             = -3
-  . pryld(1+1)           = n (max of i)
-  . pryld(1+2)           = f_bi0
-  . pryld(1+3)           = r_bi0
-  . pryld(1+3+(i-1)*4+1) = phi_uniaxial(i)
-  . pryld(1+3+(i-1)*4+2) = phi_shear(i)
-  . pryld(1+3+(i-1)*4+3) = phi_planestrain(i)
-  . pryld(1+3+(i-1)*4+4) = omega(i)
+  ID = -3                     # parameters: 3 + 4n
+  pryld(1)             = -3
+  pryld(1+1)           = n (max of i)
+  pryld(1+2)           = f_bi0
+  pryld(1+3)           = r_bi0
+  pryld(1+3+(i-1)*4+1) = phi_uniaxial(i)
+  pryld(1+3+(i-1)*4+2) = phi_shear(i)
+  pryld(1+3+(i-1)*4+3) = phi_planestrain(i)
+  pryld(1+3+(i-1)*4+4) = omega(i)
   ```
 
 * <sup>11</sup> BBC2005 (2005) :grey_question:
 
   ```
-  . ID = -4                     # parameters: 9
-  . pryld(1)   = -4
-  . pryld(1+1) = k (k of exponent 2k)
-  . pryld(1+2) = a
-  . pryld(1+3) = b
-  . pryld(1+4) = L
-  . pryld(1+5) = M
-  . pryld(1+6) = N
-  . pryld(1+7) = P
-  . pryld(1+8) = Q
-  . pryld(1+9) = R
+  ID = -4                     # parameters: 9
+  pryld(1)   = -4
+  pryld(1+1) = k (k of exponent 2k)
+  pryld(1+2) = a
+  pryld(1+3) = b
+  pryld(1+4) = L
+  pryld(1+5) = M
+  pryld(1+6) = N
+  pryld(1+7) = P
+  pryld(1+8) = Q
+  pryld(1+9) = R
   ```
   
 * <sup>12</sup> Yld89 (1989) :grey_question:
 
   ```
-  . ID = -5                     # parameters: 4
-  . pryld(1)   = -5
-  . pryld(1+1) = M (exponent)
-  . pryld(1+2) = a
-  . pryld(1+3) = h
-  . pryld(1+4) = p
+  ID = -5                     # parameters: 4
+  pryld(1)   = -5
+  pryld(1+1) = M (exponent)
+  pryld(1+2) = a
+  pryld(1+3) = h
+  pryld(1+4) = p
   ``` 
     
 * <sup>13</sup> BBC2008 (2008) :grey_question:
 
   ```
-  . ID = -6                     # parameters: 2 + 8s
-  . pryld(1)             = -6
-  . pryld(1+1)           = s (max of i)
-  . pryld(1+2)           = k (k of exponent 2k)
-  . pryld(1+2+(i-1)*8+1) = l1
-  . pryld(1+2+(i-1)*8+2) = l2
-  . pryld(1+2+(i-1)*8+3) = m1
-  . pryld(1+2+(i-1)*8+4) = m2
-  . pryld(1+2+(i-1)*8+5) = m3
-  . pryld(1+2+(i-1)*8+6) = n1
-  . pryld(1+2+(i-1)*8+7) = n2
-  . pryld(1+2+(i-1)*8+8) = n3
+  ID = -6                     # parameters: 2 + 8s
+  pryld(1)             = -6
+  pryld(1+1)           = s (max of i)
+  pryld(1+2)           = k (k of exponent 2k)
+  pryld(1+2+(i-1)*8+1) = l
+  pryld(1+2+(i-1)*8+2) = l2
+  pryld(1+2+(i-1)*8+3) = m1
+  pryld(1+2+(i-1)*8+4) = m2
+  pryld(1+2+(i-1)*8+5) = m3
+  pryld(1+2+(i-1)*8+6) = n1
+  pryld(1+2+(i-1)*8+7) = n2
+  pryld(1+2+(i-1)*8+8) = n3
   ```
     
 * <sup>14</sup> Hill 1990 (1990) :grey_question:
 
   ```
-  . ID = -6                     # parameters: 5
-  . pryld(1)   = -6
-  . pryld(1+1) = a
-  . pryld(1+2) = b
-  . pryld(1+3) = tau
-  . pryld(1+4) = sig_b
-  . pryld(1+5) = m
+  ID = -6                     # parameters: 5
+  pryld(1)   = -6
+  pryld(1+1) = a
+  pryld(1+2) = b
+  pryld(1+3) = tau
+  pryld(1+4) = sig_b
+  pryld(1+5) = m
   ``` 
   
    
