@@ -127,8 +127,6 @@ To compile the file ummdp.obj/o use
 
 ### Debug & Print
 
-The first input parameter corresponds to the definition of debug and print mode, defined by the variable nvbs0. It is a mandatory parameter and the options are:
-
   * 0 - Error messages only
   * 1 - Summary of multistage return mapping
   * 2 - Detail of multistage return mapping and summary of Newton-Raphson
@@ -138,66 +136,45 @@ The first input parameter corresponds to the definition of debug and print mode,
   
 ### Elastic Properties
 
-  * prela(1) - ID for elastic properties
-  * prela(2~) - Data depends on ID
-
-Only isotropic Hooke elastic properties can be defined. There are 2 ways to set them:
-
-* Young's Modulus and Poisson's Ratio
-
-  ```
-  ID = 0
-  prela(1) = 0
-  prela(2) = 200.0E+3 (Young's modulus)
-  prela(3) = 0.3 (Poisson's ratio)
-  ```
+  * 0 - Young's Modulus and Poisson's Ratio
+  * 1 -Bulk Modulus and Modulus of Rigidity
   
-* Bulk Modulus and Modulus of Rigidity
-
-  ```
-  ID = 1
-  prela(1) = 0
-  prela(2) = 166666.7 (Bulk modulus)
-  prela(3) = 76923.08 (Modulus of rigidity)
-  ```
-
 ### Yield Criterion
 
-* von Mises (1913) :heavy_check_mark:
-* Hill48 (1948) :heavy_check_mark:
-* Yld2004-18p (2005) :heavy_check_mark: <code><sup>12</sup></code>
-* CPB (2006) :heavy_check_mark:
-* Karafillis-Boyce (1993) :grey_question:
-* Hu (2005) :grey_question:
-* Yoshida 6th Polynomial (2011) :grey_question:
-* Gotoh Biquadratic (1978) :grey_question:
-* Yld2000-2d (2003) :heavy_check_mark:
-* Vegter (2006) :grey_question:
-* BBC2005 (2005) :grey_question:
-* Yld89 (1989) :grey_question:
-* BBC2008 (2008) :grey_question:
-* Hill 1990 (1990) :grey_question:
+  *  0 - von Mises (1913) :heavy_check_mark:
+  *  1 - Hill48 (1948) :heavy_check_mark:
+  *  2 - Yld2004-18p (2005) :heavy_check_mark:
+  *  3 - CPB (2006) :heavy_check_mark:
+  *  4 - Karafillis-Boyce (1993) :grey_question:
+  *  5 - Hu (2005) :grey_question:
+  *  6 - Yoshida 6th Polynomial (2011) :grey_question:
+  * -1 - Gotoh Biquadratic (1978) :grey_question:
+  * -2 - Yld2000-2d (2003) :heavy_check_mark:
+  * -3 - Vegter (2006) :grey_question:
+  * -4 - BBC2005 (2005) :grey_question:
+  * -5 - Yld89 (1989) :grey_question:
+  * -6 - BBC2008 (2008) :grey_question:
+  * -7 - Hill 1990 (1990) :grey_question:
   
 ### Isotropic Hardening
 
-  * Perfectly Plastic :heavy_check_mark:
-  * Linear Hardening :heavy_check_mark:
-  * Swift :heavy_check_mark:
-  * Ludwick :heavy_check_mark:
-  * Voce :heavy_check_mark:
-  * Voce + Linear :heavy_check_mark:
-  * Voce + Swift :heavy_check_mark:
+  * 0 - Perfectly Plastic :heavy_check_mark:
+  * 1 - Linear Hardening :heavy_check_mark:
+  * 2 - Swift :heavy_check_mark:
+  * 3 - Ludwick :heavy_check_mark:
+  * 4 - Voce :heavy_check_mark:
+  * 5 - Voce + Linear :heavy_check_mark:
+  * 6 - Voce + Swift :heavy_check_mark:
 
 ### Kinematic Hardening
 
-  * No Kinematic Hardening :heavy_check_mark:
-  * Prager (1949) :heavy_check_mark:
-  * Ziegler (1959) :heavy_check_mark:
-  * Armstrong-Frederick (1966) :heavy_check_mark:
-  * Chaboche (1979) :heavy_check_mark:
-  * Chaboche (1979) - Ziegler Type :heavy_check_mark:
-  * Yoshida-Uemori
-
+  * 0 - No Kinematic Hardening :heavy_check_mark:
+  * 1 - Prager (1949) :heavy_check_mark:
+  * 2 - Ziegler (1959) :heavy_check_mark:
+  * 3 - Armstrong-Frederick (1966) :heavy_check_mark:
+  * 4 - Chaboche (1979) :heavy_check_mark:
+  * 5 - Chaboche (1979) - Ziegler Type :heavy_check_mark:
+  * 6 - Yoshida-Uemori :grey_question:
 
 ## :books: References
 <sup>1</sup> R. von Mises. 1913. Mechanik der festen Korper im plastisch deformablen Zustand. Gottin. Nachr. Math. Phys., 1: 582-592.
