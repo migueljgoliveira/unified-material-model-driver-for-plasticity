@@ -127,12 +127,12 @@ To compile the file ummdp.obj/o use
 
 ### Debug & Print
 
-  * 0 - Error messages only
-  * 1 - Summary of multistage return mapping
-  * 2 - Detail of multistage return mapping and summary of Newton-Raphson
-  * 3 - Detail of Newton-Raphson
-  * 4 - Input/Output
-  * 5 - All status for debug and print
+  * Error messages only
+  * Summary of multistage return mapping
+  * Detail of multistage return mapping and summary of Newton-Raphson
+  * Detail of Newton-Raphson
+  * Input/Output
+  * All status for debug and print
   
 ### Elastic Properties
 
