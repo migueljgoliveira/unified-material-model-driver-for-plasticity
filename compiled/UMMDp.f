@@ -47,38 +47,38 @@ c
 c                        ne  : element no.
 c                        ip  : integration point no.
 c                        lay : layer no. of shell
-      ne=noel
-      ip=npt
-      lay=kspt
-      if ( lay.eq.0 ) lay=1
-      nsdv=nstatv
-      nprop=mxprop
-      propdim=nprops-1
+      ne = noel
+      ip = npt
+      lay = kspt
+      if ( lay .eq. 0 ) lay = 1
+      nsdv = nstatv
+      nprop = mxprop
+      propdim = nprops - 1
 c
 c                                        ---- set debug and verbose mode
       nvbs0 = props(1)
       call jancae_debugmode ( nvbs,nvbs0 )
 c                                       ---- output detailed information
-      if ( nvbs.ge.4 ) then
+      if ( nvbs .ge. 4 ) then
         call jancae_printinfo  ( kinc,ndi,nshr )
         call jancae_printinout ( 0,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
-      endif
+      end if
 c
 c                                           ---- set material properties
-      do i=2,nprops
-        prop(i-1)=props(i)
-      enddo
+      do i = 2,nprops
+        prop(i-1) = props(i)
+      end do
 c
       call jancae_prop_dim ( prop,nprop,propdim,
      &                       ndela,ndyld,ndihd,ndkin,
      &                       npbs,ndrup )
-      if ( npbs.gt.mxpbs ) then
+      if ( npbs .gt. mxpbs ) then
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
         write (6,*) 'mxpbs=',mxpbs
         call jancae_exit ( 9000 )
-      endif
+      end if
 c                                                      ---- check nstatv
       call jancae_check_nisv ( nstatv,ntens,npbs )
 c                             ---- copy current internal state variables
@@ -88,41 +88,41 @@ c                             ---- copy current internal state variables
      &                      p,pe,x1,ntens,mxpbs,npbs )
 c
 c                             ---- update stress and set tangent modulus
-      mjac=1
-      call jancae_plasticity  ( stress,s2,dstran,
-     &                          p,dp,dpe,de33,
-     &                          x1,x2,mxpbs,
-     &                          ddsdde,
-     &                          ndi,nshr,ntens,
-     &                          nvbs,mjac,
-     &                          prop,nprop,propdim )
+      mjac = 1
+      call jancae_plasticity ( stress,s2,dstran,
+     &                         p,dp,dpe,de33,
+     &                         x1,x2,mxpbs,
+     &                         ddsdde,
+     &                         ndi,nshr,ntens,
+     &                         nvbs,mjac,
+     &                         prop,nprop,propdim )
 c                                                     ---- update stress
-      do i=1,ntens
-        stress(i)=s2(i)
-      enddo
+      do i = 1,ntens
+        stress(i) = s2(i)
+      end do
 c                                            ---- update eq.plast,strain
-      statev(isvrsvd+1)=p+dp
+      statev(isvrsvd+1) = p + dp
 c                                         ---- update plast.strain comp.
       call rotsig(statev(isvrsvd+2), drot, ustatev, 2, ndi, nshr)
 c
-      do i=1,ntens
-        is=isvrsvd+isvsclr+i
-        statev(is)=ustatev(i)+dpe(i)
-      enddo
+      do i = 1,ntens
+        is = isvrsvd + isvsclr + i
+        statev(is) = ustatev(i) + dpe(i)
+      end do
 c                                       ---- update of back stress comp.
-      if ( npbs.ne.0 ) then
-        do n=1,npbs
-          do i=1,ntens
-            is=isvrsvd+isvsclr+ntens*n+i
-            statev(is)=x2(n,i)
-          enddo
-        enddo
-      endif
+      if ( npbs .ne. 0 ) then
+        do n = 1,npbs
+          do i = 1,ntens
+            is = isvrsvd + isvsclr + ntens*n + i
+            statev(is) = x2(n,i)
+          end do
+        end do
+      end if
 c                           ----  if debug mode, output return arguments
-      if ( nvbs.ge.4 ) then
+      if ( nvbs .ge. 4 ) then
         call jancae_printinout ( 1,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
-      endif
+      end if
 c
       return
       end
@@ -138,18 +138,18 @@ c
       DIMENSION STATEV(NSTATV),COORDS(NCRDS)
 c-----------------------------------------------------------------------
 c
-      ne =noel
-      ip =npt
-      lay=kspt
-      if ( lay.eq.0 ) lay=1
+      ne = noel
+      ip = npt
+      lay = kspt
+      if ( lay .eq. 0 ) lay = 1
 c
-      if ( ne*ip*lay.eq.1 ) then
+      if ( ne*ip*lay .eq. 1 ) then
         write (6,*) 'SDVINI is called. '
-      endif
+      end if
 c
-      do n=1,nstatv
-        statev(n)=0.0
-      enddo
+      do n = 1,nstatv
+        statev(n) = 0.0
+      end do
 c
       return
       end
@@ -172,9 +172,9 @@ c-----------------------------------------------------------------------
 C     The dimensions of the variables FLGRAY, ARRAY and JARRAY
 C     must be set equal to or greater than 15.
 c
-      parameter   (maxsdv=50)
-      parameter   (mxpbs=10)
-      parameter   (mxprop=100)
+      parameter (maxsdv=50)
+      parameter (mxpbs=10)
+      parameter (mxprop=100)
       common /jancae3/prop
       common /jancaea/nsdv
       common /jancaeb/propdim
@@ -190,11 +190,11 @@ c
       dimension prop(mxprop)
       real*8,allocatable,dimension(:) :: prela,pryld,prihd,prkin,prrup
 c
-      nprop=mxprop
+      nprop = mxprop
 c
 c     variables list :
 c        uvar codes and state variables arrays
-c        nt:ntens
+c        nt : ntens
 c
 c     statev(1                     ) : equivalent plastic strain
 c     statev(2        ~  1+nt      ) : plastic strain comp.
@@ -205,49 +205,49 @@ c     uvar(2     ) : flow stress
 c     uvar(3~2+nt) : back stress
 c     uvar(3~2+nt) : rupture criterion
 c
-      ne =noel
-      ip =npt
-      lay=kspt
-      if ( lay.eq.0 ) lay=1
-      ntens=ndi+nshr
+      ne = noel
+      ip = npt
+      lay = kspt
+      if ( lay .eq. 0 ) lay = 1
+      ntens = ndi + nshr
 
 c                                            ---- get uvar before update
-      do i=1,nuvarm
+      do i = 1,nuvarm
         uvar1(i) = uvar(i)
-      enddo
+      end do
 c                                                        ---- get stress
       CALL GETVRM('S',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
      1            MATLAYO,LACCFLA)
-      if ( JRCD.ne.0 ) then
+      if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for s'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-      endif
+      end if
 c
-      do i=1,ndi
-        s(i)=array(i)
-      enddo
-      do i=1,nshr
-        i1=ndi+i
-        i2=3+i
-        s(i1)=array(i2)
-      enddo
+      do i = 1,ndi
+        s(i) = array(i)
+      end do
+      do i = 1,nshr
+        i1 = ndi + i
+        i2 = 3 + i
+        s(i1) = array(i2)
+      end do
 c                                               ---- get state variables
-      if ( nsdv.gt.maxsdv ) then
+      if ( nsdv .gt. maxsdv ) then
         write (6,*) 'increase dimension of ARRAY2 and JARRAY2'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-      endif
+      end if
       CALL GETVRM('SDV',ARRAY2,JARRAY2,FLGRAY2,JRCD,JMAC,JMATYP,
      1            MATLAYO,LACCFLA)
-      if ( JRCD.ne.0 ) then
+      if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sdv'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-      endif
-      do i=1,nsdv
-        sdv(i)=array2(i)
-      enddo
+      end if
+      do i = 1,nsdv
+        sdv(i) = array2(i)
+      end do
 c                                           ---- set material properties
       call jancae_prop_dim ( prop,nprop,propdim,
      &                       ndela,ndyld,ndihd,ndkin,
@@ -257,76 +257,76 @@ c                                           ---- set material properties
       allocate( prihd(ndihd) )
       allocate( prkin(ndkin) )
       allocate( prrup(ndrup) )
-      k=0
-      do i=1,ndela
-        k=k+1
-        prela(i)=prop(k)
-      enddo
-      do i=1,ndyld
-        k=k+1
-        pryld(i)=prop(k)
-      enddo
-      do i=1,ndihd
-        k=k+1
-        prihd(i)=prop(k)
-      enddo
-      do i=1,ndkin
-        k=k+1
-        prkin(i)=prop(k)
-      enddo
-      do i=1,ndrup
-        k=k+1
-        prrup(i)=prop(k)
-      enddo
+      k = 0
+      do i = 1,ndela
+        k = k + 1
+        prela(i) = prop(k)
+      end do
+      do i = 1,ndyld
+        k = k + 1
+        pryld(i) = prop(k)
+      end do
+      do i = 1,ndihd
+        k = k + 1
+        prihd(i) = prop(k)
+      end do
+      do i = 1,ndkin
+        k = k + 1
+        prkin(i) = prop(k)
+      end do
+      do i = 1,ndrup
+        k = k + 1
+        prrup(i) = prop(k)
+      end do
 c
 c                                                  ---- calc back stress
       call jancae_isvprof ( isvrsvd,isvsclr )
       call jancae_isv2pex ( isvrsvd,isvsclr,
      &                      sdv,maxsdv,
      &                      p,pe,x,ntens,mxpbs,npbs )
-      do i=1,ntens
-         xsum(i)=0.0
-      enddo
-      if ( npbs.ne.0 ) then
-        do i=1,ntens
-          do nb=1,npbs
-            xsum(i)=xsum(i)+x(nb,i)
-          enddo
-        enddo
-      endif
+      do i = 1,ntens
+         xsum(i) = 0.0
+      end do
+      if ( npbs .ne. 0 ) then
+        do i = 1,ntens
+          do nb = 1,npbs
+            xsum(i) = xsum(i) + x(nb,i)
+          end do
+        end do
+      end if
 c                                                 ---- equivalent stress
-      if ( nuvarm.ge.1 ) then
-        do i=1,ntens
-          eta(i)=s(i)-xsum(i)
-        enddo
+      if ( nuvarm .ge. 1 ) then
+        do i = 1,ntens
+          eta(i) = s(i) - xsum(i)
+        end do
         call jancae_yfunc ( se,dseds,d2seds2,0,
      &                      eta,ntens,ndi,nshr,
      &                      pryld,ndyld )
-        uvar(1)=se
-      endif
+        uvar(1) = se
+      end if
 c                                                       ---- flow stress
-      if ( nuvarm.ge.2 ) then
+      if ( nuvarm .ge. 2 ) then
         call jancae_hardencurve ( sy,dsydp,d2sydp2,
      &                            0,p,prihd,ndihd )
-        uvar(2)=sy
-      endif
+        uvar(2) = sy
+      end if
 c                                                       ---- back stress
-      if ( npbs.ne.0 ) then
-        if ( nuvarm.ge.3 ) then
-          do i=1,ntens
-            uvar(2+i)=xsum(i)
-          enddo
-        endif
-      endif
+      if ( npbs .ne. 0 ) then
+        if ( nuvarm .ge. 3 ) then
+          do i = 1,ntens
+            uvar(2+i) = xsum(i)
+          end do
+        end if
+      end if
 c                                                 ---- rupture criterion
-      if ( prrup(1).ne.0) then
+      if ( prrup(1) .ne. 0) then
         nt = ntens
-        if ( npbs.eq.0 ) nt = 0
-        if ( nuvarm.ge.(3+nt) ) then
+        if ( npbs .eq. 0 ) nt = 0
+        if ( nuvarm .ge. (3+nt) ) then
           call jancae_rupture( sdv,nsdv,uvar,uvar1,nuvarm,jrcd,jmac,
      1                         jmatyp,matlayo,laccfla,nt,ndrup,prrup )
-        endif
-      endif
+        end if
+      end if
 c
       return
       end
@@ -340,10 +340,10 @@ c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
-c               no reserved variables
-      isvrsvd=0
-c               statev(1) is for eq.plast.strain
-      isvsclr=1
+c
+      isvrsvd = 0             ! no reserved variables
+c
+      isvsclr = 1             ! statev(1) is for eq.plast.strain
 c
       return
       end
@@ -1580,11 +1580,11 @@ c
         case ( 2 ) ; nd = 1 ; npbs = 1    ! Ziegler
         case ( 3 ) ; nd = 2 ; npbs = 1    ! Armstrong & Frederick
         case ( 4 )                        ! Chaboche
-          nd  = propdim - (n+1)
-          npbs = n / 2
+          npbs = nint(prop(n+2))
+          nd = 2*npbs + 1
         case ( 5 )                        ! Chaboche - Ziegler
-          nd = propdim - (n+1)
-          npbs = nd / 2
+          npbs = nint(prop(n+2))
+          nd = 2*npbs + 1
         case ( 6 ) ; nd = 5 ; npbs = 2    ! Yoshida-Uemori
         case default
           write (6,*) 'error kinematic hardening id :',nkin
@@ -2401,8 +2401,8 @@ c-----------------------------------------------------------------------
 c     calc. rupture criterion
 c
       subroutine jancae_rupture ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,jmac,
-     1                            jmatyp,matlayo,laccfla,nt,
-     2                            ndrup,prrup )
+     &                            jmatyp,matlayo,laccfla,nt,
+     &                            ndrup,prrup )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
@@ -2417,27 +2417,27 @@ c
 c
       case ( 1 )                             ! Equivalent Plastic Strain
         call jancae_rup_eqstrain ( sdv,nsdv,uvar2,nuvarm,nt,
-     1                             ndrup,prrup )
+     &                             ndrup,prrup )
 c
       case ( 2 )                                   ! Cockroft and Latham
         call jancae_rup_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     1                             jmac,jmatyp,matlayo,laccfla,nt,
-     2                             ndrup,prrup )
+     &                             jmac,jmatyp,matlayo,laccfla,nt,
+     &                             ndrup,prrup )
 c
       case ( 3 )                                       ! Rice and Tracey
         call jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     1                         jmac,jmatyp,matlayo,laccfla,nt,
-     2                         ndrup,prrup )
+     &                         jmac,jmatyp,matlayo,laccfla,nt,
+     &                         ndrup,prrup )
 c
       case ( 4 )                                                 ! Ayada
         call jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     1                          jmac,jmatyp,matlayo,laccfla,nt,
-     2                          ndrup,prrup )
-     c
+     &                          jmac,jmatyp,matlayo,laccfla,nt,
+     &                          ndrup,prrup )
+c
       case ( 5 )                                                ! Brozzo
         call jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     1                           jmac,jmatyp,matlayo,laccfla,nt,
-     2                           ndrup,prrup )
+     &                           jmac,jmatyp,matlayo,laccfla,nt,
+     &                           ndrup,prrup )
 c
       case default
         write (6,*) 'error in jancae_rupture'
@@ -2465,7 +2465,7 @@ c
       case ( 0 )
         write (6,*) 'No Uncoupled Rupture Criterion'
       case ( 1 )
-        write (6,*) 'Eq. Plastic Strain'
+        write (6,*) 'Equivalent Plastic Strain'
         write (6,*) 'W=int[dp]'
       case ( 2 )
         write (6,*) 'Cockroft and Latham'
@@ -2490,21 +2490,29 @@ c-----------------------------------------------------------------------
 c     Equivalent Plastic Strain
 c
       subroutine jancae_rup_eqstrain ( sdv,nsdv,uvar2,nuvarm,nt,
-     1                                 ndrup,prrup)
+     &                                 ndrup,prrup)
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
       dimension sdv(nsdv),uvar2(nuvarm),prrup(ndrup)
-      real*8 peeq
+      real*8 lim,peeq
 c
-c     uvar(2+nt+1) : eq. plastic strain
-c     prrup(1)     : id
+c     nuvarm : 2
 c
+c     uvar(2+nt+1) : equivalent plastic strain
+c     uvar(2+nt+2) : rupture criterion normalised
+c
+c     prrup(1) : 1
+c     prrup(2) : rupture criterion limit
+c
+c                                           ---- rupture criterion limit
+      lim = prrup(2)
 c                                              ---- get sdv after update
       peeq = sdv(1)
 c
 c                                                       ---- update uvar
       uvar2(2+nt+1) = peeq
+      uvar2(2+nt+2) = peeq / lim
 c
       return
       end
@@ -2524,15 +2532,22 @@ c
       dimension ARRAY(15),JARRAY(15),prrup(ndrup)
       dimension sdv(nsdv),uvar2(nuvarm)
       character*3 FLGRAY(15)
+      real*8 lim
       real*8 se1,peeq1,maxsp1,maxsp1se1,wlim1
       real*8 se2,peeq2,maxsp2,maxsp2se2,wlim2
 c
+c     nuvarm : 4
+c
 c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : maximum principal stress
-c     uvar(2+nt+3) : rupture criterion limit
+c     uvar(2+nt+3) : rupture criterion
+c     uvar(2+nt+4) : rupture criterion normalised
 c
-c     prrup(1) : id
+c     prrup(1) : 2
+c     prrup(2) : rupture criterion limit
 c
+c                                           ---- rupture criterion limit
+      lim = prrup(2)
 c                                            ---- get uvar before update
       se1    = uvar1(1)
       peeq1  = uvar1(2+nt+1)
@@ -2544,30 +2559,27 @@ c                                     ---- get sdv and uvar after update
       peeq2 = sdv(1)
 c
 c                                 ---- get principal stress after update
-      CALL GETVRM('SP',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     1            MATLAYO,LACCFLA)
-      if ( JRCD.ne.0 ) then
+      call getvrm ('SP',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
+     &             MATLAYO,LACCFLA )
+      if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sp'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-      endif
+      end if
       maxsp2 = array(3)
 c
 c                                                 ---- rupture criterion
       maxsp1se1 = 0.0d0
       maxsp2se2 = 0.0d0
-      if ( se1 .gt. 0.0d0 ) then
-        maxsp1se1 = maxsp1/se1
-      endif
-      if ( se2 .gt. 0.0d0 ) then
-        maxsp2se2 = maxsp2/se2
-      endif
+      if ( se1 .gt. 0.0d0 ) maxsp1se1 = maxsp1 / se1
+      if ( se2 .gt. 0.0d0 ) maxsp2se2 = maxsp2 / se2
 c
       wlim2 = wlim1 + (maxsp2se2+maxsp1se1)*(peeq2-peeq1)/2.0d0
 c                                                       ---- update uvar
       uvar2(2+nt+1) = peeq2
       uvar2(2+nt+2) = maxsp2
       uvar2(2+nt+3) = wlim2
+      uvar2(2+nt+4) = wlim2/lim
 c
       return
       end
@@ -2578,8 +2590,8 @@ c-----------------------------------------------------------------------
 c     Rice and Tracey (RT)
 c
       subroutine jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     1                             jmac,jmatyp,matlayo,laccfla,nt,
-     2                             ndrup,prrup )
+     &                             jmac,jmatyp,matlayo,laccfla,nt,
+     &                             ndrup,prrup )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
@@ -2587,15 +2599,22 @@ c
       dimension ARRAY(15),JARRAY(15),prrup(ndrup)
       dimension sdv(nsdv),uvar2(nuvarm)
       character*3 FLGRAY(15)
+      real*8 lim
       real*8 se1,peeq1,shyd1,shyd1se1,wlim1
       real*8 se2,peeq2,shyd2,shyd2se2,wlim2
 c
+c     nuvarm : 4
+c
 c     uvar(2+nt+1) : eq. plastic strain
 c     uvar(2+nt+2) : hydrostatic stress
-c     uvar(2+nt+3) : rupture criterion limit
+c     uvar(2+nt+3) : rupture criterion
+c     uvar(2+nt+4) : rupture criterion normalised
 c
-c     prrup(1) : id
+c     prrup(1) : 3
+c     prrup(2) : rupture criterion limit
 c
+c                                           ---- rupture criterion limit
+      lim = prrup(2)
 c                                            ---- get uvar before update
       se1   = uvar1(1)
       peeq1 = uvar1(2+nt+1)
@@ -2607,24 +2626,20 @@ c                                     ---- get sdv and uvar after update
       peeq2 = sdv(1)
 c
 c                               ---- get hydrostatic stress after update
-      CALL GETVRM('SINV',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     1            MATLAYO,LACCFLA)
+      call getvrm ('SINV',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
+     &             MATLAYO,LACCFLA )
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-      endif
+      end if
       shyd2 = -array(3)
 c
 c                                                 ---- rupture criterion
       shyd1se1 = 0.0d0
       shyd2se2 = 0.0d0
-      if ( se1 .gt. 0.0d0 ) then
-        shyd1se1 = exp(1.5d0*shyd1/se1)
-      endif
-      if ( se2 .gt. 0.0d0 ) then
-        shyd2se2 = exp(1.5d0*shyd2/se2)
-      endif
+      if ( se1 .gt. 0.0d0 ) shyd1se1 = exp(1.5d0*shyd1/se1)
+      if ( se2 .gt. 0.0d0 ) shyd2se2 = exp(1.5d0*shyd2/se2)
 c
       wlim2 = wlim1 + (shyd1se1+shyd2se2)*(peeq2-peeq1)/2.0d0
 c
@@ -2632,6 +2647,7 @@ c                                                       ---- update uvar
       uvar2(2+nt+1) = peeq2
       uvar2(2+nt+2) = shyd2
       uvar2(2+nt+3) = wlim2
+      uvar2(2+nt+4) = wlim2/lim
 c
       return
       end
@@ -2642,8 +2658,8 @@ c-----------------------------------------------------------------------
 c     Ayada
 c
       subroutine jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     1                              jmac,jmatyp,matlayo,laccfla,nt,
-     2                              ndrup,prrup )
+     &                              jmac,jmatyp,matlayo,laccfla,nt,
+     &                              ndrup,prrup )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
@@ -2651,15 +2667,22 @@ c
       dimension ARRAY(15),JARRAY(15),prrup(ndrup)
       dimension sdv(nsdv),uvar2(nuvarm)
       character*3 FLGRAY(15)
+      real*8 lim
       real*8 se1,peeq1,shyd1,shyd1se1,wlim1
       real*8 se2,peeq2,shyd2,shyd2se2,wlim2
 c
-c     uvar(2+nt+1) : eq. plastic strain
+c     nuvarm : 4
+c
+c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : hydrostatic stress
-c     uvar(2+nt+3) : rupture criterion limit
+c     uvar(2+nt+3) : rupture criterion
+c     uvar(2+nt+4) : rupture criterion normalised
 c
-c     prrup(1) : id
+c     prrup(1) : 4
+c     prrup(2) : rupture criterion limit
 c
+c                                           ---- rupture criterion limit
+      lim = prrup(2)
 c                                            ---- get uvar before update
       se1   = uvar1(1)
       peeq1 = uvar1(2+nt+1)
@@ -2671,30 +2694,28 @@ c                                     ---- get sdv and uvar after update
       peeq2 = sdv(1)
 c
 c                               ---- get hydrostatic stress after update
-      CALL GETVRM('SINV',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     1            MATLAYO,LACCFLA)
-      if ( JRCD.ne.0 ) then
+      call getvrm ('SINV',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
+     &             MATLAYO,LACCFLA )
+      if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-      endif
+      end if
       shyd2 = -array(3)
 c
 c                                                 ---- rupture criterion
       shyd1se1 = 0.0d0
       shyd2se2 = 0.0d0
-      if ( se1 .gt. 0.0d0 ) then
-        shyd1se1 = hyd1/se1
-      endif
-      if ( se2 .gt. 0.0d0 ) then
-        shyd2se2 = shyd2/se2
-      endif
-      wlim2 = wlim1 + (shyd1se1+shyd2se2)*(peeq2-peeq1)/2.d0
+      if ( se1 .gt. 0.0d0 ) shyd1se1 = shyd1 / se1
+      if ( se2 .gt. 0.0d0 ) shyd2se2 = shyd2 / se2
+c
+      wlim2 = wlim1 + (shyd1se1+shyd2se2)*(peeq2-peeq1)/2.0d0
 c
 c                                                       ---- update uvar
       uvar2(2+nt+1) = peeq2
       uvar2(2+nt+2) = shyd2
       uvar2(2+nt+3) = wlim2
+      uvar2(2+nt+4) = wlim2/lim
 c
       return
       end
@@ -2705,8 +2726,8 @@ c-----------------------------------------------------------------------
 c     Brozzo
 c
       subroutine jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     1                               jmac,jmatyp,matlayo,laccfla,nt,
-     2                               ndrup,prrup )
+     &                               jmac,jmatyp,matlayo,laccfla,nt,
+     &                               ndrup,prrup )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
@@ -2714,51 +2735,71 @@ c
       dimension ARRAY(15),JARRAY(15),prrup(ndrup)
       dimension sdv(nsdv),uvar2(nuvarm)
       character*3 FLGRAY(15)
-      real*8 se1,peeq1,maxsp1,maxsp1se1,wlim1
-      real*8 se2,peeq2,maxsp2,maxsp2se2,wlim2
+      real*8 lim
+      real*8 se1,peeq1,shyd1,maxsp1,maxsp1shyd1,wlim1
+      real*8 se2,peeq2,shyd2,maxsp2,maxsp2shyd2,wlim2
+c
+c     nuvarm : 5
 c
 c     uvar(2+nt+1) : eq. plastic strain
 c     uvar(2+nt+2) : max. principal stress
-c     uvar(2+nt+3) : rupture criterion limit
+c     uvar(2+nt+3) : hydrostatic stress
+c     uvar(2+nt+4) : rupture criterion
+c     uvar(2+nt+5) : rupture criterion normalised
 c
-c     prrup(1) : id
+c     prrup(1) : 5
+c     prrup(2) : rupture criterion limit
+c
+c                                           ---- rupture criterion limit
+      lim = prrup(2)
 c
 c                                            ---- get uvar before update
-      se1    = uvar1(1)
       peeq1  = uvar1(2+nt+1)
       maxsp1 = uvar1(2+nt+2)
-      wlim1  = uvar1(2+nt+3)
+      shyd1  = uvar1(2+nt+3)
+      wlim1  = uvar1(2+nt+4)
 c
-c                                     ---- get sdv and uvar after update
-      se2 = uvar2(1)
+c                                              ---- get sdv after update
       peeq2 = sdv(1)
 c
 c                                 ---- get principal stress after update
-      CALL GETVRM('SP',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     1            MATLAYO,LACCFLA)
-      if ( JRCD.ne.0 ) then
+      call getvrm ('SP',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
+     &             MATLAYO,LACCFLA )
+      if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sp'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-      endif
+      end if
       maxsp2 = array(3)
 c
-c                                                 ---- rupture criterion
-      maxsp1se1 = 0.0d0
-      maxsp2se2 = 0.0d0
-      if ( se1 .gt. 0.0d0 ) then
-        maxsp1se1 = (2.0d0/3.0d0) * maxsp1 / (maxsp1-se1)
-      endif
-      if ( se2 .gt. 0.0d0 ) then
-        maxsp2se2 = (2.0d0/3.0d0) * maxsp2 / (maxsp2-se2)
-      endif
+c                               ---- get hydrostatic stress after update
+      call getvrm ('SINV',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
+     &             MATLAYO,LACCFLA )
+      if ( JRCD .ne. 0 ) then
+        write (6,*) 'request error in uvarm for sinv'
+        write (6,*) 'stop in uvrm.'
+        call jancae_exit ( 9000 )
+      end if
+      shyd2 = -array(3)
 c
-      wlim2 = wlim1 + (maxsp2se2+maxsp1se1)*(peeq2-peeq1)/2.0d0
+c                                                 ---- rupture criterion
+      maxsp1shyd1 = 0.0d0
+      maxsp2shyd2 = 0.0d0
+      if ( shyd1 .gt. 0.0d0 ) then
+        maxsp1shyd1 = (2.0d0/3.0d0) * maxsp1 / (maxsp1-shyd1)
+      end if
+      if ( shyd2 .gt. 0.0d0 ) then 
+        maxsp2shyd2 = (2.0d0/3.0d0) * maxsp2 / (maxsp2-shyd2)
+      end if
+c
+      wlim2 = wlim1 + (maxsp2shyd2+maxsp1shyd1)*(peeq2-peeq1)/2.0d0
 c
 c                                                       ---- update uvar
       uvar2(2+nt+1) = peeq2
       uvar2(2+nt+2) = maxsp2
-      uvar2(2+nt+3) = wlim2
+      uvar2(2+nt+3) = shyd2
+      uvar2(2+nt+4) = wlim2
+      uvar2(2+nt+5) = wlim2/lim
 c
       return
       end

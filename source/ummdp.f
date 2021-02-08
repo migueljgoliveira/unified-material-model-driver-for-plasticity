@@ -1209,11 +1209,11 @@ c
         case ( 2 ) ; nd = 1 ; npbs = 1    ! Ziegler
         case ( 3 ) ; nd = 2 ; npbs = 1    ! Armstrong & Frederick
         case ( 4 )                        ! Chaboche
-          nd  = propdim - (n+1)
-          npbs = n / 2
+          npbs = nint(prop(n+2))
+          nd = 2*npbs + 1
         case ( 5 )                        ! Chaboche - Ziegler
-          nd = propdim - (n+1)
-          npbs = nd / 2
+          npbs = nint(prop(n+2))
+          nd = 2*npbs + 1
         case ( 6 ) ; nd = 5 ; npbs = 2    ! Yoshida-Uemori
         case default
           write (6,*) 'error kinematic hardening id :',nkin
