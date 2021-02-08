@@ -249,7 +249,7 @@ c
               do jj=1,3
                 d2seds2(i,j) = d2seds2(i,j)
      & + d2sedphi2*dphidlth(jj)*dlthds(jj,j) *dphidlth(ii)*dlthds(ii,i)
-     & + dsedp2hi*     d2phidlth2(ii,jj)*dlthds(jj,j)     *dlthds(ii,i)  
+     & + dsedphi*     d2phidlth2(ii,jj)*dlthds(jj,j)     *dlthds(ii,i)  
               end do
               d2seds2(i,j)= d2seds2(i,j)
      & + dsedphi*dphidlth(ii)                   *d2lthds2(ii,i,j)

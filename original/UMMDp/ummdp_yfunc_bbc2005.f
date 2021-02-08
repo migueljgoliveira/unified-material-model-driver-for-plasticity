@@ -237,7 +237,7 @@ c                     2nd order differential
       d2lthds2(3,2,1) = d2lthds2(3,1,2)
       d2lthds2(3,2,2) = 2*R**2
       d2lthds2(3,3,3) = 2.0d0
-      
+
       do i=1,3
         do j=1,3
           d2seds2(i,j)=0.0d0
