@@ -9,3 +9,11 @@
 *.prt
 *.sim
 *.sta
+*.rpy
+*.dmp
+*.cid
+*.lck
+*.simlog
+*.rpy.*
+fort.*
+*.log
