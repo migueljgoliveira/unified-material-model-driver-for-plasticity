@@ -45,9 +45,9 @@ c
 c
       call jancae_prop_dim ( prop,nprop,propdim,
      &                       ndela,ndyld,ndihd,ndkin,
-     &                       npbs )
+     &                       npbs,ndrup )
 c
-      n = ndela + ndyld + ndihd + ndkin
+      n = ndela + ndyld + ndihd + ndkin + ndrup
       if ( n .gt. nprop ) then
         write (6,*) 'nprop error in jancae_plasticity'
         write (6,*) 'nprop=',nprop
@@ -63,7 +63,7 @@ c
         end do
       end if
 c
-      nnn=(npbs+1)*nttl
+      nnn = (npbs+1) * nttl
 c
       call jancae_plasticity_core
      &                  ( s1,s2,de,
@@ -73,7 +73,7 @@ c
      &                    nnrm,nshr,nttl,
      &                    nvbs,mjac,
      &                    prop,nprop,
-     &                    npbs,ndela,ndyld,ndihd,ndkin,nnn )
+     &                    npbs,ndela,ndyld,ndihd,ndkin,ndrup,nnn )
 c
       return
       end
@@ -91,7 +91,7 @@ c
      &                    nnrm,nshr,nttl,
      &                    nvbs,mjac,
      &                    prop,nprop,
-     &                    npbs,ndela,ndyld,ndihd,ndkin,nnn )
+     &                    npbs,ndela,ndyld,ndihd,ndkin,ndrup,nnn )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       common /jancae1/ne,ip,lay
@@ -161,7 +161,8 @@ c
 c     these variables are written in Voigt notation
 c
 c
-      dimension prela(ndela),pryld(ndyld),prihd(ndihd),prkin(ndkin)
+      dimension prela(ndela),pryld(ndyld),prihd(ndihd),prkin(ndkin),
+     &          prrup(ndrup)
 c
       dimension delast(nttl,nttl),
      &          dseds(nttl),d2seds2(nttl,nttl),
@@ -259,6 +260,10 @@ c                                          ---- copy material properties
         n = n + 1
         prkin(i) = prop(n)
       end do
+      do i = 1,ndrup
+        n = n + 1
+        prrup(i) = prop(n)
+      enddo
 c
       if ( nout .ne. 0 ) then
         write (6,*)
@@ -267,6 +272,7 @@ c
         call jancae_yfunc_print     ( pryld,ndyld )
         call jancae_harden_print    ( prihd,ndihd )
         call jancae_kinematic_print ( prkin,ndkin,npbs )
+        call jancae_rupture_print   ( prrup,ndrup )
       end if
 c                                                           ---- set [U]
       call jancae_clear2( um,nttl,nnn )
@@ -1134,7 +1140,7 @@ c     set dimensions of material properties
 c
       subroutine jancae_prop_dim ( prop,mxprop,propdim,
      &                             ndela,ndyld,ndihd,ndkin,
-     &                             npbs )
+     &                             npbs,ndrup )
 c-----------------------------------------------------------------------
 c
       implicit real*8 (a-h,o-z)
@@ -1146,7 +1152,7 @@ c
       nela = nint(p)
       select case ( nela )
         case (0) ; nd = 2
-        case (1) ; nd = 2     ! ht180110
+        case (1) ; nd = 2
         case default
           write (6,*) 'error elastic property id :',nela
           call jancae_exit ( 9000 )
@@ -1216,6 +1222,19 @@ c
       ndkin = nd + 1
 c
       n = ndela + ndyld + ndihd + ndkin
+      nrup = nint(prop(n+1))
+      select case (nrup)
+        case ( 0 ) ; nd = 0 ;   ! No Uncoupled Rupture Criterion
+        case ( 1 ) ; nd = 1 ;   ! Equivalent Plastic Strain
+        case ( 2 ) ; nd = 1 ;   ! Cockroft and Latham
+        case ( 3 ) ; nd = 1 ;   ! Rice and Tracey
+        case ( 4 ) ; nd = 1 ;   ! Ayada
+        case ( 5 ) ; nd = 1 ;   ! Brozzo
+        case default
+          write (6,*) 'error uncoupled rupture criterion id :',nrup
+          call jancae_exit ( 9000 )
+      end select
+      ndrup = nd + 1
 c
       return
       end
