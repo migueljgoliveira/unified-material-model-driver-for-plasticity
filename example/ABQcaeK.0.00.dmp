@@ -1,0 +1,34 @@
+<Description>
+   ***  ABAQUS/ABQcaeK rank 0 received the SIGABRT signal
+</Description>
+
+<Callstack>
+  1)  ucrtbase.dll                abort                                   
+  2)  ucrtbase.dll                terminate                               
+  3)  VCRUNTIME140.dll            is_exception_typeof                     
+  4)  VCRUNTIME140.dll            is_exception_typeof                     
+  5)  VCRUNTIME140.dll            _CxxFrameHandler3                       
+  6)  ntdll.dll                   RtlRaiseException                       
+  7)  ntdll.dll                   RtlRaiseException                       
+  8)  KERNELBASE.dll              RaiseException                          
+  9)  VCRUNTIME140.dll            CxxThrowException                       
+ 10)  ABQSMAInbVwrIPC.dll         ipc_Socket::Close                       
+</Callstack>
+
+<Memory>
+   <Current>              68 MB </Current>
+   <Physical>          32365 MB </Physical>
+   <Limit>                 0 MB </Limit>
+   <Virtual>       134217728 MB </Virtual>
+   <Accessible>        32365 MB </Accessible>
+   <Allocator>            DL    </Allocator>
+</Memory>
+
+<Directories>
+  <current> C:\Users\Miguel\Documents\GitHub\UMMDp\example </current> 
+     <temp> C:\Users\Miguel\AppData\Local\Temp </temp>
+</Directories>
+
+<Installation>
+</Installation>
+
