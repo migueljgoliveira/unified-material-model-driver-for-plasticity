@@ -1163,7 +1163,7 @@ c
       nyld = nint(prop(n+1))
       select case (nyld)
         case ( 0 ) ; nd = 0                   ! von Mises
-        case ( 1 ) ; nd =  6                  ! Hill 1948
+        case ( 1 ) ; nd = 6                   ! Hill 1948
         case ( 2 ) ; nd = 19                  ! Yld2004-18p
         case ( 3 ) ; nd = 14                  ! CPB 2005
         case ( 4 ) ; nd = 8                   ! Karafillis-Boyce
