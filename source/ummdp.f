@@ -253,7 +253,7 @@ c                                          ---- copy material properties
         pryld(i) = prop(n)
       end do
       do i = 1,ndihd
-        n = n+1
+        n = n + 1
         prihd(i) = prop(n)
       end do
       do i = 1,ndkin
