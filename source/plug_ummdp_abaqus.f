@@ -1,39 +1,38 @@
+c***********************************************************************
 c
-c     JANCAE.UMMDp/Simulia.Abaqus
+c     UMMDp - Unified Material Model Driver for Plasticity
 c
-c     150908 H.Takizawa mxpbs,prop(nprop)
-c     171229 H.Takizawa material data from PROPS(NPROPS)
-c            jancae_prop_dim
-c            common /jancae3/prop (from UMAT to UVARM)
+c***********************************************************************
 c
+c     Copyright (c) 2018 JANCAE
 c
+c     This software includes code developed by the Material Modeling 
+c     Working group of JANCAE.
 c
+c***********************************************************************
 c
-c
-c-----------------------------------------------------------------------
-c
-c
-c
-      SUBROUTINE UMAT(STRESS,STATEV,DDSDDE,SSE,SPD,SCD,
-     1    RPL,DDSDDT,DRPLDE,DRPLDT,STRAN,DSTRAN,
-     2    TIME,DTIME,TEMP,DTEMP,PREDEF,DPRED,MATERL,NDI,NSHR,NTENS,
-     3    NSTATV,PROPS,NPROPS,COORDS,DROT,PNEWDT,CELENT,
-     4    DFGRD0,DFGRD1,NOEL,NPT,KSLAY,KSPT,KSTEP,KINC)
+      SUBROUTINE UMAT ( STRESS,STATEV,DDSDDE,SSE,SPD,SCD,
+     &                  RPL,DDSDDT,DRPLDE,DRPLDT,STRAN,DSTRAN,
+     &                  TIME,DTIME,TEMP,DTEMP,PREDEF,DPRED,MATERL,NDI,
+     &                  NSHR,NTENS,NSTATV,PROPS,NPROPS,COORDS,DROT,
+     &                  PNEWDT,CELENT,DFGRD0,DFGRD1,NOEL,NPT,KSLAY,KSPT,
+		 & 									KSTEP,KINC)
 c
       INCLUDE 'ABA_PARAM.INC'
 c
       CHARACTER*80 MATERL
       DIMENSION STRESS(NTENS),STATEV(NSTATV),
-     1 DDSDDE(NTENS,NTENS),DDSDDT(NTENS),DRPLDE(NTENS),
-     2 STRAN(NTENS),DSTRAN(NTENS),TIME(2),PREDEF(1),DPRED(1),
-     3 PROPS(NPROPS),COORDS(3),DROT(3,3),
-     4 DFGRD0(3,3),DFGRD1(3,3)
+     &          DDSDDE(NTENS,NTENS),DDSDDT(NTENS),DRPLDE(NTENS),
+     &          STRAN(NTENS),DSTRAN(NTENS),TIME(2),PREDEF(1),DPRED(1),
+     &          PROPS(NPROPS),COORDS(3),DROT(3,3),
+     &          DFGRD0(3,3),DFGRD1(3,3)
 c
 c-----------------------------------------------------------------------
       common /jancae1/ne,ip,lay
       common /jancae3/prop
       common /jancaea/nsdv
       common /jancaeb/propdim
+c
       parameter (mxpbs=10)
 c
       dimension s2(ntens),dpe(ntens),x1(mxpbs,ntens),x2(mxpbs,ntens),
@@ -130,8 +129,8 @@ c
 c
 c
 c-----------------------------------------------------------------------
-      SUBROUTINE SDVINI(STATEV,COORDS,NSTATV,NCRDS,NOEL,NPT,
-     1                  LAYER,KSPT)
+      SUBROUTINE SDVINI ( STATEV,COORDS,NSTATV,NCRDS,NOEL,NPT,
+     &                    LAYER,KSPT)
 c
       INCLUDE 'ABA_PARAM.INC'
 c
@@ -158,9 +157,9 @@ c
 c
 c-----------------------------------------------------------------------
 c
-      SUBROUTINE UVARM(UVAR,DIRECT,T,TIME,DTIME,CMNAME,ORNAME,
-     1             NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
-     2             JMAC,JMATYP,MATLAYO,LACCFLA)
+      SUBROUTINE UVARM ( UVAR,DIRECT,T,TIME,DTIME,CMNAME,ORNAME,
+     &                   NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,
+     &                   COORD,JMAC,JMATYP,MATLAYO,LACCFLA)
 c
       INCLUDE 'ABA_PARAM.INC'
 c
@@ -216,8 +215,8 @@ c                                            ---- get uvar before update
         uvar1(i) = uvar(i)
       end do
 c                                                        ---- get stress
-      CALL GETVRM('S',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     1            MATLAYO,LACCFLA)
+      call getvrm ( 'S',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
+     &                  MATLAYO,LACCFLA)
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for s'
         write (6,*) 'stop in uvrm.'
@@ -238,8 +237,8 @@ c                                               ---- get state variables
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
       end if
-      CALL GETVRM('SDV',ARRAY2,JARRAY2,FLGRAY2,JRCD,JMAC,JMATYP,
-     1            MATLAYO,LACCFLA)
+      call getvrm ( 'SDV',ARRAY2,JARRAY2,FLGRAY2,JRCD,JMAC,JMATYP,
+     &                    MATLAYO,LACCFLA)
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sdv'
         write (6,*) 'stop in uvrm.'
@@ -323,8 +322,8 @@ c                                                 ---- rupture criterion
         nt = ntens
         if ( npbs .eq. 0 ) nt = 0
         if ( nuvarm .ge. (3+nt) ) then
-          call jancae_rupture( sdv,nsdv,uvar,uvar1,nuvarm,jrcd,jmac,
-     1                         jmatyp,matlayo,laccfla,nt,ndrup,prrup )
+          call jancae_rupture ( sdv,nsdv,uvar,uvar1,nuvarm,jrcd,jmac,
+     &                          jmatyp,matlayo,laccfla,nt,ndrup,prrup )
         end if
       end if
 c
