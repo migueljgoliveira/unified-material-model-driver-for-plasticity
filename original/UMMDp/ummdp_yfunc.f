@@ -174,9 +174,9 @@ c
       ntyld = pryld(1)
       write (6,*) '*** yield function',ntyld
       select case ( ntyld )
-      case ( 0 )
+      case ( 0 ) 																						 ! von Mises
         write (6,*) 'von Mises'
-      case ( 1 )
+      case ( 1 )																				   	 ! Hill 1948
         write (6,*) 'Hill 1948'
         write (6,*) 'F=',pryld(2)
         write (6,*) 'G=',pryld(3)
@@ -184,7 +184,7 @@ c
         write (6,*) 'L=',pryld(5)
         write (6,*) 'M=',pryld(6)
         write (6,*) 'N=',pryld(7)
-      case ( 2 )
+      case ( 2 ) 																					 ! Yld2004-18p
         write (6,*) 'Yld2004-18p'
         n0 = 1
         do i = 1,18
@@ -192,7 +192,7 @@ c
            write (6,*) 'a(',i,')=',pryld(n0)
         enddo
         write (6,*) 'M=',pryld(1+18+1)
-      case ( 3 )
+      case ( 3 ) 																					    ! CPB 2006
         write (6,*) 'CPB 2006'
         n0 = 1
         do i = 1,3
@@ -205,7 +205,7 @@ c
         enddo
         n0 = n0 + 1 ; write (6,*) 'a =',pryld(n0)
         n0 = n0 + 1 ; write (6,*) 'ck=',pryld(n0)
-      case ( 4 )
+      case ( 4 ) 																 ! Karafillis-Boyce 1993
         write (6,*) 'Karafillis-Boyce 1993'
         n0 = 1
         do i = 1,6
@@ -216,7 +216,7 @@ c
         end do
         n0 = n0 + 1 ; write (6,*) 'k =',pryld(n0)
         n0 = n0 + 1 ; write (6,*) 'c =',pryld(n0)
-      case ( 5 )
+      case ( 5 ) 																							 ! Hu 2005
         write (6,*) 'Hu 2005'
         n0 = 1
         do i = 1,5
@@ -228,7 +228,7 @@ c
           n0 = n0 + 1
           write (6,*) 'C(',i,')=',pryld(n0)
         enddo
-      case ( 6 )
+      case ( 6 ) 																				  ! Yoshida 2011
         write (6,*) 'Yoshida 2011'
         n0 = 1
         do i = 1,16
@@ -236,18 +236,18 @@ c
           write (6,*) 'c(',i,')=',pryld(n0)
         enddo
 c
-      case ( -1 )
+      case ( -1 )																	 	 ! Gotoh Biquadratic
         write (6,*) 'Gotoh Biquadratic'
         do i = 1,9
           write (6,*) 'A(',i,')=',pryld(i+1)
         enddo
-      case ( -2 )
+      case ( -2 )																					  ! Yld2000-2d
         write (6,*) 'Yld2000-2d'
         do i = 1,8
           write (6,*) 'a(',i,')=',pryld(i+1)
         enddo
         write (6,*) 'M=',pryld(9+1)
-      case ( -3 )
+      case ( -3 ) 																							! Vegter
         write (6,*) 'Vegter'
         write (6,*) 'nf=',nint(pryld(2))
         write (6,*) 'f_bi0=',pryld(3)
@@ -268,7 +268,7 @@ c       enddo
 c       write (6,*)   'f_bi0=',pryld(1+22)
 c       write (6,*)   'r_bi0=',pryld(1+23)
 c       write (6,*)   'nf   =',nint(pryld(1+31))
-      case ( -4 )
+      case ( -4 )																					    ! BBC 2005
         write (6,*) 'BBC 2005'
         write (6,*) 'k of order 2k',pryld(1+1)
         write (6,*) 'a=',pryld(1+2)
@@ -279,13 +279,13 @@ c       write (6,*)   'nf   =',nint(pryld(1+31))
         write (6,*) 'P=',pryld(1+7)
         write (6,*) 'Q=',pryld(1+8)
         write (6,*) 'R=',pryld(1+9)
-      case ( -5 )
+      case ( -5 )																								 ! Yld89
         write (6,*) 'Yld89'
         write (6,*) 'order M=',pryld(1+1)
         write (6,*) 'a      =',pryld(1+2)
         write (6,*) 'h      =',pryld(1+3)
         write (6,*) 'p      =',pryld(1+4)
-      case ( -6 )
+      case ( -6 )																						  ! BBC 2008
         write (6,*) 'BBC 2008'
         write (6,*) 's      =',nint(pryld(1+1))
         write (6,*) 'k      =',nint(pryld(1+2))
@@ -301,7 +301,7 @@ c       write (6,*)   'nf   =',nint(pryld(1+31))
           write (6,*) 'n_2=',pryld(n+7)
           write (6,*) 'n_3=',pryld(n+8)
         enddo
-      case ( -7 )
+      case ( -7 )																						! Hill 1990
         write (6,*) 'Hill 1990'
         write (6,*) 'a   =',pryld(1+1)
         write (6,*) 'b   =',pryld(1+2)
