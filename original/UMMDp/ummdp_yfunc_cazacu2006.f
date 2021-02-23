@@ -29,7 +29,7 @@ c
       parameter( pi = 3.141592653589793d0 )
       parameter( eps= 1.0d-5 )
 c
-c---- variables
+c---- variables 
 c     sigma(6)  : Linear-transformed stress
 c     psigma(3) : Principal values of sigma
 c     ct(6,6)   : Transformation matrix from Cauchy stress to sigma(6)
@@ -172,7 +172,7 @@ c
             DFDpsigma(i)= a * ( psigma(i) / abs( psigma(i) ) - ck )
      $           * ( abs( psigma(i) ) - ck * psigma(i) )**( a - 1.0d0 )
          enddo
-c
+c     
 c---- D(F)/D(H) by using D(psigma)/D(H)
 c     D(F)/D(H)      -> 1 x 3 Vector
 c     D(psigma)/D(H) -> 3 x 3 Matrix
@@ -206,7 +206,7 @@ c---- Case1 S2=S3 ( theta=0 )
                DpsigmaDH(1,1)= psigma(1)**2.0d0 / denom
                DpsigmaDH(1,2)= psigma(1)        / denom
                DpsigmaDH(1,3)= 2.0d0/3.0d0      / denom
-c
+c     
                DFDH(1)= DpsigmaDH(1,1) * ( DFDpsigma(1) - DFDpsigma(2) )
      $              + 3.0d0 * DFDpsigma(2)
                DFDH(2)= DpsigmaDH(1,2) * ( DFDpsigma(1) - DFDpsigma(2) )
@@ -218,20 +218,20 @@ c---- Case2 S2=S1 ( theta=pi )
                DpsigmaDH(3,1)= psigma(3)**2.0d0 / denom
                DpsigmaDH(3,2)= psigma(3)        / denom
                DpsigmaDH(3,3)= 2.0d0/3.0d0      / denom
-c
+c     
                DFDH(1)= DpsigmaDH(3,1) * ( DFDpsigma(3) - DFDpsigma(2) )
      $              + 3.0d0 * DFDpsigma(2)
                DFDH(2)= DpsigmaDH(3,2) * ( DFDpsigma(3) - DFDpsigma(2) )
                DFDH(3)= DpsigmaDH(3,3) * ( DFDpsigma(3) - DFDpsigma(2) )
             else
-
+               
             endif
          endif
 c
 c---- D(H)/D(sigma) -> 3 x 6 Matrix
 c
          call jancae_clear2 ( DHDsigma,3,6 )
-c
+c     
          DHDsigma(1,1)=  1.0d0/3.0d0
          DHDsigma(1,2)=  1.0d0/3.0d0
          DHDsigma(1,3)=  1.0d0/3.0d0
@@ -242,7 +242,7 @@ c
          DHDsigma(2,4)=  2.0d0/3.0d0 * sigma(4)
          DHDsigma(2,5)=  2.0d0/3.0d0 * sigma(5)
          DHDsigma(2,6)=  2.0d0/3.0d0 * sigma(6)
-c
+c     
          DHDsigma(3,1)=  0.5d0
      $        * ( sigma(2) * sigma(3) - sigma(5)**2.0d0 )
          DHDsigma(3,2)=  0.5d0
@@ -252,7 +252,7 @@ c
          DHDsigma(3,4)= sigma(5) * sigma(6) - sigma(3) * sigma(4)
          DHDsigma(3,5)= sigma(6) * sigma(4) - sigma(1) * sigma(5)
          DHDsigma(3,6)= sigma(4) * sigma(5) - sigma(2) * sigma(6)
-c
+c     
 c---- D(sigma)/D(s) -> 6 x 6 Matrix
 c
          do i=1,6
@@ -265,7 +265,7 @@ c---- D(se)/D(s) -> 1 x 3 Vector
 c
          call jancae_clear1 ( DFDs,6 )
          call jancae_clear2 ( dummat,3,6 )
-c
+c     
          do i=1,6
             do j=1,3
                do k=1,6
@@ -293,15 +293,15 @@ c
 c---- D2(F)/D(psigma)2 -> 3 x 3 Matrix
 c
          call jancae_clear2 ( D2FDpsigma2,3,3 )
-c
+c     
          do i=1,3
             D2FDpsigma2(i,i)=
      $           a * ( psigma(i)/ abs( psigma(i) ) - ck )**2.0d0
      $           * ( abs( psigma(i) ) - ck * psigma(i) )**( a - 2.0d0)
          enddo
-c
+c     
 c---- D2(psigma)/D(H)2 -> 3 x 3 x 3 Matrix
-c
+c     
          call jancae_clear3 ( D2psigmaDH2,3,3,3 )
 c
          if(  abs( psigma(2) - psigma(3) )  / se> eps .and.
@@ -312,7 +312,7 @@ c
             do i=1,3
                denom=( psigma(i)**2.0d0
      $              - 2.0d0 * H1 * psigma(i) - H2 )**3.0d0
-c
+c     
                D2psigmaDH2(i,1,1)= 2.0d0 * psigma(i)**3.0d0
      $              * ( psigma(i)**2.0d0 - 3.0d0 * H1 * psigma(i)
      $              - 2.0d0 * H2 ) / denom
@@ -320,7 +320,7 @@ c
      $              * ( H1 * psigma(i) + H2 ) / denom
                D2psigmaDH2(i,3,3)= - 8.0d0 / 9.0d0
      $              * ( psigma(i) - H1 ) / denom
-c
+c     
                D2psigmaDH2(i,1,2)= psigma(i)**2.0d0
      $              * ( psigma(i)**2.0d0
      $              - 4.0d0 * H1 * psigma(i) - 3.0d0 * H2 ) / denom
@@ -328,16 +328,16 @@ c
      $              * ( psigma(i)**2.0d0 + H2 ) / denom
                D2psigmaDH2(i,3,1)= -4.0d0 /3.0d0 * psigma(i)
      $              * ( H1 * psigma(i) + H2 ) / denom
-c
+c     
                D2psigmaDH2(i,2,1)=D2psigmaDH2(i,1,2)
                D2psigmaDH2(i,3,2)=D2psigmaDH2(i,2,3)
                D2psigmaDH2(i,1,3)=D2psigmaDH2(i,3,1)
             enddo
-c
+c     
 c---- D2(F)/D(H)2 -> 3 x 3 Matrix
-c
+c     
             call jancae_clear2 ( D2FDH2,3,3 )
-c
+c     
             do iq=1,3
                do m=1,3
                   do ip=1,3
@@ -410,12 +410,12 @@ c
                   end do
                end do
             end do
-c
+c     
             do i=1,6
                do j=1,6
                   do iq=1,3
                      do m=1,3
-                        D2FDs2(i,j)= D2FDs2(i,j) + D2FDH2(iq,m)
+                        D2FDs2(i,j)= D2FDs2(i,j) + D2FDH2(iq,m) 
      $                       * dummat(iq,i) * dummat(m,j)
                      end do
 c
@@ -448,7 +448,7 @@ c
             do i=1,6
                s0(i)= s(i)
             enddo
-c
+c            
             do i=1, 6
                do j=1, 6
                   if(i == j) then

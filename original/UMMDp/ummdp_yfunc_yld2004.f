@@ -43,8 +43,8 @@ c     psp1(3)  : principal values of sp1
 c     psp2(3)  : principal values of sp2
 c     hp1(3)   : invariants of sp1
 c     hp2(3)   : invariants of sp2
-c     cep1,cep2 : coefficient of characteristic equation p
-c     ceq1,ceq2 : coefficient of characteristic equation q
+c     cep1,cep2 : coefficient of charactaristic equation p
+c     ceq1,ceq2 : coefficient of charactaristic equation q
 c     cet1,cet2 : arccos ( q/p^(3/2) )
 c
 c     dfadpsp1(3),dfadpsp2(3) : d(fai)/d(psp)
@@ -124,7 +124,7 @@ c                                       calculation of equivalent stress
       call jancae_yld2004_18p_yf (ctp1,ctp2,s,am,ami,dc,pi,
      1       sp1,sp2,psp1,psp2,hp1,hp2,cetpq1,cetpq2,fai,se)
 c
-c                                                 1st order differential
+c                                                  1st order differential
       if ( nreq.ge.1 ) then
 c                                                        -d(fai)/d(psp)
         do i = 1,3
@@ -514,7 +514,7 @@ c                                                       invariants of sp
      1       -sp(2)*sp(3)-sp(3)*sp(1)-sp(1)*sp(2))/3.0d0
       hp(3)=(2.0d0*sp(5)*sp(6)*sp(4)+sp(1)*sp(2)*sp(3)
      1       -sp(1)*sp(5)**2-sp(2)*sp(6)**2-sp(3)*sp(4)**2)/2.0d0
-c                                coefficients of characteristic equation
+c                                coefficients of charactaristic equation
       hpq=sqrt(hp(1)**2+hp(2)**2+hp(3)**2)
       if ( hpq.gt.1.0e-16 ) then
         cep=hp(1)**2+hp(2)

@@ -33,13 +33,13 @@ c                                                coef. matrix
       c(2,3)=-pf
       c(3,1)=   -pg
       c(3,2)=-pf
-      c(3,3)= pf+pg
+      c(3,3)= pf+pg   
       c(4,4)=2.0d0*pn
       c(5,5)=2.0d0*pl
       c(6,6)=2.0d0*pm
       do i=1,6
         do j=1,6
-          c(i,j)=c(i,j)/(pg+ph)
+          c(i,j)=c(i,j)/(pg+ph)      
         enddo
       enddo
 c
@@ -67,3 +67,4 @@ c
       end
 c
 c
+

@@ -12,7 +12,7 @@ c     UMMDp  : Unified Material Model Driver for Plasticity
 c
 c     JANCAE : Japan Association for Nonlinear CAE
 c     MMSM   : Material Modeling Sub Meeting
-c     MPWG   : Metal Plasticity Working Group
+c     MPWG   : Metal Plasticity Working Group 
 c
 c
 c
@@ -76,7 +76,7 @@ c
 c
       nnn=(npbs+1)*nttl
 c
-      call jancae_plasticity_core
+      call jancae_plasticity_core 
      &                  ( s1,s2,de,
      &                    p,dp,dpe,de33,
      &                    x1,x2,mxpbs,
@@ -133,7 +133,7 @@ c       thick shell   | 2  |  3  | sx,sy,   txy,tyz,tzx
 c       3D solid      | 3  |  3  | sx,sy,sz,txy,tyz,tzx
 c
 c     npbs   : number terms for partial back stresses
-c     mxpbs  : array size of terms for partial back stresses
+c     mxpbs  : array size of terms for partial back stresses 
 c
 c     s1     : stress before update                   (input)
 c     s2     : stress after  update                  (output)
@@ -199,21 +199,21 @@ c                       normal of yield surface (error vector)
 c     g2n     : norm of g2 vector
 c
 c     eta     : stress for yield function {s}-{xt}
-c     xt1     : total back stress before update
+c     xt1     : total back stress before update      
 c     xt2     : total back stress after update
 c     vk      : eq. of evolution for kinematic hardening dx=dp*vk
 c     dvkdp   : dvk/dp differential of v w.r.t eq.plast.strain
 c     dvkds   : dvk/ds differential of v w.r.t stress
 c     dvkdx   : dvk/dx differential of v w.r.t partial back stress
 c     dvkdxt  : dvk/dX differential of v w.r.t total back stress
-c     g3      : error of eq. of evolution for back stress
+c     g3      : error of eq. of evolution for back stress 
 c               (error vector)
 c     g3n     : norm of g3 vectors
 c
 c     sgap    : stress gap to be eliminated in multistage steps
 c     tol     : covergence tolerance (default : 1.0d-5 )
 c     maxnr   : max iteration of Newton-Raphson
-c     maxnest : max trial times of multistage gap reduction
+c     maxnest : max trial times of multistage gap reduction 
 c     ndiv    : division number of multistage
 c               max no. of multistage is ndiv^maxnest
 c
@@ -234,7 +234,7 @@ c
       tol    = 1.0d-5  ! tolerrance of convergence
       maxnr  = 25      ! max iterations of Newton-Raphson loop
       ndiv   =  5      ! division of multistage loop
-      maxnest= 10      ! max re-division of multistage loop
+      maxnest= 10      ! max re-division of multistage loop 
 c
       nout=0
       if ( n1234.ne.1234 ) then
@@ -294,7 +294,7 @@ c                                           --- default value
             x1(n,i)=0.0
           enddo
         enddo
-      endif
+      endif 
 c
       de33=0.0
       dp=0.0
@@ -436,7 +436,7 @@ c                           **** start of Newton-Raphson loop
           write (6,*) '**** start of Newton-Raphson loop'
         endif
 c
-  100   continue
+  100   continue 
         knr=knr+1
         nite=nite+1
         if ( nvbs.ge.3 ) then
@@ -460,7 +460,7 @@ c
             text='xt2'
             call jancae_print1 ( text,xt2,nttl )
             text='eta'
-            call jancae_print1 ( text,eta,nttl )
+            call jancae_print1 ( text,eta,nttl ) 
           endif
           text='dse/ds'
           call jancae_print1 ( text,dseds,nttl )
@@ -536,7 +536,7 @@ c
           endif
         endif
 c           ---- calc. dependencies common for NR and Dds/Dde
-c                                                   * set [A]
+c                                                   * set [A] 
         call jancae_setunitm ( am,nnn )
         call jancae_mm ( em,delast,d2seds2,nttl,nttl,nttl )
         do i1=1,npbs+1
@@ -795,7 +795,7 @@ c                           ---- [M3]=[I]-[dp*[M1]-[M2]/S1][B]
         enddo
       enddo
 c                                           ---- [Dc]=[De][M3]
-      call jancae_mm ( ddsdde,delast,em3,nttl,nttl,nttl )
+      call jancae_mm ( ddsdde,delast,em3,nttl,nttl,nttl )    
 c
 c                                         ---- check symmetry
       nsym=0
@@ -942,7 +942,7 @@ c                                 condensation for 2D problem
             nj=nnrm
           else
             nj=nshr
-          endif
+          endif 
           do is=1,ni
             i =(ib-1)*nnrm+is
             i3=(ib-1)*3   +is
@@ -960,9 +960,9 @@ c                               plane stress or shell element
         do ib=1,2
           if (ib.eq.1) then
             ni=nnrm
-          else
+          else 
             ni=nshr
-          endif
+          endif 
           do jb=1,2
             if (jb.eq.1) then
               nj=nnrm
@@ -981,8 +981,8 @@ c                               plane stress or shell element
             enddo
           enddo
         enddo
-c                   elastic strain in thickness direction e_t
-c                                       e_t=SUM(d33d(i)*e(i))
+c                   elastic strain in thickness direction e_t 
+c                                       e_t=SUM(d33d(i)*e(i)) 
         do i=1,nttl
           if ( i.le.nnrm ) then
             id=i
@@ -1053,7 +1053,7 @@ c
 c
 c
 c------------------------------------------------------------
-c     set variables from state variables
+c     set variables from state variables 
 c
       subroutine jancae_isv2pex ( isvrsvd,isvsclr,
      &                            stv,nstv,
@@ -1141,7 +1141,7 @@ c
 c
       n=0
       p=prop(n+1)
-      if ( p.ge.1000.0d0 ) p=p-1000.d0
+      if ( p.ge.1000.0d0 ) p=p-1000.d0 
       nela=nint(p)
       select case (nela)
         case (0) ; nd=2
