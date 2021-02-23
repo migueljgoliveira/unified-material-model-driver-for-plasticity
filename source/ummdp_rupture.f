@@ -5,8 +5,8 @@ c
 c      0 : No Rupture Criterion
 c
 c      1 : Equivalent Plastic Strain
-c      2 : Cockroft and Latham (CL)
-c      3 : Rice and Tracey (RT)
+c      2 : Cockroft and Latham
+c      3 : Rice and Tracey
 c      4 : Ayada
 c      5 : Brozzo
 c
