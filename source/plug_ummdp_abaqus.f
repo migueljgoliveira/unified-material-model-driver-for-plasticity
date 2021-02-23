@@ -1,14 +1,8 @@
 c
-c     JANCAE.UMMDp/Simulia.Abaqus
+c 	  Copyright (c) 2018 JANCAE​
 c
-c     150908 H.Takizawa mxpbs,prop(nprop)
-c     171229 H.Takizawa material data from PROPS(NPROPS)
-c            jancae_prop_dim
-c            common /jancae3/prop (from UMAT to UVARM)
-c
-c
-c
-c
+c			This software includes code developed by the 
+c     Material Modeling Working group of JANCAE.​
 c
 c-----------------------------------------------------------------------
 c
