@@ -20,7 +20,7 @@ c     -6 : BBC 2008
 c     -7 : Hill 1990
 c
 c-----------------------------------------------------------------------
-c     yield criteria and its dfferentials
+c     yield criteria and its differentials
 c
       subroutine jancae_yfunc ( se,cdseds,cd2seds2,nreq,
      &                          cs,nttl,nnrm,nshr,
@@ -52,9 +52,9 @@ c
         return
       endif
 c
-c                                      *** 3D yield functions
+c                                                  *** 3D yield criteria
 c
-c                                  set index to s(i) to cs(i)
+c                                         --- set index to s(i) to cs(i)
       do i = 1,6
         indx(i) = 0
       enddo
@@ -70,7 +70,7 @@ c                                  set index to s(i) to cs(i)
           indx(3+i) = 2 + i
         enddo
       endif
-c                                                    set s(i)
+c                                                           --- set s(i)
       call jancae_clear1 ( s,6 )
       do i = 1,6
         if ( indx(i) .ne. 0 ) then
@@ -129,7 +129,7 @@ c
 c
 c
   100 continue
-c                                       *** plane stress yield functions
+c                                        *** plane stress yield criteria
 c
       select case ( ntyld )
       case ( -1 )                                    ! Gotoh Biquadratic
@@ -165,7 +165,7 @@ c
 c
 c
 c-----------------------------------------------------------------------
-c     print type and parameters for yield functions
+c     print type and parameters for yield criteria
 c
       subroutine jancae_yfunc_print ( pryld,ndyld )
 c-----------------------------------------------------------------------
@@ -173,7 +173,7 @@ c-----------------------------------------------------------------------
       dimension pryld(ndyld)
 c
       ntyld = pryld(1)
-      write (6,*) '*** yield function',ntyld
+      write (6,*) '*** yield criteria',ntyld
       select case ( ntyld )
       case ( 0 ) 																						 ! von Mises
         write (6,*) 'von Mises'
