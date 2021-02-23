@@ -1,5 +1,7 @@
 c***********************************************************************
-c     JANCAE/UMMDp : Kinematic Hardening
+c
+c     UMMDp : Kinematic Hardening Laws
+c
 c***********************************************************************
 c
 c      0 : No Kinematic Hardening
@@ -11,7 +13,7 @@ c      5 : Chaboche (1979) - Ziegler
 c      6 : Yoshida-Uemori
 c
 c-----------------------------------------------------------------------
-c     calc. kinematic hardening function
+c     calc. kinematic hardening law
 c
       subroutine jancae_kinematic ( vk,dvkdp,
      &                              dvkds,dvkdx,dvkdxt,
@@ -42,10 +44,10 @@ c                                                        ---- initialize
             dvkdxt(i,j,k) = 0.0
             do l = 1,npbs
               dvkdx(i,l,j,k) = 0.0
-            end do
-          end do
-        end do
-      end do
+						enddo
+					enddo
+				enddo
+			enddo
 c
       select case ( ntkin )
 c
@@ -133,8 +135,8 @@ c                   ---- engineering shear strain -> tensor shear strain
         dseds(i) = 0.5d0*dseds(i)
         do j = 1,nttl
           d2seds2(i,j) = 0.5d0*d2seds2(i,j)
-        end do
-      end do
+				enddo
+				enddo
 c                                          ---- for plane stress problem
       if ( nnrm .eq. 2 ) then
         em1 = dseds(1)
@@ -153,7 +155,7 @@ c                                          ---- for plane stress problem
         d2seds2(2,1) = d2seds2(2,1) + en21 + en11
         d2seds2(2,2) = d2seds2(2,2) + en22 + en12
         d2seds2(2,3) = d2seds2(2,3) + en23 + en13
-      end if
+			endif
 c
       return
       end
@@ -197,7 +199,7 @@ c
           n0 = 1+(i-1)*2
           write (6,*) 'c(',i,')=',prkin(1+n0+1)
           write (6,*) 'g(',i,')=',prkin(1+n0+2)
-        end do
+				enddo
 c
       case ( 5 )                       ! Chaboche (1979) - Ziegler Model
         write (6,*) 'Chaboche (1979) - Ziegler Model'
@@ -207,7 +209,7 @@ c
           n0 = 1+(i-1)*2
           write (6,*) 'c(',i,')=',prkin(1+n0+1)
           write (6,*) 'g(',i,')=',prkin(1+n0+2)
-        end do
+				enddo
 c
       case ( 6 )                                        ! Yoshida-Uemori
         write (6,*) 'Yoshida-Uemori'
@@ -250,7 +252,7 @@ c
 c
       do i = 1,nttl
         eta(i) = s(i) - xt(i)
-      end do
+			enddo
 c
       call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
      &                        nttl,nnrm,nshr,
@@ -260,20 +262,20 @@ c
 c
       do i = 1,nttl
         vk(n,i) = c * dseds(i)
-      end do
+			enddo
 c
       dcdp = 0.0d0
       do i = 1,nttl
         dvkdp(n,i) = dcdp * dseds(i)
-      end do
+			enddo
 c
       do i = 1,nttl
         do j = 1,nttl
           dvkds(n,i,j) = c * d2seds2(i,j)
           dvkdx(n,n,i,j) = -c * d2seds2(i,j)
           dvkdxt(n,i,j) = 0.0
-        end do
-      end do
+				enddo
+			enddo
 c
       return
       end
@@ -306,17 +308,17 @@ c
 c
       do i = 1,nttl
         eta(i) = s(i) - xt(i)
-      end do
+			enddo
 c
       n = 1
       do i = 1,nttl
         vk(n,i) = c * eta(i)
-      end do
+			enddo
 c
       dcdp = 0.0
       do i = 1,nttl
         dvkdp(n,i) = dcdp * eta(i)
-      end do
+			enddo
 c
       call jancae_setunitm ( am,nttl )
       do i = 1,nttl
@@ -324,8 +326,8 @@ c
           dvkds(n,i,j) = c * am(i,j)
           dvkdx(n,n,i,j) = -c * am(i,j)
           dvkdxt(n,i,j) = 0.0
-        end do
-      end do
+				enddo
+			enddo
 c
       return
       end
@@ -360,7 +362,7 @@ c
 c
       do i = 1,nttl
         eta(i) = s(i) - xt(i)
-      end do
+			enddo
 c
       call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
      &                        nttl,nnrm,nshr,
@@ -369,13 +371,13 @@ c
       n = 1
       do i = 1,nttl
         vk(n,i) = c*dseds(i) - g*xt(i)
-      end do
+			enddo
 c
       dcdp = 0.0d0
       dgdp = 0.0d0
       do i = 1,nttl
         dvkdp(n,i) = dcdp*dseds(i) - dgdp*xt(i)
-      end do
+			enddo
 c
       call jancae_setunitm ( am,nttl )
       do i = 1,nttl
@@ -383,8 +385,8 @@ c
           dvkds(n,i,j) = c * d2seds2(i,j)
           dvkdx(n,n,i,j) = -c*d2seds2(i,j) - g*am(i,j)
           dvkdxt(n,i,j) = 0.0
-        end do
-      end do
+				enddo
+			enddo
 c
       return
       end
@@ -415,7 +417,7 @@ c
 c
       do i = 1,nttl
         eta(i) = s(i) - xt(i)
-      end do
+			enddo
 c
       call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
      &                        nttl,nnrm,nshr,
@@ -428,20 +430,20 @@ c
         g = prkin(1+n0+2)
         do i = 1,nttl
           vk(n,i) = c*dseds(i) - g*x(n,i)
-        end do
+				enddo
         dcdp = 0.0d0
         dgdp = 0.0d0
         do i = 1,nttl
           dvkdp(n,i) = dcdp*dseds(i) - dgdp*x(n,i)
-        end do
+				enddo
         do i = 1,nttl
           do j = 1,nttl
             dvkds(n,i,j) = c * d2seds2(i,j)
             dvkdx(n,n,i,j) = -g * am(i,j)
             dvkdxt(n,i,j) = -c * d2seds2(i,j)
-          end do
-        end do
-      end do
+					enddo
+				enddo
+			enddo
 c
       return
       end
@@ -473,7 +475,7 @@ c
 c
       do i = 1,nttl
         eta(i) = s(i) - xt(i)
-      end do
+			enddo
 c
       call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
      &                        nttl,nnrm,nshr,
@@ -486,20 +488,20 @@ c
         g = prkin(1+n0+2)
         do i = 1,nttl
           vk(n,i) = (c/seta)*eta(i) - g*x(n,i)
-        end do
+				enddo
         dcdp = 0.0d0
         dgdp = 0.0d0
         do i = 1,nttl
           dvkdp(n,i) = (dcdp/seta)*eta(i) - dgdp*x(n,i)
-        end do
+				enddo
         do i = 1,nttl
           do j = 1,nttl
             dvkds(n,i,j) = (c/seta) * am(i,j)
             dvkdx(n,n,i,j) = -g * am(i,j)
             dvkdxt(n,i,j) = -(c/seta) * am(i,j)
-          end do
-        end do
-      end do
+					enddo
+				enddo
+			enddo
 c
       return
       end
@@ -537,7 +539,7 @@ c
 c
       do i = 1,nttl
         eta(i) = s(i) - xt(i)
-      end do
+			enddo
 c
       call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
      &                        nttl,nnrm,nshr,
@@ -547,10 +549,10 @@ c
       n = 1
       do i = 1,nttl
         vk(n,i) = pc*((pa/py)*eta(i) - sqrt(pa/seta)*x(n,i))
-      end do
+			enddo
       do i = 1,nttl
         dvkdp(n,i) = 0.0
-      end do
+			enddo
       do i = 1,nttl
         do j = 1,nttl
           dvkds(n,i,j) = pc*pa/py*am(i,j)
@@ -558,23 +560,23 @@ c
           dvkdx(n,n,i,j) = pc*sqrt(pa)*
      &                    ( -am(i,j)/sqrt(seta)
      &                       + x(n,i)*dseds(j)/(2.0d0*seta**(1.5d0)) )
-        end do
-      end do
+				enddo
+			enddo
 c
       n = 2
       do i = 1,nttl
         vk(n,i) = pk*(2.0d0/3.0d0*pb*dseds(i) - x(n,i))
-      end do
+			enddo
       do i = 1,nttl
         dvkdp(n,i) = 0.0
-      end do
+			enddo
       do i = 1,nttl
         do j = 1,nttl
           dvkds(n,i,j) = 2.0d0/3.0d0*pb + pk*d2seds2(i,j)
           dvkdxt(n,i,j) = -2.0d0/3.0d0*pb + pk*d2seds2(i,j)
           dvkdx(n,n,i,j) = -pk * am(i,j)
-        end do
-      end do
+				enddo
+			enddo
 c
       return
       end

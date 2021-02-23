@@ -1,5 +1,5 @@
 c***********************************************************************
-c     JANCAE/UMMDp : Rupture Criteria
+c     UMMDp : Uncoupled Rupture Criteria
 c**********************************************************************
 c
 c      0 : No Rupture Criterion
@@ -11,7 +11,7 @@ c      4 : Ayada
 c      5 : Brozzo
 c
 c-----------------------------------------------------------------------
-c     calc. rupture criterion
+c     calculated rupture criteria
 c
       subroutine jancae_rupture ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,jmac,
      &                            jmatyp,matlayo,laccfla,nt,
@@ -64,9 +64,10 @@ c
 c
 c
 c-----------------------------------------------------------------------
-c     print parameters for uncoupled rupture criterion
+c     print parameters for uncoupled rupture criteria
 c
       subroutine jancae_rupture_print ( prrup,ndrup )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       dimension prrup(ndrup)
@@ -75,21 +76,27 @@ c
       write (6,*)
       write (6,*) '*** Uncoupled Rupture Criterion',ntrup
       select case ( ntrup )
-      case ( 0 )
+c
+      case ( 0 ) 										   	! No Uncoupled Rupture Criterion
         write (6,*) 'No Uncoupled Rupture Criterion'
-      case ( 1 )
+c
+      case ( 1 ) 														 ! Equivalent Plastic Strain
         write (6,*) 'Equivalent Plastic Strain'
         write (6,*) 'W=int[dp]'
-      case ( 2 )
+c
+      case ( 2 )  																 ! Cockroft and Latham
         write (6,*) 'Cockroft and Latham'
         write (6,*) 'W=int[(sp1/se)*dp]'
-      case ( 3 )
+c
+      case ( 3 ) 																	     ! Rice and Tracey
         write (6,*) 'Rice and Tracey'
         write (6,*) 'W=int[exp(1.5*sh/se)*dp]'
-      case ( 4 )
+c
+      case ( 4 ) 																						     ! Ayada
         write (6,*) 'Ayada'
         write (6,*) 'W=int[(sh/se)*dp]'
-      case ( 5 )
+c
+      case ( 5 ) 																							  ! Brozzo
         write (6,*) 'Brozzo'
         write (6,*) 'W=int[(2/3)*(sp1/(sp1-se))*dp]'
       end select
@@ -104,6 +111,7 @@ c     Equivalent Plastic Strain
 c
       subroutine jancae_rup_eqstrain ( sdv,nsdv,uvar2,nuvarm,nt,
      &                                 ndrup,prrup)
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
@@ -136,8 +144,9 @@ c-----------------------------------------------------------------------
 c     Cockroft and Latham (CL)
 c
       subroutine jancae_rup_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     1                                 jmac,jmatyp,matlayo,laccfla,nt,
-     2                                 ndrup,prrup )
+     &                                 jmac,jmatyp,matlayo,laccfla,nt,
+     &                                 ndrup,prrup )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
@@ -173,7 +182,7 @@ c                                     ---- get sdv and uvar after update
 c
 c                                 ---- get principal stress after update
       call getvrm ('SP',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &             MATLAYO,LACCFLA )
+     &                  MATLAYO,LACCFLA )
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sp'
         write (6,*) 'stop in uvrm.'
@@ -205,6 +214,7 @@ c
       subroutine jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
      &                             jmac,jmatyp,matlayo,laccfla,nt,
      &                             ndrup,prrup )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
@@ -240,7 +250,7 @@ c                                     ---- get sdv and uvar after update
 c
 c                               ---- get hydrostatic stress after update
       call getvrm ('SINV',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &             MATLAYO,LACCFLA )
+     &                    MATLAYO,LACCFLA )
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
@@ -273,6 +283,7 @@ c
       subroutine jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
      &                              jmac,jmatyp,matlayo,laccfla,nt,
      &                              ndrup,prrup )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
@@ -308,7 +319,7 @@ c                                     ---- get sdv and uvar after update
 c
 c                               ---- get hydrostatic stress after update
       call getvrm ('SINV',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &             MATLAYO,LACCFLA )
+     &                    MATLAYO,LACCFLA )
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
@@ -341,6 +352,7 @@ c
       subroutine jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
      &                               jmac,jmatyp,matlayo,laccfla,nt,
      &                               ndrup,prrup )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
@@ -377,7 +389,7 @@ c                                              ---- get sdv after update
 c
 c                                 ---- get principal stress after update
       call getvrm ('SP',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &             MATLAYO,LACCFLA )
+     &                  MATLAYO,LACCFLA )
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sp'
         write (6,*) 'stop in uvrm.'
