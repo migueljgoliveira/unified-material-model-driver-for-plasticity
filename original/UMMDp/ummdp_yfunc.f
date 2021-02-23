@@ -1,8 +1,26 @@
 c***********************************************************************
-c     JANCAE/UMMDp : Yield Functions 
+c     UMMDp : Yield Criteria
 c***********************************************************************
+c
+c      0 : von Mises
+c
+c      1 : Hill 1948
+c      2 : Yld2004-18p
+c      3 : CPB 2006
+c      4 : Karafillis-Boyce 1993
+c      5 : Hu 2005
+c      6 : Yoshida 2011
+c
+c     -1 : Gotoh Biquadratic
+c     -2 : Yld2000-2d
+c     -3 : Vegter
+c     -4 : BBC 2005
+c     -5 : Yld89
+c     -6 : BBC 2008
+c     -7 : Hill 1990
+c
 c-----------------------------------------------------------------------
-c     yield function and its dfferentials
+c     yield criteria and its dfferentials
 c
       subroutine jancae_yfunc ( se,cdseds,cd2seds2,nreq,
      &                          cs,nttl,nnrm,nshr,
@@ -14,23 +32,6 @@ c-----------------------------------------------------------------------
       dimension s(6),dseds(6),d2seds2(6,6),indx(6)
 c
       ntyld = nint(pryld(1))
-c
-c     0 : von Mises isotropic (1913)
-c
-c     1 : Hill quadratic (1948)
-c     2 : Barlat yld2004 (2005)
-c     3 : Cazacu (2006)
-c     4 : Karafillis-Boyce (1993)
-c     5 : Hu (2005)
-c     6 : Yohsida (2011)
-c
-c    -1 : Gotoh biquadratic (1978)
-c    -2 : Barlat YLD2000-2d (2000)
-c    -3 : Vegter
-c    -4 : Banabic BBC2005
-c    -5 : Barlat YLD89
-c    -6 : Banabic BBC2008
-c    -7 : Hill 1990
 c
       if ( ntyld .lt. 0 ) then
         if ( ( nnrm .ne. 2 ) .or. ( nshr .ne. 1 ) ) then
