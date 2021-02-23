@@ -11,6 +11,7 @@ c      4 : Karafillis-Boyce 1993
 c      5 : Hu 2005
 c      6 : Yoshida 2011
 c
+<<<<<<< HEAD:original/UMMDp/ummdp_yfunc_control.f
 c     -1 : Gotoh Biquadratic
 c     -2 : Yld2000-2d
 c     -3 : Vegter
@@ -28,6 +29,8 @@ c
      &                          pryld,ndyld )
 c-----------------------------------------------------------------------
 =======
+=======
+>>>>>>> parent of a18b001 (updated name of file):original/UMMDp/ummdp_yfunc.f
       subroutine jancae_yfunc  ( se,cdseds,cd2seds2,nreq,
      &                           cs,nttl,nnrm,nshr,
      &                           pryld,ndyld )
