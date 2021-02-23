@@ -4,9 +4,9 @@ c*************************************************************
 c------------------------------------------------------------
 c     yield function and its dfferentials
 c
-      subroutine jancae_yfunc  ( se,cdseds,cd2seds2,nreq,
-     &                           cs,nttl,nnrm,nshr,
-     &                           pryld,ndyld )
+      subroutine jancae_yfunc ( se,cdseds,cd2seds2,nreq,
+     &                          cs,nttl,nnrm,nshr,
+     &                          pryld,ndyld )
 c------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       dimension cs(nttl),cdseds(nttl),cd2seds2(nttl,nttl),
