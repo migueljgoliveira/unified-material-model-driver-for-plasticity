@@ -1,32 +1,34 @@
 c***********************************************************************
-c     JANCAE/UMMDp : Yield Criteria
+c
+c     UMMDp : Yield Criteria
+c
 c***********************************************************************
 c
 c      0 : von Mises (1913)
 c
-c    3D
-c      1 : Hill 1948
-c      2 : Yld2004-18p
-c      3 : CPB 2006
-c      4 : Karafillis-Boyce 1993
-c      5 : Hu 2005
-c      6 : Yoshida (2011)
+c     3D
+c       1 : Hill 1948
+c       2 : Yld2004-18p
+c       3 : CPB 2006
+c       4 : Karafillis-Boyce 1993
+c       5 : Hu 2005
+c       6 : Yoshida 2011
 c
-c    2D
-c     -1 : Gotoh biquadratic (1978)
-c     -2 : Yld2000-2d
-c     -3 : Vegter
-c     -4 : BBC 2005
-c     -5 : YLD89
-c     -6 : BBC 2008
-c     -7 : Hill 1990
+c     2D
+c      -1 : Gotoh Biquadratic
+c      -2 : Yld2000-2d
+c      -3 : Vegter
+c      -4 : BBC 2005
+c      -5 : Yld89
+c      -6 : BBC 2008
+c      -7 : Hill 1990
 c
 c-----------------------------------------------------------------------
-c     yield function and its dfferentials
+c     yield criteria and its differentials
 c
-      subroutine jancae_yfunc  ( se,cdseds,cd2seds2,nreq,
-     &                           cs,nttl,nnrm,nshr,
-     &                           pryld,ndyld )
+      subroutine jancae_yfunc ( se,cdseds,cd2seds2,nreq,
+     &                          cs,nttl,nnrm,nshr,
+     &                          pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       dimension cs(nttl),cdseds(nttl),cd2seds2(nttl,nttl),
@@ -41,44 +43,44 @@ c
           write (6,*) 'ntyld<0 for plane stress'
           write (6,*) 'nnrm,nshr,ntyld:',nnrm,nshr,ntyld
           call jancae_exit (9000)
-        end if
+        endif
         goto 100
-      end if
+      endif
 c
       ss = 0.0
       do i = 1,nttl
         ss = ss + cs(i)**2
-      end do
+      enddo
       if ( ( ss .le. 0.0 ) .and. ( nreq .eq. 0 ) ) then
         se = 0.0
         return
-      end if
+      endif
 c
 c                                                ---- 3D yield functions
 c
 c                                        ---- set index to s(i) to cs(i)
       do i = 1,6
         indx(i) = 0
-      end do
+      enddo
       if ( nnrm .eq. 3 ) then
         do i = 1,nttl
           indx(i) = i
-        end do
+        enddo
       else if ( nnrm .eq. 2 ) then
         indx(1) = 1
         indx(2) = 2
         indx(3) = 0
         do i = 1,nshr
           indx(3+i) = 2 + i
-        end do
-      end if
+        enddo
+      endif
 c                                                          ---- set s(i)
       call jancae_clear1 ( s,6 )
       do i = 1,6
         if ( indx(i) .ne. 0 ) then
           s(i) = cs(indx(i))
-        end if
-      end do
+        endif
+      enddo
 c
       select case ( ntyld )
       case ( 0 )                                             ! von Mises
@@ -96,15 +98,15 @@ c
         call jancae_cpb2006 ( s,se,dseds,d2seds2,nreq,
      &                         pryld,ndyld )
 c
-      case ( 4 )                               ! Karafillis-Boyce (1993)
+      case ( 4 )                                 ! Karafillis-Boyce 1993
         call jancae_KarafillisBoyce ( s,se,dseds,d2seds2,nreq,
      &                                pryld,ndyld )
 c
-      case ( 5 )                                             ! Hu (2005)
+      case ( 5 )                                               ! Hu 2005
         call jancae_hu2005 ( s,se,dseds,d2seds2,nreq,
      &                       pryld,ndyld )
 c
-      case ( 6 )                                        ! Yoshida (2011)
+      case ( 6 )                                          ! Yoshida 2011
         call jancae_yoshida2011 ( s,se,dseds,d2seds2,nreq,
      &                             pryld,ndyld )
 c
@@ -118,8 +120,8 @@ c                                                        ---- set dse/ds
       if ( nreq .ge. 1 ) then
         do i = 1,6
           if ( indx(i) .ne. 0 ) cdseds(indx(i)) = dseds(i)
-        end do
-      end if
+        enddo
+      endif
 c                                                      ---- set d2se/ds2
       if ( nreq .ge. 2 ) then
         do i = 1,6
@@ -127,20 +129,20 @@ c                                                      ---- set d2se/ds2
             do j = 1,6
               if ( indx(j) .ne. 0 ) then
                 cd2seds2(indx(i),indx(j)) = d2seds2(i,j)
-              end if
-            end do
-          end if
-        end do
-      end if
+              endif
+            enddo
+          endif
+        enddo
+      endif
 c
       return
 c
 c
   100 continue
-c                                      ---- plane stress yield functions
+c                                       ---- plane stress yield criteria
 c
       select case ( ntyld )
-      case ( -1 )                             ! Gotoh biquadratic (1978)
+      case ( -1 )                                    ! Gotoh Biquadratic
         call jancae_gotoh ( cs,se,cdseds,cd2seds2,nreq,
      &                      pryld,ndyld )
 c
@@ -180,7 +182,7 @@ c
 c
 c
 c-----------------------------------------------------------------------
-c     print type and parameters for yield functions
+c     print type and parameters for yield criteria
 c
       subroutine jancae_yfunc_print ( pryld,ndyld )
 c-----------------------------------------------------------------------
@@ -210,7 +212,7 @@ c
         do i = 1,18
            n0 = n0 + 1
            write (6,*) 'a(',i,')=',pryld(n0)
-        end do
+        enddo
         write (6,*) 'M=',pryld(1+18+1)
 c
       case ( 3 )                                              ! CPB 2006
@@ -220,12 +222,12 @@ c
           do j = 1,3
             n0 = n0 + 1
             write (6,*) 'c(',i,',',j,')=',pryld(n0)
-          end do
-        end do
+          enddo
+        enddo
         do i = 4,6
           n0 = n0 + 1
           write (6,*) 'c(',i,',',i,')=',pryld(n0)
-        end do
+        enddo
         n0 = n0 + 1
         write (6,*) 'a =',pryld(n0)
         n0 = n0 + 1
@@ -238,8 +240,8 @@ c
           do j = i,6
             n0 = n0 + 1
             write (6,*) 'L(',i,',',j,') =',pryld(n0)
-          end do
-        end do
+          enddo
+        enddo
         n0 = n0 + 1
         write (6,*) 'k =',pryld(n0)
         n0 = n0 + 1
@@ -251,33 +253,33 @@ c
         do i = 1,5
           n0 = n0 + 1
           write (6,*) 'X(',i,')=',pryld(n0)
-        end do
+        enddo
         n0 = n0 + 1
         write (6,*) 'X(',7,')=',pryld(n0)
         do i = 1,3
           n0 = n0 + 1
           write (6,*) 'C(',i,')=',pryld(n0)
-        end do
+        enddo
 c
-      case ( 6 )                                      ! F.Yoshida (2011)
-        write (6,*) 'F.Yoshida 6th order (2011)'
+      case ( 6 )                                          ! Yoshida 2011
+        write (6,*) 'Yoshida 2011'
         n0 = 1
         do i = 1,16
           n0 = n0+1
           write (6,*) 'c(',i,')=',pryld(n0)
-        end do
+        enddo
 c
-      case ( -1 )                             ! Gotoh biquadratic (1978)
-        write (6,*) 'Gotoh biquadratic'
+      case ( -1 )                                    ! Gotoh Biquadratic
+        write (6,*) 'Gotoh Biquadratic'
         do i = 1,9
           write (6,*) 'A(',i,')=',pryld(i+1)
-        end do
+        enddo
 c
       case ( -2 )                                           ! Yld2000-2d
         write (6,*) 'Yld2000-2d'
         do i = 1,8
           write (6,*) 'a(',i,')=',pryld(i+1)
-        end do
+        enddo
         write (6,*) 'M=',pryld(9+1)
 c
       case ( -3 )                                               ! Vegter
@@ -291,13 +293,13 @@ c
           write (6,*) 'phi_sh(',i,')=',pryld(4+i*4+2)
           write (6,*) 'phi_ps(',i,')=',pryld(4+i*4+3)
           write (6,*) 'omg(   ',i,')=',pryld(4+i*4+4)
-        end do
+        enddo
 c       do i = 1,7
 c         write (6,*) 'phi_un(',i-1,')=',pryld(1+i   )
 c         write (6,*) 'phi_sh(',i-1,')=',pryld(1+i+ 7)
 c         write (6,*) 'phi_ps(',i-1,')=',pryld(1+i+14)
 c         write (6,*) 'omg   (',i-1,')=',pryld(1+i+23)
-c       end do
+c       enddo
 c       write (6,*)   'f_bi0=',pryld(1+22)
 c       write (6,*)   'r_bi0=',pryld(1+23)
 c       write (6,*)   'nf   =',nint(pryld(1+31))
@@ -336,7 +338,7 @@ c
           write (6,*) 'n_1=',pryld(n+6)
           write (6,*) 'n_2=',pryld(n+7)
           write (6,*) 'n_3=',pryld(n+8)
-        end do
+        enddo
 c
       case ( -7 )                                            ! Hill 1990
         write (6,*) 'Hill 1990'
