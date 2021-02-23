@@ -1,5 +1,7 @@
 c***********************************************************************
-c     JANCAE/UMMDp : Utility Subroutines
+c
+c     UMMDp : Utility Subroutines
+c
 c***********************************************************************
 c     jancae_clear1 ( a,n )
 c       clear 1st order tensor (vector) a(n)
