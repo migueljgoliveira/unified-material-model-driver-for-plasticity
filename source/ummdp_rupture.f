@@ -1,5 +1,7 @@
 c***********************************************************************
+c
 c     UMMDp : Uncoupled Rupture Criteria
+c
 c**********************************************************************
 c
 c      0 : No Rupture Criterion
@@ -16,11 +18,13 @@ c
       subroutine jancae_rupture ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,jmac,
      &                            jmatyp,matlayo,laccfla,nt,
      &                            ndrup,prrup )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
       dimension UVAR1(NUVARM),JMAC(*),JMATYP(*)
       dimension sdv(nsdv),uvar2(nuvarm),prrup(ndrup)
+c-----------------------------------------------------------------------
 c
       ntrup = prrup(1)
 c
@@ -70,7 +74,9 @@ c
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension prrup(ndrup)
+c-----------------------------------------------------------------------
 c
       ntrup = nint(prrup(1))
       write (6,*)
@@ -117,6 +123,7 @@ c-----------------------------------------------------------------------
 c
       dimension sdv(nsdv),uvar2(nuvarm),prrup(ndrup)
       real*8 lim,peeq
+c-----------------------------------------------------------------------
 c
 c     nuvarm : 2
 c
@@ -157,6 +164,7 @@ c
       real*8 lim
       real*8 se1,peeq1,maxsp1,maxsp1se1,wlim1
       real*8 se2,peeq2,maxsp2,maxsp2se2,wlim2
+c-----------------------------------------------------------------------
 c
 c     nuvarm : 4
 c
@@ -225,6 +233,7 @@ c
       real*8 lim
       real*8 se1,peeq1,shyd1,shyd1se1,wlim1
       real*8 se2,peeq2,shyd2,shyd2se2,wlim2
+c-----------------------------------------------------------------------
 c
 c     nuvarm : 4
 c
@@ -294,6 +303,7 @@ c
       real*8 lim
       real*8 se1,peeq1,shyd1,shyd1se1,wlim1
       real*8 se2,peeq2,shyd2,shyd2se2,wlim2
+c-----------------------------------------------------------------------
 c
 c     nuvarm : 4
 c
@@ -363,6 +373,7 @@ c
       real*8 lim
       real*8 se1,peeq1,shyd1,maxsp1,maxsp1shyd1,wlim1
       real*8 se2,peeq2,shyd2,maxsp2,maxsp2shyd2,wlim2
+c-----------------------------------------------------------------------
 c
 c     nuvarm : 5
 c

@@ -3,24 +3,34 @@ c
 c     UMMDp : Utility Subroutines
 c
 c***********************************************************************
+c
 c     jancae_clear1 ( a,n )
 c       clear 1st order tensor (vector) a(n)
+c
 c     jancae_clear2 ( a,n,m )
 c       clear 2nd order tensor (matrix) a(n,m)
+c
 c     jancae_clear3 ( a,n,m,l )
 c       clear 3rd order tensor a(n,m,l)
+c
 c     jancae_setunitm ( a,n )
 c       set unit 2nd oder tensor [I]
+c
 c     jancae_print1 ( text,a,n )
 c       print 1st order tensor with title (text)
+c
 c     jancae_print2 ( text,a,n,m )
 c       print 2nd order tensor with title (text)
+c
 c     jancae_mv (v,a,u,nv,nu)
 c       mutiply matrix to vector v(nv)=a(nv,nu)*u(nu)
+c
 c     jancae_mm (a,b,c,na1,na2,nbc)
 c       mutiply matrix and matrix a(na1,na2)=b(na1,nbc)*c(nbc,na2)
+c
 c     jancae_vvs ( s,u,v,n )
 c       calc. scalar (inner) product of v(n) & u(n)
+c
 c     jancae_minv ( b,a,n,d )
 c       calc. inverse matrix b(n,n)=a(n,n)^-1 and det(a)
 c       branch to following routines
@@ -28,21 +38,26 @@ c       jancae_ludcmp( a,n,indx,d ) : LU-decomposition
 c       jancae_lubksb(a,n,indx,b)   : backward subsitution
 c       jancae_minv2 ( b,a,deta )   : for 2*2 matrix
 c       jancae_minv3 ( b,a,deta )   : for 3*3 matrix
+c
 c     jancae_eigen_sym3 ( es,ev,a )
 c       calc. eigen value and normalized eigen vector (3*3sym)
+c
 c     jancae_printinfo.
 c       print inc.info. and element info.
+c
 c     jancae_printinout
 c       print input and output of user subroutine
-c
 c
 c-----------------------------------------------------------------------
 c     zero clear vector a(n)
 c
       subroutine jancae_clear1 ( a,n )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n)
+c-----------------------------------------------------------------------
 c
       do i = 1,n
         a(i) = 0.0d0
@@ -57,9 +72,12 @@ c-----------------------------------------------------------------------
 c     zero clear matrix a(n,m)
 c
       subroutine jancae_clear2 ( a,n,m )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,m)
+c-----------------------------------------------------------------------
 c
       do i = 1,n
         do j = 1,m
@@ -76,9 +94,12 @@ c-----------------------------------------------------------------------
 c     zero clear matrix a(n,m,l)
 c
       subroutine jancae_clear3 ( a,n,m,l )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,m,l)
+c-----------------------------------------------------------------------
 c
       do i = 1,n
         do j = 1,m
@@ -97,9 +118,12 @@ c-----------------------------------------------------------------------
 c     set unit 2nd oder tensor [I]
 c
       subroutine jancae_setunitm ( a,n )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,n)
+c-----------------------------------------------------------------------
 c
       call jancae_clear2 ( a,n,n )
       do i = 1,n
@@ -115,10 +139,13 @@ c-----------------------------------------------------------------------
 c     print vector a(n) with text
 c
       subroutine jancae_print1 ( text,a,n )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n)
       character text*32
+c-----------------------------------------------------------------------
 c
       write (6,*) text
       write (6,9000) (a(i),i=1,n)
@@ -133,10 +160,13 @@ c-----------------------------------------------------------------------
 c     print matrix a(n,m) with text
 c
       subroutine jancae_print2 ( text,a,n,m )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,m)
       character text*32
+c-----------------------------------------------------------------------
 c
       write (6,*) text
       do i = 1,n
@@ -153,10 +183,13 @@ c-----------------------------------------------------------------------
 c     calculate multiplication of matrix and vector
 c     {v}=[a]{u}
 c
-      subroutine jancae_mv (v,a,u,nv,nu)
+      subroutine jancae_mv ( v,a,u,nv,nu )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension v(nv),a(nv,nu),u(nu)
+c-----------------------------------------------------------------------
 c
       call jancae_clear1 ( v,nv )
       do i = 1,nv
@@ -174,10 +207,13 @@ c-----------------------------------------------------------------------
 c     calculate multiplication of matrix and matrix
 c     [a]=[b][c]
 c
-      subroutine jancae_mm (a,b,c,na1,na2,nbc)
+      subroutine jancae_mm ( a,b,c,na1,na2,nbc )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(na1,na2),b(na1,nbc),c(nbc,na2)
+c-----------------------------------------------------------------------
 c
       call jancae_clear2 ( a,na1,na2 )
       do i = 1,na1
@@ -198,9 +234,12 @@ c     calculate scaler product of vectors
 c     s={u}T{v}
 c
       subroutine jancae_vvs ( s,u,v,n )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension v(n),u(n)
+c-----------------------------------------------------------------------
 c
       s = 0.0
       do i = 1,n
@@ -221,10 +260,12 @@ c
 c     Ref. http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,n),b(n,n)
       dimension indx(n),y(n),c(n,n),aorg(n,n)
       character text*32
       logical   check
+c-----------------------------------------------------------------------
 c
       check = .false.
       eps = 1.0d-36
@@ -308,11 +349,14 @@ c-----------------------------------------------------------------------
 c     LU decomposition
 c
       subroutine jancae_ludcmp( a,n,indx,d,eps )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,n),indx(n)
       dimension vtemp(n)
       character text*32
+c-----------------------------------------------------------------------
 c
       d = 1.0d0
       do i = 1,n
@@ -384,9 +428,12 @@ c-----------------------------------------------------------------------
 c     LU backward substitution
 c
       subroutine jancae_lubksb( a,n,indx,b,eps )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,n),b(n),indx(n)
+c-----------------------------------------------------------------------
 c
       ii = 0
       do i = 1,n
@@ -419,11 +466,12 @@ c-----------------------------------------------------------------------
 c     calculate inverse matrix[2,2]
 c
       subroutine jancae_minv2 ( b,a,deta,eps )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
       dimension b(2,2),a(2,2)
-c
+c-----------------------------------------------------------------------
 c
       deta = a(1,1)*a(2,2) - a(1,2)*a(2,1)
       if ( abs(deta) .le. eps ) then
@@ -447,10 +495,12 @@ c-----------------------------------------------------------------------
 c     calculate inverse matrix[3,3]
 c
       subroutine jancae_minv3 ( b,a,deta,eps )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
       dimension b(3,3),a(3,3)
+c-----------------------------------------------------------------------
 c
       deta = a(1,1) * (a(2,2)*a(3,3) - a(2,3)*a(3,2)) +
      &       a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3)) +
@@ -481,9 +531,12 @@ c-----------------------------------------------------------------------
 c     print informations for debug (intro)
 c
       subroutine jancae_printinfo ( inc,nnrm,nshr )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       common /jancae1/ne,ip,lay
+c-----------------------------------------------------------------------
 c
       nttl = nnrm + nshr
 c
@@ -524,12 +577,14 @@ c
 c-----------------------------------------------------------------------
 c     print informations for debug (input/output)
 c
-      subroutine jancae_printinout ( io,s,de,d,nttl,
-     &                               stv,nstv )
+      subroutine jancae_printinout ( io,s,de,d,nttl,stv,nstv )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension s(nttl),de(nttl),d(nttl,nttl),stv(nstv)
       character text*32
+c-----------------------------------------------------------------------
 c
       if ( io .eq. 0 ) then
         text = 'initial stresses'
@@ -568,10 +623,13 @@ c    output :  es(i)   : i-th eigen value
 c              ev(i,3) : normalized eigen vector for i-th eigen value
 c
       subroutine jancae_eigen_sym3 ( es,ev,a )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension   a(3,3),es(3),ev(3,3)
       dimension   w(3,3),prc(3,3)
+c-----------------------------------------------------------------------
 c
       msweep = 100
       eps = 1.0d-8
@@ -691,10 +749,13 @@ c
 c-----------------------------------------------------------------------
 c     checking existence of file named "flname"
 c
-       logical function jancae_file_exist ( flname )
+       logical function jancae_file_exist ( flname )´
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
-      character   flname*16
+c
+      character flname*16
+c-----------------------------------------------------------------------
 c
       nio = 616
       open ( nio,file=flname,status='old',err=10 )

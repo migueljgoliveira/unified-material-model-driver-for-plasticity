@@ -17,9 +17,12 @@ c     hardening curve
 c
       subroutine jancae_hardencurve ( sy,dsydp,d2sydp2,
      &                                nreq,p,prihd,ndihd )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension prihd(ndihd)
+c-----------------------------------------------------------------------
 c
       ntihd = nint(prihd(1))
       select case ( ntihd )
@@ -30,8 +33,8 @@ c
           dsydp = 0.0
           if ( nreq .ge. 2 ) then
             d2sydp2 = 0.0
-					endif
-				endif
+					end if
+				end if
 c
       case ( 1 )                                                ! Linear
         sy0  = prihd(1+1)
@@ -41,8 +44,8 @@ c
           dsydp = hard
           if ( nreq .ge. 2 ) then
             d2sydp2 = 0.0
-					endif
-				endif
+					end if
+				end if
 c
       case ( 2 )                                                 ! Swift
         c  = prihd(1+1)
@@ -53,8 +56,8 @@ c
           dsydp = en*c*(e0+p)**(en-1.0d0)
           if ( nreq .ge. 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*(e0+p)**(en-2.0d0)
-					endif
-				endif
+					end if
+				end if
 c
       case ( 3 )                                               ! Ludwick
         sy0 = prihd(1+1)
@@ -65,8 +68,8 @@ c
           dsydp = en*c*p**(en-1.0d0)
           if ( nreq .ge. 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*p**(en-2.0d0)
-					endif
-				endif
+					end if
+				end if
 c
       case ( 4 )                                                  ! Voce
         sy0 = prihd(1+1)
@@ -77,8 +80,8 @@ c
           dsydp = q*b*exp(-b*p)
           if ( nreq .ge. 2 ) then
             d2sydp2 = -q*b*b*exp(-b*p)
-					endif
-				endif
+					end if
+				end if
 c
       case ( 5 )                                         ! Voce + Linear
         sy0 = prihd(1+1)
@@ -90,8 +93,8 @@ c
           dsydp = q*b*exp(-b*p)+c
           if ( nreq .ge. 2 ) then
             d2sydp2 = -q*b*b*exp(-b*p)
-					endif
-				endif
+					end if
+				end if
 c
       case ( 6 )                                          ! Voce + Swift
         a   = prihd(1+1)
@@ -107,8 +110,8 @@ c
           if ( nreq .ge. 2 ) then
             d2sydp2 = a*(-q*b*b*exp(-b*p)) + 
      &                (1.0d0-a)*(en*c*(en-1.0d0)*(e0+p)**(en-2.0d0))
-					endif
-				endif
+					end if
+				end if
 c
       case default
         write (6,*) 'hardening type error',ntihd
@@ -124,9 +127,12 @@ c-----------------------------------------------------------------------
 c     print parameters for isotropic hardening laws info
 c
       subroutine jancae_harden_print ( prihd,ndihd )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
-      dimension prihd(ndihd)
+c
+			dimension prihd(ndihd)
+c-----------------------------------------------------------------------
 c
       ntihd = nint(prihd(1))
       write (6,*)
