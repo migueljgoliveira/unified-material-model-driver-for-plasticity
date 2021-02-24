@@ -1,5 +1,7 @@
 # UMMDp - Unified Material Model Driver for Plasticity
 
+Library of elastoplastic constitutive models for Abaqus software, including anisotropic yield criteria, isotropic and kinematic hardening laws, and uncoupled rupture criteria.
+
 ## :wrench: Pre-requisites
 
 * Fortran compiler
