@@ -33,7 +33,7 @@ c
         return
 c
       case ( 1 )                             ! Equivalent Plastic Strain
-        call jancae_rup_eqstrain ( sdv,nsdv,uvar2,nuvarm,nt,
+        call jancae_rup_eqstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,nt,
      &                             ndrup,prrup )
 c
       case ( 2 )                                   ! Cockroft and Latham
@@ -115,13 +115,13 @@ c
 c-----------------------------------------------------------------------
 c     Equivalent Plastic Strain
 c
-      subroutine jancae_rup_eqstrain ( sdv,nsdv,uvar2,nuvarm,nt,
+      subroutine jancae_rup_eqstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,nt,
      &                                 ndrup,prrup)
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
-      dimension sdv(nsdv),uvar2(nuvarm),prrup(ndrup)
+      dimension sdv(nsdv),uvar2(nuvarm),uvar1(nuvarm),prrup(ndrup)
       real*8 lim,peeq
 c-----------------------------------------------------------------------
 c
@@ -141,6 +141,9 @@ c
 c                                                       ---- update uvar
       uvar2(2+nt+1) = peeq
       uvar2(2+nt+2) = peeq / lim
+c
+c      											 ---- terminate analisys if limit is reached
+			if ( uvar1(2+nt+2) .ge. 1.0d0 ) call jancae_exit( 9000 )
 c
       return
       end
@@ -210,6 +213,9 @@ c                                                       ---- update uvar
       uvar2(2+nt+2) = maxsp2
       uvar2(2+nt+3) = wlim2
       uvar2(2+nt+4) = wlim2/lim
+c
+c      											 ---- terminate analisys if limit is reached
+			if ( uvar1(2+nt+2) .ge. 1.0d0 ) call jancae_exit( 9000 )
 c
       return
       end
@@ -281,6 +287,9 @@ c                                                       ---- update uvar
       uvar2(2+nt+3) = wlim2
       uvar2(2+nt+4) = wlim2/lim
 c
+c      											 ---- terminate analisys if limit is reached
+			if ( uvar1(2+nt+2) .ge. 1.0d0 ) call jancae_exit( 9000 )
+c
       return
       end
 c
@@ -350,6 +359,9 @@ c                                                       ---- update uvar
       uvar2(2+nt+2) = shyd2
       uvar2(2+nt+3) = wlim2
       uvar2(2+nt+4) = wlim2/lim
+c
+c      											 ---- terminate analisys if limit is reached
+			if ( uvar1(2+nt+2) .ge. 1.0d0 ) call jancae_exit( 9000 )
 c
       return
       end
@@ -436,6 +448,9 @@ c                                                       ---- update uvar
       uvar2(2+nt+3) = shyd2
       uvar2(2+nt+4) = wlim2
       uvar2(2+nt+5) = wlim2/lim
+c
+c      											 ---- terminate analisys if limit is reached
+			if ( uvar1(2+nt+2) .ge. 1.0d0 ) call jancae_exit( 9000 )
 c
       return
       end
