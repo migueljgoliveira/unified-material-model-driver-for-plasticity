@@ -26,11 +26,13 @@ c
      &          PROPS(NPROPS),COORDS(3),DROT(3,3),
      &          DFGRD0(3,3),DFGRD1(3,3)
 c
+c***********************************************************************
 c-----------------------------------------------------------------------
       common /jancae1/ne,ip,lay
       common /jancae3/prop
       common /jancaea/nsdv
       common /jancaeb/propdim
+c
       parameter (mxpbs=10)
 c
       dimension s2(ntens),dpe(ntens),x1(mxpbs,ntens),x2(mxpbs,ntens),
@@ -40,6 +42,7 @@ c
 c
       parameter (mxprop=100)
       dimension prop(mxprop)
+c-----------------------------------------------------------------------
 c
 c                        ne  : element no.
 c                        ip  : integration point no.
@@ -60,12 +63,12 @@ c                                       ---- output detailed information
         call jancae_printinfo  ( kinc,ndi,nshr )
         call jancae_printinout ( 0,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
-			endif
+			end if
 c
 c                                           ---- set material properties
       do i = 2,nprops
         prop(i-1) = props(i)
-			enddo
+			end do
 c
       call jancae_prop_dim ( prop,nprop,propdim,
      &                       ndela,ndyld,ndihd,ndkin,
@@ -75,7 +78,7 @@ c
         write (6,*) 'npbs =',npbs
         write (6,*) 'mxpbs=',mxpbs
         call jancae_exit ( 9000 )
-			endif
+			end if
 c                                                      ---- check nstatv
       call jancae_check_nisv ( nstatv,ntens,npbs )
 c                             ---- copy current internal state variables
@@ -96,7 +99,7 @@ c                             ---- update stress and set tangent modulus
 c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
-			enddo
+			end do
 c                                            ---- update eq.plast,strain
       statev(isvrsvd+1) = p + dp
 c                                         ---- update plast.strain comp.
@@ -105,28 +108,28 @@ c
       do i = 1,ntens
         is = isvrsvd + isvsclr + i
         statev(is) = ustatev(i) + dpe(i)
-			enddo
+			end do
 c                                       ---- update of back stress comp.
       if ( npbs .ne. 0 ) then
         do n = 1,npbs
           do i = 1,ntens
             is = isvrsvd + isvsclr + ntens*n + i
             statev(is) = x2(n,i)
-					enddo
-					enddo
-				endif
+					end do
+				end do
+			end if
 c                           ----  if debug mode, output return arguments
       if ( nvbs .ge. 4 ) then
         call jancae_printinout ( 1,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
-			endif
+			end if
 c
       return
       end
 c
 c
 c
-c-----------------------------------------------------------------------
+c***********************************************************************
 c
       SUBROUTINE SDVINI ( STATEV,COORDS,NSTATV,NCRDS,NOEL,NPT,
      &                    LAYER,KSPT )
@@ -135,7 +138,7 @@ c
 c
       DIMENSION STATEV(NSTATV),COORDS(NCRDS)
 c
-c-----------------------------------------------------------------------
+c***********************************************************************
 c
       ne = noel
       ip = npt
@@ -144,18 +147,18 @@ c
 c
       if ( ne*ip*lay .eq. 1 ) then
         write (6,*) 'SDVINI is called. '
-			endif
+			end if
 c
       do n = 1,nstatv
         statev(n) = 0.0
-			enddo
+			end do
 c
       return
       end
 c
 c
 c
-c-----------------------------------------------------------------------
+c***********************************************************************
 c
       SUBROUTINE UVARM ( UVAR,DIRECT,T,TIME,DTIME,CMNAME,ORNAME,
      &    NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
@@ -168,6 +171,7 @@ c
       DIMENSION UVAR(NUVARM),DIRECT(3,3),T(3,3),TIME(2)
       DIMENSION ARRAY(15),JARRAY(15),JMAC(*),JMATYP(*),COORD(*)
 c
+c***********************************************************************
 c-----------------------------------------------------------------------
 c     The dimensions of the variables FLGRAY, ARRAY and JARRAY
 c     must be set equal to or greater than 15.
@@ -190,6 +194,7 @@ c
 c
       dimension prop(mxprop)
       real*8,allocatable,dimension(:) :: prela,pryld,prihd,prkin,prrup
+c-----------------------------------------------------------------------
 c
       nprop = mxprop
 c
@@ -198,12 +203,12 @@ c        uvar codes and state variables arrays
 c        nt : ntens
 c
 c     statev(1                     ) : equivalent plastic strain
-c     statev(2        ~  1+nt      ) : plastic strain comp.
+c     statev(2        ~  1+nt      ) : plastic strain components
 c     statev(1+nt*i+1 ~  1+nt*(i+1)) : partial back stress component xi
 c
 c     uvar(1     ) : equivalent stress
 c     uvar(2     ) : flow stress
-c     uvar(3~2+nt) : back stress
+c     uvar(3~2+nt) : total back stress components
 c     uvar(3~2+nt) : rupture criterion
 c
       ne = noel
@@ -215,40 +220,40 @@ c
 c                                            ---- get uvar before update
       do i = 1,nuvarm
         uvar1(i) = uvar(i)
-			enddo
+			end do
 c                                                        ---- get stress
-      call GETVRM('S',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     1            MATLAYO,LACCFLA)
+      call getvrm ( 'S',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
+     &                   MATLAYO,LACCFLA )
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for s'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-			endif
+			end if
 c
       do i = 1,ndi
         s(i) = array(i)
-			enddo
+			end do
       do i = 1,nshr
         i1 = ndi + i
         i2 = 3 + i
         s(i1) = array(i2)
-			enddo
+			end do
 c                                               ---- get state variables
       if ( nsdv .gt. maxsdv ) then
         write (6,*) 'increase dimension of ARRAY2 and JARRAY2'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-			endif
+			end if
       call getvrm ( 'SDV',ARRAY2,JARRAY2,FLGRAY2,JRCD,JMAC,JMATYP,
      &                    MATLAYO,LACCFLA)
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sdv'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-			endif
+			end if
       do i = 1,nsdv
         sdv(i) = array2(i)
-			enddo
+			end do
 c                                           ---- set material properties
       call jancae_prop_dim ( prop,nprop,propdim,
      &                       ndela,ndyld,ndihd,ndkin,
@@ -262,23 +267,23 @@ c                                           ---- set material properties
       do i = 1,ndela
         k = k + 1
         prela(i) = prop(k)
-			enddo
+			end do
       do i = 1,ndyld
         k = k + 1
         pryld(i) = prop(k)
-			enddo
+			end do
       do i = 1,ndihd
         k = k + 1
         prihd(i) = prop(k)
-			enddo
+			end do
       do i = 1,ndkin
         k = k + 1
         prkin(i) = prop(k)
-      enddo
+			end do
       do i = 1,ndrup
         k = k + 1
         prrup(i) = prop(k)
-      enddo
+			end do
 c
 c                                                  ---- calc back stress
       call jancae_isvprof ( isvrsvd,isvsclr )
@@ -287,37 +292,37 @@ c                                                  ---- calc back stress
      &                      p,pe,x,ntens,mxpbs,npbs )
       do i = 1,ntens
          xsum(i) = 0.0
-      enddo
+			end do
       if ( npbs .ne. 0 ) then
         do i = 1,ntens
           do nb = 1,npbs
             xsum(i) = xsum(i) + x(nb,i)
-          enddo
-        enddo
-      endif
+					end do
+				end do
+      end if
 c                                                 ---- equivalent stress
       if ( nuvarm .ge. 1 ) then
         do i = 1,ntens
           eta(i) = s(i) - xsum(i)
-        enddo
+				end do
         call jancae_yfunc ( se,dseds,d2seds2,0,
      &                      eta,ntens,ndi,nshr,
      &                      pryld,ndyld )
         uvar(1) = se
-      endif
+      end if
 c                                                       ---- flow stress
       if ( nuvarm .ge. 2 ) then
         call jancae_hardencurve ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
         uvar(2) = sy
-      endif
+      end if
 c                                                       ---- back stress
       if ( npbs .ne. 0 ) then
         if ( nuvarm .ge. 3 ) then
           do i = 1,ntens
             uvar(2+i) = xsum(i)
-          enddo
-        endif
-      endif
+					end do
+        end if
+      end if
 c                                                 ---- rupture criterion
       if ( prrup(1) .ne. 0) then
         nt = ntens
@@ -325,8 +330,8 @@ c                                                 ---- rupture criterion
         if ( nuvarm .ge. (3+nt) ) then
           call jancae_rupture ( sdv,nsdv,uvar,uvar1,nuvarm,jrcd,jmac,
      &                          jmatyp,matlayo,laccfla,nt,ndrup,prrup )
-        endif
-      endif
+        end if
+      end if
 c
       return
       end
@@ -1598,11 +1603,11 @@ c
       nrup = nint(prop(n+1))
       select case (nrup)
         case ( 0 ) ; nd = 0 ;   ! No Uncoupled Rupture Criterion
-        case ( 1 ) ; nd = 1 ;   ! Equivalent Plastic Strain
-        case ( 2 ) ; nd = 1 ;   ! Cockroft and Latham
-        case ( 3 ) ; nd = 1 ;   ! Rice and Tracey
-        case ( 4 ) ; nd = 1 ;   ! Ayada
-        case ( 5 ) ; nd = 1 ;   ! Brozzo
+        case ( 1 ) ; nd = 2 ;   ! Equivalent Plastic Strain
+        case ( 2 ) ; nd = 2 ;   ! Cockroft and Latham
+        case ( 3 ) ; nd = 2 ;   ! Rice and Tracey
+        case ( 4 ) ; nd = 2 ;   ! Ayada
+        case ( 5 ) ; nd = 2 ;   ! Brozzo
         case default
           write (6,*) 'error uncoupled rupture criterion id :',nrup
           call jancae_exit ( 9000 )
@@ -1615,7 +1620,9 @@ c
 c
 c
 c***********************************************************************
-c     JANCAE/UMMDp : Isotropic Hardening
+c
+c     UMMDp : Isotropic Hardening Laws
+c
 c***********************************************************************
 c
 c      0 : Perfectly Plastic
@@ -1631,9 +1638,12 @@ c     hardening curve
 c
       subroutine jancae_hardencurve ( sy,dsydp,d2sydp2,
      &                                nreq,p,prihd,ndihd )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension prihd(ndihd)
+c-----------------------------------------------------------------------
 c
       ntihd = nint(prihd(1))
       select case ( ntihd )
@@ -1644,73 +1654,68 @@ c
           dsydp = 0.0
           if ( nreq .ge. 2 ) then
             d2sydp2 = 0.0
-          end if
-        end if
+					end if
+				end if
 c
       case ( 1 )                                                ! Linear
         sy0  = prihd(1+1)
         hard = prihd(1+2)
-c
         sy = sy0 + hard*p
         if ( nreq .ge. 1 ) then
           dsydp = hard
           if ( nreq .ge. 2 ) then
             d2sydp2 = 0.0
-          end if
-        end if
+					end if
+				end if
 c
       case ( 2 )                                                 ! Swift
         c  = prihd(1+1)
         e0 = prihd(1+2)
         en = prihd(1+3)
-c
         sy = c*(e0+p)**en
         if ( nreq .ge. 1 ) then
           dsydp = en*c*(e0+p)**(en-1.0d0)
           if ( nreq .ge. 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*(e0+p)**(en-2.0d0)
-          end if
-        end if
+					end if
+				end if
 c
       case ( 3 )                                               ! Ludwick
         sy0 = prihd(1+1)
         c   = prihd(1+2)
         en  = prihd(1+3)
-c
         sy = sy0+c*p**en
         if ( nreq .ge. 1 ) then
           dsydp = en*c*p**(en-1.0d0)
           if ( nreq .ge. 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*p**(en-2.0d0)
-          end if
-        end if
+					end if
+				end if
 c
       case ( 4 )                                                  ! Voce
         sy0 = prihd(1+1)
         q   = prihd(1+2)
         b   = prihd(1+3)
-c
         sy = sy0+q*(1.0d0-exp(-b*p))
         if ( nreq .ge. 1 ) then
           dsydp = q*b*exp(-b*p)
           if ( nreq .ge. 2 ) then
             d2sydp2 = -q*b*b*exp(-b*p)
-          end if
-        end if
+					end if
+				end if
 c
       case ( 5 )                                         ! Voce + Linear
         sy0 = prihd(1+1)
         q   = prihd(1+2)
         b   = prihd(1+3)
         c   = prihd(1+4)
-c
         sy = sy0+q*(1.0d0-exp(-b*p))+c*p
         if ( nreq .ge. 1 ) then
           dsydp = q*b*exp(-b*p)+c
           if ( nreq .ge. 2 ) then
             d2sydp2 = -q*b*b*exp(-b*p)
-          end if
-        end if
+					end if
+				end if
 c
       case ( 6 )                                          ! Voce + Swift
         a   = prihd(1+1)
@@ -1720,20 +1725,18 @@ c
         c   = prihd(1+5)
         e0  = prihd(1+6)
         en  = prihd(1+7)
-c
         sy = a*(sy0+q*(1.0d0-exp(-b*p))) + (1.0d0-a)*(c*(e0+p)**en)
         if ( nreq .ge. 1 ) then
           dsydp = a*(q*b*exp(-b*p)) +(1.0d0-a)*(en*c*(e0+p)**(en-1.0d0))
           if ( nreq .ge. 2 ) then
             d2sydp2 = a*(-q*b*b*exp(-b*p)) + 
      &                (1.0d0-a)*(en*c*(en-1.0d0)*(e0+p)**(en-2.0d0))
-          end if
-        end if
+					end if
+				end if
 c
       case default
         write (6,*) 'hardening type error',ntihd
         call jancae_exit (9000)
-c
       end select
 c
       return
@@ -1742,16 +1745,19 @@ c
 c
 c
 c-----------------------------------------------------------------------
-c     print parameters for isotropic hardening info
+c     print parameters for isotropic hardening laws info
 c
       subroutine jancae_harden_print ( prihd,ndihd )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
-      dimension prihd(ndihd)
+c
+			dimension prihd(ndihd)
+c-----------------------------------------------------------------------
 c
       ntihd = nint(prihd(1))
       write (6,*)
-      write (6,*) '*** Isotropic Hardening',ntihd
+      write (6,*) '*** Isotropic Hardening Law',ntihd
       select case ( ntihd )
       case ( 0 )
         write (6,*) 'Perfect Plasticity'
@@ -1789,7 +1795,7 @@ c
       case ( 6 )
         write (6,*) 'Voce+Swift a *( sy0+q*(1-exp(-b*p)) )+'
         write (6,*) 'sy = a *( sy0+q*(1-exp(-b*p)) )+ (1-a)*(
-     1 c*(e0+p)^en)'
+     &                    c*(e0+p)^en)'
         write (6,*) 'a  =',prihd(1+1)
         write (6,*) 'sy0=',prihd(1+2)
         write (6,*) 'q  =',prihd(1+3)
@@ -1805,7 +1811,9 @@ c
 c
 c
 c***********************************************************************
-c     JANCAE/UMMDp : Kinematic Hardening
+c
+c     UMMDp : Kinematic Hardening Laws
+c
 c***********************************************************************
 c
 c      0 : No Kinematic Hardening
@@ -1817,7 +1825,7 @@ c      5 : Chaboche (1979) - Ziegler
 c      6 : Yoshida-Uemori
 c
 c-----------------------------------------------------------------------
-c     calc. kinematic hardening function
+c     calc. kinematic hardening law
 c
       subroutine jancae_kinematic ( vk,dvkdp,
      &                              dvkds,dvkdx,dvkdxt,
@@ -1826,8 +1834,10 @@ c
      &                              mxpbs,npbs,
      &                              prkin,ndkin,
      &                              pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension vk(npbs,nttl),
      &          dvkdp(npbs,nttl),
      &          dvkdx(npbs,npbs,nttl,nttl),
@@ -1835,7 +1845,7 @@ c-----------------------------------------------------------------------
      &          dvkdxt(npbs,nttl,nttl),
      &          s(nttl),x(mxpbs,nttl),xt(nttl),
      &          prkin(ndkin),pryld(ndyld)
-c
+c-----------------------------------------------------------------------
 c
       ntkin = nint(prkin(1))
 c                                                        ---- initialize
@@ -1848,10 +1858,10 @@ c                                                        ---- initialize
             dvkdxt(i,j,k) = 0.0
             do l = 1,npbs
               dvkdx(i,l,j,k) = 0.0
-            end do
-          end do
-        end do
-      end do
+						end do
+					end do
+				end do
+			end do
 c
       select case ( ntkin )
 c
@@ -1890,7 +1900,7 @@ c
      &                             mxpbs,npbs,
      &                             prkin,ndkin,pryld,ndyld )
 c
-      case ( 5 )                              ! Chaboche (1979) - Ziegler
+      case ( 5 )                             ! Chaboche (1979) - Ziegler
         call jancae_kin_chaboche_ziegler ( vk,dvkdp,
      &                                     dvkds,dvkdx,dvkdxt,
      &                                     p,s,x,xt,
@@ -1917,17 +1927,19 @@ c
 c
 c
 c-----------------------------------------------------------------------
-c     dseds and d2seds2 for kinematic hardening
+c     dseds and d2seds2 for kinematic hardening laws
 c
       subroutine jancae_dseds_kin ( eta,seta,dseds,d2seds2,
      &                              nttl,nnrm,nshr,
      &                              pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension eta(nttl),
      &          dseds(nttl),d2seds2(nttl,nttl),
      &          pryld(ndyld)
-c
+c-----------------------------------------------------------------------
 c
 c                    ---- dseds and d2seds2 for plastic strain increment
       call jancae_yfunc  ( seta,dseds,d2seds2,2,
@@ -1939,8 +1951,8 @@ c                   ---- engineering shear strain -> tensor shear strain
         dseds(i) = 0.5d0*dseds(i)
         do j = 1,nttl
           d2seds2(i,j) = 0.5d0*d2seds2(i,j)
-        end do
-      end do
+				end do
+				end do
 c                                          ---- for plane stress problem
       if ( nnrm .eq. 2 ) then
         em1 = dseds(1)
@@ -1959,7 +1971,7 @@ c                                          ---- for plane stress problem
         d2seds2(2,1) = d2seds2(2,1) + en21 + en11
         d2seds2(2,2) = d2seds2(2,2) + en22 + en12
         d2seds2(2,3) = d2seds2(2,3) + en23 + en13
-      end if
+			endif
 c
       return
       end
@@ -1967,12 +1979,15 @@ c
 c
 c
 c-----------------------------------------------------------------------
-c     print parameters for kinematic hardening
+c     print parameters for kinematic hardening laws
 c
       subroutine jancae_kinematic_print ( prkin,ndkin,npbs )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension prkin(ndkin)
+c-----------------------------------------------------------------------
 c
       ntkin = nint(prkin(1))
       write (6,*)
@@ -2003,7 +2018,7 @@ c
           n0 = 1+(i-1)*2
           write (6,*) 'c(',i,')=',prkin(1+n0+1)
           write (6,*) 'g(',i,')=',prkin(1+n0+2)
-        end do
+				end do
 c
       case ( 5 )                       ! Chaboche (1979) - Ziegler Model
         write (6,*) 'Chaboche (1979) - Ziegler Model'
@@ -2013,7 +2028,7 @@ c
           n0 = 1+(i-1)*2
           write (6,*) 'c(',i,')=',prkin(1+n0+1)
           write (6,*) 'g(',i,')=',prkin(1+n0+2)
-        end do
+				end do
 c
       case ( 6 )                                        ! Yoshida-Uemori
         write (6,*) 'Yoshida-Uemori'
@@ -2040,8 +2055,10 @@ c
      &                               mxpbs,npbs,
      &                               prkin,ndkin,
      &                               pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension vk(    npbs,nttl),
      &          dvkdp( npbs,nttl),
      &          dvkdx( npbs,npbs,nttl,nttl),
@@ -2051,12 +2068,13 @@ c-----------------------------------------------------------------------
      &          prkin(ndkin),pryld(ndyld)
 c
       dimension eta(nttl),dseds(nttl),d2seds2(nttl,nttl)
+c-----------------------------------------------------------------------
 c
       c = prkin(2)/3.0d0*2.0d0
 c
       do i = 1,nttl
         eta(i) = s(i) - xt(i)
-      end do
+			end do
 c
       call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
      &                        nttl,nnrm,nshr,
@@ -2066,20 +2084,20 @@ c
 c
       do i = 1,nttl
         vk(n,i) = c * dseds(i)
-      end do
+			end do
 c
       dcdp = 0.0d0
       do i = 1,nttl
         dvkdp(n,i) = dcdp * dseds(i)
-      end do
+			end do
 c
       do i = 1,nttl
         do j = 1,nttl
           dvkds(n,i,j) = c * d2seds2(i,j)
           dvkdx(n,n,i,j) = -c * d2seds2(i,j)
           dvkdxt(n,i,j) = 0.0
-        end do
-      end do
+				end do
+			end do
 c
       return
       end
@@ -2096,8 +2114,10 @@ c
      &                                mxpbs,npbs,
      &                                prkin,ndkin,
      &                                pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension vk(    npbs,nttl),
      &          dvkdp( npbs,nttl),
      &          dvkdx( npbs,npbs,nttl,nttl),
@@ -2107,22 +2127,23 @@ c-----------------------------------------------------------------------
      &          prkin(ndkin),pryld(ndyld)
 c
       dimension eta(nttl),am(nttl,nttl)
+c-----------------------------------------------------------------------
 c
       c = prkin(2)
 c
       do i = 1,nttl
         eta(i) = s(i) - xt(i)
-      end do
+			end do
 c
       n = 1
       do i = 1,nttl
         vk(n,i) = c * eta(i)
-      end do
+			end do
 c
       dcdp = 0.0
       do i = 1,nttl
         dvkdp(n,i) = dcdp * eta(i)
-      end do
+			end do
 c
       call jancae_setunitm ( am,nttl )
       do i = 1,nttl
@@ -2130,8 +2151,8 @@ c
           dvkds(n,i,j) = c * am(i,j)
           dvkdx(n,n,i,j) = -c * am(i,j)
           dvkdxt(n,i,j) = 0.0
-        end do
-      end do
+				end do
+			end do
 c
       return
       end
@@ -2148,9 +2169,11 @@ c
      &                                  mxpbs,npbs,
      &                                  prkin,ndkin,
      &                                  pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
-      dimension vk(    npbs,nttl),
+c
+			dimension vk(    npbs,nttl),
      &          dvkdp( npbs,nttl),
      &          dvkdx( npbs,npbs,nttl,nttl),
      &          dvkds( npbs,nttl,nttl),
@@ -2160,13 +2183,14 @@ c-----------------------------------------------------------------------
 c
       dimension eta(nttl),dseds(nttl),d2seds2(nttl,nttl),
      &          am(nttl,nttl)
+c-----------------------------------------------------------------------
 c
       c = prkin(1+1)/3.0d0*2.0d0
       g = prkin(1+2)
 c
       do i = 1,nttl
         eta(i) = s(i) - xt(i)
-      end do
+			end do
 c
       call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
      &                        nttl,nnrm,nshr,
@@ -2175,13 +2199,13 @@ c
       n = 1
       do i = 1,nttl
         vk(n,i) = c*dseds(i) - g*xt(i)
-      end do
+			end do
 c
       dcdp = 0.0d0
       dgdp = 0.0d0
       do i = 1,nttl
         dvkdp(n,i) = dcdp*dseds(i) - dgdp*xt(i)
-      end do
+			end do
 c
       call jancae_setunitm ( am,nttl )
       do i = 1,nttl
@@ -2189,8 +2213,8 @@ c
           dvkds(n,i,j) = c * d2seds2(i,j)
           dvkdx(n,n,i,j) = -c*d2seds2(i,j) - g*am(i,j)
           dvkdxt(n,i,j) = 0.0
-        end do
-      end do
+				end do
+			end do
 c
       return
       end
@@ -2206,8 +2230,10 @@ c
      &                                 mxpbs,npbs,
      &                                 prkin,ndkin,
      &                                 pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension vk(    npbs,nttl),
      &          dvkdp( npbs,nttl),
      &          dvkdx( npbs,npbs,nttl,nttl),
@@ -2218,10 +2244,11 @@ c-----------------------------------------------------------------------
 c
       dimension eta(nttl),dseds(nttl),d2seds2(nttl,nttl),
      &          am(nttl,nttl)
+c-----------------------------------------------------------------------
 c
       do i = 1,nttl
         eta(i) = s(i) - xt(i)
-      end do
+			end do
 c
       call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
      &                        nttl,nnrm,nshr,
@@ -2234,20 +2261,20 @@ c
         g = prkin(1+n0+2)
         do i = 1,nttl
           vk(n,i) = c*dseds(i) - g*x(n,i)
-        end do
+				end do
         dcdp = 0.0d0
         dgdp = 0.0d0
         do i = 1,nttl
           dvkdp(n,i) = dcdp*dseds(i) - dgdp*x(n,i)
-        end do
+				end do
         do i = 1,nttl
           do j = 1,nttl
             dvkds(n,i,j) = c * d2seds2(i,j)
             dvkdx(n,n,i,j) = -g * am(i,j)
             dvkdxt(n,i,j) = -c * d2seds2(i,j)
-          end do
-        end do
-      end do
+					end do
+				end do
+			end do
 c
       return
       end
@@ -2264,8 +2291,10 @@ c
      &                                         mxpbs,npbs,
      &                                         prkin,ndkin,
      &                                         pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension vk(    npbs,nttl),
      &          dvkdp( npbs,nttl),
      &          dvkdx( npbs,npbs,nttl,nttl),
@@ -2276,10 +2305,11 @@ c-----------------------------------------------------------------------
 c
       dimension eta(nttl),dseds(nttl),d2seds2(nttl,nttl),
      &          am(nttl,nttl)
+c-----------------------------------------------------------------------
 c
       do i = 1,nttl
         eta(i) = s(i) - xt(i)
-      end do
+			end do
 c
       call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
      &                        nttl,nnrm,nshr,
@@ -2292,20 +2322,20 @@ c
         g = prkin(1+n0+2)
         do i = 1,nttl
           vk(n,i) = (c/seta)*eta(i) - g*x(n,i)
-        end do
+				end do
         dcdp = 0.0d0
         dgdp = 0.0d0
         do i = 1,nttl
           dvkdp(n,i) = (dcdp/seta)*eta(i) - dgdp*x(n,i)
-        end do
+				end do
         do i = 1,nttl
           do j = 1,nttl
             dvkds(n,i,j) = (c/seta) * am(i,j)
             dvkdx(n,n,i,j) = -g * am(i,j)
             dvkdxt(n,i,j) = -(c/seta) * am(i,j)
-          end do
-        end do
-      end do
+					end do
+				end do
+			end do
 c
       return
       end
@@ -2322,8 +2352,10 @@ c
      &                                     mxpbs,npbs,
      &                                     prkin,ndkin,
      &                                     pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension vk(    npbs,nttl),
      &          dvkdp( npbs,nttl),
      &          dvkdx( npbs,npbs,nttl,nttl),
@@ -2334,6 +2366,7 @@ c-----------------------------------------------------------------------
 c
       dimension eta(nttl),dseds(nttl),d2seds2(nttl,nttl),
      &          am(nttl,nttl)
+c-----------------------------------------------------------------------
 c
       pc = prkin(1+1)  ! C
       py = prkin(1+2)  ! Y
@@ -2343,7 +2376,7 @@ c
 c
       do i = 1,nttl
         eta(i) = s(i) - xt(i)
-      end do
+			end do
 c
       call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
      &                        nttl,nnrm,nshr,
@@ -2353,10 +2386,10 @@ c
       n = 1
       do i = 1,nttl
         vk(n,i) = pc*((pa/py)*eta(i) - sqrt(pa/seta)*x(n,i))
-      end do
+			end do
       do i = 1,nttl
         dvkdp(n,i) = 0.0
-      end do
+			end do
       do i = 1,nttl
         do j = 1,nttl
           dvkds(n,i,j) = pc*pa/py*am(i,j)
@@ -2364,23 +2397,23 @@ c
           dvkdx(n,n,i,j) = pc*sqrt(pa)*
      &                    ( -am(i,j)/sqrt(seta)
      &                       + x(n,i)*dseds(j)/(2.0d0*seta**(1.5d0)) )
-        end do
-      end do
+				end do
+			end do
 c
       n = 2
       do i = 1,nttl
         vk(n,i) = pk*(2.0d0/3.0d0*pb*dseds(i) - x(n,i))
-      end do
+			end do
       do i = 1,nttl
         dvkdp(n,i) = 0.0
-      end do
+			end do
       do i = 1,nttl
         do j = 1,nttl
           dvkds(n,i,j) = 2.0d0/3.0d0*pb + pk*d2seds2(i,j)
           dvkdxt(n,i,j) = -2.0d0/3.0d0*pb + pk*d2seds2(i,j)
           dvkdx(n,n,i,j) = -pk * am(i,j)
-        end do
-      end do
+				end do
+			end do
 c
       return
       end
@@ -2388,64 +2421,82 @@ c
 c
 c
 c***********************************************************************
-c     JANCAE/UMMDp : Rupture Criteria
+c
+c     UMMDp : Uncoupled Rupture Criteria
+c
 c**********************************************************************
 c
 c      0 : No Rupture Criterion
 c
 c      1 : Equivalent Plastic Strain
-c      2 : Cockroft and Latham (CL)
-c      3 : Rice and Tracey (RT)
+c      2 : Cockroft and Latham
+c      3 : Rice and Tracey
 c      4 : Ayada
 c      5 : Brozzo
 c
 c-----------------------------------------------------------------------
-c     calc. rupture criterion
+c     calculated rupture criteria
 c
       subroutine jancae_rupture ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,jmac,
      &                            jmatyp,matlayo,laccfla,nt,
      &                            ndrup,prrup )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
       dimension UVAR1(NUVARM),JMAC(*),JMATYP(*)
       dimension sdv(nsdv),uvar2(nuvarm),prrup(ndrup)
+			real*8 lim,wlimnorm
+c-----------------------------------------------------------------------
 c
-      ntrup = prrup(1)
+c      prrup(1) : criteria id
+c      prrup(2) : flag to terminate analysis if limit is reached
+c      prrup(3) : rupture limit
 c
+c 																		       ---- rupture criteria limit
+			lim = prrup(3)
+c                                           ---- select rupture criteria
+			ntrup = nint(prrup(1))
       select case ( ntrup )
+c
       case ( 0 )                                  ! No Rupture Criterion
         return
 c
       case ( 1 )                             ! Equivalent Plastic Strain
-        call jancae_rup_eqstrain ( sdv,nsdv,uvar2,nuvarm,nt,
-     &                             ndrup,prrup )
+        call jancae_rup_eqstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,nt,
+     &                             lim,wlimnorm )
 c
       case ( 2 )                                   ! Cockroft and Latham
         call jancae_rup_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
      &                             jmac,jmatyp,matlayo,laccfla,nt,
-     &                             ndrup,prrup )
+     &                             lim,wlimnorm )
 c
       case ( 3 )                                       ! Rice and Tracey
         call jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
      &                         jmac,jmatyp,matlayo,laccfla,nt,
-     &                         ndrup,prrup )
+     &                         lim,wlimnorm )
 c
       case ( 4 )                                                 ! Ayada
         call jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
      &                          jmac,jmatyp,matlayo,laccfla,nt,
-     &                          ndrup,prrup )
+     &                          lim,wlimnorm )
 c
       case ( 5 )                                                ! Brozzo
         call jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
      &                           jmac,jmatyp,matlayo,laccfla,nt,
-     &                           ndrup,prrup )
+     &                           lim,wlimnorm )
 c
       case default
         write (6,*) 'error in jancae_rupture'
         write (6,*) 'ntrup error :',ntrup
-        call jancae_exit (9000)
+        call jancae_exit ( 9000 )
       end select
+c
+c                            ---- terminate analysis if limit is reached
+			end = nint(prrup(2))
+			if ( end .eq. 1 ) then
+				if ( wlimnorm .ge. 1.0d0 ) call jancae_exit( 10000 )
+			end if
 c
       return
       end
@@ -2453,34 +2504,48 @@ c
 c
 c
 c-----------------------------------------------------------------------
-c     print parameters for uncoupled rupture criterion
+c     print parameters for uncoupled rupture criteria
 c
       subroutine jancae_rupture_print ( prrup,ndrup )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension prrup(ndrup)
+c-----------------------------------------------------------------------
 c
       ntrup = nint(prrup(1))
       write (6,*)
       write (6,*) '*** Uncoupled Rupture Criterion',ntrup
       select case ( ntrup )
-      case ( 0 )
+c
+      case ( 0 ) 										   	! No Uncoupled Rupture Criterion
         write (6,*) 'No Uncoupled Rupture Criterion'
-      case ( 1 )
+c
+      case ( 1 ) 														 ! Equivalent Plastic Strain
         write (6,*) 'Equivalent Plastic Strain'
         write (6,*) 'W=int[dp]'
-      case ( 2 )
+				write (6,*) 'Wl=',prrup(3)
+c
+      case ( 2 )  																 ! Cockroft and Latham
         write (6,*) 'Cockroft and Latham'
         write (6,*) 'W=int[(sp1/se)*dp]'
-      case ( 3 )
+				write (6,*) 'Wl=',prrup(3)
+c
+      case ( 3 ) 																	     ! Rice and Tracey
         write (6,*) 'Rice and Tracey'
         write (6,*) 'W=int[exp(1.5*sh/se)*dp]'
-      case ( 4 )
+				write (6,*) 'Wl=',prrup(3)
+c
+      case ( 4 ) 																						     ! Ayada
         write (6,*) 'Ayada'
         write (6,*) 'W=int[(sh/se)*dp]'
-      case ( 5 )
+				write (6,*) 'Wl=',prrup(3)
+
+      case ( 5 ) 																							  ! Brozzo
         write (6,*) 'Brozzo'
         write (6,*) 'W=int[(2/3)*(sp1/(sp1-se))*dp]'
+				write (6,*) 'Wl=',prrup(3)
       end select
 c
       return
@@ -2491,24 +2556,24 @@ c
 c-----------------------------------------------------------------------
 c     Equivalent Plastic Strain
 c
-      subroutine jancae_rup_eqstrain ( sdv,nsdv,uvar2,nuvarm,nt,
-     &                                 ndrup,prrup)
+      subroutine jancae_rup_eqstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,nt,
+     &                                 lim,wlimnorm )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
-      dimension sdv(nsdv),uvar2(nuvarm),prrup(ndrup)
+      dimension sdv(nsdv),uvar2(nuvarm),uvar1(nuvarm)
       real*8 lim,peeq
+c-----------------------------------------------------------------------
 c
 c     nuvarm : 2
 c
 c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : rupture criterion normalised
 c
-c     prrup(1) : 1
-c     prrup(2) : rupture criterion limit
+c                                            ---- get uvar before update
+      wlimnorm  = uvar1(2+nt+2)
 c
-c                                           ---- rupture criterion limit
-      lim = prrup(2)
 c                                              ---- get sdv after update
       peeq = sdv(1)
 c
@@ -2522,39 +2587,39 @@ c
 c
 c
 c-----------------------------------------------------------------------
-c     Cockroft and Latham (CL)
+c     Cockroft and Latham
 c
       subroutine jancae_rup_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     1                                 jmac,jmatyp,matlayo,laccfla,nt,
-     2                                 ndrup,prrup )
+     &                                 jmac,jmatyp,matlayo,laccfla,nt,
+     &                                 lim,wlimnorm )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
       dimension UVAR1(NUVARM),JMAC(*),JMATYP(*)
-      dimension ARRAY(15),JARRAY(15),prrup(ndrup)
+      dimension ARRAY(15),JARRAY(15)
       dimension sdv(nsdv),uvar2(nuvarm)
       character*3 FLGRAY(15)
-      real*8 lim
+      real*8 lim,wlimnorm
       real*8 se1,peeq1,maxsp1,maxsp1se1,wlim1
       real*8 se2,peeq2,maxsp2,maxsp2se2,wlim2
+c-----------------------------------------------------------------------
 c
 c     nuvarm : 4
 c
+c     uvar(1)      : equivalent stress
 c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : maximum principal stress
 c     uvar(2+nt+3) : rupture criterion
 c     uvar(2+nt+4) : rupture criterion normalised
 c
-c     prrup(1) : 2
-c     prrup(2) : rupture criterion limit
-c
-c                                           ---- rupture criterion limit
-      lim = prrup(2)
 c                                            ---- get uvar before update
       se1    = uvar1(1)
       peeq1  = uvar1(2+nt+1)
       maxsp1 = uvar1(2+nt+2)
       wlim1  = uvar1(2+nt+3)
+c
+			wlimnorm  = uvar1(2+nt+4)
 c
 c                                     ---- get sdv and uvar after update
       se2 = uvar2(1)
@@ -2562,7 +2627,7 @@ c                                     ---- get sdv and uvar after update
 c
 c                                 ---- get principal stress after update
       call getvrm ('SP',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &             MATLAYO,LACCFLA )
+     &                  MATLAYO,LACCFLA )
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sp'
         write (6,*) 'stop in uvrm.'
@@ -2577,6 +2642,7 @@ c                                                 ---- rupture criterion
       if ( se2 .gt. 0.0d0 ) maxsp2se2 = maxsp2 / se2
 c
       wlim2 = wlim1 + (maxsp2se2+maxsp1se1)*(peeq2-peeq1)/2.0d0
+c
 c                                                       ---- update uvar
       uvar2(2+nt+1) = peeq2
       uvar2(2+nt+2) = maxsp2
@@ -2589,39 +2655,39 @@ c
 c
 c
 c-----------------------------------------------------------------------
-c     Rice and Tracey (RT)
+c     Rice and Tracey
 c
       subroutine jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
      &                             jmac,jmatyp,matlayo,laccfla,nt,
-     &                             ndrup,prrup )
+     &                             lim,wlimnorm )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
       dimension UVAR1(NUVARM),JMAC(*),JMATYP(*)
-      dimension ARRAY(15),JARRAY(15),prrup(ndrup)
+      dimension ARRAY(15),JARRAY(15)
       dimension sdv(nsdv),uvar2(nuvarm)
       character*3 FLGRAY(15)
-      real*8 lim
+      real*8 lim,wlimnorm
       real*8 se1,peeq1,shyd1,shyd1se1,wlim1
       real*8 se2,peeq2,shyd2,shyd2se2,wlim2
+c-----------------------------------------------------------------------
 c
 c     nuvarm : 4
 c
-c     uvar(2+nt+1) : eq. plastic strain
+c     uvar(1)      : equivalent stress
+c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : hydrostatic stress
 c     uvar(2+nt+3) : rupture criterion
 c     uvar(2+nt+4) : rupture criterion normalised
 c
-c     prrup(1) : 3
-c     prrup(2) : rupture criterion limit
-c
-c                                           ---- rupture criterion limit
-      lim = prrup(2)
 c                                            ---- get uvar before update
       se1   = uvar1(1)
       peeq1 = uvar1(2+nt+1)
       shyd1 = uvar1(2+nt+2)
       wlim1 = uvar1(2+nt+3)
+c
+			wlimnorm  = uvar1(2+nt+4)
 c
 c                                     ---- get sdv and uvar after update
       se2 = uvar2(1)
@@ -2629,7 +2695,7 @@ c                                     ---- get sdv and uvar after update
 c
 c                               ---- get hydrostatic stress after update
       call getvrm ('SINV',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &             MATLAYO,LACCFLA )
+     &                    MATLAYO,LACCFLA )
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
@@ -2661,35 +2727,35 @@ c     Ayada
 c
       subroutine jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
      &                              jmac,jmatyp,matlayo,laccfla,nt,
-     &                              ndrup,prrup )
+     &                              lim,wlimnorm )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
       dimension UVAR1(NUVARM),JMAC(*),JMATYP(*)
-      dimension ARRAY(15),JARRAY(15),prrup(ndrup)
+      dimension ARRAY(15),JARRAY(15)
       dimension sdv(nsdv),uvar2(nuvarm)
       character*3 FLGRAY(15)
-      real*8 lim
+      real*8 lim,wlimnorm
       real*8 se1,peeq1,shyd1,shyd1se1,wlim1
       real*8 se2,peeq2,shyd2,shyd2se2,wlim2
+c-----------------------------------------------------------------------
 c
 c     nuvarm : 4
 c
+c     uvar(1)      : equivalent stress
 c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : hydrostatic stress
 c     uvar(2+nt+3) : rupture criterion
 c     uvar(2+nt+4) : rupture criterion normalised
 c
-c     prrup(1) : 4
-c     prrup(2) : rupture criterion limit
-c
-c                                           ---- rupture criterion limit
-      lim = prrup(2)
 c                                            ---- get uvar before update
       se1   = uvar1(1)
       peeq1 = uvar1(2+nt+1)
       shyd1 = uvar1(2+nt+2)
       wlim1 = uvar1(2+nt+3)
+c
+			wlimnorm  = uvar1(2+nt+4)
 c
 c                                     ---- get sdv and uvar after update
       se2 = uvar2(1)
@@ -2697,7 +2763,7 @@ c                                     ---- get sdv and uvar after update
 c
 c                               ---- get hydrostatic stress after update
       call getvrm ('SINV',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &             MATLAYO,LACCFLA )
+     &                    MATLAYO,LACCFLA )
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
@@ -2729,31 +2795,27 @@ c     Brozzo
 c
       subroutine jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
      &                               jmac,jmatyp,matlayo,laccfla,nt,
-     &                               ndrup,prrup )
+     &                               lim,wlimnorm )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
       dimension UVAR1(NUVARM),JMAC(*),JMATYP(*)
-      dimension ARRAY(15),JARRAY(15),prrup(ndrup)
+      dimension ARRAY(15),JARRAY(15)
       dimension sdv(nsdv),uvar2(nuvarm)
       character*3 FLGRAY(15)
-      real*8 lim
+      real*8 lim,wlimnorm
       real*8 se1,peeq1,shyd1,maxsp1,maxsp1shyd1,wlim1
       real*8 se2,peeq2,shyd2,maxsp2,maxsp2shyd2,wlim2
+c-----------------------------------------------------------------------
 c
 c     nuvarm : 5
 c
-c     uvar(2+nt+1) : eq. plastic strain
-c     uvar(2+nt+2) : max. principal stress
+c     uvar(2+nt+1) : equivalent plastic strain
+c     uvar(2+nt+2) : maximum principal stress
 c     uvar(2+nt+3) : hydrostatic stress
 c     uvar(2+nt+4) : rupture criterion
 c     uvar(2+nt+5) : rupture criterion normalised
-c
-c     prrup(1) : 5
-c     prrup(2) : rupture criterion limit
-c
-c                                           ---- rupture criterion limit
-      lim = prrup(2)
 c
 c                                            ---- get uvar before update
       peeq1  = uvar1(2+nt+1)
@@ -2761,12 +2823,14 @@ c                                            ---- get uvar before update
       shyd1  = uvar1(2+nt+3)
       wlim1  = uvar1(2+nt+4)
 c
+			wlimnorm  = uvar1(2+nt+5)
+c
 c                                              ---- get sdv after update
       peeq2 = sdv(1)
 c
 c                                 ---- get principal stress after update
       call getvrm ('SP',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &             MATLAYO,LACCFLA )
+     &                  MATLAYO,LACCFLA )
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sp'
         write (6,*) 'stop in uvrm.'
@@ -2776,7 +2840,7 @@ c                                 ---- get principal stress after update
 c
 c                               ---- get hydrostatic stress after update
       call getvrm ('SINV',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &             MATLAYO,LACCFLA )
+     &                    MATLAYO,LACCFLA )
       if ( JRCD .ne. 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
@@ -2808,26 +2872,38 @@ c
 c
 c
 cc***********************************************************************
-c     JANCAE/UMMDp : Utility Subroutines
+c
+c     UMMDp : Utility Subroutines
+c
 c***********************************************************************
+c
 c     jancae_clear1 ( a,n )
 c       clear 1st order tensor (vector) a(n)
+c
 c     jancae_clear2 ( a,n,m )
 c       clear 2nd order tensor (matrix) a(n,m)
+c
 c     jancae_clear3 ( a,n,m,l )
 c       clear 3rd order tensor a(n,m,l)
+c
 c     jancae_setunitm ( a,n )
 c       set unit 2nd oder tensor [I]
+c
 c     jancae_print1 ( text,a,n )
 c       print 1st order tensor with title (text)
+c
 c     jancae_print2 ( text,a,n,m )
 c       print 2nd order tensor with title (text)
+c
 c     jancae_mv (v,a,u,nv,nu)
 c       mutiply matrix to vector v(nv)=a(nv,nu)*u(nu)
+c
 c     jancae_mm (a,b,c,na1,na2,nbc)
 c       mutiply matrix and matrix a(na1,na2)=b(na1,nbc)*c(nbc,na2)
+c
 c     jancae_vvs ( s,u,v,n )
 c       calc. scalar (inner) product of v(n) & u(n)
+c
 c     jancae_minv ( b,a,n,d )
 c       calc. inverse matrix b(n,n)=a(n,n)^-1 and det(a)
 c       branch to following routines
@@ -2835,21 +2911,26 @@ c       jancae_ludcmp( a,n,indx,d ) : LU-decomposition
 c       jancae_lubksb(a,n,indx,b)   : backward subsitution
 c       jancae_minv2 ( b,a,deta )   : for 2*2 matrix
 c       jancae_minv3 ( b,a,deta )   : for 3*3 matrix
+c
 c     jancae_eigen_sym3 ( es,ev,a )
 c       calc. eigen value and normalized eigen vector (3*3sym)
+c
 c     jancae_printinfo.
 c       print inc.info. and element info.
+c
 c     jancae_printinout
 c       print input and output of user subroutine
-c
 c
 c-----------------------------------------------------------------------
 c     zero clear vector a(n)
 c
       subroutine jancae_clear1 ( a,n )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n)
+c-----------------------------------------------------------------------
 c
       do i = 1,n
         a(i) = 0.0d0
@@ -2864,9 +2945,12 @@ c-----------------------------------------------------------------------
 c     zero clear matrix a(n,m)
 c
       subroutine jancae_clear2 ( a,n,m )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,m)
+c-----------------------------------------------------------------------
 c
       do i = 1,n
         do j = 1,m
@@ -2883,9 +2967,12 @@ c-----------------------------------------------------------------------
 c     zero clear matrix a(n,m,l)
 c
       subroutine jancae_clear3 ( a,n,m,l )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,m,l)
+c-----------------------------------------------------------------------
 c
       do i = 1,n
         do j = 1,m
@@ -2904,9 +2991,12 @@ c-----------------------------------------------------------------------
 c     set unit 2nd oder tensor [I]
 c
       subroutine jancae_setunitm ( a,n )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,n)
+c-----------------------------------------------------------------------
 c
       call jancae_clear2 ( a,n,n )
       do i = 1,n
@@ -2922,10 +3012,13 @@ c-----------------------------------------------------------------------
 c     print vector a(n) with text
 c
       subroutine jancae_print1 ( text,a,n )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n)
       character text*32
+c-----------------------------------------------------------------------
 c
       write (6,*) text
       write (6,9000) (a(i),i=1,n)
@@ -2940,10 +3033,13 @@ c-----------------------------------------------------------------------
 c     print matrix a(n,m) with text
 c
       subroutine jancae_print2 ( text,a,n,m )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,m)
       character text*32
+c-----------------------------------------------------------------------
 c
       write (6,*) text
       do i = 1,n
@@ -2960,10 +3056,13 @@ c-----------------------------------------------------------------------
 c     calculate multiplication of matrix and vector
 c     {v}=[a]{u}
 c
-      subroutine jancae_mv (v,a,u,nv,nu)
+      subroutine jancae_mv ( v,a,u,nv,nu )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension v(nv),a(nv,nu),u(nu)
+c-----------------------------------------------------------------------
 c
       call jancae_clear1 ( v,nv )
       do i = 1,nv
@@ -2981,10 +3080,13 @@ c-----------------------------------------------------------------------
 c     calculate multiplication of matrix and matrix
 c     [a]=[b][c]
 c
-      subroutine jancae_mm (a,b,c,na1,na2,nbc)
+      subroutine jancae_mm ( a,b,c,na1,na2,nbc )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(na1,na2),b(na1,nbc),c(nbc,na2)
+c-----------------------------------------------------------------------
 c
       call jancae_clear2 ( a,na1,na2 )
       do i = 1,na1
@@ -3005,9 +3107,12 @@ c     calculate scaler product of vectors
 c     s={u}T{v}
 c
       subroutine jancae_vvs ( s,u,v,n )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension v(n),u(n)
+c-----------------------------------------------------------------------
 c
       s = 0.0
       do i = 1,n
@@ -3028,10 +3133,12 @@ c
 c     Ref. http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,n),b(n,n)
       dimension indx(n),y(n),c(n,n),aorg(n,n)
       character text*32
       logical   check
+c-----------------------------------------------------------------------
 c
       check = .false.
       eps = 1.0d-36
@@ -3115,11 +3222,14 @@ c-----------------------------------------------------------------------
 c     LU decomposition
 c
       subroutine jancae_ludcmp( a,n,indx,d,eps )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,n),indx(n)
       dimension vtemp(n)
       character text*32
+c-----------------------------------------------------------------------
 c
       d = 1.0d0
       do i = 1,n
@@ -3191,9 +3301,12 @@ c-----------------------------------------------------------------------
 c     LU backward substitution
 c
       subroutine jancae_lubksb( a,n,indx,b,eps )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension a(n,n),b(n),indx(n)
+c-----------------------------------------------------------------------
 c
       ii = 0
       do i = 1,n
@@ -3226,11 +3339,12 @@ c-----------------------------------------------------------------------
 c     calculate inverse matrix[2,2]
 c
       subroutine jancae_minv2 ( b,a,deta,eps )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
       dimension b(2,2),a(2,2)
-c
+c-----------------------------------------------------------------------
 c
       deta = a(1,1)*a(2,2) - a(1,2)*a(2,1)
       if ( abs(deta) .le. eps ) then
@@ -3254,10 +3368,12 @@ c-----------------------------------------------------------------------
 c     calculate inverse matrix[3,3]
 c
       subroutine jancae_minv3 ( b,a,deta,eps )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
       dimension b(3,3),a(3,3)
+c-----------------------------------------------------------------------
 c
       deta = a(1,1) * (a(2,2)*a(3,3) - a(2,3)*a(3,2)) +
      &       a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3)) +
@@ -3288,9 +3404,12 @@ c-----------------------------------------------------------------------
 c     print informations for debug (intro)
 c
       subroutine jancae_printinfo ( inc,nnrm,nshr )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       common /jancae1/ne,ip,lay
+c-----------------------------------------------------------------------
 c
       nttl = nnrm + nshr
 c
@@ -3331,12 +3450,14 @@ c
 c-----------------------------------------------------------------------
 c     print informations for debug (input/output)
 c
-      subroutine jancae_printinout ( io,s,de,d,nttl,
-     &                               stv,nstv )
+      subroutine jancae_printinout ( io,s,de,d,nttl,stv,nstv )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension s(nttl),de(nttl),d(nttl,nttl),stv(nstv)
       character text*32
+c-----------------------------------------------------------------------
 c
       if ( io .eq. 0 ) then
         text = 'initial stresses'
@@ -3375,10 +3496,13 @@ c    output :  es(i)   : i-th eigen value
 c              ev(i,3) : normalized eigen vector for i-th eigen value
 c
       subroutine jancae_eigen_sym3 ( es,ev,a )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
+c
       dimension   a(3,3),es(3),ev(3,3)
       dimension   w(3,3),prc(3,3)
+c-----------------------------------------------------------------------
 c
       msweep = 100
       eps = 1.0d-8
@@ -3499,9 +3623,12 @@ c-----------------------------------------------------------------------
 c     checking existence of file named "flname"
 c
        logical function jancae_file_exist ( flname )
+c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
-      character   flname*16
+c
+      character flname*16
+c-----------------------------------------------------------------------
 c
       nio = 616
       open ( nio,file=flname,status='old',err=10 )
@@ -3513,6 +3640,368 @@ c
    10 jancae_file_exist = .false.
       return
 c
+      end
+c
+c
+c
+c***********************************************************************
+c
+c     UMMDp : Yield Criteria
+c
+c***********************************************************************
+c
+c      0 : von Mises (1913)
+c
+c     3D
+c       1 : Hill 1948
+c       2 : Yld2004-18p
+c       3 : CPB 2006
+c       4 : Karafillis-Boyce 1993
+c       5 : Hu 2005
+c       6 : Yoshida 2011
+c
+c     2D
+c      -1 : Gotoh Biquadratic
+c      -2 : Yld2000-2d
+c      -3 : Vegter
+c      -4 : BBC 2005
+c      -5 : Yld89
+c      -6 : BBC 2008
+c      -7 : Hill 1990
+c
+c-----------------------------------------------------------------------
+c     yield criteria and its differentials
+c
+      subroutine jancae_yfunc ( se,cdseds,cd2seds2,nreq,
+     &                          cs,nttl,nnrm,nshr,
+     &                          pryld,ndyld )
+c
+c-----------------------------------------------------------------------
+      implicit real*8 (a-h,o-z)
+c
+      dimension cs(nttl),cdseds(nttl),cd2seds2(nttl,nttl),
+     &          pryld(ndyld)
+      dimension s(6),dseds(6),d2seds2(6,6),indx(6)
+c-----------------------------------------------------------------------
+c
+      ntyld = nint(pryld(1))
+c
+      if ( ntyld .lt. 0 ) then
+        if ( ( nnrm .ne. 2 ) .or. ( nshr .ne. 1 ) ) then
+          write (6,*) 'error in jancae_yfunc'
+          write (6,*) 'ntyld<0 for plane stress'
+          write (6,*) 'nnrm,nshr,ntyld:',nnrm,nshr,ntyld
+          call jancae_exit (9000)
+        end if
+        goto 100
+      end if
+c
+      ss = 0.0
+      do i = 1,nttl
+        ss = ss + cs(i)**2
+      end do
+      if ( ( ss .le. 0.0 ) .and. ( nreq .eq. 0 ) ) then
+        se = 0.0
+        return
+      end if
+c
+c                                                ---- 3D yield functions
+c
+c                                        ---- set index to s(i) to cs(i)
+      do i = 1,6
+        indx(i) = 0
+      end do
+      if ( nnrm .eq. 3 ) then
+        do i = 1,nttl
+          indx(i) = i
+        end do
+      else if ( nnrm .eq. 2 ) then
+        indx(1) = 1
+        indx(2) = 2
+        indx(3) = 0
+        do i = 1,nshr
+          indx(3+i) = 2 + i
+        end do
+      end if
+c                                                          ---- set s(i)
+      call jancae_clear1 ( s,6 )
+      do i = 1,6
+        if ( indx(i) .ne. 0 ) then
+          s(i) = cs(indx(i))
+        end if
+      end do
+c
+      select case ( ntyld )
+      case ( 0 )                                             ! von Mises
+        call jancae_mises ( s,se,dseds,d2seds2,nreq )
+c
+      case ( 1 )                                             ! Hill 1948
+        call jancae_hill1948 ( s,se,dseds,d2seds2,nreq,
+     &                          pryld,ndyld )
+c
+      case ( 2 )                                           ! Yld2004-18p
+        call jancae_yld2004_18p ( s,se,dseds,d2seds2,nreq,
+     &                            pryld,ndyld )
+c
+      case ( 3 )                                              ! CPB 2006
+        call jancae_cpb2006 ( s,se,dseds,d2seds2,nreq,
+     &                         pryld,ndyld )
+c
+      case ( 4 )                                 ! Karafillis-Boyce 1993
+        call jancae_KarafillisBoyce ( s,se,dseds,d2seds2,nreq,
+     &                                pryld,ndyld )
+c
+      case ( 5 )                                               ! Hu 2005
+        call jancae_hu2005 ( s,se,dseds,d2seds2,nreq,
+     &                       pryld,ndyld )
+c
+      case ( 6 )                                          ! Yoshida 2011
+        call jancae_yoshida2011 ( s,se,dseds,d2seds2,nreq,
+     &                             pryld,ndyld )
+c
+      case default
+        write (6,*) 'error in jancae_yfunc'
+        write (6,*) 'ntyld error :',ntyld
+        call jancae_exit (9000)
+      end select
+c
+c                                                        ---- set dse/ds
+      if ( nreq .ge. 1 ) then
+        do i = 1,6
+          if ( indx(i) .ne. 0 ) cdseds(indx(i)) = dseds(i)
+        end do
+      end if
+c                                                      ---- set d2se/ds2
+      if ( nreq .ge. 2 ) then
+        do i = 1,6
+          if ( indx(i) .ne. 0 ) then
+            do j = 1,6
+              if ( indx(j) .ne. 0 ) then
+                cd2seds2(indx(i),indx(j)) = d2seds2(i,j)
+              end if
+            end do
+          end if
+        end do
+      end if
+c
+      return
+c
+c
+  100 continue
+c                                       ---- plane stress yield criteria
+c
+      select case ( ntyld )
+      case ( -1 )                                    ! Gotoh Biquadratic
+        call jancae_gotoh ( cs,se,cdseds,cd2seds2,nreq,
+     &                      pryld,ndyld )
+c
+      case ( -2 )                                           ! Yld2000-2d
+        call jancae_yld2000 ( cs,se,cdseds,cd2seds2,nreq,
+     &                        pryld,ndyld )
+c
+      case ( -3 )                                               ! Vegter
+        call jancae_vegter ( cs,se,cdseds,cd2seds2,nreq,
+     &                       pryld,ndyld )
+c
+      case ( -4 )                                             ! BBC 2005
+        call jancae_bbc2005 ( cs,se,cdseds,cd2seds2,nreq,
+     &                        pryld,ndyld )
+c
+      case ( -5 )                                                ! Yld89
+        call jancae_yld89 ( cs,se,cdseds,cd2seds2,nreq,
+     &                      pryld,ndyld )
+c
+      case ( -6 )                                             ! BBC 2008
+        call jancae_bbc2008 ( cs,se,cdseds,cd2seds2,nreq,
+     &                        pryld,ndyld )
+c
+      case ( -7 )                                            ! Hill 1990
+        call jancae_hill1990 ( cs,se,cdseds,cd2seds2,nreq,
+     &                         pryld,ndyld )
+c
+      case default
+        write (6,*) 'error in jancae_yfunc'
+        write (6,*) 'ntyld error :',ntyld
+        call jancae_exit (9000)
+      end select
+c
+      return
+      end
+c
+c
+c
+c-----------------------------------------------------------------------
+c     print type and parameters for yield criteria
+c
+      subroutine jancae_yfunc_print ( pryld,ndyld )
+c
+c-----------------------------------------------------------------------
+      implicit real*8 (a-h,o-z)
+c
+			dimension pryld(ndyld)
+c-----------------------------------------------------------------------
+c
+      ntyld = pryld(1)
+      write (6,*)
+      write (6,*) '*** Yield Criterion',ntyld
+      select case ( ntyld )
+c
+      case ( 0 )                                             ! von Mises
+        write (6,*) 'von Mises'
+c
+      case ( 1 )                                             ! Hill 1948
+        write (6,*) 'Hill 1948'
+        write (6,*) 'F=',pryld(2)
+        write (6,*) 'G=',pryld(3)
+        write (6,*) 'H=',pryld(4)
+        write (6,*) 'L=',pryld(5)
+        write (6,*) 'M=',pryld(6)
+        write (6,*) 'N=',pryld(7)
+c
+      case ( 2 )                                           ! Yld2004-18p
+        write (6,*) 'Yld2004-18p'
+        n0 = 1
+        do i = 1,18
+           n0 = n0 + 1
+           write (6,*) 'a(',i,')=',pryld(n0)
+        end do
+        write (6,*) 'M=',pryld(1+18+1)
+c
+      case ( 3 )                                              ! CPB 2006
+        write (6,*) 'CPB 2006'
+        n0 = 1
+        do i = 1,3
+          do j = 1,3
+            n0 = n0 + 1
+            write (6,*) 'c(',i,',',j,')=',pryld(n0)
+          end do
+        end do
+        do i = 4,6
+          n0 = n0 + 1
+          write (6,*) 'c(',i,',',i,')=',pryld(n0)
+        end do
+        n0 = n0 + 1
+        write (6,*) 'a =',pryld(n0)
+        n0 = n0 + 1
+        write (6,*) 'ck=',pryld(n0)
+c
+      case ( 4 )                                 ! Karafillis-Boyce 1993
+        write (6,*) 'Karafillis-Boyce 1993'
+        n0 = 1
+        do i = 1,6
+          do j = i,6
+            n0 = n0 + 1
+            write (6,*) 'L(',i,',',j,') =',pryld(n0)
+          end do
+        end do
+        n0 = n0 + 1
+        write (6,*) 'k =',pryld(n0)
+        n0 = n0 + 1
+        write (6,*) 'c =',pryld(n0)
+c
+      case ( 5 )                                               ! Hu 2005
+        write (6,*) 'Hu 2005'
+        n0 = 1
+        do i = 1,5
+          n0 = n0 + 1
+          write (6,*) 'X(',i,')=',pryld(n0)
+        end do
+        n0 = n0 + 1
+        write (6,*) 'X(',7,')=',pryld(n0)
+        do i = 1,3
+          n0 = n0 + 1
+          write (6,*) 'C(',i,')=',pryld(n0)
+        end do
+c
+      case ( 6 )                                          ! Yoshida 2011
+        write (6,*) 'Yoshida 2011'
+        n0 = 1
+        do i = 1,16
+          n0 = n0+1
+          write (6,*) 'c(',i,')=',pryld(n0)
+        end do
+c
+      case ( -1 )                                    ! Gotoh Biquadratic
+        write (6,*) 'Gotoh Biquadratic'
+        do i = 1,9
+          write (6,*) 'A(',i,')=',pryld(i+1)
+        end do
+c
+      case ( -2 )                                           ! Yld2000-2d
+        write (6,*) 'Yld2000-2d'
+        do i = 1,8
+          write (6,*) 'a(',i,')=',pryld(i+1)
+        end do
+        write (6,*) 'M=',pryld(9+1)
+c
+      case ( -3 )                                               ! Vegter
+        write (6,*) 'Vegter '
+        write (6,*) 'nf=',nint(pryld(2))
+        write (6,*) 'f_bi0=',pryld(3)
+        write (6,*) 'r_bi0=',pryld(4)
+        do i = 0,nint(pryld(2))
+          write (6,*) 'test angle=',90.0d0*float(i)/pryld(2)
+          write (6,*) 'phi_un(',i,')=',pryld(4+i*4+1)
+          write (6,*) 'phi_sh(',i,')=',pryld(4+i*4+2)
+          write (6,*) 'phi_ps(',i,')=',pryld(4+i*4+3)
+          write (6,*) 'omg(   ',i,')=',pryld(4+i*4+4)
+        end do
+c       do i = 1,7
+c         write (6,*) 'phi_un(',i-1,')=',pryld(1+i   )
+c         write (6,*) 'phi_sh(',i-1,')=',pryld(1+i+ 7)
+c         write (6,*) 'phi_ps(',i-1,')=',pryld(1+i+14)
+c         write (6,*) 'omg   (',i-1,')=',pryld(1+i+23)
+c       end do
+c       write (6,*)   'f_bi0=',pryld(1+22)
+c       write (6,*)   'r_bi0=',pryld(1+23)
+c       write (6,*)   'nf   =',nint(pryld(1+31))
+c
+      case ( -4 )                                             ! BBC 2005
+        write (6,*) 'BBC 2005'
+        write (6,*) 'k of order 2k',pryld(1+1)
+        write (6,*) 'a=',pryld(1+2)
+        write (6,*) 'b=',pryld(1+3)
+        write (6,*) 'L=',pryld(1+4)
+        write (6,*) 'M=',pryld(1+5)
+        write (6,*) 'N=',pryld(1+6)
+        write (6,*) 'P=',pryld(1+7)
+        write (6,*) 'Q=',pryld(1+8)
+        write (6,*) 'R=',pryld(1+9)
+c
+      case ( -5 )                                                ! Yld89
+        write (6,*) 'Yld89'
+        write (6,*) 'order M=',pryld(1+1)
+        write (6,*) 'a      =',pryld(1+2)
+        write (6,*) 'h      =',pryld(1+3)
+        write (6,*) 'p      =',pryld(1+4)
+c
+      case ( -6 )                                             ! BBC 2008
+        write (6,*) 'BBC 2008'
+        write (6,*) 's      =',nint(pryld(1+1))
+        write (6,*) 'k      =',nint(pryld(1+2))
+        do i = 1,nint(pryld(1+1))
+          write (6,*) 'i=',i
+          n = 2 + (i-1)*8
+          write (6,*) 'l_1=',pryld(n+1)
+          write (6,*) 'l_2=',pryld(n+2)
+          write (6,*) 'm_1=',pryld(n+3)
+          write (6,*) 'm_2=',pryld(n+4)
+          write (6,*) 'm_3=',pryld(n+5)
+          write (6,*) 'n_1=',pryld(n+6)
+          write (6,*) 'n_2=',pryld(n+7)
+          write (6,*) 'n_3=',pryld(n+8)
+        end do
+c
+      case ( -7 )                                            ! Hill 1990
+        write (6,*) 'Hill 1990'
+        write (6,*) 'a   =',pryld(1+1)
+        write (6,*) 'b   =',pryld(1+2)
+        write (6,*) 'tau =',pryld(1+3)
+        write (6,*) 'sigb=',pryld(1+4)
+        write (6,*) 'M   =',pryld(1+5)
+      end select
+c
+      return
       end
 c
 c
@@ -4411,361 +4900,7 @@ c
       end
 c
 c
-cc***********************************************************************
-c     JANCAE/UMMDp : Yield Criteria
-c***********************************************************************
-c
-c      0 : von Mises (1913)
-c
-c    3D
-c      1 : Hill 1948
-c      2 : Yld2004-18p
-c      3 : CPB 2006
-c      4 : Karafillis-Boyce 1993
-c      5 : Hu 2005
-c      6 : Yoshida (2011)
-c
-c    2D
-c     -1 : Gotoh biquadratic (1978)
-c     -2 : Yld2000-2d
-c     -3 : Vegter
-c     -4 : BBC 2005
-c     -5 : YLD89
-c     -6 : BBC 2008
-c     -7 : Hill 1990
-c
-c-----------------------------------------------------------------------
-c     yield function and its dfferentials
-c
-      subroutine jancae_yfunc  ( se,cdseds,cd2seds2,nreq,
-     &                           cs,nttl,nnrm,nshr,
-     &                           pryld,ndyld )
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension cs(nttl),cdseds(nttl),cd2seds2(nttl,nttl),
-     &          pryld(ndyld)
-      dimension s(6),dseds(6),d2seds2(6,6),indx(6)
-c
-      ntyld = nint(pryld(1))
-c
-      if ( ntyld .lt. 0 ) then
-        if ( ( nnrm .ne. 2 ) .or. ( nshr .ne. 1 ) ) then
-          write (6,*) 'error in jancae_yfunc'
-          write (6,*) 'ntyld<0 for plane stress'
-          write (6,*) 'nnrm,nshr,ntyld:',nnrm,nshr,ntyld
-          call jancae_exit (9000)
-        end if
-        goto 100
-      end if
-c
-      ss = 0.0
-      do i = 1,nttl
-        ss = ss + cs(i)**2
-      end do
-      if ( ( ss .le. 0.0 ) .and. ( nreq .eq. 0 ) ) then
-        se = 0.0
-        return
-      end if
-c
-c                                                ---- 3D yield functions
-c
-c                                        ---- set index to s(i) to cs(i)
-      do i = 1,6
-        indx(i) = 0
-      end do
-      if ( nnrm .eq. 3 ) then
-        do i = 1,nttl
-          indx(i) = i
-        end do
-      else if ( nnrm .eq. 2 ) then
-        indx(1) = 1
-        indx(2) = 2
-        indx(3) = 0
-        do i = 1,nshr
-          indx(3+i) = 2 + i
-        end do
-      end if
-c                                                          ---- set s(i)
-      call jancae_clear1 ( s,6 )
-      do i = 1,6
-        if ( indx(i) .ne. 0 ) then
-          s(i) = cs(indx(i))
-        end if
-      end do
-c
-      select case ( ntyld )
-      case ( 0 )                                             ! von Mises
-        call jancae_mises ( s,se,dseds,d2seds2,nreq )
-c
-      case ( 1 )                                             ! Hill 1948
-        call jancae_hill1948 ( s,se,dseds,d2seds2,nreq,
-     &                          pryld,ndyld )
-c
-      case ( 2 )                                           ! Yld2004-18p
-        call jancae_yld2004_18p ( s,se,dseds,d2seds2,nreq,
-     &                            pryld,ndyld )
-c
-      case ( 3 )                                              ! CPB 2006
-        call jancae_cpb2006 ( s,se,dseds,d2seds2,nreq,
-     &                         pryld,ndyld )
-c
-      case ( 4 )                               ! Karafillis-Boyce (1993)
-        call jancae_KarafillisBoyce ( s,se,dseds,d2seds2,nreq,
-     &                                pryld,ndyld )
-c
-      case ( 5 )                                             ! Hu (2005)
-        call jancae_hu2005 ( s,se,dseds,d2seds2,nreq,
-     &                       pryld,ndyld )
-c
-      case ( 6 )                                        ! Yoshida (2011)
-        call jancae_yoshida2011 ( s,se,dseds,d2seds2,nreq,
-     &                             pryld,ndyld )
-c
-      case default
-        write (6,*) 'error in jancae_yfunc'
-        write (6,*) 'ntyld error :',ntyld
-        call jancae_exit (9000)
-      end select
-c
-c                                                        ---- set dse/ds
-      if ( nreq .ge. 1 ) then
-        do i = 1,6
-          if ( indx(i) .ne. 0 ) cdseds(indx(i)) = dseds(i)
-        end do
-      end if
-c                                                      ---- set d2se/ds2
-      if ( nreq .ge. 2 ) then
-        do i = 1,6
-          if ( indx(i) .ne. 0 ) then
-            do j = 1,6
-              if ( indx(j) .ne. 0 ) then
-                cd2seds2(indx(i),indx(j)) = d2seds2(i,j)
-              end if
-            end do
-          end if
-        end do
-      end if
-c
-      return
-c
-c
-  100 continue
-c                                      ---- plane stress yield functions
-c
-      select case ( ntyld )
-      case ( -1 )                             ! Gotoh biquadratic (1978)
-        call jancae_gotoh ( cs,se,cdseds,cd2seds2,nreq,
-     &                      pryld,ndyld )
-c
-      case ( -2 )                                           ! Yld2000-2d
-        call jancae_yld2000 ( cs,se,cdseds,cd2seds2,nreq,
-     &                        pryld,ndyld )
-c
-      case ( -3 )                                               ! Vegter
-        call jancae_vegter ( cs,se,cdseds,cd2seds2,nreq,
-     &                       pryld,ndyld )
-c
-      case ( -4 )                                             ! BBC 2005
-        call jancae_bbc2005 ( cs,se,cdseds,cd2seds2,nreq,
-     &                        pryld,ndyld )
-c
-      case ( -5 )                                                ! Yld89
-        call jancae_yld89 ( cs,se,cdseds,cd2seds2,nreq,
-     &                      pryld,ndyld )
-c
-      case ( -6 )                                             ! BBC 2008
-        call jancae_bbc2008 ( cs,se,cdseds,cd2seds2,nreq,
-     &                        pryld,ndyld )
-c
-      case ( -7 )                                            ! Hill 1990
-        call jancae_hill1990 ( cs,se,cdseds,cd2seds2,nreq,
-     &                         pryld,ndyld )
-c
-      case default
-        write (6,*) 'error in jancae_yfunc'
-        write (6,*) 'ntyld error :',ntyld
-        call jancae_exit (9000)
-      end select
-c
-      return
-      end
-c
-c
-c
-c-----------------------------------------------------------------------
-c     print type and parameters for yield functions
-c
-      subroutine jancae_yfunc_print ( pryld,ndyld )
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension pryld(ndyld)
-c
-      ntyld = pryld(1)
-      write (6,*)
-      write (6,*) '*** Yield Criterion',ntyld
-      select case ( ntyld )
-c
-      case ( 0 )                                             ! von Mises
-        write (6,*) 'von Mises'
-c
-      case ( 1 )                                             ! Hill 1948
-        write (6,*) 'Hill 1948'
-        write (6,*) 'F=',pryld(2)
-        write (6,*) 'G=',pryld(3)
-        write (6,*) 'H=',pryld(4)
-        write (6,*) 'L=',pryld(5)
-        write (6,*) 'M=',pryld(6)
-        write (6,*) 'N=',pryld(7)
-c
-      case ( 2 )                                           ! Yld2004-18p
-        write (6,*) 'Yld2004-18p'
-        n0 = 1
-        do i = 1,18
-           n0 = n0 + 1
-           write (6,*) 'a(',i,')=',pryld(n0)
-        end do
-        write (6,*) 'M=',pryld(1+18+1)
-c
-      case ( 3 )                                              ! CPB 2006
-        write (6,*) 'CPB 2006'
-        n0 = 1
-        do i = 1,3
-          do j = 1,3
-            n0 = n0 + 1
-            write (6,*) 'c(',i,',',j,')=',pryld(n0)
-          end do
-        end do
-        do i = 4,6
-          n0 = n0 + 1
-          write (6,*) 'c(',i,',',i,')=',pryld(n0)
-        end do
-        n0 = n0 + 1
-        write (6,*) 'a =',pryld(n0)
-        n0 = n0 + 1
-        write (6,*) 'ck=',pryld(n0)
-c
-      case ( 4 )                                 ! Karafillis-Boyce 1993
-        write (6,*) 'Karafillis-Boyce 1993'
-        n0 = 1
-        do i = 1,6
-          do j = i,6
-            n0 = n0 + 1
-            write (6,*) 'L(',i,',',j,') =',pryld(n0)
-          end do
-        end do
-        n0 = n0 + 1
-        write (6,*) 'k =',pryld(n0)
-        n0 = n0 + 1
-        write (6,*) 'c =',pryld(n0)
-c
-      case ( 5 )                                               ! Hu 2005
-        write (6,*) 'Hu 2005'
-        n0 = 1
-        do i = 1,5
-          n0 = n0 + 1
-          write (6,*) 'X(',i,')=',pryld(n0)
-        end do
-        n0 = n0 + 1
-        write (6,*) 'X(',7,')=',pryld(n0)
-        do i = 1,3
-          n0 = n0 + 1
-          write (6,*) 'C(',i,')=',pryld(n0)
-        end do
-c
-      case ( 6 )                                      ! F.Yoshida (2011)
-        write (6,*) 'F.Yoshida 6th order (2011)'
-        n0 = 1
-        do i = 1,16
-          n0 = n0+1
-          write (6,*) 'c(',i,')=',pryld(n0)
-        end do
-c
-      case ( -1 )                             ! Gotoh biquadratic (1978)
-        write (6,*) 'Gotoh biquadratic'
-        do i = 1,9
-          write (6,*) 'A(',i,')=',pryld(i+1)
-        end do
-c
-      case ( -2 )                                           ! Yld2000-2d
-        write (6,*) 'Yld2000-2d'
-        do i = 1,8
-          write (6,*) 'a(',i,')=',pryld(i+1)
-        end do
-        write (6,*) 'M=',pryld(9+1)
-c
-      case ( -3 )                                               ! Vegter
-        write (6,*) 'Vegter '
-        write (6,*) 'nf=',nint(pryld(2))
-        write (6,*) 'f_bi0=',pryld(3)
-        write (6,*) 'r_bi0=',pryld(4)
-        do i = 0,nint(pryld(2))
-          write (6,*) 'test angle=',90.0d0*float(i)/pryld(2)
-          write (6,*) 'phi_un(',i,')=',pryld(4+i*4+1)
-          write (6,*) 'phi_sh(',i,')=',pryld(4+i*4+2)
-          write (6,*) 'phi_ps(',i,')=',pryld(4+i*4+3)
-          write (6,*) 'omg(   ',i,')=',pryld(4+i*4+4)
-        end do
-c       do i = 1,7
-c         write (6,*) 'phi_un(',i-1,')=',pryld(1+i   )
-c         write (6,*) 'phi_sh(',i-1,')=',pryld(1+i+ 7)
-c         write (6,*) 'phi_ps(',i-1,')=',pryld(1+i+14)
-c         write (6,*) 'omg   (',i-1,')=',pryld(1+i+23)
-c       end do
-c       write (6,*)   'f_bi0=',pryld(1+22)
-c       write (6,*)   'r_bi0=',pryld(1+23)
-c       write (6,*)   'nf   =',nint(pryld(1+31))
-c
-      case ( -4 )                                             ! BBC 2005
-        write (6,*) 'BBC 2005'
-        write (6,*) 'k of order 2k',pryld(1+1)
-        write (6,*) 'a=',pryld(1+2)
-        write (6,*) 'b=',pryld(1+3)
-        write (6,*) 'L=',pryld(1+4)
-        write (6,*) 'M=',pryld(1+5)
-        write (6,*) 'N=',pryld(1+6)
-        write (6,*) 'P=',pryld(1+7)
-        write (6,*) 'Q=',pryld(1+8)
-        write (6,*) 'R=',pryld(1+9)
-c
-      case ( -5 )                                                ! Yld89
-        write (6,*) 'Yld89'
-        write (6,*) 'order M=',pryld(1+1)
-        write (6,*) 'a      =',pryld(1+2)
-        write (6,*) 'h      =',pryld(1+3)
-        write (6,*) 'p      =',pryld(1+4)
-c
-      case ( -6 )                                             ! BBC 2008
-        write (6,*) 'BBC 2008'
-        write (6,*) 's      =',nint(pryld(1+1))
-        write (6,*) 'k      =',nint(pryld(1+2))
-        do i = 1,nint(pryld(1+1))
-          write (6,*) 'i=',i
-          n = 2 + (i-1)*8
-          write (6,*) 'l_1=',pryld(n+1)
-          write (6,*) 'l_2=',pryld(n+2)
-          write (6,*) 'm_1=',pryld(n+3)
-          write (6,*) 'm_2=',pryld(n+4)
-          write (6,*) 'm_3=',pryld(n+5)
-          write (6,*) 'n_1=',pryld(n+6)
-          write (6,*) 'n_2=',pryld(n+7)
-          write (6,*) 'n_3=',pryld(n+8)
-        end do
-c
-      case ( -7 )                                            ! Hill 1990
-        write (6,*) 'Hill 1990'
-        write (6,*) 'a   =',pryld(1+1)
-        write (6,*) 'b   =',pryld(1+2)
-        write (6,*) 'tau =',pryld(1+3)
-        write (6,*) 'sigb=',pryld(1+4)
-        write (6,*) 'M   =',pryld(1+5)
-      end select
-c
-      return
-      end
-c
-c
-c
-c--------------------------------------------------------------(cpb2006)
+cc--------------------------------------------------------------(cpb2006)
 c     Cazacu 2006 yield function and its dfferentials
 c     ( IJP v.22(2006) p1171-1194. )
 c

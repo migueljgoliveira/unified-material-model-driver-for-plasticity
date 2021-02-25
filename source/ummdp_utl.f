@@ -749,7 +749,7 @@ c
 c-----------------------------------------------------------------------
 c     checking existence of file named "flname"
 c
-       logical function jancae_file_exist ( flname )´
+       logical function jancae_file_exist ( flname )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)

@@ -1225,11 +1225,11 @@ c
       nrup = nint(prop(n+1))
       select case (nrup)
         case ( 0 ) ; nd = 0 ;   ! No Uncoupled Rupture Criterion
-        case ( 1 ) ; nd = 1 ;   ! Equivalent Plastic Strain
-        case ( 2 ) ; nd = 1 ;   ! Cockroft and Latham
-        case ( 3 ) ; nd = 1 ;   ! Rice and Tracey
-        case ( 4 ) ; nd = 1 ;   ! Ayada
-        case ( 5 ) ; nd = 1 ;   ! Brozzo
+        case ( 1 ) ; nd = 2 ;   ! Equivalent Plastic Strain
+        case ( 2 ) ; nd = 2 ;   ! Cockroft and Latham
+        case ( 3 ) ; nd = 2 ;   ! Rice and Tracey
+        case ( 4 ) ; nd = 2 ;   ! Ayada
+        case ( 5 ) ; nd = 2 ;   ! Brozzo
         case default
           write (6,*) 'error uncoupled rupture criterion id :',nrup
           call jancae_exit ( 9000 )
