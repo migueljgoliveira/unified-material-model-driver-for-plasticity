@@ -12,22 +12,22 @@
       3,           0.,           1.
       4,           1.,           1.
 *Element, type=CPS4R
-1, 1, 2, 4, 3
+ 1, 1, 2, 4, 3
 *Nset, nset=Set-1, generate
  1,  4,  1
 *Elset, elset=Set-1
  1,
 *Orientation, name=Local
-1., 0., 0., 0., 1., 0.
-3, 0.
+ 1., 0., 0., 0., 1., 0.
+ 3, 0.
 *Orientation, name=Global
-1., 0., 0., 0., 1., 0.
-3, 0.
+ 1., 0., 0., 0., 1., 0.
+ 3, 0.
 ** Section: Section-1
 *Solid Section, elset=Set-1, orientation=Local, material=Material-1
-1.,
+ 1.,
 *Hourglass Stiffness
-203.125
+ 203.125
 *End Part
 **  
 **
@@ -55,7 +55,7 @@
 ** MATERIALS
 **
 *Material, name=Material-1
-*User material, constants=30
+*User Material, constants=30
  0, 0, 200000.0, 0.3, -2, 1.0, 1.0, 1.0,
  1.0, 1.0, 1.0, 1.0, 1.0, 8.0, 5, 180.0,
  5.06, 2.11, 52.2, 5, 3, 824.9, 56.5, 135.4,
@@ -66,39 +66,39 @@
  2 , PE11
  3 , PE22
  4 , PE21
- 5 , ALPHA1_11
- 6 , ALPHA1_22
- 7 , ALPHA1_12
- 8 , ALPHA2_11
- 9 , ALPHA2_22
- 10, ALPHA2_12
- 11, ALPHA3_11
- 12, ALPHA3_22
- 13, ALPHA3_12
-*User output variables
+ 5 , ALPHA1-11
+ 6 , ALPHA1-22
+ 7 , ALPHA1-12
+ 8 , ALPHA2-11
+ 9 , ALPHA2-22
+ 10, ALPHA2-12
+ 11, ALPHA3-11
+ 12, ALPHA3-22
+ 13, ALPHA3-12
+*User Output Variables
  9
 **
 ** BOUNDARY CONDITIONS
 **
 ** Name: BC-1 Type: Displacement/Rotation
 *Boundary
-Set-1, 1, 1
+ Set-1, 1, 1
 ** Name: BC-2 Type: Displacement/Rotation
 *Boundary
-Set-2, 2, 2
+ Set-2, 2, 2
 ** ----------------------------------------------------------------
 ** 
 ** STEP: Step-1
 ** 
 *Step, name=Step-1, nlgeom=YES, inc=100000   
 *Static
-0.001, 1., 0.0001, 0.01
+ 0.001, 1., 0.0001, 0.01
 ** 
 ** BOUNDARY CONDITIONS
 ** 
 ** Name: BC-3 Type: Displacement/Rotation
 *Boundary
-Set-3, 1, 1, 1.0
+ Set-3, 1, 1, 1.0
 ** 
 ** OUTPUT REQUESTS
 ** 
