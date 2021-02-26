@@ -4,10 +4,16 @@ c     UMMDp - Unified Material Model Driver for Plasticity
 c
 c***********************************************************************
 c
-c     Copyright (c) 2018 JANCAE
+c     > Copyright (c) 2018 JANCAE
+c       . This software includes code originally developed by the  
+c       Material Modeling Working group of JANCAE.
 c
-c     This software includes code developed by the 
-c     Material Modeling Working group of JANCAE.
+c     > Extended by M.G. Oliveira from University of Aveiro, Portugal
+c       . Added additional isotropic hardening laws
+c       . Corrected order of Voigt notation for Yld2004-18p with Abaqus
+c       . Linked kinematic hardening laws to the core of UMMDp
+c       . Added Chaboche kinematic hardening law as used by Abaqus
+c     	. Implemented uncouple rupture criteria
 c
 c***********************************************************************
 c
