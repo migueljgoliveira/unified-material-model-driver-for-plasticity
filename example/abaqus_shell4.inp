@@ -1,0 +1,101 @@
+*Heading
+UMMDp Simple Example (3D Shell / Disp. Control )
+**
+*Parameter
+ R=5.0e-3
+**
+*Node, nset=nall
+ 1, 0.0, 0.0, 0.0
+ 2, 0.5, 0.0, 0.0
+ 3, 1.0, 0.0, 0.0
+ 4, 0.0, 0.5, 0.0
+ 5, 0.5, 0.5, 0.0
+ 6, 1.0, 0.5, 0.0
+ 7, 0.0, 1.0, 0.0
+ 8, 0.5, 1.0, 0.0
+ 9, 1.0, 1.0, 0.0
+*Nset, nset=LEFT
+ 1, 7, 4
+*Nset, nset=BOTTOM
+ 1, 2, 3
+*Nset, nset=RIGHT
+ 3, 6, 9
+*Nset, nset=TOP
+ 7, 8, 9
+*Nset, nset=OUTLINE
+ 1, 2, 3, 4, 6, 7, 8, 9
+**
+*Nset, nset=RIGHT_NODE
+ 3, 6
+*Nset, nset=TOP_NODE
+ 7, 8
+**
+*Element, type=S4, elset=UMMDp
+ 1, 1, 2, 5, 4
+ 2, 2, 3, 6, 5
+ 3, 4, 5, 8, 7
+ 4, 5, 6, 9, 8
+** Section: sheet
+*Shell Section, material=UMMDp, elset=UMMDp, orientation=ORI1
+ 1.0, 7
+** Abaqus Analysis Users Manual 29.6.4 Shell section behavior
+** Transverse Shear Stiffness = 5Gt/6
+** G=1000/2/(1+0.3)=384.6154
+** 5Gt/6=320.5
+*Transverse Shear Stiffness
+ 320.5, 320.5
+*Orientation, name=ORI1
+ 1.0, 0.0, 0.0, 0.0, 1.0, 0.0
+ 3, 0.0
+**
+*Material, name=UMMDp
+*User Material, constants=28
+ 0, 0, 1000.0, 0.3, 2,-0.069888, 0.936408, 0.079143,
+ 1.003060, 0.524741, 1.363180, 1.023770, 1.069060, 0.954322, 0.981171, 0.476741, 
+ 0.575316, 0.866827, 1.145010, -0.079294, 1.051660, 1.147100, 1.404620, 8.0,
+ 0, 1.0, 0, 0
+*Depvar
+ 4,
+ 1 , PEEQ
+ 2 , PE11
+ 3 , PE22
+ 4 , PE12
+*User Output Variables
+ 2, 
+**
+*Equation
+ 2, 
+RIGHT_NODE, 1, 1.0,  9, 1, -1.0
+ 2, 
+TOP_NODE,   2, 1.0,  9, 2, -1.0
+**
+*Amplitude, name=Amp-x
+ 0.0, 0.0,   1.0, 1.0,   2.0, 2.0,   3.0, 2.0
+ 4.0, 1.0,   5.0, 0.0,   6.0,-1.0,   7.0,-1.0
+ 8.0, 0.0,   9.0, 1.0
+*Amplitude, name=Amp-y
+ 0.0, 0.0,   1.0, 0.0,   2.0, 1.0,   3.0, 2.0
+ 4.0, 3.0,   5.0, 3.0,   6.0, 2.0,   7.0, 1.0
+ 8.0, 0.0,   9.0, 0.0
+**
+*Step, inc=900
+*Static, Direct
+ 0.1, 9.0
+**
+*Boundary
+ LEFT,   1, 1
+ BOTTOM, 2, 2
+ OUTLINE,3, 6
+**
+*Boundary, amplitude=Amp-x
+ 9, 1, 1, <R>
+*Boundary, amplitude=Amp-y
+ 9, 2, 2, <R>
+**
+*Output, Field, variable=preselect
+*Element Output
+ S, E, SDV, UVARM
+*Output, History
+*Element Output, elset=UMMDp
+ S, MISES, SDV1
+*End Step

@@ -27,7 +27,7 @@
 *Solid Section, elset=Set-1, orientation=Local, material=Material-1
  1.,
 *Hourglass Stiffness
- 203.125
+203.125
 *End Part
 **  
 **
@@ -55,17 +55,17 @@
 ** MATERIALS
 **
 *Material, name=Material-1
-*User Material, constants=30
+*User material, constants=30
  0, 0, 200000.0, 0.3, -2, 1.0, 1.0, 1.0,
  1.0, 1.0, 1.0, 1.0, 1.0, 8.0, 5, 180.0,
  5.06, 2.11, 52.2, 5, 3, 824.9, 56.5, 135.4,
  0.0684, 27509.4, 415.55, 2, 1, 0.5
 *Depvar
  13,
- 1 , PEEQ, Equivalent Plastic Strain
+ 1 , PEEQ
  2 , PE11
  3 , PE22
- 4 , PE21
+ 4 , PE12
  5 , ALPHA1-11
  6 , ALPHA1-22
  7 , ALPHA1-12
@@ -75,7 +75,7 @@
  11, ALPHA3-11
  12, ALPHA3-22
  13, ALPHA3-12
-*User Output Variables
+*User output variables
  9
 **
 ** BOUNDARY CONDITIONS

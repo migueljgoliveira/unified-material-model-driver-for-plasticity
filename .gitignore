@@ -19,3 +19,6 @@ fort.*
 *.log
 *.023
 *.SMABulk
+*.mdl
+*.SMAFocus
+*.stt
