@@ -11,8 +11,7 @@ c      2 : Cockroft and Latham
 c      3 : Rice and Tracey
 c      4 : Ayada
 c      5 : Brozzo
-c
-c     -1 : Forming Limit Diagram
+c      6 : Forming Limit Diagram (only plane-stress)
 c
 c-----------------------------------------------------------------------
 c     calculated rupture criteria
@@ -470,6 +469,7 @@ c
 c
 c-----------------------------------------------------------------------
 c     Forming Limit Diagram (FLD)
+c       . only plane-stress formulation
 c
       subroutine jancae_rup_fld ( ntens,uvar2,uvar1,nuvarm,
      &                            jrcd,jmac,jmatyp,matlayo,laccfla,
