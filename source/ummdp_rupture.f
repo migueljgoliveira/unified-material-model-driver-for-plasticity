@@ -164,7 +164,7 @@ c
 c     nuvarm : 2
 c
 c     uvar(2+nt+1) : equivalent plastic strain
-c     uvar(2+nt+2) : rupture criterion normalised
+c     uvar(2+nt+2) : rupture parameter normalised by critical value
 c
 c                                            ---- get uvar before update
       wlimnorm  = uvar1(2+nt+2)
@@ -205,8 +205,8 @@ c
 c     uvar(1)      : equivalent stress
 c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : maximum principal stress
-c     uvar(2+nt+3) : rupture criterion
-c     uvar(2+nt+4) : rupture criterion normalised
+c     uvar(2+nt+3) : rupture parameter
+c     uvar(2+nt+4) : rupture parameter normalised by critical value
 c
 c                                            ---- get uvar before update
       se1    = uvar1(1)
@@ -273,8 +273,8 @@ c
 c     uvar(1)      : equivalent stress
 c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : hydrostatic stress
-c     uvar(2+nt+3) : rupture criterion
-c     uvar(2+nt+4) : rupture criterion normalised
+c     uvar(2+nt+3) : rupture parameter
+c     uvar(2+nt+4) : rupture parameter normalised by critical value
 c
 c                                            ---- get uvar before update
       se1   = uvar1(1)
@@ -341,8 +341,8 @@ c
 c     uvar(1)      : equivalent stress
 c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : hydrostatic stress
-c     uvar(2+nt+3) : rupture criterion
-c     uvar(2+nt+4) : rupture criterion normalised
+c     uvar(2+nt+3) : rupture parameter
+c     uvar(2+nt+4) : rupture parameter normalised by critical value
 c
 c                                            ---- get uvar before update
       se1   = uvar1(1)
@@ -409,8 +409,8 @@ c
 c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : maximum principal stress
 c     uvar(2+nt+3) : hydrostatic stress
-c     uvar(2+nt+4) : rupture criterion
-c     uvar(2+nt+5) : rupture criterion normalised
+c     uvar(2+nt+4) : rupture parameter
+c     uvar(2+nt+5) : rupture parameter normalised by critical value
 c
 c                                            ---- get uvar before update
       peeq1  = uvar1(2+nt+1)
@@ -493,11 +493,11 @@ c-----------------------------------------------------------------------
 c
 c     nuvarm : 5
 c
-c     uvar(2+nt+1) : major principal strain of element
-c     uvar(2+nt+2) : minor principal strain
-c     uvar(2+nt+3) : major principal strain on FLD
-c     uvar(2+nt+4) : rupture criterion
-c     uvar(2+nt+5) : rupture criterion normalised
+c     uvar(2+nt+1) : maximum principal strain
+c     uvar(2+nt+2) : minimum principal strain
+c     uvar(2+nt+3) : projection of major principal strain on FLD
+c     uvar(2+nt+4) : rupture parameter
+c     uvar(2+nt+5) : rupture parameter normalised by critical value
 c
 c                                            ---- get uvar before update
       wlimnorm  = uvar1(2+nt+6)
