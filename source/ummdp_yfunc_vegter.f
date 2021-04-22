@@ -113,7 +113,7 @@ c
       do i=1,3
         se=se+s(i)**2
       end do
-      if ( se.le.0.0 ) then
+      if ( se<=0.0 ) then
         se=0.0
         return
       end if
@@ -125,8 +125,8 @@ c     isflag  : 0 s(i,i=1,3)=0
 c             : 1 not s(i)=0
 c                                 ---- exception treatment if all s(i)=0
 c
-      if(abs(s(1)).le.TOL0.and.abs(s(2)).le.TOL0.and.
-     &                                         abs(s(3)).le.TOL0)then
+      if(abs(s(1))<=TOL0.and.abs(s(2))<=TOL0.and.
+     &                                         abs(s(3))<=TOL0)then
       isflag=0
       call jancae_clear1 ( x,4 )
       goto 100
@@ -137,7 +137,7 @@ c
 c
 c                           ---- exception treatment if s(1)=s(2),s(3)=0
 c
-      if(abs(s(1)-s(2)).le.TOL0.and.abs(s(3)).le.TOL0) then
+      if(abs(s(1)-s(2))<=TOL0.and.abs(s(3))<=TOL0) then
         theta=0.0d0
         theta_rv=0.5d0*pi
         x(1)=0.5d0*(s(1)+s(2))
@@ -204,32 +204,32 @@ c                                                      ! bi=equi-biaxial
      &           ((r_bi0+1.0d0)-(r_bi0-1.0d0)*vcos2t)
 c
 c                                 ---- case distribution by stress state
-      if(x(1).ne.0.0d0)then
+      if(x(1)/=0.0d0)then
         alfa=x(2)/x(1)
       end if
-      if(x(2).ne.0.0d0)then
+      if(x(2)/=0.0d0)then
         beta=x(1)/x(2)
       end if
 c
 c     iareaflag    :stress state flag(i=0~6)
 c
-      if(x(1).gt.0.0d0.and.alfa.lt.0.0d0.and.alfa.ge.fsh2/fsh1) then
+      if(x(1)>0.0d0.and.alfa<0.0d0.and.alfa>=fsh2/fsh1) then
         iareaflag=1
-      else if(x(1).gt.0.0d0.and.alfa.ge.0.0d0
-     &                           .and.alfa.lt.fps2/fps1) then
+      else if(x(1)>0.0d0.and.alfa>=0.0d0
+     &                           .and.alfa<fps2/fps1) then
         iareaflag=2
-      else if(x(1).gt.0.0d0.and.alfa.ge.fps2/fps1
-     &                           .and.alfa.le.1.0d0) then
+      else if(x(1)>0.0d0.and.alfa>=fps2/fps1
+     &                           .and.alfa<=1.0d0) then
         iareaflag=3
 c
-      else if(x(1).lt.0.0d0.and.alfa.ge.1.0d0
-     &                           .and.alfa.lt.fps1r/fps2r) then
+      else if(x(1)<0.0d0.and.alfa>=1.0d0
+     &                           .and.alfa<fps1r/fps2r) then
         iareaflag=4
-      else if(x(1).lt.0.0d0.and.beta.le.fps2r/fps1r
-     &                                      .and.beta.gt.0.0d0) then
+      else if(x(1)<0.0d0.and.beta<=fps2r/fps1r
+     &                                      .and.beta>0.0d0) then
         iareaflag=5
-      else if(x(1).ge.0.0d0.and.beta.le.0.0d0
-     &                           .and.beta.gt.fsh1/fsh2) then
+      else if(x(1)>=0.0d0.and.beta<=0.0d0
+     &                           .and.beta>fsh1/fsh2) then
         iareaflag=6
 c
       else
@@ -323,7 +323,7 @@ c                                                 ---- equivalent stress
       se=0.0d0
       go to 300
   200 continue
-      if(f(1).le.TOL2) then
+      if(f(1)<=TOL2) then
          se=x(2)/f(2)
       else
          se=x(1)/f(1)
@@ -335,7 +335,7 @@ c
 c
 c                                            ---- 1st order differential
 c
-      if ( nreq.ge.1 ) then
+      if ( nreq>=1 ) then
 c                        ---- set dadc,dcdc,dndc,dmdc for eq.(A.7)^(A.9)
 c
       call jancae_clear1 ( dadc,2 )
@@ -347,7 +347,7 @@ c
       select case ( iareaflag )
 c                                            
       case ( 1 )                                           ! iareaflag=1
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dadc(1)=dadc(1)+phi_sh(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
@@ -363,7 +363,7 @@ c
           end do
        end if
 c
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
          do m=0,nf
           dcdc(1)=dcdc(1)+phi_un(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
@@ -380,7 +380,7 @@ c
           dndc(2)=0.0d0
 c
           dmdc(1)=0.0d0
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
          do m=0,nf
           dmdc(2)=dmdc(2)+omg(m)*dble(m)
      &                          *sin(2.0d0*dble(m)*theta)
@@ -396,7 +396,7 @@ c
 c
 c                                            
       case ( 2 )                                           ! iareaflag=2
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
          do m=0,nf
           dadc(1)=dadc(1)+phi_un(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
@@ -409,7 +409,7 @@ c
        end if
           dadc(2)=0.0d0
 c
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
          do m=0,nf
           dcdc(1)=dcdc(1)+phi_ps(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
@@ -423,7 +423,7 @@ c
           dcdc(2)=0.5d0*dcdc(1)
 c
           dndc(1)=0.0d0
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dndc(2)=dndc(2)+omg(m)*dble(m)
      &                           *sin(2.0d0*dble(m)*theta)
@@ -442,7 +442,7 @@ c
 c
 c                                           
       case ( 3 )                                           ! iareaflag=3
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dadc(1)=dadc(1)+phi_ps(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
@@ -472,7 +472,7 @@ c
           dadc(1)=0.0d0
           dadc(2)=0.0d0
 c
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dcdc(2)=dcdc(2)+phi_ps(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
@@ -496,7 +496,7 @@ c
 c
 c                                            
       case ( 5 )                                           ! iareaflag=5
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dadc(2)=dadc(2)+phi_ps(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
@@ -510,7 +510,7 @@ c
           dadc(1)=0.5d0*dadc(2)
 c
           dcdc(1)=0.0d0
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dcdc(2)=dcdc(2)+phi_un(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
@@ -525,7 +525,7 @@ c
           dndc(1)=0.0d0
           dndc(2)=0.0d0
 c
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dmdc(1)=dmdc(1)+omg(m)*dble(m)
      &                          *sin(2.0d0*dble(m)*theta_rv)
@@ -543,7 +543,7 @@ c
 c                                            
       case ( 6 )                                           ! iareaflag=6
           dadc(1)=0.0d0
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dadc(2)=dadc(2)+phi_un(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
@@ -555,7 +555,7 @@ c
          end do
        end if
 c
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dcdc(1)=dcdc(1)+phi_sh(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
@@ -571,7 +571,7 @@ c
          end do
        end if
 c
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dndc(1)=dndc(1)+omg(m)*dble(m)
      &                          *sin(2.0d0*dble(m)*theta_rv)
@@ -608,7 +608,7 @@ c
 c
 c
 c                                            ---- 2nd order differential
-      if ( nreq.ge.2 ) then
+      if ( nreq>=2 ) then
 c                     ---- set d2adc2,d2cdc2,d2ndc2,d2mdc2 for d2bdc2(2)
 c
       call jancae_clear1 ( d2adc2,2 )
@@ -620,13 +620,13 @@ c
 c                     ---- define exception treatment condition of theta
 c                        ---- if theta<=0.002865deg then apply exception
 c
-      if(abs(vsin2t).le.TOL) then
+      if(abs(vsin2t)<=TOL) then
          ithetaflag=1
       else 
          ithetaflag=0
       end if
 c
-      if(ithetaflag.eq.1) then
+      if(ithetaflag==1) then
         vvtmp(0)=0.0d0
         vvtmp(1)=0.0d0
         vvtmp(2)=2.0d0
@@ -827,7 +827,7 @@ c
       b2u=nn(1)*(mm(1)*c(1)+mm(2)*c(2))-mm(1)*(nn(1)*a(1)+nn(2)*a(2))
 c
       bb=nn(1)*mm(2)-mm(1)*nn(2)
-      if(abs(bb).le.TOL) then
+      if(abs(bb)<=TOL) then
          write (6,*) 'hingepoint singular error! '
          call jancae_exit (9000)
       end if
@@ -860,13 +860,13 @@ c
       bb=2.0d0*x(2)*(b(1)-a(1))-2.0d0*x(1)*(b(2)-a(2))
       cc=x(2)*a(1)-x(1)*a(2)
 c
-      if(abs(aa).le.TOL1) then
+      if(abs(aa)<=TOL1) then
          write (6,*) 'calc. mu singular error! ',abs(aa),iareaflag
          call jancae_exit (9000)
       end if
 c
       dd=bb*bb-4.0d0*aa*cc
-      if(dd.ge.0.0d0) then
+      if(dd>=0.0d0) then
         xx(1)=0.5d0*(-bb+sign(sqrt(dd),-bb))/aa
         xx(2)=cc/(aa*xx(1))
 c
@@ -875,13 +875,13 @@ c
          call jancae_exit (9000)
       end if
 c
-      if(xx(1).ge.0.0d0.and.xx(1).le.1.0000005d0) then
+      if(xx(1)>=0.0d0.and.xx(1)<=1.0000005d0) then
           mu=xx(1)
            imuflag=1
-        else if(xx(2).ge.0.0d0.and.xx(2).le.1.0000005d0) then
+        else if(xx(2)>=0.0d0.and.xx(2)<=1.0000005d0) then
           mu=xx(2)
            imuflag=2
-        else if(abs(xx(1)).le.TOL2.or.abs(xx(2)).le.TOL2)then
+        else if(abs(xx(1))<=TOL2.or.abs(xx(2))<=TOL2)then
           mu=0.0d0
         else
          write (6,*) 'can not find mu ! solve error ',iareaflag,xx(1)
@@ -937,7 +937,7 @@ c
      &                                        dmdc(2)*(c(2)-b(2))
 c
       nnmm=nn(1)*mm(2)-mm(1)*nn(2)
-         if(abs(nnmm).lt.TOL) then
+         if(abs(nnmm)<TOL) then
             write (6,*) 'nnmm too small! ',nnmm
             call jancae_exit (9000)
          end if
@@ -983,7 +983,7 @@ c                                   ---- calc. dfdmu(i) (i=1~2)  eq.(22)
 c
 c                            ---- calc. dphidx(i) (i=1~3)  eq.(21),(C.1)
       dphidxcinv=f(1)*dfdmu(2)-f(2)*dfdmu(1)
-         if(abs(dphidxcinv).lt.TOL3) then
+         if(abs(dphidxcinv)<TOL3) then
             write (6,*) 'eq.(21) too small! ',dphidxcinv
             call jancae_exit (9000)
          end if
@@ -992,11 +992,11 @@ c
 c                            ---- if condition to avoid singular eq.(20)
 c                                            ---- apply 44.9 to 45.1 deg
 c
-      if(iareaflag.eq.3.or.iareaflag.eq.4) then
+      if(iareaflag==3.or.iareaflag==4) then
       vtan=x(2)/x(1)
       end if
 c
-      if(iareaflag.eq.4.and.vtan.ge.TOL1.and.vtan.le.TOL2) then
+      if(iareaflag==4.and.vtan>=TOL1.and.vtan<=TOL2) then
 c
       tmp_u=1.0d0*(2.0d0*(1.0d0-mu)*dbdc(2)+mu*dcdc(2))*dfdmu(1)
      &     -1.0d0*(2.0d0*(1.0d0-mu)*dbdc(1)+mu*dcdc(1))*dfdmu(2)
@@ -1007,7 +1007,7 @@ c
       dphidxtmp(2)=-dfdmu(1)
       dphidxtmp(3)=tmp_u/tmp_b
 c
-      else if(iareaflag.eq.3.and.vtan.ge.TOL1.and.vtan.le.TOL2) then
+      else if(iareaflag==3.and.vtan>=TOL1.and.vtan<=TOL2) then
 c
       tmp_u=1.0d0*(2.0d0*mu*dbdc(2)+(1.0d0-mu)*dadc(2))*dfdmu(1)
      &     -1.0d0*(2.0d0*mu*dbdc(1)+(1.0d0-mu)*dadc(1))*dfdmu(2)
@@ -1055,11 +1055,11 @@ c
 c                            ---- if condition to avoid singular eq.(20)
 c                                            ---- apply 44.9 to 45.1 deg
 c
-      if(iareaflag.eq.3.or.iareaflag.eq.4) then
+      if(iareaflag==3.or.iareaflag==4) then
       vtan=x(2)/x(1)
       end if
 c
-      if(iareaflag.eq.3.and.vtan.ge.TOL1.and.vtan.le.TOL2) then
+      if(iareaflag==3.and.vtan>=TOL1.and.vtan<=TOL2) then
         dxds(1,1)=0.5d0*(1.0d0+vcos2t)
         dxds(2,1)=0.5d0*(1.0d0-vcos2t)
         dxds(3,1)=vsin2t*vsin2t
@@ -1071,7 +1071,7 @@ c
         dxds(3,3)=-2.0d0*vsin2t*vcos2t
         dxds_t=transpose(dxds)
 c
-      else if(iareaflag.eq.4.and.vtan.ge.TOL1.and.vtan.le.TOL2) then
+      else if(iareaflag==4.and.vtan>=TOL1.and.vtan<=TOL2) then
         dxds(1,1)=0.5d0*(1.0d0+vcos2t)
         dxds(2,1)=0.5d0*(1.0d0-vcos2t)
         dxds(3,1)=vsin2t*vsin2t
@@ -1304,20 +1304,20 @@ c
 c
 c                             ---- if condition to apply numerical diff.
 c
-      if(iareaflag.eq.3.or.iareaflag.eq.4) then
+      if(iareaflag==3.or.iareaflag==4) then
       vtan=x(2)/x(1)
       end if
 c
-      if(iareaflag.eq.4.and.vtan.ge.TOL1.and.vtan.le.TOL2) then
+      if(iareaflag==4.and.vtan>=TOL1.and.vtan<=TOL2) then
       iflag=1
 c
-      else if(iareaflag.eq.3.and.vtan.ge.TOL1.and.vtan.le.TOL2) then
+      else if(iareaflag==3.and.vtan>=TOL1.and.vtan<=TOL2) then
       iflag=2
 c
-      else if(abs(mu).le.TOL3a.or.abs(mu).ge.TOL3b) then
+      else if(abs(mu)<=TOL3a.or.abs(mu)>=TOL3b) then
       iflag=3
 c
-      else if(vcos2t.ge.TOL4a.or.vcos2t.le.TOL4b) then
+      else if(vcos2t>=TOL4a.or.vcos2t<=TOL4b) then
       iflag=4
 c
       else
@@ -1327,7 +1327,7 @@ c
 c
 c                                    ---- set d2xds2(k,i,j)  (k,i,j=1~3)
 c
-      if (iflag.eq.0) then
+      if (iflag==0) then
 c
       d2xds2(1,1,1)=0.5d0*(1.0d0-vcos2t*vcos2t)/vx1x2
       d2xds2(1,1,2)=0.5d0*(vcos2t*vcos2t-1.0d0)/vx1x2
@@ -1375,7 +1375,7 @@ c                                      ---- calc. d2seds2(i,j) (i,j=1~3)
 c
       call jancae_clear2 ( d2seds2,3,3 )
 c
-      if (iflag.ne.0) then
+      if (iflag/=0) then
       call jancae_vegter_d2seds2n(d2seds2,s,dseds,pryld,ndyld,se)
 c
       else
@@ -1417,7 +1417,7 @@ c
       ss(:) = s(:)
         do j=1,3
           do k=1,3
-           if ( j.eq.k ) then
+           if ( j==k ) then
              se0=se
              ss(j)=s0(j)-delta
              call jancae_vegter_yieldfunc(3,ss,sea,dseds,d2seds2,0,

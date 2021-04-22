@@ -40,8 +40,8 @@ c-----------------------------------------------------------------------
 c
       ntyld = nint(pryld(1))
 c
-      if ( ntyld .lt. 0 ) then
-        if ( ( nnrm .ne. 2 ) .or. ( nshr .ne. 1 ) ) then
+      if ( ntyld < 0 ) then
+        if ( ( nnrm /= 2 ) .or. ( nshr /= 1 ) ) then
           write (6,*) 'error in jancae_yfunc'
           write (6,*) 'ntyld<0 for plane stress'
           write (6,*) 'nnrm,nshr,ntyld:',nnrm,nshr,ntyld
@@ -54,7 +54,7 @@ c
       do i = 1,nttl
         ss = ss + cs(i)**2
       end do
-      if ( ( ss .le. 0.0 ) .and. ( nreq .eq. 0 ) ) then
+      if ( ( ss <= 0.0 ) .and. ( nreq == 0 ) ) then
         se = 0.0
         return
       end if
@@ -65,11 +65,11 @@ c                                        ---- set index to s(i) to cs(i)
       do i = 1,6
         indx(i) = 0
       end do
-      if ( nnrm .eq. 3 ) then
+      if ( nnrm == 3 ) then
         do i = 1,nttl
           indx(i) = i
         end do
-      else if ( nnrm .eq. 2 ) then
+      else if ( nnrm == 2 ) then
         indx(1) = 1
         indx(2) = 2
         indx(3) = 0
@@ -80,7 +80,7 @@ c                                        ---- set index to s(i) to cs(i)
 c                                                          ---- set s(i)
       call jancae_clear1 ( s,6 )
       do i = 1,6
-        if ( indx(i) .ne. 0 ) then
+        if ( indx(i) /= 0 ) then
           s(i) = cs(indx(i))
         end if
       end do
@@ -120,17 +120,17 @@ c
       end select
 c
 c                                                        ---- set dse/ds
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
         do i = 1,6
-          if ( indx(i) .ne. 0 ) cdseds(indx(i)) = dseds(i)
+          if ( indx(i) /= 0 ) cdseds(indx(i)) = dseds(i)
         end do
       end if
 c                                                      ---- set d2se/ds2
-      if ( nreq .ge. 2 ) then
+      if ( nreq >= 2 ) then
         do i = 1,6
-          if ( indx(i) .ne. 0 ) then
+          if ( indx(i) /= 0 ) then
             do j = 1,6
-              if ( indx(j) .ne. 0 ) then
+              if ( indx(j) /= 0 ) then
                 cd2seds2(indx(i),indx(j)) = d2seds2(i,j)
               end if
             end do

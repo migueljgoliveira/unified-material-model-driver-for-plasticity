@@ -91,7 +91,7 @@ c
 c
 c
 c                                           ----  1st order differential
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
 c
         dsedphi = (1.0d0/(2.0d0*kk))*(phi**(1.0d0/(2.0d0*kk)-1.0d0)/Al)
 c
@@ -169,7 +169,7 @@ c
 c
 c                                            ---- 2nd order differential
 c
-      if ( nreq .ge. 2 ) then
+      if ( nreq >= 2 ) then
 c
         d2sedphi2 = (1/kk/2.0d00-1)*phi**(1/kk/2.0d0-2)/
      &            (kk*Al)/2.0d0
@@ -268,7 +268,7 @@ c----  function to solve factorial ----------------------------(bbc2005)
       integer function fact(n) result(m)
       integer, intent(in) :: n
       m = 1
-      if ( n.ge.1 ) then
+      if ( n>=1 ) then
           do i = 1,n
             m = m * i
           end do

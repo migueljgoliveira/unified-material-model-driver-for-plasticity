@@ -22,7 +22,7 @@ c
         n = n + (nd0-it)*2 + 1
       end do
       nterms = n
-      if ( maxa .lt. nterms ) then
+      if ( maxa < nterms ) then
         write (6,*) 'increase maxa :',maxa,nterms
         call jancae_exit ( 9000 )
       end if
@@ -93,19 +93,19 @@ c
       do n = 1,nterms
         q = a(n)
         do k = 1,3
-          if ( ipow(n,k) .gt. 0 ) then
+          if ( ipow(n,k) > 0 ) then
             q = q * sterm(k)**ipow(n,k)
           end if
         end do
         fai = fai + q
       end do
       se = fai ** dinv
-      if ( nreq .eq. 0 ) return
+      if ( nreq == 0 ) return
 c
       v = 0.0
       do i = 1,6
         idmax = 1
-        if ( i .eq. 3 ) idmax = 2
+        if ( i == 3 ) idmax = 2
         do id = 1,idmax
           do n = 1,nterms
             do k = 1,3
@@ -124,9 +124,9 @@ c
             end select
             q = dd * a(n)
             do k = 1,3
-              if ( ii(k) .gt. 0 ) then
+              if ( ii(k) > 0 ) then
                 q = q * sterm(k)**ii(k)
-              else if ( ii(k) .lt. 0 ) then
+              else if ( ii(k) < 0 ) then
                 q = 0.0
               end if
             end do
@@ -138,7 +138,7 @@ c
       do i = 1,6
         dseds(i) = ff * v(i)
       end do
-      if ( nreq .eq. 1 ) return
+      if ( nreq == 1 ) return
 c
       fff = dinv * (dinv-1.0d0) * fai**(dinv-2.0d0)
       do i = 1,6
@@ -148,12 +148,12 @@ c
       end do
       do i = 1,6
         idmax = 1
-        if ( i .eq. 3 ) idmax = 2
+        if ( i == 3 ) idmax = 2
         do id = 1,idmax
           do j = 1,6
             jdmax = 1
-            if (  j .eq. 3 ) jdmax = 2
-            if ( ( j .gt. 3 ) .and. ( i .eq. j ) ) jdmax = 2
+            if (  j == 3 ) jdmax = 2
+            if ( ( j > 3 ) .and. ( i == j ) ) jdmax = 2
             do jd = 1,jdmax
               do n = 1,nterms
                 do k = 1,3
@@ -178,7 +178,7 @@ c
                   ddj = -1.0d0 * float(ii(jd))
                   ii(jd) = ii(jd) - 1
                 case default
-                  if ( jd .eq. 1 ) then
+                  if ( jd == 1 ) then
                     ddj = 2.0d0 * s(j) * float(ii(3))
                     ii(3) = ii(3) - 1
                   else
@@ -188,9 +188,9 @@ c
                 end select
                 q = a(n) * ddi * ddj
                 do k = 1,3
-                  if ( ii(k) .gt. 0 ) then
+                  if ( ii(k) > 0 ) then
                     q = q * sterm(k)**ii(k)
-                  else if ( ii(k) .lt. 0 ) then
+                  else if ( ii(k) < 0 ) then
                     q = 0.0
                   end if
                 end do

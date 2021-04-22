@@ -42,10 +42,10 @@ c                                         ---- set linear transf. matrix
 c                                                 ---- equivalent stress
       call jancae_yld2000_2d_xyphi ( s,em,am,x,y,phi )
       q = phi(1) + phi(2)
-      if ( q .le. 0.0 ) q = 0.0
+      if ( q <= 0.0 ) q = 0.0
       se = (0.5d0*q) ** (1.0d0/em)
 c                                            ---- 1st order differential
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
         call jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
      &                               dsedphi,dphidx,
      &                               dxdy,dyds,se )
@@ -62,7 +62,7 @@ c                                            ---- 1st order differential
         end do
       end if
 c                                            ---- 2nd order differential
-      if ( nreq .ge. 2 ) then
+      if ( nreq >= 2 ) then
         call jancae_yld2000_2d_ds2 ( phi,x,y,em,
      &                               d2sedphi2,d2phidx2,
      &                               d2xdy2,se )
@@ -223,7 +223,7 @@ c
       emi = 1.0d0 / em
 c                                                          ---- dse/dphi
       q = phi(1) + phi(2)
-      if ( q .le. 0.0 ) q = 0.0
+      if ( q <= 0.0 ) q = 0.0
       do nd = 1,2
         dsedphi(nd) = (0.5d0**emi) * emi * q**(emi-1.0d0)
       end do
@@ -232,7 +232,7 @@ c                                                           ---- dphi/dx
       a0 = x(nd,1) - x(nd,2)
       b0 = abs(a0)
       sgn0 = 0
-      if ( b0 .ge. eps*se ) sgn0 = a0 / b0
+      if ( b0 >= eps*se ) sgn0 = a0 / b0
       dphidx(nd,1) =  em * b0**(em-1.0d0) * sgn0
       dphidx(nd,2) = -em * b0**(em-1.0d0) * sgn0
 c
@@ -243,8 +243,8 @@ c
       b2 = abs(a2)
       sgn1 = 0.0
       sgn2 = 0.0
-      if ( b1 .ge. eps*se ) sgn1 = a1 / b1
-      if ( b2 .ge. eps*se ) sgn2 = a2 / b2
+      if ( b1 >= eps*se ) sgn1 = a1 / b1
+      if ( b2 >= eps*se ) sgn2 = a2 / b2
       dphidx(nd,1) = em*(2.0d0*b1**(em-1.0d0)*sgn1 +
      &                         b2**(em-1.0d0)*sgn2 )
       dphidx(nd,2) = em*(      b1**(em-1.0d0)*sgn1 +
@@ -253,7 +253,7 @@ c
       do nd = 1,2
         a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) + 4.0d0*y(nd,3)*y(nd,3)
         a = sqrt(a)
-        if ( a .gt. eps*se ) then
+        if ( a > eps*se ) then
           do j = 1,2
             dxdy(nd,j,1) = 0.5d0 * (1.0d0+p(j)*(y(nd,1)-y(nd,2))/a)
             dxdy(nd,j,2) = 0.5d0 * (1.0d0-p(j)*(y(nd,1)-y(nd,2))/a)
@@ -301,7 +301,7 @@ c
       emi = 1.0d0 / em
 c                                                        ---- d2se/dphi2
       q = phi(1) + phi(2)
-      if ( q .le. 0.0 ) q = 0.0
+      if ( q <= 0.0 ) q = 0.0
       do nd1 = 1,2
         do nd2 = 1,2
           a = 0.5d0**emi * emi * (emi-1.0d0) * q**(emi-2.0d0)
@@ -313,15 +313,15 @@ c                                                         ---- d2phi/dx2
       do i = 1,2
         do j = 1,2
           a = (em-1.0d0) * em * (abs(x(nd,1)-x(nd,2)))**(em-2.0d0)
-          if ( i .ne. j ) a = -a
+          if ( i /= j ) a = -a
           d2phidx2(nd,i,j) = a
         end do
       end do
       nd = 2
       do i = 1,2
         do j = 1,2
-          if ( i .eq. j ) then
-            if ( i .eq. 1 ) then
+          if ( i == j ) then
+            if ( i == 1 ) then
               a = (em-1.0d0) * em*
      &            (4.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
      &                   (abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
@@ -342,19 +342,19 @@ c                                                           ---- d2x/dy2
       do nd = 1,2
         a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) +
      &      4.0d0*   y(nd,3) *         y(nd,3)
-        if ( a .gt. eps*se ) then
+        if ( a > eps*se ) then
           a = 1.0d0 / sqrt(a**3)
           do m = 1,2
             do i = 1,3
               do j = 1,3
                 ij = i*10+j
-                if ( ( ij .eq. 11 ) .or. ( ij .eq. 22 ) ) then
+                if ( ( ij == 11 ) .or. ( ij == 22 ) ) then
                   q = y(nd,3) * y(nd,3)
-                else if ( ij .eq. 33 ) then
+                else if ( ij == 33 ) then
                   q = (y(nd,1)-y(nd,2)) * (y(nd,1)-y(nd,2))
-                else if ( ( ij .eq. 12 ) .or. ( ij .eq. 21 ) ) then
+                else if ( ( ij == 12 ) .or. ( ij == 21 ) ) then
                   q = -y(nd,3) * y(nd,3)
-                else if ( ( ij .eq. 23 ) .or. ( ij .eq. 32 ) ) then
+                else if ( ( ij == 23 ) .or. ( ij == 32 ) ) then
                   q = y(nd,3) * (y(nd,1)-y(nd,2))
                 else
                   q = -y(nd,3) * (y(nd,1)-y(nd,2))

@@ -126,7 +126,7 @@ c                                  ---- calculation of equivalent stress
      &                             cetpq1,cetpq2,fai,se )
 c
 c                                            ---- 1st order differential
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
 c                                                     ---- d(fai)/d(psp)
         do i = 1,3
           dfadpsp1(i) = 0.0d0
@@ -259,7 +259,7 @@ c                                                        ---- d(se)/d(s)
 c
       endif
 c                                            ---- 2nd order differential
-      if ( nreq .ge. 2 ) then
+      if ( nreq >= 2 ) then
 c                                                   ---- d2(fai)/d(psp)2
         call jancae_clear2 ( d2fadpsp11,3,3 )
         call jancae_clear2 ( d2fadpsp22,3,3 )
@@ -535,7 +535,7 @@ c                                                  ---- invariants of sp
      1         sp(1)*sp(6)**2-sp(2)*sp(5)**2-sp(3)*sp(4)**2) / 2.0d0
 c                           ---- coefficients of characteristic equation
       hpq = sqrt(hp(1)**2 + hp(2)**2 + hp(3)**2)
-      if ( hpq .gt. 1.0e-16 ) then
+      if ( hpq > 1.0e-16 ) then
         cep = hp(1)**2 + hp(2)
         ceq = (2.0d0*hp(1)**3+3.0d0*hp(1)*hp(2)+2.0d0*hp(3)) / 2.0d0
         cetpq = ceq / cep**(3.0d0/2.0d0)

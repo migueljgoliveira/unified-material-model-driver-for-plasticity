@@ -279,7 +279,7 @@ c
       anorm = 0.0
       do i = 1,n
         do j = 1,n
-          if ( anorm .lt. abs(a(i,j)) ) anorm = abs(a(i,j))
+          if ( anorm < abs(a(i,j)) ) anorm = abs(a(i,j))
         end do
       end do
       do i = 1,n
@@ -288,17 +288,17 @@ c
         end do
       end do
 c
-      if ( n .eq. 2 ) then
+      if ( n == 2 ) then
         call jancae_minv2 ( b,a,d,eps )
         goto 100
-      else if ( n .eq. 3 ) then
+      else if ( n == 3 ) then
         call jancae_minv3 ( b,a,d,eps )
         goto 100
       end if
 c
       call jancae_ludcmp ( a,n,indx,d,eps )
 c                                                 ---- check determinant
-      if ( abs(d) .le. eps ) then
+      if ( abs(d) <= eps ) then
          write (6,*) 'determinant det[a] error',d
          write (6,*) 'stop in minv'
          call jancae_exit(9000)
@@ -362,9 +362,9 @@ c
       do i = 1,n
         aamax = 0.0d0
         do j = 1,n
-          if ( abs(a(i,j)) .gt. aamax ) aamax = abs(a(i,j))
+          if ( abs(a(i,j)) > aamax ) aamax = abs(a(i,j))
         end do
-        if ( aamax .le. eps ) then
+        if ( aamax <= eps ) then
           write (6,*) 'singular matrix in jancae_ludcmp'
           text = 'matrix detail'
           call jancae_print2 ( text,a,n,n )
@@ -389,12 +389,12 @@ c
           end do
           a(i,j) = sum
           dum = vtemp(i)*abs(sum)
-          if ( dum .ge. aamax ) then
+          if ( dum >= aamax ) then
             imax = i
             aamax = dum
           end if
         end do
-        if ( j .ne. imax ) then
+        if ( j /= imax ) then
           do k = 1,n
             dum = a(imax,k)
             a(imax,k) = a(j,k)
@@ -404,10 +404,10 @@ c
           vtemp(imax) = vtemp(j)
         end if
         indx(j) = imax
-c       if ( abs(a(i,j)) .le. eps ) a(i,j) = eps     !2010.07.02 c.out
-        if ( j .ne. n ) then
+c       if ( abs(a(i,j)) <= eps ) a(i,j) = eps     !2010.07.02 c.out
+        if ( j /= n ) then
           ajj = a(j,j)                               !2010.07.02 add
-          if ( abs(ajj) .le. eps ) ajj = eps         !2010.07.02 add
+          if ( abs(ajj) <= eps ) ajj = eps         !2010.07.02 add
           dum = 1.0d0 / ajj                          !2010.07.02 mod
           do i = j+1,n
             a(i,j) = a(i,j) * dum
@@ -440,11 +440,11 @@ c
         ll = indx(i)
         sum = b(ll)
         b(ll) = b(i)
-        if ( ii .ne. 0 ) then
+        if ( ii /= 0 ) then
           do j = ii,i-1
             sum = sum - a(i,j)*b(j)
           end do
-        else if ( abs(sum) .ge. eps ) then
+        else if ( abs(sum) >= eps ) then
           ii = i
         end if
         b(i) = sum
@@ -474,7 +474,7 @@ c
 c-----------------------------------------------------------------------
 c
       deta = a(1,1)*a(2,2) - a(1,2)*a(2,1)
-      if ( abs(deta) .le. eps ) then
+      if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv2'
          call jancae_exit(9000)
@@ -505,7 +505,7 @@ c
       deta = a(1,1) * (a(2,2)*a(3,3) - a(2,3)*a(3,2)) +
      &       a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3)) +
      &       a(1,3) * (a(2,1)*a(3,2) - a(2,2)*a(3,1))
-      if ( abs(deta) .le. eps ) then
+      if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv3'
          call jancae_exit(9000)
@@ -545,18 +545,18 @@ c
       write (6,*) 'elem,ip,lay=',ne,ip,lay
       write (6,*) 'nttl,nnrm,nshr=',nttl,nnrm,nshr
       nerr = 0
-      if ( nnrm .eq. 3 ) then
-        if ( nshr .eq. 3 ) then
+      if ( nnrm == 3 ) then
+        if ( nshr == 3 ) then
           write (6,*) '3d solid element'
-        else if ( nshr .eq. 1 ) then
+        else if ( nshr == 1 ) then
           write (6,*) 'plane strain or axi-sym solid element'
         else
           nerr = nerr + 1
         end if
-      else if ( nnrm .eq. 2 ) then
-        if ( nshr .eq. 1 ) then
+      else if ( nnrm == 2 ) then
+        if ( nshr == 1 ) then
           write (6,*) 'plane stress or thin shell element'
-        else if ( nshr .eq. 3 ) then
+        else if ( nshr == 3 ) then
           write (6,*) 'thick shell element'
         else
           nerr = nerr + 1
@@ -564,7 +564,7 @@ c
       else
         nerr = nerr + 1
       end if
-      if ( nerr .ne. 0 ) then
+      if ( nerr /= 0 ) then
         write (6,*) 'no supported element type',nnrm,nshr
         call jancae_exit (9000)
       end if
@@ -586,21 +586,21 @@ c
       character text*32
 c-----------------------------------------------------------------------
 c
-      if ( io .eq. 0 ) then
+      if ( io == 0 ) then
         text = 'initial stresses'
       else
         text = 'updated stresses'
       end if
       call jancae_print1 ( text,s,nttl )
 c
-      if ( io .eq. 0 ) then
+      if ( io == 0 ) then
         text = 'initial internal state var.'
       else
         text = 'updated internal state var.'
       end if
       call jancae_print1 ( text,stv,nstv )
 c
-      if ( io.eq.0 ) then
+      if ( io==0 ) then
         text = 'driving strain increment'
         call jancae_print1 ( text,de,nttl )
       else
@@ -639,11 +639,11 @@ c                                                       ---- preparation
       er = 0.0d0
       do i = 1,3
         do j = 1,3
-          if ( abs(a(i,j)) .gt. ax ) ax = abs(a(i,j))
+          if ( abs(a(i,j)) > ax ) ax = abs(a(i,j))
           er = er + abs(a(i,j)-a(j,i))
         end do
       end do
-      if ( er/ax .gt. eps ) then
+      if ( er/ax > eps ) then
         write (6,*) 'a is not symmetric'
         write (6,*) 'stop in jancae_eigen_sym3'
         call jancae_exit (9000)
@@ -677,7 +677,7 @@ c
 c            ---- if the sum of off-diagonal terms is zero evaluates the
 c                                                     esches and returns
 c
-        if ( abs(sum) .lt. eps ) then
+        if ( abs(sum) < eps ) then
           do i = 1,3
             do j = 1,3
               ev(i,j) = prc(j,i)
@@ -693,14 +693,14 @@ c
         do ip = 1,2
           do iq = ip+1,3
             od = 100.0d0 * abs( w(ip,iq) )
-            if ( abs(od) .gt. eps ) then
+            if ( abs(od) > eps ) then
               hd = es(iq) - es(ip)
 c
 c                                      ---- evaluates the rotation angle
 c
               theta = 0.5d0 * hd / w(ip,iq)
               t = 1.0d0/(abs(theta) + sqrt(1.0d0+theta**2))
-              if ( theta .lt. 0.0d0 ) t = -t
+              if ( theta < 0.0d0 ) t = -t
 c
 c                                   ---- re-evaluates the diagonal terms
 c

@@ -12,7 +12,7 @@ c
       call jancae_yld89_branch ( s,se,dseds,d2seds2,nreq,
      &                           pryld,ndyld )
 c
-      if ( nreq .le. 1 ) return
+      if ( nreq <= 1 ) return
 c
 c                                         ---- Numerical differentiation
 c                                            (mod. by H.Takizawa 150228)
@@ -131,7 +131,7 @@ c
       f = f1 + f2 + f3
 c
       se = (0.5d0*f)**(1.0d0/pM)
-      if ( nreq .eq. 0 ) return
+      if ( nreq == 0 ) return
 c
 c
 c                                                         ---- dKds(2,3)
@@ -140,11 +140,11 @@ c
       dKds(1,2) = h * 0.5d0
       dKds(1,3) = 0.0d0
 c
-      if ( pK2 .eq. 0.0d0 ) then
+      if ( pK2 == 0.0d0 ) then
         dKds(2,1) = 0.0d0
         dKds(2,2) = 0.0d0
         dKds(2,3) = 0.0d0
-        if ( s(3) .eq. 0.0d0 ) dKds(2,3) = p * p
+        if ( s(3) == 0.0d0 ) dKds(2,3) = p * p
       else
         dKds(2,1) = pK3 / (2.0d0*pK2)
         dKds(2,2) = -h*pK3 / (2.0d0*pK2)
@@ -158,7 +158,7 @@ c
 c                                                      ---- d2K2ds2(3,3)
 c
 c
-      if ( pK2 .eq. 0.0d0 ) then
+      if ( pK2 == 0.0d0 ) then
 
         DpK22 = 1.0d-32
 c
@@ -276,10 +276,10 @@ c                                                             ---- dseds
         end do
         dseds(i) = dseds(i)*dsedf
       end do
-      if ( nreq .eq. 1 ) return
+      if ( nreq == 1 ) return
 c
 c
-      if ( nreq .ge. 2 ) return
+      if ( nreq >= 2 ) return
 c
 c                                                           ---- d2seds2
 c

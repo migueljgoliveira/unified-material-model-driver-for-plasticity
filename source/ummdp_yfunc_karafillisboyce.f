@@ -101,26 +101,26 @@ c
       se = (0.5d0*phi) ** (0.5d0/k_p)
 c
 c                                            ---- 1st order differential
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
 c                 ---- check if there are two components of largeS equal 
 c                                                          to each other
 c               ---- if so, rearrange largeS so that largeS(1)=largeS(2)
         eqFlag = 0
-        if ( abs(largeS(1)-largeS(2)) .le. TOL ) then
+        if ( abs(largeS(1)-largeS(2)) <= TOL ) then
           eqFlag = 1
-        else if ( abs(largeS(2)-largeS(3)) .le. TOL ) then
+        else if ( abs(largeS(2)-largeS(3)) <= TOL ) then
           eqFlag = 2
           dum = largeS(3)
           largeS(3) = largeS(1)
           largeS(1) = dum
-        else if ( abs(largeS(1)-largeS(3)) .le. TOL ) then
+        else if ( abs(largeS(1)-largeS(3)) <= TOL ) then
           eqFlag = 3
           dum = largeS(3)
           largeS(3) = largeS(2)
           largeS(2) = dum
         end if
 
-        if ( eqFlag .eq. 0 ) then
+        if ( eqFlag == 0 ) then
           DphiDls(1,1) = 2d0 * k_p * ((largeS(1)-largeS(2))**(2*k_p-1)
      &       + (largeS(1)-largeS(3))**(2*k_p-1))
           DphiDls(1,2) = 2d0 * k_p * ((largeS(2)-largeS(1))**(2*k_p-1)
@@ -148,7 +148,7 @@ c
             end do
           end do
         else
-          if ( k_p .eq. 1 ) then
+          if ( k_p == 1 ) then
             DphiDj(1,1) = 4d0*(2d0*largeS(1)+largeS(3))
             DphiDj(1,2) = -6d0
             DphiDj(1,3) = 0d0
@@ -161,7 +161,7 @@ c
             DphiDj(1,3) = 4d0*k_p*(k_p-2)*dum
           end if
 c
-          if ( abs(largeS(1)-largeS(3)) .le. TOL ) then
+          if ( abs(largeS(1)-largeS(3)) <= TOL ) then
             DphiDj(2,1) = 2d0*k_p**2*(2*k_p+1)*largeS(1)**(2*k_p-1)
             DphiDj(2,2) = -2d0*k_p**2*(2*k_p-1)*largeS(1)**(2*k_p-2)
             DphiDj(2,3) = 2d0*k_p*(2*k_p-1)*(k_p-1)
@@ -224,8 +224,8 @@ c
         end do
       end if
 c                                            ---- 2nd order differential
-      if ( nreq .ge. 2 ) then
-        if ( eqFlag .eq. 0) then
+      if ( nreq >= 2 ) then
+        if ( eqFlag == 0) then
           X12 = (largeS(1)-largeS(2))**(2*k_p-2)
           X23 = (largeS(2)-largeS(3))**(2*k_p-2)
           X13 = (largeS(1)-largeS(3))**(2*k_p-2)
@@ -287,14 +287,14 @@ c
             end do
           end do
         else
-          if ( k_p .eq. 1 ) then
+          if ( k_p == 1 ) then
             do i = 1,3
               do j = 1,3
                 DDphiDDj(1,i,j) = 0d0
               end do
             end do
             DDphiDDj(1,1,1) = 4d0
-          else if ( k_p .eq. 2 ) then
+          else if ( k_p == 2 ) then
             do i = 1,3
               do j = 1,3
                 DDphiDDj(1,i,j) = 0d0
@@ -479,14 +479,14 @@ c-----------------------------------------------------------------------
      &   - stress(2)*stress(6)**2 - stress(3)*stress(4)**2
       p = invar(1)**2/9d0 - invar(2)/3d0
       q = invar(1)**3/27d0 + 0.5d0*invar(3) - invar(1)*invar(2)/6d0
-      if ( p .le. TOL*abs(q) ) then
+      if ( p <= TOL*abs(q) ) then
         pStress(1) = (2d0*q)**(1d0/3d0) + invar(1)/3d0
         pStress(2) = pStress(1)
         pStress(3) = pStress(1)
       else
         dum = q  /sqrt(p)**3
-        if ( abs(dum) .gt. 1.0d0 ) then
-          if ( abs(abs(dum)-1.0d0) .le. TOL ) then
+        if ( abs(dum) > 1.0d0 ) then
+          if ( abs(abs(dum)-1.0d0) <= TOL ) then
             dum = dum / abs(dum)
           else
             call jancae_exit ( 1000 )

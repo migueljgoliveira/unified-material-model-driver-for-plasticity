@@ -4,10 +4,16 @@ c     UMMDp - Unified Material Model Driver for Plasticity
 c
 c***********************************************************************
 c
-c     Copyright (c) 2018 JANCAE
+c     > Copyright (c) 2018 JANCAE
+c       . This software includes code originally developed by the  
+c       Material Modeling Working group of JANCAE.
 c
-c     This software includes code developed by the 
-c     Material Modeling Working group of JANCAE.
+c     > Extended by M.G. Oliveira from University of Aveiro, Portugal
+c       . Added additional isotropic hardening laws
+c       . Corrected order of Voigt notation for Yld2004-18p with Abaqus
+c       . Linked kinematic hardening laws to the core of UMMDp
+c       . Added Chaboche kinematic hardening law as used by Abaqus
+c     	. Implemented uncouple rupture criteria
 c
 c***********************************************************************
 c
@@ -50,7 +56,7 @@ c                        lay : layer no. of shell
       ne = noel
       ip = npt
       lay = kspt
-      if ( lay .eq. 0 ) lay = 1
+      if ( lay == 0 ) lay = 1
       nsdv = nstatv
       nprop = mxprop
       propdim = nprops - 1
@@ -59,7 +65,7 @@ c                                        ---- set debug and verbose mode
       nvbs0 = props(1)
       call jancae_debugmode ( nvbs,nvbs0 )
 c                                       ---- output detailed information
-      if ( nvbs .ge. 4 ) then
+      if ( nvbs >= 4 ) then
         call jancae_printinfo  ( kinc,ndi,nshr )
         call jancae_printinout ( 0,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
@@ -73,7 +79,7 @@ c
       call jancae_prop_dim ( prop,nprop,propdim,
      &                       ndela,ndyld,ndihd,ndkin,
      &                       npbs,ndrup )
-      if ( npbs .gt. mxpbs ) then
+      if ( npbs > mxpbs ) then
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
         write (6,*) 'mxpbs=',mxpbs
@@ -110,7 +116,7 @@ c
         statev(is) = ustatev(i) + dpe(i)
 			end do
 c                                       ---- update of back stress comp.
-      if ( npbs .ne. 0 ) then
+      if ( npbs /= 0 ) then
         do n = 1,npbs
           do i = 1,ntens
             is = isvrsvd + isvsclr + ntens*n + i
@@ -119,7 +125,7 @@ c                                       ---- update of back stress comp.
 				end do
 			end if
 c                           ----  if debug mode, output return arguments
-      if ( nvbs .ge. 4 ) then
+      if ( nvbs >= 4 ) then
         call jancae_printinout ( 1,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
 			end if
@@ -143,9 +149,9 @@ c
       ne = noel
       ip = npt
       lay = kspt
-      if ( lay .eq. 0 ) lay = 1
+      if ( lay == 0 ) lay = 1
 c
-      if ( ne*ip*lay .eq. 1 ) then
+      if ( ne*ip*lay == 1 ) then
         write (6,*) 'SDVINI is called. '
 			end if
 c
@@ -162,18 +168,18 @@ c***********************************************************************
 c
       SUBROUTINE UVARM ( UVAR,DIRECT,T,TIME,DTIME,CMNAME,ORNAME,
      &    NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
-     &    JMAC,JMATYP,MATLAYO,LACCFLA )
+     &    jmac,jmatyp,matlayo,laccfla )
 c
       INCLUDE 'ABA_PARAM.INC'
 c
       CHARACTER*80 CMNAME,ORNAME
-      CHARACTER*3  FLGRAY(15)
+      CHARACTER*3  flgray(15)
       DIMENSION UVAR(NUVARM),DIRECT(3,3),T(3,3),TIME(2)
-      DIMENSION ARRAY(15),JARRAY(15),JMAC(*),JMATYP(*),COORD(*)
+      DIMENSION array(15),jarray(15),jmac(*),jmatyp(*),COORD(*)
 c
 c***********************************************************************
 c-----------------------------------------------------------------------
-c     The dimensions of the variables FLGRAY, ARRAY and JARRAY
+c     The dimensions of the variables flgray, array and jarray
 c     must be set equal to or greater than 15.
 c
       parameter (maxsdv=50)
@@ -214,7 +220,7 @@ c
       ne = noel
       ip = npt
       lay = kspt
-      if ( lay .eq. 0 ) lay = 1
+      if ( lay == 0 ) lay = 1
       ntens = ndi + nshr
 
 c                                            ---- get uvar before update
@@ -222,9 +228,9 @@ c                                            ---- get uvar before update
         uvar1(i) = uvar(i)
 			end do
 c                                                        ---- get stress
-      call getvrm ( 'S',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &                   MATLAYO,LACCFLA )
-      if ( JRCD .ne. 0 ) then
+      call getvrm ( 'S',array,jarray,flgray,jrcd,jmac,jmatyp,
+     &                   matlayo,laccfla )
+      if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for s'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
@@ -239,14 +245,14 @@ c
         s(i1) = array(i2)
 			end do
 c                                               ---- get state variables
-      if ( nsdv .gt. maxsdv ) then
+      if ( nsdv > maxsdv ) then
         write (6,*) 'increase dimension of ARRAY2 and JARRAY2'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
 			end if
-      call getvrm ( 'SDV',ARRAY2,JARRAY2,FLGRAY2,JRCD,JMAC,JMATYP,
-     &                    MATLAYO,LACCFLA)
-      if ( JRCD .ne. 0 ) then
+      call getvrm ( 'SDV',ARRAY2,JARRAY2,FLGRAY2,jrcd,jmac,jmatyp,
+     &                    matlayo,laccfla)
+      if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sdv'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
@@ -293,7 +299,7 @@ c                                                  ---- calc back stress
       do i = 1,ntens
          xsum(i) = 0.0
 			end do
-      if ( npbs .ne. 0 ) then
+      if ( npbs /= 0 ) then
         do i = 1,ntens
           do nb = 1,npbs
             xsum(i) = xsum(i) + x(nb,i)
@@ -301,7 +307,7 @@ c                                                  ---- calc back stress
 				end do
       end if
 c                                                 ---- equivalent stress
-      if ( nuvarm .ge. 1 ) then
+      if ( nuvarm >= 1 ) then
         do i = 1,ntens
           eta(i) = s(i) - xsum(i)
 				end do
@@ -311,25 +317,26 @@ c                                                 ---- equivalent stress
         uvar(1) = se
       end if
 c                                                       ---- flow stress
-      if ( nuvarm .ge. 2 ) then
+      if ( nuvarm >= 2 ) then
         call jancae_hardencurve ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
         uvar(2) = sy
       end if
 c                                                       ---- back stress
-      if ( npbs .ne. 0 ) then
-        if ( nuvarm .ge. 3 ) then
+      if ( npbs /= 0 ) then
+        if ( nuvarm >= 3 ) then
           do i = 1,ntens
             uvar(2+i) = xsum(i)
 					end do
         end if
       end if
 c                                                 ---- rupture criterion
-      if ( prrup(1) .ne. 0) then
+      if ( prrup(1) /= 0) then
         nt = ntens
-        if ( npbs .eq. 0 ) nt = 0
-        if ( nuvarm .ge. (3+nt) ) then
-          call jancae_rupture ( sdv,nsdv,uvar,uvar1,nuvarm,jrcd,jmac,
-     &                          jmatyp,matlayo,laccfla,nt,ndrup,prrup )
+        if ( npbs == 0 ) nt = 0
+        if ( nuvarm >= (3+nt) ) then
+          call jancae_rupture ( ntens,sdv,nsdv,uvar,uvar1,nuvarm,
+     &                          jrcd,jmac,jmatyp,matlayo,laccfla,
+     &                          nt,ndrup,prrup)
         end if
       end if
 c
@@ -416,7 +423,7 @@ c
 c
       character text*32
 c
-      if ( prop(1) .ge. 1000.0d+0 ) then
+      if ( prop(1) >= 1000.0d+0 ) then
         mjac = -1
         prop(1) = prop(1) - 1000.0d+0
       end if
@@ -426,7 +433,7 @@ c
      &                       npbs,ndrup )
 c
       n = ndela + ndyld + ndihd + ndkin + ndrup
-      if ( n .gt. nprop ) then
+      if ( n > nprop ) then
         write (6,*) 'nprop error in jancae_plasticity'
         write (6,*) 'nprop=',nprop
         write (6,*) 'n    =',n
@@ -435,7 +442,7 @@ c
         end do
         call jancae_exit ( 9000 )
       end if
-      if ( nvbs .ge. 4 ) then
+      if ( nvbs >= 4 ) then
         do i = 1,n
           write (6,*) 'prop(',i,')=',prop(i)
         end do
@@ -608,12 +615,12 @@ c
       maxnest = 10    ! max re-division of multistage loop
 c
       nout = 0
-      if ( n1234 .ne. 1234 ) then
+      if ( n1234 /= 1234 ) then
         n1234 = 1234
         nout = 1
       end if
 c
-      if ( ( nvbs .ge. 1 ) .or. ( nout .ne. 0 ) ) then
+      if ( ( nvbs >= 1 ) .or. ( nout /= 0 ) ) then
         write (6,*)
         write (6,*) '**************************************'
         write (6,*) '******* START OF JANCAE/UMMDp ********'
@@ -643,7 +650,7 @@ c                                          ---- copy material properties
         prrup(i) = prop(n)
       enddo
 c
-      if ( nout .ne. 0 ) then
+      if ( nout /= 0 ) then
         write (6,*)
         write (6,*) 'MATERIAL DATA LIST --------------------'
         call jancae_elast_print     ( prela,ndela )
@@ -659,7 +666,7 @@ c                                                           ---- set [U]
         do j = 1,nttl
           k1 = (i1-1)*nttl + j
           k2 = (i2-1)*nttl + j
-          if ( i2 .eq. 1 ) then
+          if ( i2 == 1 ) then
             um(k1,k2) = 1.0
           else
             um(k1,k2) = -1.0
@@ -667,7 +674,7 @@ c                                                           ---- set [U]
         end do
       end do
 c                                                     ---- default value
-      if ( npbs .eq. 0 ) then
+      if ( npbs == 0 ) then
         do n = 1,mxpbs
           do i = 1,nttl
             x2(n,i) = 0.0
@@ -690,12 +697,12 @@ c
       call jancae_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
 c                                                  ---- print out arrays
-      if ( nvbs .ge. 4 ) then
+      if ( nvbs >= 4 ) then
         text = 'current stress (input)'
         call jancae_print1 ( text,s1,nttl )
         text = 'strain inc. (input)'
         call jancae_print1 ( text,de,nttl )
-        if ( npbs .ne. 0 ) then
+        if ( npbs /= 0 ) then
           text = 'part. back stess (input)'
           call jancae_backprint ( text,npbs,x1,nttl,mxpbs )
           text = 'total  back stess (input)'
@@ -711,7 +718,7 @@ c                                             ---- copy delast to ddsdde
           ddsdde(i,j) = delast(i,j)
         end do
       end do
-      if ( nvbs .ge. 5 ) then
+      if ( nvbs >= 5 ) then
         text = 'elastic matrix'
         call jancae_print2 ( text,ddsdde,nttl,nttl )
       end if
@@ -720,7 +727,7 @@ c                                                ---- elastic prediction
       do i = 1,nttl
         s2(i) = s1(i) + vv(i)
       end do
-      if ( nvbs .ge. 5 ) then
+      if ( nvbs >= 5 ) then
         text = 'elastic predicted stress'
         call jancae_print1 ( text,s2,nttl )
       end if
@@ -735,29 +742,29 @@ c                                                       ---- check yield
       call jancae_hardencurve ( sy,dsydp,d2sydp2,
      &                          0,p,prihd,ndihd )
 c
-      if ( nvbs .ge. 3 ) then
+      if ( nvbs >= 3 ) then
         write (6,*) 'plastic strain p=',p
         write (6,*) 'flow stress   sy=',sy
         write (6,*) 'equiv.stress  se=',se
-        if ( npbs .ne. 0 ) then
+        if ( npbs /= 0 ) then
           call jancae_yfunc  ( xe,dseds,d2seds2,0,
      &                         xt1,nttl,nnrm,nshr,
      &                         pryld,ndyld )
           write (6,*) 'equiv.back.s  xe=',xe
         end if
       end if
-      if ( se .le. sy ) then
-        if ( nvbs .ge. 3 ) write (6,*) 'judge : elastic'
-        if ( ( nttl .eq. 3 ) .or. ( nttl .eq. 5 ) ) then
+      if ( se <= sy ) then
+        if ( nvbs >= 3 ) write (6,*) 'judge : elastic'
+        if ( ( nttl == 3 ) .or. ( nttl == 5 ) ) then
           de33 = 0.0
           do i = 1,nttl
             de33 = de33 + d33d(i)*de(i)
           end do
-          if ( nvbs .ge. 4 ) write (6,*) 'de33=',de33
+          if ( nvbs >= 4 ) write (6,*) 'de33=',de33
         end if
         return
       else
-        if ( nvbs .ge. 3 ) write (6,*) 'judge : plastic'
+        if ( nvbs >= 3 ) write (6,*) 'judge : plastic'
       end if
 c
 c                                                   ---- initialize loop
@@ -779,8 +786,8 @@ c                                                   ---- initialize loop
       nstg = 0
 c
   300 continue
-      if ( nest .gt. 0 ) then
-        if ( nvbs .ge. 2 ) then
+      if ( nest > 0 ) then
+        if ( nvbs >= 2 ) then
           write (6,*) '********** Nest of Multistage :',nest
         end if
       end if
@@ -801,9 +808,9 @@ c                                          ---- start of multistage loop
         nstg = nstg+1
         sgapb = sgap
         sgap = sgapb-dsgap
-        if ( m .eq. mstg ) sgap = 0.0
-        if ( mstg .gt. 1 ) then
-          if ( nvbs .ge. 2 ) then
+        if ( m == mstg ) sgap = 0.0
+        if ( mstg > 1 ) then
+          if ( nvbs >= 2 ) then
             write (6,*) '******** Multistage :',m,'/',mstg
             write (6,*) 'gap% in stress =',sgap/sgapi*100.0d0
           end if
@@ -811,7 +818,7 @@ c                                          ---- start of multistage loop
 c
         knr = 0
 c                                      ---- start of Newton-Raphson loop
-        if ( nvbs .ge. 3 ) then
+        if ( nvbs >= 3 ) then
           write (6,*)
           write (6,*) '**** start of Newton-Raphson loop'
         end if
@@ -819,7 +826,7 @@ c
   100   continue
         knr = knr + 1
         nite = nite + 1
-        if ( nvbs .ge. 3 ) then
+        if ( nvbs >= 3 ) then
           write (6,*) '----- NR iteration',knr
           write (6,*) 'inc of p : dp   =',dp
         end if
@@ -833,10 +840,10 @@ c                                        ---- calc. se and differentials
      &                      eta,nttl,nnrm,nshr,
      &                      pryld,ndyld )
 c
-        if ( nvbs .ge. 5 ) then
+        if ( nvbs >= 5 ) then
           text = 's2'
           call jancae_print1 ( text,s2,nttl )
-          if ( npbs .ne. 0 ) then
+          if ( npbs /= 0 ) then
             text = 'xt2'
             call jancae_print1 ( text,xt2,nttl )
             text = 'eta'
@@ -851,7 +858,7 @@ c                                        ---- calc. sy and differentials
         call jancae_hardencurve ( sy,dsydp,d2sydp2,
      &                            1,pt,prihd,ndihd )
 
-        if ( nvbs .ge. 5 ) then
+        if ( nvbs >= 5 ) then
           write (6,*) 'plastic strain p=',pt
           write (6,*) 'flow stress   sy=',sy
           write (6,*) 'hardening dsy/dp=',dsydp
@@ -866,7 +873,7 @@ c                                                          ---- calc. g2
         call jancae_vvs ( g2n,g2,g2,nttl )
         g2n = sqrt(g2n)
 c                                                          ---- calc. g3
-        if ( npbs .ne. 0 ) then
+        if ( npbs /= 0 ) then
           call jancae_kinematic ( vk,dvkdp,
      &                            dvkds,dvkdx,dvkdxt,
      &                            pt,s2,x2,xt2,
@@ -893,18 +900,18 @@ c                                                          ---- calc. g3
           g3nn = 0.0
         end if
 c
-        if ( nvbs .ge. 3 ) then
+        if ( nvbs >= 3 ) then
           write (6,*) 'g1 (yield surf) =',g1
           write (6,*) 'g2n (normality) =',g2n
-          if ( nvbs .ge. 5 ) then
+          if ( nvbs >= 5 ) then
             text = 'g2 vector'
             call jancae_print1 ( text,g2,nttl )
           end if
-          if ( npbs .ne. 0 ) then
-            if ( nvbs .ge. 4 ) then
+          if ( npbs /= 0 ) then
+            if ( nvbs >= 4 ) then
               do n = 1,npbs
                 write (6,*) 'g3n(',n,')=',g3n(n)
-                if ( nvbs .ge. 5 ) then
+                if ( nvbs >= 5 ) then
                   do i = 1,nttl
                     uv(i) = g3(n,i)
                   end do
@@ -925,8 +932,8 @@ c                                                              * set [A]
               do j2 = 1,nttl
                 k1 = (i1-1)*nttl + j1
                 k2 = (i2-1)*nttl + j2
-                if ( i1 .eq. 1 ) then
-                  if ( i2 .eq. 1 ) then
+                if ( i1 == 1 ) then
+                  if ( i2 == 1 ) then
                     am(k1,k2) = am(k1,k2) + dp*em(j1,j2)
                   else
                     am(k1,k2) = am(k1,k2) - dp*em(j1,j2)
@@ -934,7 +941,7 @@ c                                                              * set [A]
                 else
                   ip1 = i1 - 1
                   ip2 = i2 - 1
-                  if ( i2 .eq. 1 ) then
+                  if ( i2 == 1 ) then
                     am(k1,k2) = am(k1,k2) - dp*dvkds(ip1,j1,j2)
                   else
                     am(k1,k2) = am(k1,k2) - dp*dvkdx(ip1,ip2,j1,j2)
@@ -950,7 +957,7 @@ c                                                           ---- set {W}
         do i1 = 1, npbs+1
           do j1 = 1,nttl
             k1 = (i1-1)*nttl + j1
-            if ( i1 .eq. 1 ) then
+            if ( i1 == 1 ) then
               do k2 = 1,nttl
                 wv(k1) = wv(k1) + delast(j1,k2)*dseds(k2)
               end do
@@ -967,11 +974,11 @@ c                                                     ---- [C]=[U][A]^-1
 c
 c
 c                                                 ---- check convergence
-        if ( ( abs(g1  /sy) .le. tol ) .and.
-     &       ( abs(g2n /sy) .le. tol ) .and.
-     &       ( abs(g3nn/sy) .le. tol )      ) then
+        if ( ( abs(g1  /sy) <= tol ) .and.
+     &       ( abs(g2n /sy) <= tol ) .and.
+     &       ( abs(g3nn/sy) <= tol )      ) then
 c
-          if ( nvbs .ge. 2 ) then
+          if ( nvbs >= 2 ) then
             write (6,*) '**** Newton-Raphson converged.',knr
           end if
           dpconv = dp
@@ -1003,12 +1010,12 @@ c                              ---- ddp=(g1-{m}^T[C]{G})/(H+{m}^T[C]{W})
         ddp = top / bot
 c                                                         ---- update dp
         dp = dp + ddp
-        if ( nvbs .ge. 3 ) then
+        if ( nvbs >= 3 ) then
           write (6,*) 'modification of dp:ddp=',ddp
           write (6,*) 'updated             dp=',dp
         end if
-        if ( dp .le. 0.0 ) then
-          if ( nvbs .ge. 3 ) then
+        if ( dp <= 0.0 ) then
+          if ( nvbs >= 3 ) then
             write (6,*) 'negative dp is detected.'
             write (6,*) 'multistage is subdivided.'
           end if
@@ -1024,7 +1031,7 @@ c                                                  ---- update s2 and x2
             end do
           end do
           do j1 = 1,nttl
-            if ( i1 .eq. 1 ) then
+            if ( i1 == 1 ) then
               s2(j1) = s2(j1) + vv(j1)
             else
               x2(i1-1,j1) = x2(i1-1,j1) + vv(j1)
@@ -1034,15 +1041,15 @@ c                                                  ---- update s2 and x2
         call jancae_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
 c
-        if ( knr .le. maxnr ) goto 100
+        if ( knr <= maxnr ) goto 100
 c                                        ---- end of Newton-Raphson loop
 c
   400   continue
-        if ( nvbs .ge. 2 ) then
+        if ( nvbs >= 2 ) then
           write (6,*) 'Newton Raphson loop is over.',knr
           write (6,*) 'convergence is failed.'
         end if
-        if ( nest .lt. maxnest ) then
+        if ( nest < maxnest ) then
           nest = nest + 1
           newmstg = (mstg-m+1) * ndiv
           goto 300
@@ -1074,12 +1081,12 @@ c                                                 ---- plast.strain inc.
         dpe(i) = dp * dseds(i)
       end do
 c                                               ---- print out converged
-      if ( nvbs .ge. 4 ) then
+      if ( nvbs >= 4 ) then
         text = 'updated stress'
         call jancae_print1 ( text,s2,nttl )
         text = 'plastic strain inc'
         call jancae_print1 ( text,dpe,nttl )
-        if ( npbs .ne. 0 ) then
+        if ( npbs /= 0 ) then
           text = 'updated part. back stess'
           call jancae_backprint ( text,npbs,x2,nttl,mxpbs )
           text = 'updated total back stess'
@@ -1087,18 +1094,18 @@ c                                               ---- print out converged
         end if
       end if
 c                                    ---- calc. strain inc. in thickness
-      if ( ( nttl .eq. 3 ) .or. ( nttl .eq. 5 ) ) then
+      if ( ( nttl == 3 ) .or. ( nttl == 5 ) ) then
         de33 = -dpe(1) - dpe(2)
         do i = 1,nttl
           de33 = de33 + d33d(i)*(de(i)-dpe(i))
         end do
-        if ( nvbs .ge. 4 ) then
+        if ( nvbs >= 4 ) then
           write (6,*) 'de33=',de33
         end if
       end if
 c
-      if ( nvbs .ge. 1 ) then
-        if ( nest .ne. 0 ) then
+      if ( nvbs >= 1 ) then
+        if ( nest /= 0 ) then
           write (6,*) 'nest of MsRM               :',nest
           write (6,*) 'total no. of stages        :',nstg
           write (6,*) 'total no. of NR iteration  :',nite
@@ -1109,7 +1116,7 @@ c
         end if
       end if
 c
-      if ( mjac .eq. 0 ) then
+      if ( mjac == 0 ) then
         do i = 1,nttl
           do j = 1,nttl
             ddsdde(i,j) = 0.0
@@ -1118,7 +1125,7 @@ c
         return
       end if
 c
-      if ( mjac .eq. -1 ) then
+      if ( mjac == -1 ) then
         do i = 1,nttl
           do j = 1,nttl
             ddsdde(i,j) = delast(i,j)
@@ -1187,14 +1194,14 @@ c                                                    ---- check symmetry
         end do
       end do
       a = sqrt(d/a)
-      if ( a .gt. 1.0d-8 ) then
-        if ( nvbs .ge. 4 ) then
+      if ( a > 1.0d-8 ) then
+        if ( nvbs >= 4 ) then
           write (6,*) 'ddsdde is not symmetric.',a
           text = 'material jacobian (nonsym)'
           call jancae_print2 ( text,ddsdde,nttl,nttl )
         end if
 c                                                    ---- symmetrization
-        if ( nsym .eq. 1 ) then
+        if ( nsym == 1 ) then
           do i = 1,nttl
             do j = i+1,nttl
               aaa = 0.5d0 * (ddsdde(i,j)+ddsdde(j,i))
@@ -1205,7 +1212,7 @@ c                                                    ---- symmetrization
         end if
       end if
 c
-      if ( nvbs .ge. 4 ) then
+      if ( nvbs >= 4 ) then
         text = 'material jacobian (output)'
         call jancae_print2 ( text,ddsdde,nttl,nttl )
       end if
@@ -1240,10 +1247,10 @@ c
 c
       nvbs = 0
       nchk = nechk * ipchk * laychk
-      if ( nchk .gt. 0 ) then
-        if ( (ne .eq. nechk ) .and.
-     &       (ip .eq. ipchk ) .and.
-     &       (lay .eq. laychk ) ) then
+      if ( nchk > 0 ) then
+        if ( (ne == nechk ) .and.
+     &       (ip == ipchk ) .and.
+     &       (lay == laychk ) ) then
           nvbs = nvbs0
         end if
       end if
@@ -1269,7 +1276,7 @@ c
 c
       case ( 0:1 )    !  isotropic linear elasticity (Hooke)
 c
-        if ( ntela .eq. 0 ) then
+        if ( ntela == 0 ) then
           eyoung = prela(2)                           ! Young's modulus
           epoas = prela(3)                            ! Poisson's ratio
           erigid = eyoung / 2.0d0 / (1.0d0+epoas)     ! Rigidity
@@ -1284,7 +1291,7 @@ c                                       ---- set 6*6 matrix for 3d solid
         call jancae_clear2( delast3d,6,6 )
         do i = 1,3
           do j = 1,3
-            if ( i .eq. j ) then
+            if ( i == j ) then
               delast3d(i,j) = 1.0d0 - epoas
             else
               delast3d(i,j) = epoas
@@ -1310,13 +1317,13 @@ c
 c
 c                                       ---- condensation for 2D problem
       do ib = 1,2
-        if ( ib .eq. 1 ) then
+        if ( ib == 1 ) then
           ni = nnrm
         else
           ni = nshr
         end if
         do jb = 1,2
-          if ( jb .eq. 1 ) then
+          if ( jb == 1 ) then
             nj = nnrm
           else
             nj = nshr
@@ -1333,16 +1340,16 @@ c                                       ---- condensation for 2D problem
         end do
       end do
 c                                     ---- plane stress or shell element
-      if ( nnrm .eq. 2 ) then
+      if ( nnrm == 2 ) then
         d33 = delast3d(3,3)
         do ib = 1,2
-          if ( ib .eq. 1 ) then
+          if ( ib == 1 ) then
             ni = nnrm
           else
             ni = nshr
           end if
           do jb = 1,2
-            if ( jb .eq. 1 ) then
+            if ( jb == 1 ) then
               nj = nnrm
             else
               nj = nshr
@@ -1362,7 +1369,7 @@ c                                     ---- plane stress or shell element
 c                         ---- elastic strain in thickness direction e_t
 c                                             ---- e_t=SUM(d33d(i)*e(i))
         do i = 1,nttl
-          if ( i .le. nnrm ) then
+          if ( i <= nnrm ) then
             id = i
           else
             id = i - nnrm + 3
@@ -1412,13 +1419,13 @@ c-----------------------------------------------------------------------
 c
       call jancae_isvprof ( isvrsvd,isvsclr )
 c
-      if ( npbs .eq. 0 ) then
+      if ( npbs == 0 ) then
         isvtnsr = nttl
       else
         isvtnsr = nttl * (1+npbs)
       end if
       isvttl = isvrsvd + isvsclr + isvtnsr
-      if ( nisv .lt. isvttl ) then
+      if ( nisv < isvttl ) then
         write (6,*) 'check number of internal state variables (isv)'
         write (6,*) 'nisv must be larger than',isvttl
         write (6,*) 'nisv=',nisv
@@ -1451,7 +1458,7 @@ c                                              ---- plastic strain comp.
         pe(i) = stv(isvrsvd+isvsclr+i)
       end do
 c                                         ---- partial back stress comp.
-      if ( npbs .ne. 0 ) then
+      if ( npbs /= 0 ) then
         do nb = 1,npbs
           do i = 1,nttl
             it = isvrsvd + isvsclr + nttl*nb+i
@@ -1476,7 +1483,7 @@ c
       do i = 1,nttl
         xt(i) = 0.0
       end do
-      if ( npbs .eq. 0 ) return
+      if ( npbs == 0 ) return
 c
       do i = 1,nttl
         do j = 1,npbs
@@ -1499,7 +1506,7 @@ c-----------------------------------------------------------------------
       character text*32
       dimension xx(npbs,nttl)
 c
-      if ( npbs .eq. 0 ) return
+      if ( npbs == 0 ) return
 c
       do i = 1,nttl
         do j = 1,npbs
@@ -1526,20 +1533,25 @@ c
 c
       n = 0
       p = prop(n+1)
-      if ( p .ge. 1000.0d0 ) p = p - 1000.d0
+      if ( p >= 1000.0d0 ) p = p - 1000.d0
+c
       nela = nint(p)
       select case ( nela )
-        case (0) ; nd = 2
+c
+      case (0) ; nd = 2
         case (1) ; nd = 2
+c
         case default
           write (6,*) 'error elastic property id :',nela
           call jancae_exit ( 9000 )
+c
       end select
       ndela = nd + 1
 c
       n = ndela
       nyld = nint(prop(n+1))
       select case (nyld)
+c
         case ( 0 ) ; nd = 0                   ! von Mises
         case ( 1 ) ; nd = 6                   ! Hill 1948
         case ( 2 ) ; nd = 19                  ! Yld2004-18p
@@ -1557,15 +1569,18 @@ c
         case ( -6 )                           ! BBC 2008
           nd = 2 + 8*nint(prop(n+2))
         case ( -7 ) ; nd = 0.5d0              ! Hill 1990
+c
         case default
           write (6,*) 'error yield function id :',nyld
           call jancae_exit ( 9000 )
+c
       end select
       ndyld = nd + 1
 c
       n = ndela + ndyld
       nihd = nint(prop(n+1))
       select case ( nihd )
+c
         case ( 0 ) ; nd = 1                           ! Perfecty Plastic
         case ( 1 ) ; nd = 2                           ! Linear
         case ( 2 ) ; nd = 3                           ! Swift
@@ -1573,44 +1588,53 @@ c
         case ( 4 ) ; nd = 3                           ! Voce
         case ( 5 ) ; nd = 4                           ! Voce + Linear
         case ( 6 ) ; nd = 7                           ! Voce + Swift
+c
         case default
           write (6,*) 'error work hardening curve id :',nihd
           call jancae_exit ( 9000 )
+c
       end select
       ndihd = nd + 1
 c
       n = ndela + ndyld + ndihd
       nkin = nint(prop(n+1))
       select case ( nkin )
-        case ( 0 ) ; nd = 0 ; npbs = 0    ! No Kinematic Hardening
-        case ( 1 ) ; nd = 1 ; npbs = 1    ! Prager
-        case ( 2 ) ; nd = 1 ; npbs = 1    ! Ziegler
-        case ( 3 ) ; nd = 2 ; npbs = 1    ! Armstrong & Frederick
-        case ( 4 )                        ! Chaboche
+c
+        case ( 0 ) ; nd = 0 ; npbs = 0          ! No Kinematic Hardening
+        case ( 1 ) ; nd = 1 ; npbs = 1          ! Prager
+        case ( 2 ) ; nd = 1 ; npbs = 1          ! Ziegler
+        case ( 3 ) ; nd = 2 ; npbs = 1          ! Armstrong & Frederick
+        case ( 4 )                              ! Chaboche
           npbs = nint(prop(n+2))
           nd = 2*npbs + 1
-        case ( 5 )                        ! Chaboche - Ziegler
+        case ( 5 )                              ! Chaboche - Ziegler
           npbs = nint(prop(n+2))
           nd = 2*npbs + 1
-        case ( 6 ) ; nd = 5 ; npbs = 2    ! Yoshida-Uemori
+        case ( 6 ) ; nd = 5 ; npbs = 2          ! Yoshida-Uemori
+c
         case default
           write (6,*) 'error kinematic hardening id :',nkin
           call jancae_exit ( 9000 )
+c
       end select
       ndkin = nd + 1
 c
       n = ndela + ndyld + ndihd + ndkin
       nrup = nint(prop(n+1))
       select case (nrup)
-        case ( 0 ) ; nd = 0 ;   ! No Uncoupled Rupture Criterion
-        case ( 1 ) ; nd = 2 ;   ! Equivalent Plastic Strain
-        case ( 2 ) ; nd = 2 ;   ! Cockroft and Latham
-        case ( 3 ) ; nd = 2 ;   ! Rice and Tracey
-        case ( 4 ) ; nd = 2 ;   ! Ayada
-        case ( 5 ) ; nd = 2 ;   ! Brozzo
+c
+        case ( 0 ) ; nd = 0             ! No Uncoupled Rupture Criterion
+        case ( 1 ) ; nd = 2             ! Equivalent Plastic Strain
+        case ( 2 ) ; nd = 2             ! Cockroft and Latham
+        case ( 3 ) ; nd = 2             ! Rice and Tracey
+        case ( 4 ) ; nd = 2             ! Ayada
+        case ( 5 ) ; nd = 2             ! Brozzo
+        case ( 6 ) ; nd = 2             ! Forming Limit Diagram
+c
         case default
           write (6,*) 'error uncoupled rupture criterion id :',nrup
           call jancae_exit ( 9000 )
+c
       end select
       ndrup = nd + 1
 c
@@ -1652,7 +1676,7 @@ c
         sy = prihd(1+1)
         if ( nreq . ge.1 ) then
           dsydp = 0.0
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = 0.0
 					end if
 				end if
@@ -1661,9 +1685,9 @@ c
         sy0  = prihd(1+1)
         hard = prihd(1+2)
         sy = sy0 + hard*p
-        if ( nreq .ge. 1 ) then
+        if ( nreq >= 1 ) then
           dsydp = hard
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = 0.0
 					end if
 				end if
@@ -1673,9 +1697,9 @@ c
         e0 = prihd(1+2)
         en = prihd(1+3)
         sy = c*(e0+p)**en
-        if ( nreq .ge. 1 ) then
+        if ( nreq >= 1 ) then
           dsydp = en*c*(e0+p)**(en-1.0d0)
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*(e0+p)**(en-2.0d0)
 					end if
 				end if
@@ -1685,9 +1709,9 @@ c
         c   = prihd(1+2)
         en  = prihd(1+3)
         sy = sy0+c*p**en
-        if ( nreq .ge. 1 ) then
+        if ( nreq >= 1 ) then
           dsydp = en*c*p**(en-1.0d0)
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*p**(en-2.0d0)
 					end if
 				end if
@@ -1697,9 +1721,9 @@ c
         q   = prihd(1+2)
         b   = prihd(1+3)
         sy = sy0+q*(1.0d0-exp(-b*p))
-        if ( nreq .ge. 1 ) then
+        if ( nreq >= 1 ) then
           dsydp = q*b*exp(-b*p)
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = -q*b*b*exp(-b*p)
 					end if
 				end if
@@ -1710,9 +1734,9 @@ c
         b   = prihd(1+3)
         c   = prihd(1+4)
         sy = sy0+q*(1.0d0-exp(-b*p))+c*p
-        if ( nreq .ge. 1 ) then
+        if ( nreq >= 1 ) then
           dsydp = q*b*exp(-b*p)+c
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = -q*b*b*exp(-b*p)
 					end if
 				end if
@@ -1726,9 +1750,9 @@ c
         e0  = prihd(1+6)
         en  = prihd(1+7)
         sy = a*(sy0+q*(1.0d0-exp(-b*p))) + (1.0d0-a)*(c*(e0+p)**en)
-        if ( nreq .ge. 1 ) then
+        if ( nreq >= 1 ) then
           dsydp = a*(q*b*exp(-b*p)) +(1.0d0-a)*(en*c*(e0+p)**(en-1.0d0))
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = a*(-q*b*b*exp(-b*p)) + 
      &                (1.0d0-a)*(en*c*(en-1.0d0)*(e0+p)**(en-2.0d0))
 					end if
@@ -1954,7 +1978,7 @@ c                   ---- engineering shear strain -> tensor shear strain
 				end do
 				end do
 c                                          ---- for plane stress problem
-      if ( nnrm .eq. 2 ) then
+      if ( nnrm == 2 ) then
         em1 = dseds(1)
         em2 = dseds(2)
         dseds(1) = dseds(1) + em1 + em2
@@ -2434,19 +2458,21 @@ c      3 : Rice and Tracey
 c      4 : Ayada
 c      5 : Brozzo
 c
+c     -1 : Forming Limit Diagram
+c
 c-----------------------------------------------------------------------
 c     calculated rupture criteria
 c
-      subroutine jancae_rupture ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,jmac,
-     &                            jmatyp,matlayo,laccfla,nt,
-     &                            ndrup,prrup )
+      subroutine jancae_rupture ( ntens,sdv,nsdv,uvar2,uvar1,nuvarm,
+     &                            jrcd,jmac,jmatyp,matlayo,laccfla,
+     &                            nt,ndrup,prrup )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
-      dimension UVAR1(NUVARM),JMAC(*),JMATYP(*)
+      dimension UVAR1(NUVARM),jmac(*),jmatyp(*)
       dimension sdv(nsdv),uvar2(nuvarm),prrup(ndrup)
-			real*8 lim,wlimnorm
+      real*8 lim,wlimnorm
 c-----------------------------------------------------------------------
 c
 c      prrup(1) : criteria id
@@ -2454,37 +2480,42 @@ c      prrup(2) : flag to terminate analysis if limit is reached
 c      prrup(3) : rupture limit
 c
 c 																		       ---- rupture criteria limit
-			lim = prrup(3)
+      lim = prrup(3)
 c                                           ---- select rupture criteria
-			ntrup = nint(prrup(1))
+      ntrup = nint(prrup(1))
       select case ( ntrup )
 c
       case ( 0 )                                  ! No Rupture Criterion
         return
 c
       case ( 1 )                             ! Equivalent Plastic Strain
-        call jancae_rup_eqstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,nt,
-     &                             lim,wlimnorm )
+        call jancae_rup_eqstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     &                             nt,lim,wlimnorm )
 c
       case ( 2 )                                   ! Cockroft and Latham
-        call jancae_rup_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     &                             jmac,jmatyp,matlayo,laccfla,nt,
-     &                             lim,wlimnorm )
+        call jancae_rup_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     &                             jrcd,jmac,jmatyp,matlayo,laccfla,
+     &                             nt,lim,wlimnorm )
 c
       case ( 3 )                                       ! Rice and Tracey
-        call jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     &                         jmac,jmatyp,matlayo,laccfla,nt,
-     &                         lim,wlimnorm )
+        call jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     &                         jrcd,jmac,jmatyp,matlayo,laccfla,
+     &                         nt,lim,wlimnorm )
 c
       case ( 4 )                                                 ! Ayada
-        call jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     &                          jmac,jmatyp,matlayo,laccfla,nt,
-     &                          lim,wlimnorm )
+        call jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     &                          jrcd,jmac,jmatyp,matlayo,laccfla,
+     &                          nt,lim,wlimnorm )
 c
       case ( 5 )                                                ! Brozzo
-        call jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     &                           jmac,jmatyp,matlayo,laccfla,nt,
-     &                           lim,wlimnorm )
+        call jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,,
+     &                           jrcd,jmac,jmatyp,matlayo,laccfla,
+     &                           nt,lim,wlimnorm )
+c
+      case ( 6 )                                 ! Forming Limit Diagram
+        call jancae_rup_fld ( ntens,uvar2,uvar1,nuvarm,
+     &                        jrcd,jmac,jmatyp,matlayo,laccfla,
+     &                        nt,lim,wlimnorm )
 c
       case default
         write (6,*) 'error in jancae_rupture'
@@ -2492,11 +2523,15 @@ c
         call jancae_exit ( 9000 )
       end select
 c
-c                            ---- terminate analysis if limit is reached
-			end = nint(prrup(2))
-			if ( end .eq. 1 ) then
-				if ( wlimnorm .ge. 1.0d0 ) call jancae_exit( 10000 )
-			end if
+c                    ---- terminate analysis if rupture limit is reached
+      end = nint(prrup(2))
+      if ( end == 1 ) then
+        if ( wlimnorm >= 1.0d0 ) then 
+          write (6,*) 'analysis terminated by rupture criterion'
+          write (6,*) 'stop in uvrm.'
+          call jancae_exit( 10000 )
+        end if
+      end if
 c
       return
       end
@@ -2517,6 +2552,7 @@ c
       ntrup = nint(prrup(1))
       write (6,*)
       write (6,*) '*** Uncoupled Rupture Criterion',ntrup
+c
       select case ( ntrup )
 c
       case ( 0 ) 										   	! No Uncoupled Rupture Criterion
@@ -2525,27 +2561,33 @@ c
       case ( 1 ) 														 ! Equivalent Plastic Strain
         write (6,*) 'Equivalent Plastic Strain'
         write (6,*) 'W=int[dp]'
-				write (6,*) 'Wl=',prrup(3)
+        write (6,*) 'Wl=',prrup(3)
 c
       case ( 2 )  																 ! Cockroft and Latham
         write (6,*) 'Cockroft and Latham'
         write (6,*) 'W=int[(sp1/se)*dp]'
-				write (6,*) 'Wl=',prrup(3)
+        write (6,*) 'Wl=',prrup(3)
 c
       case ( 3 ) 																	     ! Rice and Tracey
         write (6,*) 'Rice and Tracey'
         write (6,*) 'W=int[exp(1.5*sh/se)*dp]'
-				write (6,*) 'Wl=',prrup(3)
+        write (6,*) 'Wl=',prrup(3)
 c
       case ( 4 ) 																						     ! Ayada
         write (6,*) 'Ayada'
         write (6,*) 'W=int[(sh/se)*dp]'
-				write (6,*) 'Wl=',prrup(3)
-
+        write (6,*) 'Wl=',prrup(3)
+c
       case ( 5 ) 																							  ! Brozzo
         write (6,*) 'Brozzo'
         write (6,*) 'W=int[(2/3)*(sp1/(sp1-se))*dp]'
-				write (6,*) 'Wl=',prrup(3)
+        write (6,*) 'Wl=',prrup(3)
+c
+      case ( 6 ) 	   														 ! Forming Limit Diagram
+        write (6,*) 'Forming Limit Diagram'
+        write (6,*) 'W=e1/e1(fld)'
+        write (6,*) 'Wl=',prrup(3)
+c
       end select
 c
       return
@@ -2556,8 +2598,8 @@ c
 c-----------------------------------------------------------------------
 c     Equivalent Plastic Strain
 c
-      subroutine jancae_rup_eqstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,nt,
-     &                                 lim,wlimnorm )
+      subroutine jancae_rup_eqstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     &                                 nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -2589,17 +2631,17 @@ c
 c-----------------------------------------------------------------------
 c     Cockroft and Latham
 c
-      subroutine jancae_rup_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     &                                 jmac,jmatyp,matlayo,laccfla,nt,
-     &                                 lim,wlimnorm )
+      subroutine jancae_rup_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     &                                 jrcd,jmac,jmatyp,matlayo,laccfla,
+     &                                 nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
-      dimension UVAR1(NUVARM),JMAC(*),JMATYP(*)
-      dimension ARRAY(15),JARRAY(15)
+      dimension UVAR1(NUVARM),jmac(*),jmatyp(*)
+      dimension array(15),jarray(15)
       dimension sdv(nsdv),uvar2(nuvarm)
-      character*3 FLGRAY(15)
+      character*3 flgray(15)
       real*8 lim,wlimnorm
       real*8 se1,peeq1,maxsp1,maxsp1se1,wlim1
       real*8 se2,peeq2,maxsp2,maxsp2se2,wlim2
@@ -2619,16 +2661,16 @@ c                                            ---- get uvar before update
       maxsp1 = uvar1(2+nt+2)
       wlim1  = uvar1(2+nt+3)
 c
-			wlimnorm  = uvar1(2+nt+4)
+      wlimnorm  = uvar1(2+nt+4)
 c
 c                                     ---- get sdv and uvar after update
       se2 = uvar2(1)
       peeq2 = sdv(1)
 c
 c                                 ---- get principal stress after update
-      call getvrm ('SP',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &                  MATLAYO,LACCFLA )
-      if ( JRCD .ne. 0 ) then
+      call getvrm ('SP',array,jarray,flgray,jrcd,jmac,jmatyp,
+     &                  matlayo,laccfla )
+      if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sp'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
@@ -2638,8 +2680,8 @@ c
 c                                                 ---- rupture criterion
       maxsp1se1 = 0.0d0
       maxsp2se2 = 0.0d0
-      if ( se1 .gt. 0.0d0 ) maxsp1se1 = maxsp1 / se1
-      if ( se2 .gt. 0.0d0 ) maxsp2se2 = maxsp2 / se2
+      if ( se1 > 0.0d0 ) maxsp1se1 = maxsp1 / se1
+      if ( se2 > 0.0d0 ) maxsp2se2 = maxsp2 / se2
 c
       wlim2 = wlim1 + (maxsp2se2+maxsp1se1)*(peeq2-peeq1)/2.0d0
 c
@@ -2657,17 +2699,17 @@ c
 c-----------------------------------------------------------------------
 c     Rice and Tracey
 c
-      subroutine jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     &                             jmac,jmatyp,matlayo,laccfla,nt,
-     &                             lim,wlimnorm )
+      subroutine jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     &                             jrcd,jmac,jmatyp,matlayo,laccfla,
+     &                             nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
-      dimension UVAR1(NUVARM),JMAC(*),JMATYP(*)
-      dimension ARRAY(15),JARRAY(15)
+      dimension UVAR1(NUVARM),jmac(*),jmatyp(*)
+      dimension array(15),jarray(15)
       dimension sdv(nsdv),uvar2(nuvarm)
-      character*3 FLGRAY(15)
+      character*3 flgray(15)
       real*8 lim,wlimnorm
       real*8 se1,peeq1,shyd1,shyd1se1,wlim1
       real*8 se2,peeq2,shyd2,shyd2se2,wlim2
@@ -2687,16 +2729,16 @@ c                                            ---- get uvar before update
       shyd1 = uvar1(2+nt+2)
       wlim1 = uvar1(2+nt+3)
 c
-			wlimnorm  = uvar1(2+nt+4)
+      wlimnorm  = uvar1(2+nt+4)
 c
 c                                     ---- get sdv and uvar after update
       se2 = uvar2(1)
       peeq2 = sdv(1)
 c
 c                               ---- get hydrostatic stress after update
-      call getvrm ('SINV',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &                    MATLAYO,LACCFLA )
-      if ( JRCD .ne. 0 ) then
+      call getvrm ( 'SINV',array,jarray,flgray,jrcd,jmac,jmatyp,
+     &                     matlayo,laccfla )
+      if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
@@ -2706,8 +2748,8 @@ c
 c                                                 ---- rupture criterion
       shyd1se1 = 0.0d0
       shyd2se2 = 0.0d0
-      if ( se1 .gt. 0.0d0 ) shyd1se1 = exp(1.5d0*shyd1/se1)
-      if ( se2 .gt. 0.0d0 ) shyd2se2 = exp(1.5d0*shyd2/se2)
+      if ( se1 > 0.0d0 ) shyd1se1 = exp(1.5d0*shyd1/se1)
+      if ( se2 > 0.0d0 ) shyd2se2 = exp(1.5d0*shyd2/se2)
 c
       wlim2 = wlim1 + (shyd1se1+shyd2se2)*(peeq2-peeq1)/2.0d0
 c
@@ -2725,17 +2767,17 @@ c
 c-----------------------------------------------------------------------
 c     Ayada
 c
-      subroutine jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     &                              jmac,jmatyp,matlayo,laccfla,nt,
-     &                              lim,wlimnorm )
+      subroutine jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     &                              jrcd,jmac,jmatyp,matlayo,laccfla,
+     &                              nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
-      dimension UVAR1(NUVARM),JMAC(*),JMATYP(*)
-      dimension ARRAY(15),JARRAY(15)
+      dimension UVAR1(NUVARM),jmac(*),jmatyp(*)
+      dimension array(15),jarray(15)
       dimension sdv(nsdv),uvar2(nuvarm)
-      character*3 FLGRAY(15)
+      character*3 flgray(15)
       real*8 lim,wlimnorm
       real*8 se1,peeq1,shyd1,shyd1se1,wlim1
       real*8 se2,peeq2,shyd2,shyd2se2,wlim2
@@ -2755,16 +2797,16 @@ c                                            ---- get uvar before update
       shyd1 = uvar1(2+nt+2)
       wlim1 = uvar1(2+nt+3)
 c
-			wlimnorm  = uvar1(2+nt+4)
+      wlimnorm  = uvar1(2+nt+4)
 c
 c                                     ---- get sdv and uvar after update
       se2 = uvar2(1)
       peeq2 = sdv(1)
 c
 c                               ---- get hydrostatic stress after update
-      call getvrm ('SINV',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &                    MATLAYO,LACCFLA )
-      if ( JRCD .ne. 0 ) then
+      call getvrm ( 'SINV',array,jarray,flgray,jrcd,jmac,jmatyp,
+     &                     matlayo,laccfla )
+      if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
@@ -2774,8 +2816,8 @@ c
 c                                                 ---- rupture criterion
       shyd1se1 = 0.0d0
       shyd2se2 = 0.0d0
-      if ( se1 .gt. 0.0d0 ) shyd1se1 = shyd1 / se1
-      if ( se2 .gt. 0.0d0 ) shyd2se2 = shyd2 / se2
+      if ( se1 > 0.0d0 ) shyd1se1 = shyd1 / se1
+      if ( se2 > 0.0d0 ) shyd2se2 = shyd2 / se2
 c
       wlim2 = wlim1 + (shyd1se1+shyd2se2)*(peeq2-peeq1)/2.0d0
 c
@@ -2793,17 +2835,17 @@ c
 c-----------------------------------------------------------------------
 c     Brozzo
 c
-      subroutine jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,jrcd,
-     &                               jmac,jmatyp,matlayo,laccfla,nt,
-     &                               lim,wlimnorm )
+      subroutine jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     &                               jrcd,jmac,jmatyp,matlayo,laccfla,
+     &                               nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
-      dimension UVAR1(NUVARM),JMAC(*),JMATYP(*)
-      dimension ARRAY(15),JARRAY(15)
+      dimension UVAR1(NUVARM),jmac(*),jmatyp(*)
+      dimension array(15),jarray(15)
       dimension sdv(nsdv),uvar2(nuvarm)
-      character*3 FLGRAY(15)
+      character*3 flgray(15)
       real*8 lim,wlimnorm
       real*8 se1,peeq1,shyd1,maxsp1,maxsp1shyd1,wlim1
       real*8 se2,peeq2,shyd2,maxsp2,maxsp2shyd2,wlim2
@@ -2823,15 +2865,15 @@ c                                            ---- get uvar before update
       shyd1  = uvar1(2+nt+3)
       wlim1  = uvar1(2+nt+4)
 c
-			wlimnorm  = uvar1(2+nt+5)
+      wlimnorm  = uvar1(2+nt+5)
 c
 c                                              ---- get sdv after update
       peeq2 = sdv(1)
 c
 c                                 ---- get principal stress after update
-      call getvrm ('SP',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &                  MATLAYO,LACCFLA )
-      if ( JRCD .ne. 0 ) then
+      call getvrm ('SP',array,jarray,flgray,jrcd,jmac,jmatyp,
+     &                  matlayo,laccfla )
+      if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sp'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
@@ -2839,9 +2881,9 @@ c                                 ---- get principal stress after update
       maxsp2 = array(3)
 c
 c                               ---- get hydrostatic stress after update
-      call getvrm ('SINV',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &                    MATLAYO,LACCFLA )
-      if ( JRCD .ne. 0 ) then
+      call getvrm ('SINV',array,jarray,flgray,jrcd,jmac,jmatyp,
+     &                    matlayo,laccfla )
+      if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
@@ -2851,10 +2893,10 @@ c
 c                                                 ---- rupture criterion
       maxsp1shyd1 = 0.0d0
       maxsp2shyd2 = 0.0d0
-      if ( shyd1 .gt. 0.0d0 ) then
+      if ( shyd1 > 0.0d0 ) then
         maxsp1shyd1 = (2.0d0/3.0d0) * maxsp1 / (maxsp1-shyd1)
       end if
-      if ( shyd2 .gt. 0.0d0 ) then 
+      if ( shyd2 > 0.0d0 ) then 
         maxsp2shyd2 = (2.0d0/3.0d0) * maxsp2 / (maxsp2-shyd2)
       end if
 c
@@ -2866,6 +2908,147 @@ c                                                       ---- update uvar
       uvar2(2+nt+3) = shyd2
       uvar2(2+nt+4) = wlim2
       uvar2(2+nt+5) = wlim2/lim
+c
+      return
+      end
+c
+c
+c
+c-----------------------------------------------------------------------
+c     Forming Limit Diagram (FLD)
+c
+      subroutine jancae_rup_fld ( ntens,uvar2,uvar1,nuvarm,
+     &                            jrcd,jmac,jmatyp,matlayo,laccfla,
+     &                            nt,lim,wlimnorm )
+c
+c-----------------------------------------------------------------------
+      implicit real*8 (a-h,o-z)
+c
+      parameter (mxflc=50)
+c
+      dimension jmac(*),jmatyp(*)
+      dimension array(15),jarray(15)
+      dimension uvar2(nuvarm),uvar1(nuvarm)
+      character*3 flgray(15)
+      real*8 lim,wlimnorm
+      real*8 e1,e2,e1fld,wlim
+      real*8 le(3,3),es(3),ev(3,3)
+      dimension dum1(0),dum2(mxflc,0)
+      dimension fld1(mxflc),fld2(mxflc)
+c-----------------------------------------------------------------------
+c
+c     nuvarm : 6
+c
+c     uvar(2+nt+1) : major principal strain
+c     uvar(2+nt+2) : minor principal strain
+c     uvar(2+nt+3) : major principal strain on FLD
+c     uvar(2+nt+4) : minor principal strain on FLD
+c     uvar(2+nt+5) : rupture criterion
+c     uvar(2+nt+6) : rupture criterion normalised
+c
+c                                            ---- get uvar before update
+      wlimnorm  = uvar1(2+nt+6)
+c      
+c                                 ---- get principal strain after update
+      if ( ntens == 3 ) then
+        call getvrm ( 'LEP',array,jarray,flgray,jrcd,jmac,jmatyp,
+     &                      matlayo,laccfla )
+        if ( jrcd /= 0 ) then
+          write (6,*) 'request error in uvarm for lep'
+          write (6,*) 'stop in uvrm.'
+          call jancae_exit ( 9000 )
+        end if
+        e2 = array(1)
+        e1 = array(2)
+c                               ---- get logarithmic strain after update
+      else
+        call getvrm ( 'LE',array,jarray,flgray,jrcd,jmac,jmatyp,
+     &                     matlayo,laccfla )
+        if ( jrcd /= 0 ) then
+          write (6,*) 'request error in uvarm for le'
+          write (6,*) 'stop in uvrm.'
+          call jancae_exit ( 9000 )
+        end if
+c                                            ---- assemble strain tensor
+        call jancae_clear2 ( le,3,3 )
+        le(1,1) = array(1)
+        le(2,2) = array(2)
+        le(3,3) = array(3)
+        le(1,2) = array(4)/2
+        le(1,3) = array(5)/2
+        le(2,3) = array(6)/2
+        le(2,1) = le(1,2)
+        le(3,1) = le(1,3)
+        le(3,2) = le(2,3)
+c                           ---- strain tensor eigen- values and vectors
+        call jancae_clear1 ( es,3 )
+        call jancae_clear2 ( ev,3,3 )
+        call jancae_eigen_sym3 ( es,ev,le )
+        e2 = es(2)
+        e1 = es(1)
+
+      end if
+
+c
+c                                     ---- activate fld table collection
+      call settablecollection ( 'FLD',jerror )
+
+      if ( jerror /= 0 ) then
+        write (6,*) 'request error in uvarm for table collection fld'
+        write (6,*) 'stop in uvrm.'
+        call jancae_exit ( 9000 )
+      end if
+c	                     		                        ---- get fld E1 values
+      call getpropertytable ( 'FLD1',dum1,dum1,dum1,nfld,fld1,dum2,0,
+     &                               jerror )
+      if ( jerror /= 0 ) then
+        write (6,*) 'request error in uvarm for property table fld1'
+        write (6,*) 'stop in uvrm.'
+        call jancae_exit ( 9000 )
+      end if
+c                                                 ---- get fld E2 values
+      call getpropertytable ( 'FLD2',dum1,dum1,dum1,nfld,fld2,dum2,0,
+     &                               jerror )
+      if ( jerror /= 0 ) then
+        write (6,*) 'request error in uvarm for property table fld2'
+        write (6,*) 'stop in uvrm.'
+        call jancae_exit ( 9000 )
+      end if
+c
+c                         ---- linear extra/inter -polation of E1 on FLD
+      n = nfld
+c                              --- linear extrapolation on the left side
+      if ( e2 < fld2(1) ) then
+        e1fld = fld1(2) + ( (e2-fld2(2)) / (fld2(1)-fld2(2)) )
+     &          * ( fld1(1) - fld1(2) )
+c
+c                             --- linear extrapolation on the right side
+      else if ( e2 > fld2(n) ) then
+        e1fld = fld1(n-1) + ( (e2-fld2(n-1)) / (fld2(n)-fld2(n-1)) ) 
+     &          * ( fld1(n) - fld1(n-1) )
+c
+c                                  --- linear interpolation inside range
+      else
+        k = 0
+        do i = 1,n-1
+          if ( ( e2 >= fld2(i) ) .and. ( e2 <= fld2(i+1) ) ) then
+            k = i
+          end if
+        end do
+        e1fld = fld1(k) + ( fld1(k+1) - fld1(k) )
+     &          * ( (e2-fld2(k)) / (fld2(k+1)-fld2(k)) )
+      end if
+c
+c                                                 ---- rupture criterion
+      wlim = e1/e1fld
+c
+c                                                       ---- update uvar
+      uvar2(2+nt+1) = e1
+      uvar2(2+nt+2) = e2
+      uvar2(2+nt+3) = e1fld
+      uvar2(2+nt+4) = e2fld
+      uvar2(2+nt+5) = wlim
+      uvar2(2+nt+6) = wlim/lim
 c
       return
       end
@@ -3152,7 +3335,7 @@ c
       anorm = 0.0
       do i = 1,n
         do j = 1,n
-          if ( anorm .lt. abs(a(i,j)) ) anorm = abs(a(i,j))
+          if ( anorm < abs(a(i,j)) ) anorm = abs(a(i,j))
         end do
       end do
       do i = 1,n
@@ -3161,17 +3344,17 @@ c
         end do
       end do
 c
-      if ( n .eq. 2 ) then
+      if ( n == 2 ) then
         call jancae_minv2 ( b,a,d,eps )
         goto 100
-      else if ( n .eq. 3 ) then
+      else if ( n == 3 ) then
         call jancae_minv3 ( b,a,d,eps )
         goto 100
       end if
 c
       call jancae_ludcmp ( a,n,indx,d,eps )
 c                                                 ---- check determinant
-      if ( abs(d) .le. eps ) then
+      if ( abs(d) <= eps ) then
          write (6,*) 'determinant det[a] error',d
          write (6,*) 'stop in minv'
          call jancae_exit(9000)
@@ -3235,9 +3418,9 @@ c
       do i = 1,n
         aamax = 0.0d0
         do j = 1,n
-          if ( abs(a(i,j)) .gt. aamax ) aamax = abs(a(i,j))
+          if ( abs(a(i,j)) > aamax ) aamax = abs(a(i,j))
         end do
-        if ( aamax .le. eps ) then
+        if ( aamax <= eps ) then
           write (6,*) 'singular matrix in jancae_ludcmp'
           text = 'matrix detail'
           call jancae_print2 ( text,a,n,n )
@@ -3262,12 +3445,12 @@ c
           end do
           a(i,j) = sum
           dum = vtemp(i)*abs(sum)
-          if ( dum .ge. aamax ) then
+          if ( dum >= aamax ) then
             imax = i
             aamax = dum
           end if
         end do
-        if ( j .ne. imax ) then
+        if ( j /= imax ) then
           do k = 1,n
             dum = a(imax,k)
             a(imax,k) = a(j,k)
@@ -3277,10 +3460,10 @@ c
           vtemp(imax) = vtemp(j)
         end if
         indx(j) = imax
-c       if ( abs(a(i,j)) .le. eps ) a(i,j) = eps     !2010.07.02 c.out
-        if ( j .ne. n ) then
+c       if ( abs(a(i,j)) <= eps ) a(i,j) = eps     !2010.07.02 c.out
+        if ( j /= n ) then
           ajj = a(j,j)                               !2010.07.02 add
-          if ( abs(ajj) .le. eps ) ajj = eps         !2010.07.02 add
+          if ( abs(ajj) <= eps ) ajj = eps         !2010.07.02 add
           dum = 1.0d0 / ajj                          !2010.07.02 mod
           do i = j+1,n
             a(i,j) = a(i,j) * dum
@@ -3313,11 +3496,11 @@ c
         ll = indx(i)
         sum = b(ll)
         b(ll) = b(i)
-        if ( ii .ne. 0 ) then
+        if ( ii /= 0 ) then
           do j = ii,i-1
             sum = sum - a(i,j)*b(j)
           end do
-        else if ( abs(sum) .ge. eps ) then
+        else if ( abs(sum) >= eps ) then
           ii = i
         end if
         b(i) = sum
@@ -3347,7 +3530,7 @@ c
 c-----------------------------------------------------------------------
 c
       deta = a(1,1)*a(2,2) - a(1,2)*a(2,1)
-      if ( abs(deta) .le. eps ) then
+      if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv2'
          call jancae_exit(9000)
@@ -3378,7 +3561,7 @@ c
       deta = a(1,1) * (a(2,2)*a(3,3) - a(2,3)*a(3,2)) +
      &       a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3)) +
      &       a(1,3) * (a(2,1)*a(3,2) - a(2,2)*a(3,1))
-      if ( abs(deta) .le. eps ) then
+      if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv3'
          call jancae_exit(9000)
@@ -3418,18 +3601,18 @@ c
       write (6,*) 'elem,ip,lay=',ne,ip,lay
       write (6,*) 'nttl,nnrm,nshr=',nttl,nnrm,nshr
       nerr = 0
-      if ( nnrm .eq. 3 ) then
-        if ( nshr .eq. 3 ) then
+      if ( nnrm == 3 ) then
+        if ( nshr == 3 ) then
           write (6,*) '3d solid element'
-        else if ( nshr .eq. 1 ) then
+        else if ( nshr == 1 ) then
           write (6,*) 'plane strain or axi-sym solid element'
         else
           nerr = nerr + 1
         end if
-      else if ( nnrm .eq. 2 ) then
-        if ( nshr .eq. 1 ) then
+      else if ( nnrm == 2 ) then
+        if ( nshr == 1 ) then
           write (6,*) 'plane stress or thin shell element'
-        else if ( nshr .eq. 3 ) then
+        else if ( nshr == 3 ) then
           write (6,*) 'thick shell element'
         else
           nerr = nerr + 1
@@ -3437,7 +3620,7 @@ c
       else
         nerr = nerr + 1
       end if
-      if ( nerr .ne. 0 ) then
+      if ( nerr /= 0 ) then
         write (6,*) 'no supported element type',nnrm,nshr
         call jancae_exit (9000)
       end if
@@ -3459,21 +3642,21 @@ c
       character text*32
 c-----------------------------------------------------------------------
 c
-      if ( io .eq. 0 ) then
+      if ( io == 0 ) then
         text = 'initial stresses'
       else
         text = 'updated stresses'
       end if
       call jancae_print1 ( text,s,nttl )
 c
-      if ( io .eq. 0 ) then
+      if ( io == 0 ) then
         text = 'initial internal state var.'
       else
         text = 'updated internal state var.'
       end if
       call jancae_print1 ( text,stv,nstv )
 c
-      if ( io.eq.0 ) then
+      if ( io==0 ) then
         text = 'driving strain increment'
         call jancae_print1 ( text,de,nttl )
       else
@@ -3512,11 +3695,11 @@ c                                                       ---- preparation
       er = 0.0d0
       do i = 1,3
         do j = 1,3
-          if ( abs(a(i,j)) .gt. ax ) ax = abs(a(i,j))
+          if ( abs(a(i,j)) > ax ) ax = abs(a(i,j))
           er = er + abs(a(i,j)-a(j,i))
         end do
       end do
-      if ( er/ax .gt. eps ) then
+      if ( er/ax > eps ) then
         write (6,*) 'a is not symmetric'
         write (6,*) 'stop in jancae_eigen_sym3'
         call jancae_exit (9000)
@@ -3550,7 +3733,7 @@ c
 c            ---- if the sum of off-diagonal terms is zero evaluates the
 c                                                     esches and returns
 c
-        if ( abs(sum) .lt. eps ) then
+        if ( abs(sum) < eps ) then
           do i = 1,3
             do j = 1,3
               ev(i,j) = prc(j,i)
@@ -3566,14 +3749,14 @@ c
         do ip = 1,2
           do iq = ip+1,3
             od = 100.0d0 * abs( w(ip,iq) )
-            if ( abs(od) .gt. eps ) then
+            if ( abs(od) > eps ) then
               hd = es(iq) - es(ip)
 c
 c                                      ---- evaluates the rotation angle
 c
               theta = 0.5d0 * hd / w(ip,iq)
               t = 1.0d0/(abs(theta) + sqrt(1.0d0+theta**2))
-              if ( theta .lt. 0.0d0 ) t = -t
+              if ( theta < 0.0d0 ) t = -t
 c
 c                                   ---- re-evaluates the diagonal terms
 c
@@ -3686,8 +3869,8 @@ c-----------------------------------------------------------------------
 c
       ntyld = nint(pryld(1))
 c
-      if ( ntyld .lt. 0 ) then
-        if ( ( nnrm .ne. 2 ) .or. ( nshr .ne. 1 ) ) then
+      if ( ntyld < 0 ) then
+        if ( ( nnrm /= 2 ) .or. ( nshr /= 1 ) ) then
           write (6,*) 'error in jancae_yfunc'
           write (6,*) 'ntyld<0 for plane stress'
           write (6,*) 'nnrm,nshr,ntyld:',nnrm,nshr,ntyld
@@ -3700,7 +3883,7 @@ c
       do i = 1,nttl
         ss = ss + cs(i)**2
       end do
-      if ( ( ss .le. 0.0 ) .and. ( nreq .eq. 0 ) ) then
+      if ( ( ss <= 0.0 ) .and. ( nreq == 0 ) ) then
         se = 0.0
         return
       end if
@@ -3711,11 +3894,11 @@ c                                        ---- set index to s(i) to cs(i)
       do i = 1,6
         indx(i) = 0
       end do
-      if ( nnrm .eq. 3 ) then
+      if ( nnrm == 3 ) then
         do i = 1,nttl
           indx(i) = i
         end do
-      else if ( nnrm .eq. 2 ) then
+      else if ( nnrm == 2 ) then
         indx(1) = 1
         indx(2) = 2
         indx(3) = 0
@@ -3726,7 +3909,7 @@ c                                        ---- set index to s(i) to cs(i)
 c                                                          ---- set s(i)
       call jancae_clear1 ( s,6 )
       do i = 1,6
-        if ( indx(i) .ne. 0 ) then
+        if ( indx(i) /= 0 ) then
           s(i) = cs(indx(i))
         end if
       end do
@@ -3766,17 +3949,17 @@ c
       end select
 c
 c                                                        ---- set dse/ds
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
         do i = 1,6
-          if ( indx(i) .ne. 0 ) cdseds(indx(i)) = dseds(i)
+          if ( indx(i) /= 0 ) cdseds(indx(i)) = dseds(i)
         end do
       end if
 c                                                      ---- set d2se/ds2
-      if ( nreq .ge. 2 ) then
+      if ( nreq >= 2 ) then
         do i = 1,6
-          if ( indx(i) .ne. 0 ) then
+          if ( indx(i) /= 0 ) then
             do j = 1,6
-              if ( indx(j) .ne. 0 ) then
+              if ( indx(j) /= 0 ) then
                 cd2seds2(indx(i),indx(j)) = d2seds2(i,j)
               end if
             end do
@@ -4099,7 +4282,7 @@ c
 c
 c
 c                                           ----  1st order differential
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
 c
         dsedphi = (1.0d0/(2.0d0*kk))*(phi**(1.0d0/(2.0d0*kk)-1.0d0)/Al)
 c
@@ -4177,7 +4360,7 @@ c
 c
 c                                            ---- 2nd order differential
 c
-      if ( nreq .ge. 2 ) then
+      if ( nreq >= 2 ) then
 c
         d2sedphi2 = (1/kk/2.0d00-1)*phi**(1/kk/2.0d0-2)/
      &            (kk*Al)/2.0d0
@@ -4276,7 +4459,7 @@ c----  function to solve factorial ----------------------------(bbc2005)
       integer function fact(n) result(m)
       integer, intent(in) :: n
       m = 1
-      if ( n.ge.1 ) then
+      if ( n>=1 ) then
           do i = 1,n
             m = m * i
           end do
@@ -4433,7 +4616,7 @@ c      ---- see eq.(x.y.2b) and eq.(x.y.2) for se2k and se, respectively
       se = se2k**(1.0d0 / (2.0d0*kp))
 c
 c   ---- If a main routine requests this subroutine to calculate se only
-      if ( nreq .eq. 0 ) then
+      if ( nreq == 0 ) then
         return
       end if
 c
@@ -4458,13 +4641,13 @@ c       disscussed by Banabic et al., 0**0 is required to be 1.
 c
           phiL_m = 1.0d0
           phiN_m = 1.0d0
-          if ( m .ne. 0 ) then
+          if ( m /= 0 ) then
             phiL_m = phiL**m
             phiN_m = phiN**m
           end if
 c
           phiM_kp_m = 1.0d0
-          if ( (kp-m) .ne. 0 ) then
+          if ( (kp-m) /= 0 ) then
             phiM_kp_m = phiM**(kp-m)
           end if
 c
@@ -4482,7 +4665,7 @@ c                                             ---- <dseds>, see (x.y.2f)
 c
 c
 c                     ---- <d2seds2>, see (x.y.2g), d2F/ds(eta)ds(gamma)
-          if ( nreq .eq.2 ) then
+          if ( nreq ==2 ) then
 c
             call jancae_bbc2008_get_d2phiXds2 (d2phiLds2,Lp,s,csp,m,sp)
             call jancae_bbc2008_get_d2phiXds2 (d2phiMds2,Mp,s,csp,
@@ -4514,7 +4697,7 @@ c                            ---- < dseds >, see (x.y.2f), se2k = se^2kp
       dseds(1:3) =  dFds(1:3) * se / (se1 * 2.0d0 * kp * se2k)
 
 c                  ---- < d2seds2 >, see (x.y.2g), d2se/ds(eta)ds(gamma)
-      if ( nreq .eq. 2 ) then
+      if ( nreq == 2 ) then
         do eta = 1,3
           d2seds2(eta,1:3) = 
      &            d2Fds2(eta,1:3) * se / (se1 * 2.0d0 * kp * se2k)
@@ -4587,13 +4770,13 @@ c
 c
           phiL_m = 1.0d0
           phiN_m = 1.0d0
-          if ( m .ne. 0 ) then
+          if ( m /= 0 ) then
             phiL_m = phiL**m
             phiN_m = phiN**m
           end if
 c
           phiM_kp_m = 1.0d0
-          if ( (kp-m) .ne. 0 ) then
+          if ( (kp-m) /= 0 ) then
             phiM_kp_m = phiM**(kp-m)
           end if
 c
@@ -4679,7 +4862,7 @@ c
       call jancae_clear1(dphiXds,nc)
 c
 c                              ---- If lambda is 0, return dphiXds = {0}
-      if ( lambda .eq. 0) then
+      if ( lambda == 0) then
         return
       end if
 c
@@ -4696,7 +4879,7 @@ c       from jancae_mv().
 c
       call jancae_mv (v, XXp, s, nc, nc)
 c
-      if ( lambda .eq. 1 ) then
+      if ( lambda == 1 ) then
         dphiXds(1:nc) = 2.0d0 * v(1:nc)
       else
         call jancae_vvs (phi, v, s, nc)
@@ -4739,7 +4922,7 @@ c
       real*8 XXp(nc, nc), v(nc), phi, phi_lambda2
 c
 c                             ---- see eq.(x.y.2e), the case lambda <= 1
-      if ( lambda .le. 1 ) then
+      if ( lambda <= 1 ) then
         do i = 1,nc
           d2phiXds2(i,1:nc) = 2.0d0 * lambda * Xp(csp, i, 1:nc)
         end do
@@ -4755,7 +4938,7 @@ c
       call jancae_vvs (phi, v, s, nc)
 c
       phi_lambda2 = 1.0d0
-      if ( lambda .ne. 2 ) then
+      if ( lambda /= 2 ) then
         phi_lambda2 = phi**(lambda-2)
       end if
 c
@@ -4823,7 +5006,7 @@ c       Comb(k,4) --> kCm(2)
 c       ...
 c       Comb(k,k-2) --> kCm(kp-1)
 c
-        if ( k .eq. (2*kp) ) then
+        if ( k == (2*kp) ) then
           n = 1
           do m = 2,k-2,2
             kCm(n) = Comb(k, m)
@@ -5024,7 +5207,7 @@ c                                       ---- 1st, 2nd and 3rd invariants
 c
       p = H1**2.0d0 + H2
       q = (2.0d0*H1**3.0d0 + 3.0d0*H1*H2 + 2.0d0*H3) / 2.0d0
-      if ( abs(p) .ge. 1.0d-16 ) then
+      if ( abs(p) >= 1.0d-16 ) then
         theta = q / (p**1.5d0)
         if ( theta > 1.0d0 ) theta = 1.0d0
         if ( theta < -1.0d0 ) theta =-1.0d0
@@ -5442,10 +5625,10 @@ c                                                 ---- equivalent stress
       call jancae_mv  ( v,c,t,4,4 )
       call jancae_vvs ( phi,t,v,4 )
 c
-      if ( phi .le. 0.0 ) phi = 0.0
+      if ( phi <= 0.0 ) phi = 0.0
       se = sqrt(sqrt(phi))
 c                                            ---- 1st order differential
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
         call jancae_clear2 ( dtds,4,3 )
         dtds(1,1) = s(1) * 2.0d0
         dtds(2,1) = s(2)
@@ -5466,7 +5649,7 @@ c                                            ---- 1st order differential
         end do
       end if
 c                                            ---- 2nd order differential
-      if ( nreq .ge. 2 ) then
+      if ( nreq >= 2 ) then
         call jancae_clear3 ( d2tds2,4,3,3 )
         d2tds2(1,1,1) = 2.0d0
         d2tds2(2,1,2) = 1.0d0
@@ -5547,16 +5730,16 @@ c
       call jancae_mv  ( v,c,s,6,6 )
       call jancae_vvs ( phi,s,v,6 )
 c                                                 ---- equivalent stress
-      if ( phi .le. 0.0 ) phi = 0.0
+      if ( phi <= 0.0 ) phi = 0.0
       se = sqrt(phi)
 c                                            ---- 1st order differential
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
         do i = 1,6
           dseds(i) = v(i) / se
         end do
       end if
 c                                            ---- 2nd order differential
-      if ( nreq .ge. 2 ) then
+      if ( nreq >= 2 ) then
         do i = 1,6
           do j = 1,6
             d2seds2(i,j) = (-v(i)*v(j)/phi+c(i,j)) / se
@@ -5685,7 +5868,7 @@ c
 c                                                 ---- equivalent stress
       se = (fyild/alarge)**(1.0d0/am)
 c
-      if ( nreq .ge. 1 ) return
+      if ( nreq >= 1 ) return
 
 c               ---- 1st order differential coefficient of yield fuction
 c     dfdsi(i) : diff. of fai-i(i) with respect to s(j)
@@ -5734,7 +5917,7 @@ c           ---- 1st order differential coefficient of equivalent stress
       end do
 c
 c
-      if ( nreq .ge. 2 ) return
+      if ( nreq >= 2 ) return
 c
 c            --- 2st order differential coefficient of equivalent stress
 c                                                   with respect to s(j)
@@ -5752,7 +5935,7 @@ c                                                        ---- d2fai1/ds2
       end do
 c                                                        ---- d2fai2/ds2
       wrk1 = sigbtm * (am/2.0)
-      if ( abs(x2) .lt. 1e-10 ) x2 = 1e-10
+      if ( abs(x2) < 1e-10 ) x2 = 1e-10
       wrk2 = (am/2.0-1.0) * (x2**(am/2.0-2.0))
       wrk3 = x2**(am/2.0-1.0)
       wrk2 = wrk1 * wrk2
@@ -5853,7 +6036,7 @@ c
         n = n + (nd0-it)*2 + 1
       end do
       nterms = n
-      if ( maxa .lt. nterms ) then
+      if ( maxa < nterms ) then
         write (6,*) 'increase maxa :',maxa,nterms
         call jancae_exit ( 9000 )
       end if
@@ -5992,26 +6175,26 @@ c
       se = (0.5d0*phi) ** (0.5d0/k_p)
 c
 c                                            ---- 1st order differential
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
 c                 ---- check if there are two components of largeS equal 
 c                                                          to each other
 c               ---- if so, rearrange largeS so that largeS(1)=largeS(2)
         eqFlag = 0
-        if ( abs(largeS(1)-largeS(2)) .le. TOL ) then
+        if ( abs(largeS(1)-largeS(2)) <= TOL ) then
           eqFlag = 1
-        else if ( abs(largeS(2)-largeS(3)) .le. TOL ) then
+        else if ( abs(largeS(2)-largeS(3)) <= TOL ) then
           eqFlag = 2
           dum = largeS(3)
           largeS(3) = largeS(1)
           largeS(1) = dum
-        else if ( abs(largeS(1)-largeS(3)) .le. TOL ) then
+        else if ( abs(largeS(1)-largeS(3)) <= TOL ) then
           eqFlag = 3
           dum = largeS(3)
           largeS(3) = largeS(2)
           largeS(2) = dum
         end if
 
-        if ( eqFlag .eq. 0 ) then
+        if ( eqFlag == 0 ) then
           DphiDls(1,1) = 2d0 * k_p * ((largeS(1)-largeS(2))**(2*k_p-1)
      &       + (largeS(1)-largeS(3))**(2*k_p-1))
           DphiDls(1,2) = 2d0 * k_p * ((largeS(2)-largeS(1))**(2*k_p-1)
@@ -6039,7 +6222,7 @@ c
             end do
           end do
         else
-          if ( k_p .eq. 1 ) then
+          if ( k_p == 1 ) then
             DphiDj(1,1) = 4d0*(2d0*largeS(1)+largeS(3))
             DphiDj(1,2) = -6d0
             DphiDj(1,3) = 0d0
@@ -6052,7 +6235,7 @@ c
             DphiDj(1,3) = 4d0*k_p*(k_p-2)*dum
           end if
 c
-          if ( abs(largeS(1)-largeS(3)) .le. TOL ) then
+          if ( abs(largeS(1)-largeS(3)) <= TOL ) then
             DphiDj(2,1) = 2d0*k_p**2*(2*k_p+1)*largeS(1)**(2*k_p-1)
             DphiDj(2,2) = -2d0*k_p**2*(2*k_p-1)*largeS(1)**(2*k_p-2)
             DphiDj(2,3) = 2d0*k_p*(2*k_p-1)*(k_p-1)
@@ -6115,8 +6298,8 @@ c
         end do
       end if
 c                                            ---- 2nd order differential
-      if ( nreq .ge. 2 ) then
-        if ( eqFlag .eq. 0) then
+      if ( nreq >= 2 ) then
+        if ( eqFlag == 0) then
           X12 = (largeS(1)-largeS(2))**(2*k_p-2)
           X23 = (largeS(2)-largeS(3))**(2*k_p-2)
           X13 = (largeS(1)-largeS(3))**(2*k_p-2)
@@ -6178,14 +6361,14 @@ c
             end do
           end do
         else
-          if ( k_p .eq. 1 ) then
+          if ( k_p == 1 ) then
             do i = 1,3
               do j = 1,3
                 DDphiDDj(1,i,j) = 0d0
               end do
             end do
             DDphiDDj(1,1,1) = 4d0
-          else if ( k_p .eq. 2 ) then
+          else if ( k_p == 2 ) then
             do i = 1,3
               do j = 1,3
                 DDphiDDj(1,i,j) = 0d0
@@ -6370,14 +6553,14 @@ c-----------------------------------------------------------------------
      &   - stress(2)*stress(6)**2 - stress(3)*stress(4)**2
       p = invar(1)**2/9d0 - invar(2)/3d0
       q = invar(1)**3/27d0 + 0.5d0*invar(3) - invar(1)*invar(2)/6d0
-      if ( p .le. TOL*abs(q) ) then
+      if ( p <= TOL*abs(q) ) then
         pStress(1) = (2d0*q)**(1d0/3d0) + invar(1)/3d0
         pStress(2) = pStress(1)
         pStress(3) = pStress(1)
       else
         dum = q  /sqrt(p)**3
-        if ( abs(dum) .gt. 1.0d0 ) then
-          if ( abs(abs(dum)-1.0d0) .le. TOL ) then
+        if ( abs(dum) > 1.0d0 ) then
+          if ( abs(abs(dum)-1.0d0) <= TOL ) then
             dum = dum / abs(dum)
           else
             call jancae_exit ( 1000 )
@@ -6420,13 +6603,13 @@ c
 c                                                 ---- equivalent stress
       se = sqrt(phi)
 c                                            ---- 1st order differential
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
         do i = 1,6
           dseds(i) = v(i) / se
         end do
       end if
 c                                            ---- 2nd order differential
-      if ( nreq .ge. 2 ) then
+      if ( nreq >= 2 ) then
         do i = 1,6
           do j = 1,6
             d2seds2(i,j) = (-v(i)*v(j)/phi+c(i,j)) / se
@@ -6554,7 +6737,7 @@ c
       do i=1,3
         se=se+s(i)**2
       end do
-      if ( se.le.0.0 ) then
+      if ( se<=0.0 ) then
         se=0.0
         return
       end if
@@ -6566,8 +6749,8 @@ c     isflag  : 0 s(i,i=1,3)=0
 c             : 1 not s(i)=0
 c                                 ---- exception treatment if all s(i)=0
 c
-      if(abs(s(1)).le.TOL0.and.abs(s(2)).le.TOL0.and.
-     &                                         abs(s(3)).le.TOL0)then
+      if(abs(s(1))<=TOL0.and.abs(s(2))<=TOL0.and.
+     &                                         abs(s(3))<=TOL0)then
       isflag=0
       call jancae_clear1 ( x,4 )
       goto 100
@@ -6578,7 +6761,7 @@ c
 c
 c                           ---- exception treatment if s(1)=s(2),s(3)=0
 c
-      if(abs(s(1)-s(2)).le.TOL0.and.abs(s(3)).le.TOL0) then
+      if(abs(s(1)-s(2))<=TOL0.and.abs(s(3))<=TOL0) then
         theta=0.0d0
         theta_rv=0.5d0*pi
         x(1)=0.5d0*(s(1)+s(2))
@@ -6645,32 +6828,32 @@ c                                                      ! bi=equi-biaxial
      &           ((r_bi0+1.0d0)-(r_bi0-1.0d0)*vcos2t)
 c
 c                                 ---- case distribution by stress state
-      if(x(1).ne.0.0d0)then
+      if(x(1)/=0.0d0)then
         alfa=x(2)/x(1)
       end if
-      if(x(2).ne.0.0d0)then
+      if(x(2)/=0.0d0)then
         beta=x(1)/x(2)
       end if
 c
 c     iareaflag    :stress state flag(i=0~6)
 c
-      if(x(1).gt.0.0d0.and.alfa.lt.0.0d0.and.alfa.ge.fsh2/fsh1) then
+      if(x(1)>0.0d0.and.alfa<0.0d0.and.alfa>=fsh2/fsh1) then
         iareaflag=1
-      else if(x(1).gt.0.0d0.and.alfa.ge.0.0d0
-     &                           .and.alfa.lt.fps2/fps1) then
+      else if(x(1)>0.0d0.and.alfa>=0.0d0
+     &                           .and.alfa<fps2/fps1) then
         iareaflag=2
-      else if(x(1).gt.0.0d0.and.alfa.ge.fps2/fps1
-     &                           .and.alfa.le.1.0d0) then
+      else if(x(1)>0.0d0.and.alfa>=fps2/fps1
+     &                           .and.alfa<=1.0d0) then
         iareaflag=3
 c
-      else if(x(1).lt.0.0d0.and.alfa.ge.1.0d0
-     &                           .and.alfa.lt.fps1r/fps2r) then
+      else if(x(1)<0.0d0.and.alfa>=1.0d0
+     &                           .and.alfa<fps1r/fps2r) then
         iareaflag=4
-      else if(x(1).lt.0.0d0.and.beta.le.fps2r/fps1r
-     &                                      .and.beta.gt.0.0d0) then
+      else if(x(1)<0.0d0.and.beta<=fps2r/fps1r
+     &                                      .and.beta>0.0d0) then
         iareaflag=5
-      else if(x(1).ge.0.0d0.and.beta.le.0.0d0
-     &                           .and.beta.gt.fsh1/fsh2) then
+      else if(x(1)>=0.0d0.and.beta<=0.0d0
+     &                           .and.beta>fsh1/fsh2) then
         iareaflag=6
 c
       else
@@ -6764,7 +6947,7 @@ c                                                 ---- equivalent stress
       se=0.0d0
       go to 300
   200 continue
-      if(f(1).le.TOL2) then
+      if(f(1)<=TOL2) then
          se=x(2)/f(2)
       else
          se=x(1)/f(1)
@@ -6776,7 +6959,7 @@ c
 c
 c                                            ---- 1st order differential
 c
-      if ( nreq.ge.1 ) then
+      if ( nreq>=1 ) then
 c                        ---- set dadc,dcdc,dndc,dmdc for eq.(A.7)^(A.9)
 c
       call jancae_clear1 ( dadc,2 )
@@ -6788,7 +6971,7 @@ c
       select case ( iareaflag )
 c                                            
       case ( 1 )                                           ! iareaflag=1
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dadc(1)=dadc(1)+phi_sh(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
@@ -6804,7 +6987,7 @@ c
           end do
        end if
 c
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
          do m=0,nf
           dcdc(1)=dcdc(1)+phi_un(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
@@ -6821,7 +7004,7 @@ c
           dndc(2)=0.0d0
 c
           dmdc(1)=0.0d0
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
          do m=0,nf
           dmdc(2)=dmdc(2)+omg(m)*dble(m)
      &                          *sin(2.0d0*dble(m)*theta)
@@ -6837,7 +7020,7 @@ c
 c
 c                                            
       case ( 2 )                                           ! iareaflag=2
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
          do m=0,nf
           dadc(1)=dadc(1)+phi_un(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
@@ -6850,7 +7033,7 @@ c
        end if
           dadc(2)=0.0d0
 c
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
          do m=0,nf
           dcdc(1)=dcdc(1)+phi_ps(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
@@ -6864,7 +7047,7 @@ c
           dcdc(2)=0.5d0*dcdc(1)
 c
           dndc(1)=0.0d0
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dndc(2)=dndc(2)+omg(m)*dble(m)
      &                           *sin(2.0d0*dble(m)*theta)
@@ -6883,7 +7066,7 @@ c
 c
 c                                           
       case ( 3 )                                           ! iareaflag=3
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dadc(1)=dadc(1)+phi_ps(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
@@ -6913,7 +7096,7 @@ c
           dadc(1)=0.0d0
           dadc(2)=0.0d0
 c
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dcdc(2)=dcdc(2)+phi_ps(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
@@ -6937,7 +7120,7 @@ c
 c
 c                                            
       case ( 5 )                                           ! iareaflag=5
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dadc(2)=dadc(2)+phi_ps(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
@@ -6951,7 +7134,7 @@ c
           dadc(1)=0.5d0*dadc(2)
 c
           dcdc(1)=0.0d0
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dcdc(2)=dcdc(2)+phi_un(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
@@ -6966,7 +7149,7 @@ c
           dndc(1)=0.0d0
           dndc(2)=0.0d0
 c
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dmdc(1)=dmdc(1)+omg(m)*dble(m)
      &                          *sin(2.0d0*dble(m)*theta_rv)
@@ -6984,7 +7167,7 @@ c
 c                                            
       case ( 6 )                                           ! iareaflag=6
           dadc(1)=0.0d0
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dadc(2)=dadc(2)+phi_un(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta_rv)
@@ -6996,7 +7179,7 @@ c
          end do
        end if
 c
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dcdc(1)=dcdc(1)+phi_sh(m)*dble(m)
      &                             *sin(2.0d0*dble(m)*theta)
@@ -7012,7 +7195,7 @@ c
          end do
        end if
 c
-       if(abs(vsin2t).ge.TOL) then
+       if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dndc(1)=dndc(1)+omg(m)*dble(m)
      &                          *sin(2.0d0*dble(m)*theta_rv)
@@ -7049,7 +7232,7 @@ c
 c
 c
 c                                            ---- 2nd order differential
-      if ( nreq.ge.2 ) then
+      if ( nreq>=2 ) then
 c                     ---- set d2adc2,d2cdc2,d2ndc2,d2mdc2 for d2bdc2(2)
 c
       call jancae_clear1 ( d2adc2,2 )
@@ -7061,13 +7244,13 @@ c
 c                     ---- define exception treatment condition of theta
 c                        ---- if theta<=0.002865deg then apply exception
 c
-      if(abs(vsin2t).le.TOL) then
+      if(abs(vsin2t)<=TOL) then
          ithetaflag=1
       else 
          ithetaflag=0
       end if
 c
-      if(ithetaflag.eq.1) then
+      if(ithetaflag==1) then
         vvtmp(0)=0.0d0
         vvtmp(1)=0.0d0
         vvtmp(2)=2.0d0
@@ -7268,7 +7451,7 @@ c
       b2u=nn(1)*(mm(1)*c(1)+mm(2)*c(2))-mm(1)*(nn(1)*a(1)+nn(2)*a(2))
 c
       bb=nn(1)*mm(2)-mm(1)*nn(2)
-      if(abs(bb).le.TOL) then
+      if(abs(bb)<=TOL) then
          write (6,*) 'hingepoint singular error! '
          call jancae_exit (9000)
       end if
@@ -7301,13 +7484,13 @@ c
       bb=2.0d0*x(2)*(b(1)-a(1))-2.0d0*x(1)*(b(2)-a(2))
       cc=x(2)*a(1)-x(1)*a(2)
 c
-      if(abs(aa).le.TOL1) then
+      if(abs(aa)<=TOL1) then
          write (6,*) 'calc. mu singular error! ',abs(aa),iareaflag
          call jancae_exit (9000)
       end if
 c
       dd=bb*bb-4.0d0*aa*cc
-      if(dd.ge.0.0d0) then
+      if(dd>=0.0d0) then
         xx(1)=0.5d0*(-bb+sign(sqrt(dd),-bb))/aa
         xx(2)=cc/(aa*xx(1))
 c
@@ -7316,13 +7499,13 @@ c
          call jancae_exit (9000)
       end if
 c
-      if(xx(1).ge.0.0d0.and.xx(1).le.1.0000005d0) then
+      if(xx(1)>=0.0d0.and.xx(1)<=1.0000005d0) then
           mu=xx(1)
            imuflag=1
-        else if(xx(2).ge.0.0d0.and.xx(2).le.1.0000005d0) then
+        else if(xx(2)>=0.0d0.and.xx(2)<=1.0000005d0) then
           mu=xx(2)
            imuflag=2
-        else if(abs(xx(1)).le.TOL2.or.abs(xx(2)).le.TOL2)then
+        else if(abs(xx(1))<=TOL2.or.abs(xx(2))<=TOL2)then
           mu=0.0d0
         else
          write (6,*) 'can not find mu ! solve error ',iareaflag,xx(1)
@@ -7378,7 +7561,7 @@ c
      &                                        dmdc(2)*(c(2)-b(2))
 c
       nnmm=nn(1)*mm(2)-mm(1)*nn(2)
-         if(abs(nnmm).lt.TOL) then
+         if(abs(nnmm)<TOL) then
             write (6,*) 'nnmm too small! ',nnmm
             call jancae_exit (9000)
          end if
@@ -7424,7 +7607,7 @@ c                                   ---- calc. dfdmu(i) (i=1~2)  eq.(22)
 c
 c                            ---- calc. dphidx(i) (i=1~3)  eq.(21),(C.1)
       dphidxcinv=f(1)*dfdmu(2)-f(2)*dfdmu(1)
-         if(abs(dphidxcinv).lt.TOL3) then
+         if(abs(dphidxcinv)<TOL3) then
             write (6,*) 'eq.(21) too small! ',dphidxcinv
             call jancae_exit (9000)
          end if
@@ -7433,11 +7616,11 @@ c
 c                            ---- if condition to avoid singular eq.(20)
 c                                            ---- apply 44.9 to 45.1 deg
 c
-      if(iareaflag.eq.3.or.iareaflag.eq.4) then
+      if(iareaflag==3.or.iareaflag==4) then
       vtan=x(2)/x(1)
       end if
 c
-      if(iareaflag.eq.4.and.vtan.ge.TOL1.and.vtan.le.TOL2) then
+      if(iareaflag==4.and.vtan>=TOL1.and.vtan<=TOL2) then
 c
       tmp_u=1.0d0*(2.0d0*(1.0d0-mu)*dbdc(2)+mu*dcdc(2))*dfdmu(1)
      &     -1.0d0*(2.0d0*(1.0d0-mu)*dbdc(1)+mu*dcdc(1))*dfdmu(2)
@@ -7448,7 +7631,7 @@ c
       dphidxtmp(2)=-dfdmu(1)
       dphidxtmp(3)=tmp_u/tmp_b
 c
-      else if(iareaflag.eq.3.and.vtan.ge.TOL1.and.vtan.le.TOL2) then
+      else if(iareaflag==3.and.vtan>=TOL1.and.vtan<=TOL2) then
 c
       tmp_u=1.0d0*(2.0d0*mu*dbdc(2)+(1.0d0-mu)*dadc(2))*dfdmu(1)
      &     -1.0d0*(2.0d0*mu*dbdc(1)+(1.0d0-mu)*dadc(1))*dfdmu(2)
@@ -7496,11 +7679,11 @@ c
 c                            ---- if condition to avoid singular eq.(20)
 c                                            ---- apply 44.9 to 45.1 deg
 c
-      if(iareaflag.eq.3.or.iareaflag.eq.4) then
+      if(iareaflag==3.or.iareaflag==4) then
       vtan=x(2)/x(1)
       end if
 c
-      if(iareaflag.eq.3.and.vtan.ge.TOL1.and.vtan.le.TOL2) then
+      if(iareaflag==3.and.vtan>=TOL1.and.vtan<=TOL2) then
         dxds(1,1)=0.5d0*(1.0d0+vcos2t)
         dxds(2,1)=0.5d0*(1.0d0-vcos2t)
         dxds(3,1)=vsin2t*vsin2t
@@ -7512,7 +7695,7 @@ c
         dxds(3,3)=-2.0d0*vsin2t*vcos2t
         dxds_t=transpose(dxds)
 c
-      else if(iareaflag.eq.4.and.vtan.ge.TOL1.and.vtan.le.TOL2) then
+      else if(iareaflag==4.and.vtan>=TOL1.and.vtan<=TOL2) then
         dxds(1,1)=0.5d0*(1.0d0+vcos2t)
         dxds(2,1)=0.5d0*(1.0d0-vcos2t)
         dxds(3,1)=vsin2t*vsin2t
@@ -7745,20 +7928,20 @@ c
 c
 c                             ---- if condition to apply numerical diff.
 c
-      if(iareaflag.eq.3.or.iareaflag.eq.4) then
+      if(iareaflag==3.or.iareaflag==4) then
       vtan=x(2)/x(1)
       end if
 c
-      if(iareaflag.eq.4.and.vtan.ge.TOL1.and.vtan.le.TOL2) then
+      if(iareaflag==4.and.vtan>=TOL1.and.vtan<=TOL2) then
       iflag=1
 c
-      else if(iareaflag.eq.3.and.vtan.ge.TOL1.and.vtan.le.TOL2) then
+      else if(iareaflag==3.and.vtan>=TOL1.and.vtan<=TOL2) then
       iflag=2
 c
-      else if(abs(mu).le.TOL3a.or.abs(mu).ge.TOL3b) then
+      else if(abs(mu)<=TOL3a.or.abs(mu)>=TOL3b) then
       iflag=3
 c
-      else if(vcos2t.ge.TOL4a.or.vcos2t.le.TOL4b) then
+      else if(vcos2t>=TOL4a.or.vcos2t<=TOL4b) then
       iflag=4
 c
       else
@@ -7768,7 +7951,7 @@ c
 c
 c                                    ---- set d2xds2(k,i,j)  (k,i,j=1~3)
 c
-      if (iflag.eq.0) then
+      if (iflag==0) then
 c
       d2xds2(1,1,1)=0.5d0*(1.0d0-vcos2t*vcos2t)/vx1x2
       d2xds2(1,1,2)=0.5d0*(vcos2t*vcos2t-1.0d0)/vx1x2
@@ -7816,7 +7999,7 @@ c                                      ---- calc. d2seds2(i,j) (i,j=1~3)
 c
       call jancae_clear2 ( d2seds2,3,3 )
 c
-      if (iflag.ne.0) then
+      if (iflag/=0) then
       call jancae_vegter_d2seds2n(d2seds2,s,dseds,pryld,ndyld,se)
 c
       else
@@ -7858,7 +8041,7 @@ c
       ss(:) = s(:)
         do j=1,3
           do k=1,3
-           if ( j.eq.k ) then
+           if ( j==k ) then
              se0=se
              ss(j)=s0(j)-delta
              call jancae_vegter_yieldfunc(3,ss,sea,dseds,d2seds2,0,
@@ -7963,10 +8146,10 @@ c                                         ---- set linear transf. matrix
 c                                                 ---- equivalent stress
       call jancae_yld2000_2d_xyphi ( s,em,am,x,y,phi )
       q = phi(1) + phi(2)
-      if ( q .le. 0.0 ) q = 0.0
+      if ( q <= 0.0 ) q = 0.0
       se = (0.5d0*q) ** (1.0d0/em)
 c                                            ---- 1st order differential
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
         call jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
      &                               dsedphi,dphidx,
      &                               dxdy,dyds,se )
@@ -7983,7 +8166,7 @@ c                                            ---- 1st order differential
         end do
       end if
 c                                            ---- 2nd order differential
-      if ( nreq .ge. 2 ) then
+      if ( nreq >= 2 ) then
         call jancae_yld2000_2d_ds2 ( phi,x,y,em,
      &                               d2sedphi2,d2phidx2,
      &                               d2xdy2,se )
@@ -8144,7 +8327,7 @@ c
       emi = 1.0d0 / em
 c                                                          ---- dse/dphi
       q = phi(1) + phi(2)
-      if ( q .le. 0.0 ) q = 0.0
+      if ( q <= 0.0 ) q = 0.0
       do nd = 1,2
         dsedphi(nd) = (0.5d0**emi) * emi * q**(emi-1.0d0)
       end do
@@ -8153,7 +8336,7 @@ c                                                           ---- dphi/dx
       a0 = x(nd,1) - x(nd,2)
       b0 = abs(a0)
       sgn0 = 0
-      if ( b0 .ge. eps*se ) sgn0 = a0 / b0
+      if ( b0 >= eps*se ) sgn0 = a0 / b0
       dphidx(nd,1) =  em * b0**(em-1.0d0) * sgn0
       dphidx(nd,2) = -em * b0**(em-1.0d0) * sgn0
 c
@@ -8164,8 +8347,8 @@ c
       b2 = abs(a2)
       sgn1 = 0.0
       sgn2 = 0.0
-      if ( b1 .ge. eps*se ) sgn1 = a1 / b1
-      if ( b2 .ge. eps*se ) sgn2 = a2 / b2
+      if ( b1 >= eps*se ) sgn1 = a1 / b1
+      if ( b2 >= eps*se ) sgn2 = a2 / b2
       dphidx(nd,1) = em*(2.0d0*b1**(em-1.0d0)*sgn1 +
      &                         b2**(em-1.0d0)*sgn2 )
       dphidx(nd,2) = em*(      b1**(em-1.0d0)*sgn1 +
@@ -8174,7 +8357,7 @@ c
       do nd = 1,2
         a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) + 4.0d0*y(nd,3)*y(nd,3)
         a = sqrt(a)
-        if ( a .gt. eps*se ) then
+        if ( a > eps*se ) then
           do j = 1,2
             dxdy(nd,j,1) = 0.5d0 * (1.0d0+p(j)*(y(nd,1)-y(nd,2))/a)
             dxdy(nd,j,2) = 0.5d0 * (1.0d0-p(j)*(y(nd,1)-y(nd,2))/a)
@@ -8222,7 +8405,7 @@ c
       emi = 1.0d0 / em
 c                                                        ---- d2se/dphi2
       q = phi(1) + phi(2)
-      if ( q .le. 0.0 ) q = 0.0
+      if ( q <= 0.0 ) q = 0.0
       do nd1 = 1,2
         do nd2 = 1,2
           a = 0.5d0**emi * emi * (emi-1.0d0) * q**(emi-2.0d0)
@@ -8234,15 +8417,15 @@ c                                                         ---- d2phi/dx2
       do i = 1,2
         do j = 1,2
           a = (em-1.0d0) * em * (abs(x(nd,1)-x(nd,2)))**(em-2.0d0)
-          if ( i .ne. j ) a = -a
+          if ( i /= j ) a = -a
           d2phidx2(nd,i,j) = a
         end do
       end do
       nd = 2
       do i = 1,2
         do j = 1,2
-          if ( i .eq. j ) then
-            if ( i .eq. 1 ) then
+          if ( i == j ) then
+            if ( i == 1 ) then
               a = (em-1.0d0) * em*
      &            (4.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
      &                   (abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
@@ -8263,19 +8446,19 @@ c                                                           ---- d2x/dy2
       do nd = 1,2
         a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) +
      &      4.0d0*   y(nd,3) *         y(nd,3)
-        if ( a .gt. eps*se ) then
+        if ( a > eps*se ) then
           a = 1.0d0 / sqrt(a**3)
           do m = 1,2
             do i = 1,3
               do j = 1,3
                 ij = i*10+j
-                if ( ( ij .eq. 11 ) .or. ( ij .eq. 22 ) ) then
+                if ( ( ij == 11 ) .or. ( ij == 22 ) ) then
                   q = y(nd,3) * y(nd,3)
-                else if ( ij .eq. 33 ) then
+                else if ( ij == 33 ) then
                   q = (y(nd,1)-y(nd,2)) * (y(nd,1)-y(nd,2))
-                else if ( ( ij .eq. 12 ) .or. ( ij .eq. 21 ) ) then
+                else if ( ( ij == 12 ) .or. ( ij == 21 ) ) then
                   q = -y(nd,3) * y(nd,3)
-                else if ( ( ij .eq. 23 ) .or. ( ij .eq. 32 ) ) then
+                else if ( ( ij == 23 ) .or. ( ij == 32 ) ) then
                   q = y(nd,3) * (y(nd,1)-y(nd,2))
                 else
                   q = -y(nd,3) * (y(nd,1)-y(nd,2))
@@ -8428,7 +8611,7 @@ c                                  ---- calculation of equivalent stress
      &                             cetpq1,cetpq2,fai,se )
 c
 c                                            ---- 1st order differential
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
 c                                                     ---- d(fai)/d(psp)
         do i = 1,3
           dfadpsp1(i) = 0.0d0
@@ -8561,7 +8744,7 @@ c                                                        ---- d(se)/d(s)
 c
       endif
 c                                            ---- 2nd order differential
-      if ( nreq .ge. 2 ) then
+      if ( nreq >= 2 ) then
 c                                                   ---- d2(fai)/d(psp)2
         call jancae_clear2 ( d2fadpsp11,3,3 )
         call jancae_clear2 ( d2fadpsp22,3,3 )
@@ -8837,7 +9020,7 @@ c                                                  ---- invariants of sp
      1         sp(1)*sp(6)**2-sp(2)*sp(5)**2-sp(3)*sp(4)**2) / 2.0d0
 c                           ---- coefficients of characteristic equation
       hpq = sqrt(hp(1)**2 + hp(2)**2 + hp(3)**2)
-      if ( hpq .gt. 1.0e-16 ) then
+      if ( hpq > 1.0e-16 ) then
         cep = hp(1)**2 + hp(2)
         ceq = (2.0d0*hp(1)**3+3.0d0*hp(1)*hp(2)+2.0d0*hp(3)) / 2.0d0
         cetpq = ceq / cep**(3.0d0/2.0d0)
@@ -8980,7 +9163,7 @@ c
       call jancae_yld89_branch ( s,se,dseds,d2seds2,nreq,
      &                           pryld,ndyld )
 c
-      if ( nreq .le. 1 ) return
+      if ( nreq <= 1 ) return
 c
 c                                         ---- Numerical differentiation
 c                                            (mod. by H.Takizawa 150228)
@@ -9099,7 +9282,7 @@ c
       f = f1 + f2 + f3
 c
       se = (0.5d0*f)**(1.0d0/pM)
-      if ( nreq .eq. 0 ) return
+      if ( nreq == 0 ) return
 c
 c
 c                                                         ---- dKds(2,3)
@@ -9108,11 +9291,11 @@ c
       dKds(1,2) = h * 0.5d0
       dKds(1,3) = 0.0d0
 c
-      if ( pK2 .eq. 0.0d0 ) then
+      if ( pK2 == 0.0d0 ) then
         dKds(2,1) = 0.0d0
         dKds(2,2) = 0.0d0
         dKds(2,3) = 0.0d0
-        if ( s(3) .eq. 0.0d0 ) dKds(2,3) = p * p
+        if ( s(3) == 0.0d0 ) dKds(2,3) = p * p
       else
         dKds(2,1) = pK3 / (2.0d0*pK2)
         dKds(2,2) = -h*pK3 / (2.0d0*pK2)
@@ -9126,7 +9309,7 @@ c
 c                                                      ---- d2K2ds2(3,3)
 c
 c
-      if ( pK2 .eq. 0.0d0 ) then
+      if ( pK2 == 0.0d0 ) then
 
         DpK22 = 1.0d-32
 c
@@ -9244,10 +9427,10 @@ c                                                             ---- dseds
         end do
         dseds(i) = dseds(i)*dsedf
       end do
-      if ( nreq .eq. 1 ) return
+      if ( nreq == 1 ) return
 c
 c
-      if ( nreq .ge. 2 ) return
+      if ( nreq >= 2 ) return
 c
 c                                                           ---- d2seds2
 c
@@ -9309,7 +9492,7 @@ c
         n = n + (nd0-it)*2 + 1
       end do
       nterms = n
-      if ( maxa .lt. nterms ) then
+      if ( maxa < nterms ) then
         write (6,*) 'increase maxa :',maxa,nterms
         call jancae_exit ( 9000 )
       end if
@@ -9380,19 +9563,19 @@ c
       do n = 1,nterms
         q = a(n)
         do k = 1,3
-          if ( ipow(n,k) .gt. 0 ) then
+          if ( ipow(n,k) > 0 ) then
             q = q * sterm(k)**ipow(n,k)
           end if
         end do
         fai = fai + q
       end do
       se = fai ** dinv
-      if ( nreq .eq. 0 ) return
+      if ( nreq == 0 ) return
 c
       v = 0.0
       do i = 1,6
         idmax = 1
-        if ( i .eq. 3 ) idmax = 2
+        if ( i == 3 ) idmax = 2
         do id = 1,idmax
           do n = 1,nterms
             do k = 1,3
@@ -9411,9 +9594,9 @@ c
             end select
             q = dd * a(n)
             do k = 1,3
-              if ( ii(k) .gt. 0 ) then
+              if ( ii(k) > 0 ) then
                 q = q * sterm(k)**ii(k)
-              else if ( ii(k) .lt. 0 ) then
+              else if ( ii(k) < 0 ) then
                 q = 0.0
               end if
             end do
@@ -9425,7 +9608,7 @@ c
       do i = 1,6
         dseds(i) = ff * v(i)
       end do
-      if ( nreq .eq. 1 ) return
+      if ( nreq == 1 ) return
 c
       fff = dinv * (dinv-1.0d0) * fai**(dinv-2.0d0)
       do i = 1,6
@@ -9435,12 +9618,12 @@ c
       end do
       do i = 1,6
         idmax = 1
-        if ( i .eq. 3 ) idmax = 2
+        if ( i == 3 ) idmax = 2
         do id = 1,idmax
           do j = 1,6
             jdmax = 1
-            if (  j .eq. 3 ) jdmax = 2
-            if ( ( j .gt. 3 ) .and. ( i .eq. j ) ) jdmax = 2
+            if (  j == 3 ) jdmax = 2
+            if ( ( j > 3 ) .and. ( i == j ) ) jdmax = 2
             do jd = 1,jdmax
               do n = 1,nterms
                 do k = 1,3
@@ -9465,7 +9648,7 @@ c
                   ddj = -1.0d0 * float(ii(jd))
                   ii(jd) = ii(jd) - 1
                 case default
-                  if ( jd .eq. 1 ) then
+                  if ( jd == 1 ) then
                     ddj = 2.0d0 * s(j) * float(ii(3))
                     ii(3) = ii(3) - 1
                   else
@@ -9475,9 +9658,9 @@ c
                 end select
                 q = a(n) * ddi * ddj
                 do k = 1,3
-                  if ( ii(k) .gt. 0 ) then
+                  if ( ii(k) > 0 ) then
                     q = q * sterm(k)**ii(k)
-                  else if ( ii(k) .lt. 0 ) then
+                  else if ( ii(k) < 0 ) then
                     q = 0.0
                   end if
                 end do

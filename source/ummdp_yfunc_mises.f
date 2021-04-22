@@ -24,13 +24,13 @@ c
 c                                                 ---- equivalent stress
       se = sqrt(phi)
 c                                            ---- 1st order differential
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
         do i = 1,6
           dseds(i) = v(i) / se
         end do
       end if
 c                                            ---- 2nd order differential
-      if ( nreq .ge. 2 ) then
+      if ( nreq >= 2 ) then
         do i = 1,6
           do j = 1,6
             d2seds2(i,j) = (-v(i)*v(j)/phi+c(i,j)) / se

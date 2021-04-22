@@ -20,7 +20,7 @@ c
         n = n + (nd0-it)*2 + 1
       end do
       nterms = n
-      if ( maxa .lt. nterms ) then
+      if ( maxa < nterms ) then
         write (6,*) 'increase maxa :',maxa,nterms
         call jancae_exit ( 9000 )
       end if

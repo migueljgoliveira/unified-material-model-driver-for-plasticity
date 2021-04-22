@@ -122,7 +122,7 @@ c                                       ---- 1st, 2nd and 3rd invariants
 c
       p = H1**2.0d0 + H2
       q = (2.0d0*H1**3.0d0 + 3.0d0*H1*H2 + 2.0d0*H3) / 2.0d0
-      if ( abs(p) .ge. 1.0d-16 ) then
+      if ( abs(p) >= 1.0d-16 ) then
         theta = q / (p**1.5d0)
         if ( theta > 1.0d0 ) theta = 1.0d0
         if ( theta < -1.0d0 ) theta =-1.0d0

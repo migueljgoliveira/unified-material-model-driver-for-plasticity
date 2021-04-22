@@ -56,7 +56,7 @@ c                        lay : layer no. of shell
       ne = noel
       ip = npt
       lay = kspt
-      if ( lay .eq. 0 ) lay = 1
+      if ( lay == 0 ) lay = 1
       nsdv = nstatv
       nprop = mxprop
       propdim = nprops - 1
@@ -65,7 +65,7 @@ c                                        ---- set debug and verbose mode
       nvbs0 = props(1)
       call jancae_debugmode ( nvbs,nvbs0 )
 c                                       ---- output detailed information
-      if ( nvbs .ge. 4 ) then
+      if ( nvbs >= 4 ) then
         call jancae_printinfo  ( kinc,ndi,nshr )
         call jancae_printinout ( 0,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
@@ -79,7 +79,7 @@ c
       call jancae_prop_dim ( prop,nprop,propdim,
      &                       ndela,ndyld,ndihd,ndkin,
      &                       npbs,ndrup )
-      if ( npbs .gt. mxpbs ) then
+      if ( npbs > mxpbs ) then
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
         write (6,*) 'mxpbs=',mxpbs
@@ -116,7 +116,7 @@ c
         statev(is) = ustatev(i) + dpe(i)
 			end do
 c                                       ---- update of back stress comp.
-      if ( npbs .ne. 0 ) then
+      if ( npbs /= 0 ) then
         do n = 1,npbs
           do i = 1,ntens
             is = isvrsvd + isvsclr + ntens*n + i
@@ -125,7 +125,7 @@ c                                       ---- update of back stress comp.
 				end do
 			end if
 c                           ----  if debug mode, output return arguments
-      if ( nvbs .ge. 4 ) then
+      if ( nvbs >= 4 ) then
         call jancae_printinout ( 1,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
 			end if
@@ -149,9 +149,9 @@ c
       ne = noel
       ip = npt
       lay = kspt
-      if ( lay .eq. 0 ) lay = 1
+      if ( lay == 0 ) lay = 1
 c
-      if ( ne*ip*lay .eq. 1 ) then
+      if ( ne*ip*lay == 1 ) then
         write (6,*) 'SDVINI is called. '
 			end if
 c
@@ -168,18 +168,18 @@ c***********************************************************************
 c
       SUBROUTINE UVARM ( UVAR,DIRECT,T,TIME,DTIME,CMNAME,ORNAME,
      &    NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
-     &    JMAC,JMATYP,MATLAYO,LACCFLA )
+     &    jmac,jmatyp,matlayo,laccfla )
 c
       INCLUDE 'ABA_PARAM.INC'
 c
       CHARACTER*80 CMNAME,ORNAME
-      CHARACTER*3  FLGRAY(15)
+      CHARACTER*3  flgray(15)
       DIMENSION UVAR(NUVARM),DIRECT(3,3),T(3,3),TIME(2)
-      DIMENSION ARRAY(15),JARRAY(15),JMAC(*),JMATYP(*),COORD(*)
+      DIMENSION array(15),jarray(15),jmac(*),jmatyp(*),COORD(*)
 c
 c***********************************************************************
 c-----------------------------------------------------------------------
-c     The dimensions of the variables FLGRAY, ARRAY and JARRAY
+c     The dimensions of the variables flgray, array and jarray
 c     must be set equal to or greater than 15.
 c
       parameter (maxsdv=50)
@@ -220,7 +220,7 @@ c
       ne = noel
       ip = npt
       lay = kspt
-      if ( lay .eq. 0 ) lay = 1
+      if ( lay == 0 ) lay = 1
       ntens = ndi + nshr
 
 c                                            ---- get uvar before update
@@ -228,9 +228,9 @@ c                                            ---- get uvar before update
         uvar1(i) = uvar(i)
 			end do
 c                                                        ---- get stress
-      call getvrm ( 'S',ARRAY,JARRAY,FLGRAY,JRCD,JMAC,JMATYP,
-     &                   MATLAYO,LACCFLA )
-      if ( JRCD .ne. 0 ) then
+      call getvrm ( 'S',array,jarray,flgray,jrcd,jmac,jmatyp,
+     &                   matlayo,laccfla )
+      if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for s'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
@@ -245,14 +245,14 @@ c
         s(i1) = array(i2)
 			end do
 c                                               ---- get state variables
-      if ( nsdv .gt. maxsdv ) then
+      if ( nsdv > maxsdv ) then
         write (6,*) 'increase dimension of ARRAY2 and JARRAY2'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
 			end if
-      call getvrm ( 'SDV',ARRAY2,JARRAY2,FLGRAY2,JRCD,JMAC,JMATYP,
-     &                    MATLAYO,LACCFLA)
-      if ( JRCD .ne. 0 ) then
+      call getvrm ( 'SDV',ARRAY2,JARRAY2,FLGRAY2,jrcd,jmac,jmatyp,
+     &                    matlayo,laccfla)
+      if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sdv'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
@@ -299,7 +299,7 @@ c                                                  ---- calc back stress
       do i = 1,ntens
          xsum(i) = 0.0
 			end do
-      if ( npbs .ne. 0 ) then
+      if ( npbs /= 0 ) then
         do i = 1,ntens
           do nb = 1,npbs
             xsum(i) = xsum(i) + x(nb,i)
@@ -307,7 +307,7 @@ c                                                  ---- calc back stress
 				end do
       end if
 c                                                 ---- equivalent stress
-      if ( nuvarm .ge. 1 ) then
+      if ( nuvarm >= 1 ) then
         do i = 1,ntens
           eta(i) = s(i) - xsum(i)
 				end do
@@ -317,25 +317,26 @@ c                                                 ---- equivalent stress
         uvar(1) = se
       end if
 c                                                       ---- flow stress
-      if ( nuvarm .ge. 2 ) then
+      if ( nuvarm >= 2 ) then
         call jancae_hardencurve ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
         uvar(2) = sy
       end if
 c                                                       ---- back stress
-      if ( npbs .ne. 0 ) then
-        if ( nuvarm .ge. 3 ) then
+      if ( npbs /= 0 ) then
+        if ( nuvarm >= 3 ) then
           do i = 1,ntens
             uvar(2+i) = xsum(i)
 					end do
         end if
       end if
 c                                                 ---- rupture criterion
-      if ( prrup(1) .ne. 0) then
+      if ( prrup(1) /= 0) then
         nt = ntens
-        if ( npbs .eq. 0 ) nt = 0
-        if ( nuvarm .ge. (3+nt) ) then
-          call jancae_rupture ( sdv,nsdv,uvar,uvar1,nuvarm,jrcd,jmac,
-     &                          jmatyp,matlayo,laccfla,nt,ndrup,prrup )
+        if ( npbs == 0 ) nt = 0
+        if ( nuvarm >= (3+nt) ) then
+          call jancae_rupture ( ntens,sdv,nsdv,uvar,uvar1,nuvarm,
+     &                          jrcd,jmac,jmatyp,matlayo,laccfla,
+     &                          nt,ndrup,prrup)
         end if
       end if
 c

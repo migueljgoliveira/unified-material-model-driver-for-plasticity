@@ -38,7 +38,7 @@ c
 c
       character text*32
 c
-      if ( prop(1) .ge. 1000.0d+0 ) then
+      if ( prop(1) >= 1000.0d+0 ) then
         mjac = -1
         prop(1) = prop(1) - 1000.0d+0
       end if
@@ -48,7 +48,7 @@ c
      &                       npbs,ndrup )
 c
       n = ndela + ndyld + ndihd + ndkin + ndrup
-      if ( n .gt. nprop ) then
+      if ( n > nprop ) then
         write (6,*) 'nprop error in jancae_plasticity'
         write (6,*) 'nprop=',nprop
         write (6,*) 'n    =',n
@@ -57,7 +57,7 @@ c
         end do
         call jancae_exit ( 9000 )
       end if
-      if ( nvbs .ge. 4 ) then
+      if ( nvbs >= 4 ) then
         do i = 1,n
           write (6,*) 'prop(',i,')=',prop(i)
         end do
@@ -230,12 +230,12 @@ c
       maxnest = 10    ! max re-division of multistage loop
 c
       nout = 0
-      if ( n1234 .ne. 1234 ) then
+      if ( n1234 /= 1234 ) then
         n1234 = 1234
         nout = 1
       end if
 c
-      if ( ( nvbs .ge. 1 ) .or. ( nout .ne. 0 ) ) then
+      if ( ( nvbs >= 1 ) .or. ( nout /= 0 ) ) then
         write (6,*)
         write (6,*) '**************************************'
         write (6,*) '******* START OF JANCAE/UMMDp ********'
@@ -265,7 +265,7 @@ c                                          ---- copy material properties
         prrup(i) = prop(n)
       enddo
 c
-      if ( nout .ne. 0 ) then
+      if ( nout /= 0 ) then
         write (6,*)
         write (6,*) 'MATERIAL DATA LIST --------------------'
         call jancae_elast_print     ( prela,ndela )
@@ -281,7 +281,7 @@ c                                                           ---- set [U]
         do j = 1,nttl
           k1 = (i1-1)*nttl + j
           k2 = (i2-1)*nttl + j
-          if ( i2 .eq. 1 ) then
+          if ( i2 == 1 ) then
             um(k1,k2) = 1.0
           else
             um(k1,k2) = -1.0
@@ -289,7 +289,7 @@ c                                                           ---- set [U]
         end do
       end do
 c                                                     ---- default value
-      if ( npbs .eq. 0 ) then
+      if ( npbs == 0 ) then
         do n = 1,mxpbs
           do i = 1,nttl
             x2(n,i) = 0.0
@@ -312,12 +312,12 @@ c
       call jancae_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
 c                                                  ---- print out arrays
-      if ( nvbs .ge. 4 ) then
+      if ( nvbs >= 4 ) then
         text = 'current stress (input)'
         call jancae_print1 ( text,s1,nttl )
         text = 'strain inc. (input)'
         call jancae_print1 ( text,de,nttl )
-        if ( npbs .ne. 0 ) then
+        if ( npbs /= 0 ) then
           text = 'part. back stess (input)'
           call jancae_backprint ( text,npbs,x1,nttl,mxpbs )
           text = 'total  back stess (input)'
@@ -333,7 +333,7 @@ c                                             ---- copy delast to ddsdde
           ddsdde(i,j) = delast(i,j)
         end do
       end do
-      if ( nvbs .ge. 5 ) then
+      if ( nvbs >= 5 ) then
         text = 'elastic matrix'
         call jancae_print2 ( text,ddsdde,nttl,nttl )
       end if
@@ -342,7 +342,7 @@ c                                                ---- elastic prediction
       do i = 1,nttl
         s2(i) = s1(i) + vv(i)
       end do
-      if ( nvbs .ge. 5 ) then
+      if ( nvbs >= 5 ) then
         text = 'elastic predicted stress'
         call jancae_print1 ( text,s2,nttl )
       end if
@@ -357,29 +357,29 @@ c                                                       ---- check yield
       call jancae_hardencurve ( sy,dsydp,d2sydp2,
      &                          0,p,prihd,ndihd )
 c
-      if ( nvbs .ge. 3 ) then
+      if ( nvbs >= 3 ) then
         write (6,*) 'plastic strain p=',p
         write (6,*) 'flow stress   sy=',sy
         write (6,*) 'equiv.stress  se=',se
-        if ( npbs .ne. 0 ) then
+        if ( npbs /= 0 ) then
           call jancae_yfunc  ( xe,dseds,d2seds2,0,
      &                         xt1,nttl,nnrm,nshr,
      &                         pryld,ndyld )
           write (6,*) 'equiv.back.s  xe=',xe
         end if
       end if
-      if ( se .le. sy ) then
-        if ( nvbs .ge. 3 ) write (6,*) 'judge : elastic'
-        if ( ( nttl .eq. 3 ) .or. ( nttl .eq. 5 ) ) then
+      if ( se <= sy ) then
+        if ( nvbs >= 3 ) write (6,*) 'judge : elastic'
+        if ( ( nttl == 3 ) .or. ( nttl == 5 ) ) then
           de33 = 0.0
           do i = 1,nttl
             de33 = de33 + d33d(i)*de(i)
           end do
-          if ( nvbs .ge. 4 ) write (6,*) 'de33=',de33
+          if ( nvbs >= 4 ) write (6,*) 'de33=',de33
         end if
         return
       else
-        if ( nvbs .ge. 3 ) write (6,*) 'judge : plastic'
+        if ( nvbs >= 3 ) write (6,*) 'judge : plastic'
       end if
 c
 c                                                   ---- initialize loop
@@ -401,8 +401,8 @@ c                                                   ---- initialize loop
       nstg = 0
 c
   300 continue
-      if ( nest .gt. 0 ) then
-        if ( nvbs .ge. 2 ) then
+      if ( nest > 0 ) then
+        if ( nvbs >= 2 ) then
           write (6,*) '********** Nest of Multistage :',nest
         end if
       end if
@@ -423,9 +423,9 @@ c                                          ---- start of multistage loop
         nstg = nstg+1
         sgapb = sgap
         sgap = sgapb-dsgap
-        if ( m .eq. mstg ) sgap = 0.0
-        if ( mstg .gt. 1 ) then
-          if ( nvbs .ge. 2 ) then
+        if ( m == mstg ) sgap = 0.0
+        if ( mstg > 1 ) then
+          if ( nvbs >= 2 ) then
             write (6,*) '******** Multistage :',m,'/',mstg
             write (6,*) 'gap% in stress =',sgap/sgapi*100.0d0
           end if
@@ -433,7 +433,7 @@ c                                          ---- start of multistage loop
 c
         knr = 0
 c                                      ---- start of Newton-Raphson loop
-        if ( nvbs .ge. 3 ) then
+        if ( nvbs >= 3 ) then
           write (6,*)
           write (6,*) '**** start of Newton-Raphson loop'
         end if
@@ -441,7 +441,7 @@ c
   100   continue
         knr = knr + 1
         nite = nite + 1
-        if ( nvbs .ge. 3 ) then
+        if ( nvbs >= 3 ) then
           write (6,*) '----- NR iteration',knr
           write (6,*) 'inc of p : dp   =',dp
         end if
@@ -455,10 +455,10 @@ c                                        ---- calc. se and differentials
      &                      eta,nttl,nnrm,nshr,
      &                      pryld,ndyld )
 c
-        if ( nvbs .ge. 5 ) then
+        if ( nvbs >= 5 ) then
           text = 's2'
           call jancae_print1 ( text,s2,nttl )
-          if ( npbs .ne. 0 ) then
+          if ( npbs /= 0 ) then
             text = 'xt2'
             call jancae_print1 ( text,xt2,nttl )
             text = 'eta'
@@ -473,7 +473,7 @@ c                                        ---- calc. sy and differentials
         call jancae_hardencurve ( sy,dsydp,d2sydp2,
      &                            1,pt,prihd,ndihd )
 
-        if ( nvbs .ge. 5 ) then
+        if ( nvbs >= 5 ) then
           write (6,*) 'plastic strain p=',pt
           write (6,*) 'flow stress   sy=',sy
           write (6,*) 'hardening dsy/dp=',dsydp
@@ -488,7 +488,7 @@ c                                                          ---- calc. g2
         call jancae_vvs ( g2n,g2,g2,nttl )
         g2n = sqrt(g2n)
 c                                                          ---- calc. g3
-        if ( npbs .ne. 0 ) then
+        if ( npbs /= 0 ) then
           call jancae_kinematic ( vk,dvkdp,
      &                            dvkds,dvkdx,dvkdxt,
      &                            pt,s2,x2,xt2,
@@ -515,18 +515,18 @@ c                                                          ---- calc. g3
           g3nn = 0.0
         end if
 c
-        if ( nvbs .ge. 3 ) then
+        if ( nvbs >= 3 ) then
           write (6,*) 'g1 (yield surf) =',g1
           write (6,*) 'g2n (normality) =',g2n
-          if ( nvbs .ge. 5 ) then
+          if ( nvbs >= 5 ) then
             text = 'g2 vector'
             call jancae_print1 ( text,g2,nttl )
           end if
-          if ( npbs .ne. 0 ) then
-            if ( nvbs .ge. 4 ) then
+          if ( npbs /= 0 ) then
+            if ( nvbs >= 4 ) then
               do n = 1,npbs
                 write (6,*) 'g3n(',n,')=',g3n(n)
-                if ( nvbs .ge. 5 ) then
+                if ( nvbs >= 5 ) then
                   do i = 1,nttl
                     uv(i) = g3(n,i)
                   end do
@@ -547,8 +547,8 @@ c                                                              * set [A]
               do j2 = 1,nttl
                 k1 = (i1-1)*nttl + j1
                 k2 = (i2-1)*nttl + j2
-                if ( i1 .eq. 1 ) then
-                  if ( i2 .eq. 1 ) then
+                if ( i1 == 1 ) then
+                  if ( i2 == 1 ) then
                     am(k1,k2) = am(k1,k2) + dp*em(j1,j2)
                   else
                     am(k1,k2) = am(k1,k2) - dp*em(j1,j2)
@@ -556,7 +556,7 @@ c                                                              * set [A]
                 else
                   ip1 = i1 - 1
                   ip2 = i2 - 1
-                  if ( i2 .eq. 1 ) then
+                  if ( i2 == 1 ) then
                     am(k1,k2) = am(k1,k2) - dp*dvkds(ip1,j1,j2)
                   else
                     am(k1,k2) = am(k1,k2) - dp*dvkdx(ip1,ip2,j1,j2)
@@ -572,7 +572,7 @@ c                                                           ---- set {W}
         do i1 = 1, npbs+1
           do j1 = 1,nttl
             k1 = (i1-1)*nttl + j1
-            if ( i1 .eq. 1 ) then
+            if ( i1 == 1 ) then
               do k2 = 1,nttl
                 wv(k1) = wv(k1) + delast(j1,k2)*dseds(k2)
               end do
@@ -589,11 +589,11 @@ c                                                     ---- [C]=[U][A]^-1
 c
 c
 c                                                 ---- check convergence
-        if ( ( abs(g1  /sy) .le. tol ) .and.
-     &       ( abs(g2n /sy) .le. tol ) .and.
-     &       ( abs(g3nn/sy) .le. tol )      ) then
+        if ( ( abs(g1  /sy) <= tol ) .and.
+     &       ( abs(g2n /sy) <= tol ) .and.
+     &       ( abs(g3nn/sy) <= tol )      ) then
 c
-          if ( nvbs .ge. 2 ) then
+          if ( nvbs >= 2 ) then
             write (6,*) '**** Newton-Raphson converged.',knr
           end if
           dpconv = dp
@@ -625,12 +625,12 @@ c                              ---- ddp=(g1-{m}^T[C]{G})/(H+{m}^T[C]{W})
         ddp = top / bot
 c                                                         ---- update dp
         dp = dp + ddp
-        if ( nvbs .ge. 3 ) then
+        if ( nvbs >= 3 ) then
           write (6,*) 'modification of dp:ddp=',ddp
           write (6,*) 'updated             dp=',dp
         end if
-        if ( dp .le. 0.0 ) then
-          if ( nvbs .ge. 3 ) then
+        if ( dp <= 0.0 ) then
+          if ( nvbs >= 3 ) then
             write (6,*) 'negative dp is detected.'
             write (6,*) 'multistage is subdivided.'
           end if
@@ -646,7 +646,7 @@ c                                                  ---- update s2 and x2
             end do
           end do
           do j1 = 1,nttl
-            if ( i1 .eq. 1 ) then
+            if ( i1 == 1 ) then
               s2(j1) = s2(j1) + vv(j1)
             else
               x2(i1-1,j1) = x2(i1-1,j1) + vv(j1)
@@ -656,15 +656,15 @@ c                                                  ---- update s2 and x2
         call jancae_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
 c
-        if ( knr .le. maxnr ) goto 100
+        if ( knr <= maxnr ) goto 100
 c                                        ---- end of Newton-Raphson loop
 c
   400   continue
-        if ( nvbs .ge. 2 ) then
+        if ( nvbs >= 2 ) then
           write (6,*) 'Newton Raphson loop is over.',knr
           write (6,*) 'convergence is failed.'
         end if
-        if ( nest .lt. maxnest ) then
+        if ( nest < maxnest ) then
           nest = nest + 1
           newmstg = (mstg-m+1) * ndiv
           goto 300
@@ -696,12 +696,12 @@ c                                                 ---- plast.strain inc.
         dpe(i) = dp * dseds(i)
       end do
 c                                               ---- print out converged
-      if ( nvbs .ge. 4 ) then
+      if ( nvbs >= 4 ) then
         text = 'updated stress'
         call jancae_print1 ( text,s2,nttl )
         text = 'plastic strain inc'
         call jancae_print1 ( text,dpe,nttl )
-        if ( npbs .ne. 0 ) then
+        if ( npbs /= 0 ) then
           text = 'updated part. back stess'
           call jancae_backprint ( text,npbs,x2,nttl,mxpbs )
           text = 'updated total back stess'
@@ -709,18 +709,18 @@ c                                               ---- print out converged
         end if
       end if
 c                                    ---- calc. strain inc. in thickness
-      if ( ( nttl .eq. 3 ) .or. ( nttl .eq. 5 ) ) then
+      if ( ( nttl == 3 ) .or. ( nttl == 5 ) ) then
         de33 = -dpe(1) - dpe(2)
         do i = 1,nttl
           de33 = de33 + d33d(i)*(de(i)-dpe(i))
         end do
-        if ( nvbs .ge. 4 ) then
+        if ( nvbs >= 4 ) then
           write (6,*) 'de33=',de33
         end if
       end if
 c
-      if ( nvbs .ge. 1 ) then
-        if ( nest .ne. 0 ) then
+      if ( nvbs >= 1 ) then
+        if ( nest /= 0 ) then
           write (6,*) 'nest of MsRM               :',nest
           write (6,*) 'total no. of stages        :',nstg
           write (6,*) 'total no. of NR iteration  :',nite
@@ -731,7 +731,7 @@ c
         end if
       end if
 c
-      if ( mjac .eq. 0 ) then
+      if ( mjac == 0 ) then
         do i = 1,nttl
           do j = 1,nttl
             ddsdde(i,j) = 0.0
@@ -740,7 +740,7 @@ c
         return
       end if
 c
-      if ( mjac .eq. -1 ) then
+      if ( mjac == -1 ) then
         do i = 1,nttl
           do j = 1,nttl
             ddsdde(i,j) = delast(i,j)
@@ -809,14 +809,14 @@ c                                                    ---- check symmetry
         end do
       end do
       a = sqrt(d/a)
-      if ( a .gt. 1.0d-8 ) then
-        if ( nvbs .ge. 4 ) then
+      if ( a > 1.0d-8 ) then
+        if ( nvbs >= 4 ) then
           write (6,*) 'ddsdde is not symmetric.',a
           text = 'material jacobian (nonsym)'
           call jancae_print2 ( text,ddsdde,nttl,nttl )
         end if
 c                                                    ---- symmetrization
-        if ( nsym .eq. 1 ) then
+        if ( nsym == 1 ) then
           do i = 1,nttl
             do j = i+1,nttl
               aaa = 0.5d0 * (ddsdde(i,j)+ddsdde(j,i))
@@ -827,7 +827,7 @@ c                                                    ---- symmetrization
         end if
       end if
 c
-      if ( nvbs .ge. 4 ) then
+      if ( nvbs >= 4 ) then
         text = 'material jacobian (output)'
         call jancae_print2 ( text,ddsdde,nttl,nttl )
       end if
@@ -862,10 +862,10 @@ c
 c
       nvbs = 0
       nchk = nechk * ipchk * laychk
-      if ( nchk .gt. 0 ) then
-        if ( (ne .eq. nechk ) .and.
-     &       (ip .eq. ipchk ) .and.
-     &       (lay .eq. laychk ) ) then
+      if ( nchk > 0 ) then
+        if ( (ne == nechk ) .and.
+     &       (ip == ipchk ) .and.
+     &       (lay == laychk ) ) then
           nvbs = nvbs0
         end if
       end if
@@ -891,7 +891,7 @@ c
 c
       case ( 0:1 )    !  isotropic linear elasticity (Hooke)
 c
-        if ( ntela .eq. 0 ) then
+        if ( ntela == 0 ) then
           eyoung = prela(2)                           ! Young's modulus
           epoas = prela(3)                            ! Poisson's ratio
           erigid = eyoung / 2.0d0 / (1.0d0+epoas)     ! Rigidity
@@ -906,7 +906,7 @@ c                                       ---- set 6*6 matrix for 3d solid
         call jancae_clear2( delast3d,6,6 )
         do i = 1,3
           do j = 1,3
-            if ( i .eq. j ) then
+            if ( i == j ) then
               delast3d(i,j) = 1.0d0 - epoas
             else
               delast3d(i,j) = epoas
@@ -932,13 +932,13 @@ c
 c
 c                                       ---- condensation for 2D problem
       do ib = 1,2
-        if ( ib .eq. 1 ) then
+        if ( ib == 1 ) then
           ni = nnrm
         else
           ni = nshr
         end if
         do jb = 1,2
-          if ( jb .eq. 1 ) then
+          if ( jb == 1 ) then
             nj = nnrm
           else
             nj = nshr
@@ -955,16 +955,16 @@ c                                       ---- condensation for 2D problem
         end do
       end do
 c                                     ---- plane stress or shell element
-      if ( nnrm .eq. 2 ) then
+      if ( nnrm == 2 ) then
         d33 = delast3d(3,3)
         do ib = 1,2
-          if ( ib .eq. 1 ) then
+          if ( ib == 1 ) then
             ni = nnrm
           else
             ni = nshr
           end if
           do jb = 1,2
-            if ( jb .eq. 1 ) then
+            if ( jb == 1 ) then
               nj = nnrm
             else
               nj = nshr
@@ -984,7 +984,7 @@ c                                     ---- plane stress or shell element
 c                         ---- elastic strain in thickness direction e_t
 c                                             ---- e_t=SUM(d33d(i)*e(i))
         do i = 1,nttl
-          if ( i .le. nnrm ) then
+          if ( i <= nnrm ) then
             id = i
           else
             id = i - nnrm + 3
@@ -1034,13 +1034,13 @@ c-----------------------------------------------------------------------
 c
       call jancae_isvprof ( isvrsvd,isvsclr )
 c
-      if ( npbs .eq. 0 ) then
+      if ( npbs == 0 ) then
         isvtnsr = nttl
       else
         isvtnsr = nttl * (1+npbs)
       end if
       isvttl = isvrsvd + isvsclr + isvtnsr
-      if ( nisv .lt. isvttl ) then
+      if ( nisv < isvttl ) then
         write (6,*) 'check number of internal state variables (isv)'
         write (6,*) 'nisv must be larger than',isvttl
         write (6,*) 'nisv=',nisv
@@ -1073,7 +1073,7 @@ c                                              ---- plastic strain comp.
         pe(i) = stv(isvrsvd+isvsclr+i)
       end do
 c                                         ---- partial back stress comp.
-      if ( npbs .ne. 0 ) then
+      if ( npbs /= 0 ) then
         do nb = 1,npbs
           do i = 1,nttl
             it = isvrsvd + isvsclr + nttl*nb+i
@@ -1098,7 +1098,7 @@ c
       do i = 1,nttl
         xt(i) = 0.0
       end do
-      if ( npbs .eq. 0 ) return
+      if ( npbs == 0 ) return
 c
       do i = 1,nttl
         do j = 1,npbs
@@ -1121,7 +1121,7 @@ c-----------------------------------------------------------------------
       character text*32
       dimension xx(npbs,nttl)
 c
-      if ( npbs .eq. 0 ) return
+      if ( npbs == 0 ) return
 c
       do i = 1,nttl
         do j = 1,npbs
@@ -1148,20 +1148,25 @@ c
 c
       n = 0
       p = prop(n+1)
-      if ( p .ge. 1000.0d0 ) p = p - 1000.d0
+      if ( p >= 1000.0d0 ) p = p - 1000.d0
+c
       nela = nint(p)
       select case ( nela )
-        case (0) ; nd = 2
+c
+      case (0) ; nd = 2
         case (1) ; nd = 2
+c
         case default
           write (6,*) 'error elastic property id :',nela
           call jancae_exit ( 9000 )
+c
       end select
       ndela = nd + 1
 c
       n = ndela
       nyld = nint(prop(n+1))
       select case (nyld)
+c
         case ( 0 ) ; nd = 0                   ! von Mises
         case ( 1 ) ; nd = 6                   ! Hill 1948
         case ( 2 ) ; nd = 19                  ! Yld2004-18p
@@ -1179,15 +1184,18 @@ c
         case ( -6 )                           ! BBC 2008
           nd = 2 + 8*nint(prop(n+2))
         case ( -7 ) ; nd = 0.5d0              ! Hill 1990
+c
         case default
           write (6,*) 'error yield function id :',nyld
           call jancae_exit ( 9000 )
+c
       end select
       ndyld = nd + 1
 c
       n = ndela + ndyld
       nihd = nint(prop(n+1))
       select case ( nihd )
+c
         case ( 0 ) ; nd = 1                           ! Perfecty Plastic
         case ( 1 ) ; nd = 2                           ! Linear
         case ( 2 ) ; nd = 3                           ! Swift
@@ -1195,44 +1203,53 @@ c
         case ( 4 ) ; nd = 3                           ! Voce
         case ( 5 ) ; nd = 4                           ! Voce + Linear
         case ( 6 ) ; nd = 7                           ! Voce + Swift
+c
         case default
           write (6,*) 'error work hardening curve id :',nihd
           call jancae_exit ( 9000 )
+c
       end select
       ndihd = nd + 1
 c
       n = ndela + ndyld + ndihd
       nkin = nint(prop(n+1))
       select case ( nkin )
-        case ( 0 ) ; nd = 0 ; npbs = 0    ! No Kinematic Hardening
-        case ( 1 ) ; nd = 1 ; npbs = 1    ! Prager
-        case ( 2 ) ; nd = 1 ; npbs = 1    ! Ziegler
-        case ( 3 ) ; nd = 2 ; npbs = 1    ! Armstrong & Frederick
-        case ( 4 )                        ! Chaboche
+c
+        case ( 0 ) ; nd = 0 ; npbs = 0          ! No Kinematic Hardening
+        case ( 1 ) ; nd = 1 ; npbs = 1          ! Prager
+        case ( 2 ) ; nd = 1 ; npbs = 1          ! Ziegler
+        case ( 3 ) ; nd = 2 ; npbs = 1          ! Armstrong & Frederick
+        case ( 4 )                              ! Chaboche
           npbs = nint(prop(n+2))
           nd = 2*npbs + 1
-        case ( 5 )                        ! Chaboche - Ziegler
+        case ( 5 )                              ! Chaboche - Ziegler
           npbs = nint(prop(n+2))
           nd = 2*npbs + 1
-        case ( 6 ) ; nd = 5 ; npbs = 2    ! Yoshida-Uemori
+        case ( 6 ) ; nd = 5 ; npbs = 2          ! Yoshida-Uemori
+c
         case default
           write (6,*) 'error kinematic hardening id :',nkin
           call jancae_exit ( 9000 )
+c
       end select
       ndkin = nd + 1
 c
       n = ndela + ndyld + ndihd + ndkin
       nrup = nint(prop(n+1))
       select case (nrup)
-        case ( 0 ) ; nd = 0 ;   ! No Uncoupled Rupture Criterion
-        case ( 1 ) ; nd = 2 ;   ! Equivalent Plastic Strain
-        case ( 2 ) ; nd = 2 ;   ! Cockroft and Latham
-        case ( 3 ) ; nd = 2 ;   ! Rice and Tracey
-        case ( 4 ) ; nd = 2 ;   ! Ayada
-        case ( 5 ) ; nd = 2 ;   ! Brozzo
+c
+        case ( 0 ) ; nd = 0             ! No Uncoupled Rupture Criterion
+        case ( 1 ) ; nd = 2             ! Equivalent Plastic Strain
+        case ( 2 ) ; nd = 2             ! Cockroft and Latham
+        case ( 3 ) ; nd = 2             ! Rice and Tracey
+        case ( 4 ) ; nd = 2             ! Ayada
+        case ( 5 ) ; nd = 2             ! Brozzo
+        case ( 6 ) ; nd = 2             ! Forming Limit Diagram
+c
         case default
           write (6,*) 'error uncoupled rupture criterion id :',nrup
           call jancae_exit ( 9000 )
+c
       end select
       ndrup = nd + 1
 c

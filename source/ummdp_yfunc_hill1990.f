@@ -114,7 +114,7 @@ c
 c                                                 ---- equivalent stress
       se = (fyild/alarge)**(1.0d0/am)
 c
-      if ( nreq .ge. 1 ) return
+      if ( nreq >= 1 ) return
 
 c               ---- 1st order differential coefficient of yield fuction
 c     dfdsi(i) : diff. of fai-i(i) with respect to s(j)
@@ -163,7 +163,7 @@ c           ---- 1st order differential coefficient of equivalent stress
       end do
 c
 c
-      if ( nreq .ge. 2 ) return
+      if ( nreq >= 2 ) return
 c
 c            --- 2st order differential coefficient of equivalent stress
 c                                                   with respect to s(j)
@@ -181,7 +181,7 @@ c                                                        ---- d2fai1/ds2
       end do
 c                                                        ---- d2fai2/ds2
       wrk1 = sigbtm * (am/2.0)
-      if ( abs(x2) .lt. 1e-10 ) x2 = 1e-10
+      if ( abs(x2) < 1e-10 ) x2 = 1e-10
       wrk2 = (am/2.0-1.0) * (x2**(am/2.0-2.0))
       wrk3 = x2**(am/2.0-1.0)
       wrk2 = wrk1 * wrk2

@@ -146,7 +146,7 @@ c      ---- see eq.(x.y.2b) and eq.(x.y.2) for se2k and se, respectively
       se = se2k**(1.0d0 / (2.0d0*kp))
 c
 c   ---- If a main routine requests this subroutine to calculate se only
-      if ( nreq .eq. 0 ) then
+      if ( nreq == 0 ) then
         return
       end if
 c
@@ -171,13 +171,13 @@ c       disscussed by Banabic et al., 0**0 is required to be 1.
 c
           phiL_m = 1.0d0
           phiN_m = 1.0d0
-          if ( m .ne. 0 ) then
+          if ( m /= 0 ) then
             phiL_m = phiL**m
             phiN_m = phiN**m
           end if
 c
           phiM_kp_m = 1.0d0
-          if ( (kp-m) .ne. 0 ) then
+          if ( (kp-m) /= 0 ) then
             phiM_kp_m = phiM**(kp-m)
           end if
 c
@@ -195,7 +195,7 @@ c                                             ---- <dseds>, see (x.y.2f)
 c
 c
 c                     ---- <d2seds2>, see (x.y.2g), d2F/ds(eta)ds(gamma)
-          if ( nreq .eq.2 ) then
+          if ( nreq ==2 ) then
 c
             call jancae_bbc2008_get_d2phiXds2 (d2phiLds2,Lp,s,csp,m,sp)
             call jancae_bbc2008_get_d2phiXds2 (d2phiMds2,Mp,s,csp,
@@ -227,7 +227,7 @@ c                            ---- < dseds >, see (x.y.2f), se2k = se^2kp
       dseds(1:3) =  dFds(1:3) * se / (se1 * 2.0d0 * kp * se2k)
 
 c                  ---- < d2seds2 >, see (x.y.2g), d2se/ds(eta)ds(gamma)
-      if ( nreq .eq. 2 ) then
+      if ( nreq == 2 ) then
         do eta = 1,3
           d2seds2(eta,1:3) = 
      &            d2Fds2(eta,1:3) * se / (se1 * 2.0d0 * kp * se2k)
@@ -300,13 +300,13 @@ c
 c
           phiL_m = 1.0d0
           phiN_m = 1.0d0
-          if ( m .ne. 0 ) then
+          if ( m /= 0 ) then
             phiL_m = phiL**m
             phiN_m = phiN**m
           end if
 c
           phiM_kp_m = 1.0d0
-          if ( (kp-m) .ne. 0 ) then
+          if ( (kp-m) /= 0 ) then
             phiM_kp_m = phiM**(kp-m)
           end if
 c
@@ -392,7 +392,7 @@ c
       call jancae_clear1(dphiXds,nc)
 c
 c                              ---- If lambda is 0, return dphiXds = {0}
-      if ( lambda .eq. 0) then
+      if ( lambda == 0) then
         return
       end if
 c
@@ -409,7 +409,7 @@ c       from jancae_mv().
 c
       call jancae_mv (v, XXp, s, nc, nc)
 c
-      if ( lambda .eq. 1 ) then
+      if ( lambda == 1 ) then
         dphiXds(1:nc) = 2.0d0 * v(1:nc)
       else
         call jancae_vvs (phi, v, s, nc)
@@ -452,7 +452,7 @@ c
       real*8 XXp(nc, nc), v(nc), phi, phi_lambda2
 c
 c                             ---- see eq.(x.y.2e), the case lambda <= 1
-      if ( lambda .le. 1 ) then
+      if ( lambda <= 1 ) then
         do i = 1,nc
           d2phiXds2(i,1:nc) = 2.0d0 * lambda * Xp(csp, i, 1:nc)
         end do
@@ -468,7 +468,7 @@ c
       call jancae_vvs (phi, v, s, nc)
 c
       phi_lambda2 = 1.0d0
-      if ( lambda .ne. 2 ) then
+      if ( lambda /= 2 ) then
         phi_lambda2 = phi**(lambda-2)
       end if
 c
@@ -536,7 +536,7 @@ c       Comb(k,4) --> kCm(2)
 c       ...
 c       Comb(k,k-2) --> kCm(kp-1)
 c
-        if ( k .eq. (2*kp) ) then
+        if ( k == (2*kp) ) then
           n = 1
           do m = 2,k-2,2
             kCm(n) = Comb(k, m)

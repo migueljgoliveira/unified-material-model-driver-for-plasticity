@@ -142,7 +142,7 @@ c                   ---- engineering shear strain -> tensor shear strain
 				end do
 				end do
 c                                          ---- for plane stress problem
-      if ( nnrm .eq. 2 ) then
+      if ( nnrm == 2 ) then
         em1 = dseds(1)
         em2 = dseds(2)
         dseds(1) = dseds(1) + em1 + em2

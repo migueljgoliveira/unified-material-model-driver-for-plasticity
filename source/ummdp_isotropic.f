@@ -31,7 +31,7 @@ c
         sy = prihd(1+1)
         if ( nreq . ge.1 ) then
           dsydp = 0.0
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = 0.0
 					end if
 				end if
@@ -40,9 +40,9 @@ c
         sy0  = prihd(1+1)
         hard = prihd(1+2)
         sy = sy0 + hard*p
-        if ( nreq .ge. 1 ) then
+        if ( nreq >= 1 ) then
           dsydp = hard
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = 0.0
 					end if
 				end if
@@ -52,9 +52,9 @@ c
         e0 = prihd(1+2)
         en = prihd(1+3)
         sy = c*(e0+p)**en
-        if ( nreq .ge. 1 ) then
+        if ( nreq >= 1 ) then
           dsydp = en*c*(e0+p)**(en-1.0d0)
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*(e0+p)**(en-2.0d0)
 					end if
 				end if
@@ -64,9 +64,9 @@ c
         c   = prihd(1+2)
         en  = prihd(1+3)
         sy = sy0+c*p**en
-        if ( nreq .ge. 1 ) then
+        if ( nreq >= 1 ) then
           dsydp = en*c*p**(en-1.0d0)
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*p**(en-2.0d0)
 					end if
 				end if
@@ -76,9 +76,9 @@ c
         q   = prihd(1+2)
         b   = prihd(1+3)
         sy = sy0+q*(1.0d0-exp(-b*p))
-        if ( nreq .ge. 1 ) then
+        if ( nreq >= 1 ) then
           dsydp = q*b*exp(-b*p)
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = -q*b*b*exp(-b*p)
 					end if
 				end if
@@ -89,9 +89,9 @@ c
         b   = prihd(1+3)
         c   = prihd(1+4)
         sy = sy0+q*(1.0d0-exp(-b*p))+c*p
-        if ( nreq .ge. 1 ) then
+        if ( nreq >= 1 ) then
           dsydp = q*b*exp(-b*p)+c
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = -q*b*b*exp(-b*p)
 					end if
 				end if
@@ -105,9 +105,9 @@ c
         e0  = prihd(1+6)
         en  = prihd(1+7)
         sy = a*(sy0+q*(1.0d0-exp(-b*p))) + (1.0d0-a)*(c*(e0+p)**en)
-        if ( nreq .ge. 1 ) then
+        if ( nreq >= 1 ) then
           dsydp = a*(q*b*exp(-b*p)) +(1.0d0-a)*(en*c*(e0+p)**(en-1.0d0))
-          if ( nreq .ge. 2 ) then
+          if ( nreq >= 2 ) then
             d2sydp2 = a*(-q*b*b*exp(-b*p)) + 
      &                (1.0d0-a)*(en*c*(en-1.0d0)*(e0+p)**(en-2.0d0))
 					end if

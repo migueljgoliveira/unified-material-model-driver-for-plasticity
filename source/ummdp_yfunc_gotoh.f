@@ -49,10 +49,10 @@ c                                                 ---- equivalent stress
       call jancae_mv  ( v,c,t,4,4 )
       call jancae_vvs ( phi,t,v,4 )
 c
-      if ( phi .le. 0.0 ) phi = 0.0
+      if ( phi <= 0.0 ) phi = 0.0
       se = sqrt(sqrt(phi))
 c                                            ---- 1st order differential
-      if ( nreq .ge. 1 ) then
+      if ( nreq >= 1 ) then
         call jancae_clear2 ( dtds,4,3 )
         dtds(1,1) = s(1) * 2.0d0
         dtds(2,1) = s(2)
@@ -73,7 +73,7 @@ c                                            ---- 1st order differential
         end do
       end if
 c                                            ---- 2nd order differential
-      if ( nreq .ge. 2 ) then
+      if ( nreq >= 2 ) then
         call jancae_clear3 ( d2tds2,4,3,3 )
         d2tds2(1,1,1) = 2.0d0
         d2tds2(2,1,2) = 1.0d0
