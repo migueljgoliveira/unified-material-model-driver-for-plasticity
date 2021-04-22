@@ -46001,7 +46001,7 @@
  0, 0, 200000.0, 0.3, 2, 0.802064, -0.371744, 1.730877,
  0.111897, 1.786988, 1.759011, 1.0, 1.0, 1.514999, 0.149032, 0.137615,
  0.843118, -1.095887, 1.450332, 1.897261, 1.0, 1.0, -0.011837, 2.8455,
- 2, 541.0, 0.0036, 0.249, 0, 6, 1.0, 1.0
+ 2, 541.0, 0.0036, 0.249, 0, 0
 **
 *Depvar
  7,
@@ -46013,17 +46013,7 @@
  6 , PE13
  7 , PE23
 *User Output Variables
- 8,
-**
-** FORMING LIMIT DIAGRAM
-**
-*Property table type, name=FLD1, properties=5
-*Property table type, name=FLD2, properties=5
-*Table collection, name=FLD
-*Property table, type=FLD1
-  0.3,  0.2, 0.1, 0.2, 0.3
-*Property table, type=FLD2
- -0.2, -0.1, 0.0, 0.1, 0.2
+ 2,
 ** 
 ** BOUNDARY CONDITIONS
 ** 

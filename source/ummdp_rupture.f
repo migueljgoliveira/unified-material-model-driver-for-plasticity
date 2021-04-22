@@ -515,32 +515,34 @@ c                                 ---- get principal strain after update
         e1 = array(2)
 c                               ---- get logarithmic strain after update
       else
-        call getvrm ( 'LE',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                     matlayo,laccfla )
-        if ( jrcd /= 0 ) then
-          write (6,*) 'request error in uvarm for le'
-          write (6,*) 'stop in uvrm.'
-          call jancae_exit ( 9000 )
-        end if
-c                                            ---- assemble strain tensor
-        call jancae_clear2 ( le,3,3 )
-        le(1,1) = array(1)
-        le(2,2) = array(2)
-        le(3,3) = array(3)
-        le(1,2) = array(4)/2
-        le(1,3) = array(5)/2
-        le(2,3) = array(6)/2
-        le(2,1) = le(1,2)
-        le(3,1) = le(1,3)
-        le(3,2) = le(2,3)
-c                           ---- strain tensor eigen- values and vectors
-        call jancae_clear1 ( es,3 )
-        call jancae_clear2 ( ev,3,3 )
-        call jancae_eigen_sym3 ( es,ev,le )
-        e2 = es(2)
-        e1 = es(1)
+				write (6,*) 'request error in uvarm for fld, only plane-stress'
+        write (6,*) 'stop in uvrm.'
+        call jancae_exit ( 9000 )
+!         call getvrm ( 'LE',array,jarray,flgray,jrcd,jmac,jmatyp,
+!      &                     matlayo,laccfla )
+!         if ( jrcd /= 0 ) then
+!           write (6,*) 'request error in uvarm for le'
+!           write (6,*) 'stop in uvrm.'
+!           call jancae_exit ( 9000 )
+!         end if
+! c                                            ---- assemble strain tensor
+!         call jancae_clear2 ( le,3,3 )
+!         le(1,1) = array(1)
+!         le(2,2) = array(2)
+!         le(3,3) = array(3)
+!         le(1,2) = array(4)/2
+!         le(1,3) = array(5)/2
+!         le(2,3) = array(6)/2
+!         le(2,1) = le(1,2)
+!         le(3,1) = le(1,3)
+!         le(3,2) = le(2,3)
+! c                           ---- strain tensor eigen- values and vectors
+!         call jancae_clear1 ( es,3 )
+!         call jancae_clear2 ( ev,3,3 )
+!         call jancae_eigen_sym3 ( es,ev,le )
+!         e2 = es(2)
+!         e1 = es(1)
       end if
-
 c
 c                                     ---- activate fld table collection
       call settablecollection ( 'FLD',jerror )
