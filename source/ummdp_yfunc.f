@@ -91,7 +91,7 @@ c
 c
       case ( 1 )                                             ! Hill 1948
         call jancae_hill1948 ( s,se,dseds,d2seds2,nreq,
-     &                          pryld,ndyld )
+     &                         pryld,ndyld )
 c
       case ( 2 )                                           ! Yld2004-18p
         call jancae_yld2004_18p ( s,se,dseds,d2seds2,nreq,
@@ -99,7 +99,7 @@ c
 c
       case ( 3 )                                              ! CPB 2006
         call jancae_cpb2006 ( s,se,dseds,d2seds2,nreq,
-     &                         pryld,ndyld )
+     &                        pryld,ndyld )
 c
       case ( 4 )                                 ! Karafillis-Boyce 1993
         call jancae_KarafillisBoyce ( s,se,dseds,d2seds2,nreq,
@@ -111,7 +111,7 @@ c
 c
       case ( 6 )                                          ! Yoshida 2011
         call jancae_yoshida2011 ( s,se,dseds,d2seds2,nreq,
-     &                             pryld,ndyld )
+     &                            pryld,ndyld )
 c
       case default
         write (6,*) 'error in jancae_yfunc'
