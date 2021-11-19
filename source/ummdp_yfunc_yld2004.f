@@ -92,7 +92,7 @@ c                                        ---- set anisotropic parameters
       cp2(5,5) =  pryld(1+17) ! for tau_xz (c"55 in original paper)
       cp2(6,6) =  pryld(1+16) ! for tau_zx (c"44 in original paper)
       am       =  pryld(1+19)
-c      dc       =  4
+      dc       =  4
       ami = 1.0d0 / am
 c
 c             ---- set matrix for transforming Cauchy stress to deviator
@@ -119,7 +119,7 @@ c                  ---- matrix for transforming Cauchy stress to sp1,sp2
       call jancae_mm ( ctp1,cp1,cl,6,6,6 )
       call jancae_mm ( ctp2,cp2,cl,6,6,6 )
 c                               ---- coefficient of equivalent stress dc
-      call jancae_yld2004_18p_coef ( cp1,cp2,pi,am,dc )
+c      call jancae_yld2004_18p_coef ( cp1,cp2,pi,am,dc )
 c                                  ---- calculation of equivalent stress
       call jancae_yld2004_18p_yf ( ctp1,ctp2,s,am,ami,dc,pi,
      &                             sp1,sp2,psp1,psp2,hp1,hp2,
