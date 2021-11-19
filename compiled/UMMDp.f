@@ -69,12 +69,12 @@ c                                       ---- output detailed information
         call jancae_printinfo  ( kinc,ndi,nshr )
         call jancae_printinout ( 0,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
-			end if
+      end if
 c
 c                                           ---- set material properties
       do i = 2,nprops
         prop(i-1) = props(i)
-			end do
+      end do
 c
       call jancae_prop_dim ( prop,nprop,propdim,
      &                       ndela,ndyld,ndihd,ndkin,
@@ -84,7 +84,7 @@ c
         write (6,*) 'npbs =',npbs
         write (6,*) 'mxpbs=',mxpbs
         call jancae_exit ( 9000 )
-			end if
+      end if
 c                                                      ---- check nstatv
       call jancae_check_nisv ( nstatv,ntens,npbs )
 c                             ---- copy current internal state variables
@@ -105,7 +105,7 @@ c                             ---- update stress and set tangent modulus
 c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
-			end do
+      end do
 c                                            ---- update eq.plast,strain
       statev(isvrsvd+1) = p + dp
 c                                         ---- update plast.strain comp.
@@ -114,21 +114,21 @@ c
       do i = 1,ntens
         is = isvrsvd + isvsclr + i
         statev(is) = ustatev(i) + dpe(i)
-			end do
+      end do
 c                                       ---- update of back stress comp.
       if ( npbs /= 0 ) then
         do n = 1,npbs
           do i = 1,ntens
             is = isvrsvd + isvsclr + ntens*n + i
             statev(is) = x2(n,i)
-					end do
-				end do
-			end if
+          end do
+        end do
+      end if
 c                           ----  if debug mode, output return arguments
       if ( nvbs >= 4 ) then
         call jancae_printinout ( 1,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
-			end if
+      end if
 c
       return
       end
@@ -153,11 +153,11 @@ c
 c
       if ( ne*ip*lay == 1 ) then
         write (6,*) 'SDVINI is called. '
-			end if
+      end if
 c
       do n = 1,nstatv
         statev(n) = 0.0
-			end do
+      end do
 c
       return
       end
@@ -208,9 +208,9 @@ c     variables list :
 c        uvar codes and state variables arrays
 c        nt : ntens
 c
-c     statev(1                     ) : equivalent plastic strain
-c     statev(2        ~  1+nt      ) : plastic strain components
-c     statev(1+nt*i+1 ~  1+nt*(i+1)) : partial back stress component xi
+c     statev(1                    ) : equivalent plastic strain
+c     statev(2        ~ 1+nt      ) : plastic strain components
+c     statev(1+nt*i+1 ~ 1+nt*(i+1)) : partial back stress component xi
 c
 c     uvar(1     ) : equivalent stress
 c     uvar(2     ) : flow stress
@@ -226,40 +226,40 @@ c
 c                                            ---- get uvar before update
       do i = 1,nuvarm
         uvar1(i) = uvar(i)
-			end do
+      end do
 c                                                        ---- get stress
       call getvrm ( 'S',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                   matlayo,laccfla )
+     &                  matlayo,laccfla )
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for s'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-			end if
+      end if
 c
       do i = 1,ndi
         s(i) = array(i)
-			end do
+      end do
       do i = 1,nshr
         i1 = ndi + i
         i2 = 3 + i
         s(i1) = array(i2)
-			end do
+      end do
 c                                               ---- get state variables
       if ( nsdv > maxsdv ) then
         write (6,*) 'increase dimension of ARRAY2 and JARRAY2'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-			end if
+      end if
       call getvrm ( 'SDV',ARRAY2,JARRAY2,FLGRAY2,jrcd,jmac,jmatyp,
      &                    matlayo,laccfla)
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sdv'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
-			end if
+      end if
       do i = 1,nsdv
         sdv(i) = array2(i)
-			end do
+      end do
 c                                           ---- set material properties
       call jancae_prop_dim ( prop,nprop,propdim,
      &                       ndela,ndyld,ndihd,ndkin,
@@ -273,23 +273,23 @@ c                                           ---- set material properties
       do i = 1,ndela
         k = k + 1
         prela(i) = prop(k)
-			end do
+      end do
       do i = 1,ndyld
         k = k + 1
         pryld(i) = prop(k)
-			end do
+      end do
       do i = 1,ndihd
         k = k + 1
         prihd(i) = prop(k)
-			end do
+      end do
       do i = 1,ndkin
         k = k + 1
         prkin(i) = prop(k)
-			end do
+      end do
       do i = 1,ndrup
         k = k + 1
         prrup(i) = prop(k)
-			end do
+      end do
 c
 c                                                  ---- calc back stress
       call jancae_isvprof ( isvrsvd,isvsclr )
@@ -298,19 +298,19 @@ c                                                  ---- calc back stress
      &                      p,pe,x,ntens,mxpbs,npbs )
       do i = 1,ntens
          xsum(i) = 0.0
-			end do
+      end do
       if ( npbs /= 0 ) then
         do i = 1,ntens
           do nb = 1,npbs
             xsum(i) = xsum(i) + x(nb,i)
-					end do
-				end do
+          end do
+        end do
       end if
 c                                                 ---- equivalent stress
       if ( nuvarm >= 1 ) then
         do i = 1,ntens
           eta(i) = s(i) - xsum(i)
-				end do
+        end do
         call jancae_yfunc ( se,dseds,d2seds2,0,
      &                      eta,ntens,ndi,nshr,
      &                      pryld,ndyld )
@@ -326,7 +326,7 @@ c                                                       ---- back stress
         if ( nuvarm >= 3 ) then
           do i = 1,ntens
             uvar(2+i) = xsum(i)
-					end do
+          end do
         end if
       end if
 c                                                 ---- rupture criterion
@@ -2610,7 +2610,7 @@ c
 c     nuvarm : 2
 c
 c     uvar(2+nt+1) : equivalent plastic strain
-c     uvar(2+nt+2) : rupture criterion normalised
+c     uvar(2+nt+2) : rupture parameter normalised by critical value
 c
 c                                            ---- get uvar before update
       wlimnorm  = uvar1(2+nt+2)
@@ -2651,8 +2651,8 @@ c
 c     uvar(1)      : equivalent stress
 c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : maximum principal stress
-c     uvar(2+nt+3) : rupture criterion
-c     uvar(2+nt+4) : rupture criterion normalised
+c     uvar(2+nt+3) : rupture parameter
+c     uvar(2+nt+4) : rupture parameter normalised by critical value
 c
 c                                            ---- get uvar before update
       se1    = uvar1(1)
@@ -2719,8 +2719,8 @@ c
 c     uvar(1)      : equivalent stress
 c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : hydrostatic stress
-c     uvar(2+nt+3) : rupture criterion
-c     uvar(2+nt+4) : rupture criterion normalised
+c     uvar(2+nt+3) : rupture parameter
+c     uvar(2+nt+4) : rupture parameter normalised by critical value
 c
 c                                            ---- get uvar before update
       se1   = uvar1(1)
@@ -2787,8 +2787,8 @@ c
 c     uvar(1)      : equivalent stress
 c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : hydrostatic stress
-c     uvar(2+nt+3) : rupture criterion
-c     uvar(2+nt+4) : rupture criterion normalised
+c     uvar(2+nt+3) : rupture parameter
+c     uvar(2+nt+4) : rupture parameter normalised by critical value
 c
 c                                            ---- get uvar before update
       se1   = uvar1(1)
@@ -2855,8 +2855,8 @@ c
 c     uvar(2+nt+1) : equivalent plastic strain
 c     uvar(2+nt+2) : maximum principal stress
 c     uvar(2+nt+3) : hydrostatic stress
-c     uvar(2+nt+4) : rupture criterion
-c     uvar(2+nt+5) : rupture criterion normalised
+c     uvar(2+nt+4) : rupture parameter
+c     uvar(2+nt+5) : rupture parameter normalised by critical value
 c
 c                                            ---- get uvar before update
       peeq1  = uvar1(2+nt+1)
@@ -2939,11 +2939,11 @@ c-----------------------------------------------------------------------
 c
 c     nuvarm : 5
 c
-c     uvar(2+nt+1) : major principal strain of element
-c     uvar(2+nt+2) : minor principal strain
-c     uvar(2+nt+3) : major principal strain on FLD
-c     uvar(2+nt+4) : rupture criterion
-c     uvar(2+nt+5) : rupture criterion normalised
+c     uvar(2+nt+1) : maximum principal strain
+c     uvar(2+nt+2) : minimum principal strain
+c     uvar(2+nt+3) : projection of major principal strain on FLD
+c     uvar(2+nt+4) : rupture parameter
+c     uvar(2+nt+5) : rupture parameter normalised by critical value
 c
 c                                            ---- get uvar before update
       wlimnorm  = uvar1(2+nt+6)
@@ -3919,7 +3919,7 @@ c
 c
       case ( 1 )                                             ! Hill 1948
         call jancae_hill1948 ( s,se,dseds,d2seds2,nreq,
-     &                          pryld,ndyld )
+     &                         pryld,ndyld )
 c
       case ( 2 )                                           ! Yld2004-18p
         call jancae_yld2004_18p ( s,se,dseds,d2seds2,nreq,
@@ -3927,7 +3927,7 @@ c
 c
       case ( 3 )                                              ! CPB 2006
         call jancae_cpb2006 ( s,se,dseds,d2seds2,nreq,
-     &                         pryld,ndyld )
+     &                        pryld,ndyld )
 c
       case ( 4 )                                 ! Karafillis-Boyce 1993
         call jancae_KarafillisBoyce ( s,se,dseds,d2seds2,nreq,
@@ -3939,7 +3939,7 @@ c
 c
       case ( 6 )                                          ! Yoshida 2011
         call jancae_yoshida2011 ( s,se,dseds,d2seds2,nreq,
-     &                             pryld,ndyld )
+     &                            pryld,ndyld )
 c
       case default
         write (6,*) 'error in jancae_yfunc'
@@ -8576,7 +8576,7 @@ c                                        ---- set anisotropic parameters
       cp2(5,5) =  pryld(1+17) ! for tau_xz (c"55 in original paper)
       cp2(6,6) =  pryld(1+16) ! for tau_zx (c"44 in original paper)
       am       =  pryld(1+19)
-c      dc       =  4
+      dc       =  4
       ami = 1.0d0 / am
 c
 c             ---- set matrix for transforming Cauchy stress to deviator
@@ -8603,7 +8603,7 @@ c                  ---- matrix for transforming Cauchy stress to sp1,sp2
       call jancae_mm ( ctp1,cp1,cl,6,6,6 )
       call jancae_mm ( ctp2,cp2,cl,6,6,6 )
 c                               ---- coefficient of equivalent stress dc
-      call jancae_yld2004_18p_coef ( cp1,cp2,pi,am,dc )
+c      call jancae_yld2004_18p_coef ( cp1,cp2,pi,am,dc )
 c                                  ---- calculation of equivalent stress
       call jancae_yld2004_18p_yf ( ctp1,ctp2,s,am,ami,dc,pi,
      &                             sp1,sp2,psp1,psp2,hp1,hp2,
