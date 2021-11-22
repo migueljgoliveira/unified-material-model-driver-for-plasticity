@@ -61,7 +61,7 @@ c
      &                          nt,lim,wlimnorm )
 c
       case ( 5 )                                                ! Brozzo
-        call jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,,
+        call jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
      &                           jrcd,jmac,jmatyp,matlayo,laccfla,
      &                           nt,lim,wlimnorm )
 c
@@ -85,63 +85,6 @@ c                    ---- terminate analysis if rupture limit is reached
           call jancae_exit( 10000 )
         end if
       end if
-c
-      return
-      end
-c
-c
-c
-c-----------------------------------------------------------------------
-c     print parameters for uncoupled rupture criteria
-c
-      subroutine jancae_rupture_print ( prrup,ndrup )
-c
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-c
-      dimension prrup(ndrup)
-c-----------------------------------------------------------------------
-c
-      ntrup = nint(prrup(1))
-      write (6,*)
-      write (6,*) '*** Uncoupled Rupture Criterion',ntrup
-c
-      select case ( ntrup )
-c
-      case ( 0 ) 										   	! No Uncoupled Rupture Criterion
-        write (6,*) 'No Uncoupled Rupture Criterion'
-c
-      case ( 1 ) 														 ! Equivalent Plastic Strain
-        write (6,*) 'Equivalent Plastic Strain'
-        write (6,*) 'W=int[dp]'
-        write (6,*) 'Wl=',prrup(3)
-c
-      case ( 2 )  																 ! Cockroft and Latham
-        write (6,*) 'Cockroft and Latham'
-        write (6,*) 'W=int[(sp1/se)*dp]'
-        write (6,*) 'Wl=',prrup(3)
-c
-      case ( 3 ) 																	     ! Rice and Tracey
-        write (6,*) 'Rice and Tracey'
-        write (6,*) 'W=int[exp(1.5*sh/se)*dp]'
-        write (6,*) 'Wl=',prrup(3)
-c
-      case ( 4 ) 																						     ! Ayada
-        write (6,*) 'Ayada'
-        write (6,*) 'W=int[(sh/se)*dp]'
-        write (6,*) 'Wl=',prrup(3)
-c
-      case ( 5 ) 																							  ! Brozzo
-        write (6,*) 'Brozzo'
-        write (6,*) 'W=int[(2/3)*(sp1/(sp1-se))*dp]'
-        write (6,*) 'Wl=',prrup(3)
-c
-      case ( 6 ) 	   														 ! Forming Limit Diagram
-        write (6,*) 'Forming Limit Diagram'
-        write (6,*) 'W=e1/e1(fld)'
-        write (6,*) 'Wl=',prrup(3)
-c
-      end select
 c
       return
       end
@@ -515,7 +458,7 @@ c                                 ---- get principal strain after update
         e1 = array(2)
 c                               ---- get logarithmic strain after update
       else
-				write (6,*) 'request error in uvarm for fld, only plane-stress'
+        write (6,*) 'request error in uvarm for fld, only plane-stress'
         write (6,*) 'stop in uvrm.'
         call jancae_exit ( 9000 )
 !         call getvrm ( 'LE',array,jarray,flgray,jrcd,jmac,jmatyp,

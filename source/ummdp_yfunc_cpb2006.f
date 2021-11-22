@@ -116,8 +116,10 @@ c                                       ---- 1st, 2nd and 3rd invariants
       H2 = (sigma(5)**2.0d0 + sigma(6)**2.0d0 + sigma(4)**2.0d0 -
      &      sigma(2)*sigma(3) - sigma(3)*sigma(1) - 
      &      sigma(1)*sigma(2)) / 3.0d0
-      H3 = (2.0d0*sigma(5)*sigma(6)*sigma(4) + sigma(1)*sigma(2)*sigma(3) - 
-     &      sigma(1)*sigma(6)**2.0d0 - sigma(2)*sigma(5)**2.0d0 -
+      H3 = (2.0d0*sigma(5)*sigma(6)*sigma(4) + 
+     &            sigma(1)*sigma(2)*sigma(3) - 
+     &            sigma(1)*sigma(6)**2.0d0 - 
+     &            sigma(2)*sigma(5)**2.0d0 -
      &      sigma(3)*sigma(4)**2.0d0) / 2.0d0 ! sigma(5) <-> sigma(6)
 c
       p = H1**2.0d0 + H2
@@ -362,7 +364,8 @@ c
           do i = 1,3
             do j = 1,6
               do ip = 1,6
-                dummat(i,j) = dummat(i,j) + DHDsigma(i,ip)*DsigmaDs(ip,j)
+                dummat(i,j) = dummat(i,j) + 
+     &                        DHDsigma(i,ip)*DsigmaDs(ip,j)
               end do
             end do
           end do
@@ -457,9 +460,11 @@ c                                       ---- 1st, 2nd and 3rd invariants
       H1 = (sigma(1)+sigma(2)+sigma(3)) / 3.0d0
       H2 = (sigma(5)**2.0d0+sigma(6)**2.0d0+sigma(4)**2.0d0 - 
      &     sigma(2)*sigma(3)-sigma(3)*sigma(1)-sigma(1)*sigma(2))/3.0d0
-      H3 = (2.0d0*sigma(5)*sigma(6)*sigma(4)+sigma(1)*sigma(2)*sigma(3) -
-     &    sigma(1)*sigma(6)**2.0d0-sigma(2)*sigma(5)**2.0d0 -
-     &    sigma(3)*sigma(4)**2.0d0) / 2.0d0 ! sigma(5) <-> sigma(6)
+      H3 = (2.0d0*sigma(5)*sigma(6)*sigma(4) + 
+     &            sigma(1)*sigma(2)*sigma(3) -
+     &            sigma(1)*sigma(6)**2.0d0 - 
+     &            sigma(2)*sigma(5)**2.0d0 -
+     &            sigma(3)*sigma(4)**2.0d0) / 2.0d0 ! sigma(5) <-> sigma(6)
 c
       p = H1**2.0d0+H2
       q = (2.0d0*H1**3.0d0+3.0d0*H1*H2+2.0d0*H3) / 2.0d0

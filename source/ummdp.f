@@ -999,33 +999,6 @@ c
 c
 c
 c-----------------------------------------------------------------------
-c     print parameters for elastic info
-c
-      subroutine jancae_elast_print ( prela,ndela )
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension prela(ndela)
-c
-      ntela = nint(prela(1))
-      write(6,*)
-      write (6,*) '*** Elastic Properties',ntela
-      select case ( ntela )
-      case ( 0 )
-        write (6,*) 'Hooke Isotropic Elasticity'
-        write (6,*) 'Youngs modulus=',prela(1+1)
-        write (6,*) 'Poissons ratio=',prela(1+2)
-      case ( 1 )
-        write (6,*) 'Hooke Isotropic Elasticity'
-        write (6,*) 'Bulk modulus  =',prela(1+1)
-        write (6,*) 'Shear modulus =',prela(1+2)
-      end select
-c
-      return
-      end
-c
-c
-c
-c-----------------------------------------------------------------------
 c     check dimensions of internal state variables
 c
       subroutine jancae_check_nisv ( nisv,nttl,npbs )

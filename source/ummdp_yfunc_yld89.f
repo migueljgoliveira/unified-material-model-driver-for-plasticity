@@ -172,7 +172,8 @@ c
 
         d2K2ds2(3,1) = d2K2ds2(1,3)
         d2K2ds2(3,2) = d2K2ds2(2,3)
-        d2K2ds2(3,3) = p*p*(DpK22**(-0.5d0)-p*p*s(3)*s(3)*DpK22**(-1.5d0))
+        d2K2ds2(3,3) = p*p*(DpK22**(-0.5d0) - 
+     &                 p*p*s(3)*s(3)*DpK22**(-1.5d0))
 c
       else
 c
@@ -207,7 +208,8 @@ c
 c                                                             ---- df3dK
 c
       df3dK(1) = 0.0d0
-      df3dK(2) = 2.0d0*pM*(2.0d0-a)*(2.0d0*pK2)*abs(2.0d0*pK2)**(pM-2.0d0)
+      df3dK(2) = 2.0d0*pM*(2.0d0-a)*(2.0d0*pK2) * 
+     &           abs(2.0d0*pK2)**(pM-2.0d0)
 c
 c                                            ---- dfdK=df1dK+df2dK+df3dK
 c
