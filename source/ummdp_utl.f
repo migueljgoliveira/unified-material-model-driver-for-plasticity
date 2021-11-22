@@ -301,7 +301,7 @@ c                                                 ---- check determinant
       if ( abs(d) <= eps ) then
          write (6,*) 'determinant det[a] error',d
          write (6,*) 'stop in minv'
-         call jancae_exit(9000)
+         call jancae_exit ( 9000 ) 
       end if
 c                                                            ---- B=A^-1
       do j = 1,n
@@ -477,7 +477,7 @@ c
       if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv2'
-         call jancae_exit(9000)
+         call jancae_exit ( 9000 )
       end if
 c
       detai = 1.0d0 / deta
@@ -508,7 +508,7 @@ c
       if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv3'
-         call jancae_exit(9000)
+         call jancae_exit ( 9000 )
       end if
 c
       detai = 1.0d0 / deta
@@ -566,7 +566,7 @@ c
       end if
       if ( nerr /= 0 ) then
         write (6,*) 'no supported element type',nnrm,nshr
-        call jancae_exit (9000)
+        call jancae_exit ( 9000 )
       end if
 c
       return
@@ -646,7 +646,7 @@ c                                                       ---- preparation
       if ( er/ax > eps ) then
         write (6,*) 'a is not symmetric'
         write (6,*) 'stop in jancae_eigen_sym3'
-        call jancae_exit (9000)
+        call jancae_exit ( 9000 )
       end if
       do i = 1,3
         do j = 1,3
@@ -740,7 +740,7 @@ c
       write (6,*) 'eps=',eps
       write (6,*) 'sum=',sum
       write (6,*) 'stop in jancae_eigen_sym3'
-      call jancae_exit(9000)
+      call jancae_exit ( 9000 )
 c
       end
 c
