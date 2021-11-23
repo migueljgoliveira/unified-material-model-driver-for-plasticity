@@ -742,6 +742,7 @@ c
       write (6,*) 'stop in jancae_eigen_sym3'
       call jancae_exit ( 9000 )
 c
+			return
       end
 c
 c

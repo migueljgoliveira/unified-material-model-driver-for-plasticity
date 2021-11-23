@@ -14,9 +14,9 @@ c     > Developed by M.G. Oliveira from University of Aveiro, Portugal
 c
 c***********************************************************************
 c
-      SUBROUTINE UMAT ( STRESS,STATEV,STRAN,DSTRAN,
+      SUBROUTINE UMAT ( STRESS,STATEV,STRAN,DSTRAN,DROT,
      &                  NDI,NSHR,NTENS,NSTATV,
-     &                  PROPS,NPROPS,DROT,
+     &                  PROPS,NPROPS,
      &                  NOEL,NPT,KSPT,KINC )
 c
       DIMENSION STRESS(NTENS),STATEV(NSTATV),
@@ -43,17 +43,20 @@ c
       dimension prop(mxprop)
 c-----------------------------------------------------------------------
 c
+cf2py intent(in) stress,statev,stran,dstran,drot
 cf2py intent(in) ndi,nshr,ntens,nstatv
-cf2py intent(in) nprops
+cf2py intent(in) props,nprops
 cf2py intent(in) noel,npt,kspt,kinc
+cf2py intent(out) stress,statev
 cf2py depend(ntens) stress,stran,dstran
 cf2py depend(nstatv) statev
-cf2py depend(nprops) props
 cf2py depend(nrot,nrot) drot
+cf2py depend(nprops) props
 c
 c-----------------------------------------------------------------------
+c
 c                                                   ---- open debug file
-      open(unit=6,file=trim('ummdp.log'),status='NEW')
+      ! open(unit=6,file=trim('ummdp.log'),status='NEW')
 c
 c                        ne  : element no.
 c                        ip  : integration point no.
@@ -135,7 +138,7 @@ c                           ----  if debug mode, output return arguments
      &                           statev,nstatv )
       end if
 c                                                  ---- close debug file
-      close(6)
+      ! close(6)
 c
       return
       end
@@ -168,7 +171,7 @@ c-----------------------------------------------------------------------
       dimension aux1(ndi,ndi),aux2(ndi,ndi),aux3(ndi,ndi)
       dimension auxrot(ndi,ndi)
 c                                              ---- set statev to tensor
-      call jancae_clear2( aux1,ndi,ndi)
+      call jancae_clear2( aux1,ndi,ndi )
       do i = 1,ndi
         do j = 1,ndi
           if ( i == j ) then
@@ -183,16 +186,15 @@ c                                              ---- set statev to tensor
         end do
       end do
 c                                               ---- copy drot to auxrot
-      call jancae_clear2( aux1,ndi,ndi)
+      call jancae_clear2( aux1,ndi,ndi )
       do i = 1,ndi
         do j = 1,ndi
           auxrot(i,j) = drot(i,j)
         end do
       end do
 c                                                     ---- rotate statev
-      aux2 = matmul(auxrot,aux1)
-      aux3 = matmul(aux2,transpose(auxrot))
-
+      call jancae_mm ( aux2,auxrot,aux1,ndi,ndi,ndi )
+      call jancae_mm ( aux3,aux2,transpose(auxrot),ndi,ndi,ndi )
 c                                     ---- set rotated tensor to ustatev
       do i = 1,ndi
         do j = 1,ndi
@@ -226,7 +228,7 @@ c                                  nexit : exit code
       write (6,*) 'integration point no. :',ip
       write (6,*) 'layer no.             :',lay
 c
-      stop
+      ! stop
 c
       return
       end
@@ -1087,6 +1089,7 @@ c           2  detail of MsRM and summary of NR
 c           3  detail of NR
 c           4  input/output
 c           5  all status for debug
+c
 c       MsRM : Multistage Return Mapping
 c       NR   : Newton-Raphson
 c
@@ -3268,6 +3271,7 @@ c
       write (6,*) 'stop in jancae_eigen_sym3'
       call jancae_exit ( 9000 )
 c
+			return
       end
 c
 c
