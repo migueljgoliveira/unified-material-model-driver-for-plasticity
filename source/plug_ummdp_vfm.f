@@ -103,13 +103,13 @@ c                             ---- copy current internal state variables
 c
 c                             ---- update stress and set tangent modulus
       mjac = 0
-      call jancae_plasticity ( stress,s2,dstran,
-     &                         p,dp,dpe,de33,
-     &                         x1,x2,mxpbs,
-     &                         ddsdde,
-     &                         ndi,nshr,ntens,
-     &                         nvbs,mjac,
-     &                         prop,nprop,propdim )
+      call ummdp_plasticity ( stress,s2,dstran,
+     &                        p,dp,dpe,de33,
+     &                        x1,x2,mxpbs,
+     &                        ddsdde,
+     &                        ndi,nshr,ntens,
+     &                        nvbs,mjac,
+     &                        prop,nprop,propdim )
 c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
