@@ -1,13 +1,22 @@
-c----------------------------------------------------------------(mises)
-c     von Mises yield function and its dfferentials
-c     ( 1913 )
+************************************************************************
+c     VON MISES YIELD FUNCTION AND DERIVATIVES
 c
       subroutine jancae_mises ( s,se,dseds,d2seds2,nreq )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(6),dseds(6),d2seds2(6,6)
-      dimension c(6,6),v(6)
-c                                                      ---- coef. matrix
+      implicit none
+c
+      integer nreq
+      real*8 se
+			real*8 s(6),dseds(6)
+			real*8 d2seds2(6,6)
+c
+      integer i,j
+			real*8 phi
+      real*8 v(6)
+			real*8 c(6,6)
+c-----------------------------------------------------------------------
+c	
+c                                               ---- coefficients matrix
       call jancae_clear2 ( c,6,6 )
       do i = 1,3
         do j = 1,3
@@ -23,13 +32,13 @@ c
       call jancae_vvs ( phi,s,v,6 )
 c                                                 ---- equivalent stress
       se = sqrt(phi)
-c                                            ---- 1st order differential
+c                                              ---- 1st order derivative
       if ( nreq >= 1 ) then
         do i = 1,6
           dseds(i) = v(i) / se
         end do
       end if
-c                                            ---- 2nd order differential
+c                                              ---- 2nd order derivative
       if ( nreq >= 2 ) then
         do i = 1,6
           do j = 1,6
@@ -39,7 +48,7 @@ c                                            ---- 2nd order differential
       end if
 c
       return
-      end
+      end subroutine jancae_mises
 c
 c
 c

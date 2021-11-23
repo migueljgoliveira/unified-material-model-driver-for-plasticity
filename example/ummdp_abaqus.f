@@ -4138,7 +4138,7 @@ c-----------------------------------------------------------------------
 c
       integer nreq,nttl,nnrm,nshr,ndyld
       real*8 se
-			real*8 cs(nttl),cdseds(nttl),pryld(ndyld)
+			real*8 cdseds(nttl),cs(nttl),pryld(ndyld)
 			real*8 cd2seds2(nttl,nttl)
 c       
       integer i,j
@@ -4291,7 +4291,7 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_yfunc
 c
 c
 cc--------------------------------------------------------------(bbc2005)
@@ -5792,32 +5792,33 @@ c
 c
 c
 c
-cc-------------------------------------------------------------(hill1948)
-c     Hill 1948 yield function and its dfferentials
-c     (  Proc. Roy. Soc. A193(1948) p281-297 )
-c
-c     ( flow curve must be defined in uniaxial sx vs ex )
+c************************************************************************
+c     Hill 1948 YIELD FUNCTION AND DERIVATIVES
 c
       subroutine jancae_hill1948 ( s,se,dseds,d2seds2,nreq,
      &                             pryld,ndyld )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(6),dseds(6),d2seds2(6,6),pryld(ndyld)
-      dimension c(6,6),v(6)
+      implicit none
 c
-c     c(i,j)    : matrix to calc. se
-c     Hill's 1948 function se = ({s}^T*[c]*{s})^(1/2)
+      integer nreq,ndyld
+      real*8 se
+			real*8 s(6),dseds(6),pryld(ndyld)
+			real*8 d2seds2(6,6)
+c
+      integer i,j
+			real*8 pf,pg,ph,pl,pm,pn,phi
+      real*8 v(6)
+			real*8 c(6,6)
+c-----------------------------------------------------------------------
 c
 c                                            ---- anisotropic parameters
-c                              pf means "F", pg means "G"....
-c                         F=G=H=1 and L=M=N=3 means von Mises
       pf = pryld(1+1)
       pg = pryld(1+2)
       ph = pryld(1+3)
       pl = pryld(1+4)
       pm = pryld(1+5)
       pn = pryld(1+6)
-c                                                      ---- coef. matrix
+c                                               ---- coefficients matrix
       call jancae_clear2 ( c,6,6 )
       c(1,1) = pg + ph
       c(1,2) = -ph
@@ -5842,13 +5843,13 @@ c
 c                                                 ---- equivalent stress
       if ( phi <= 0.0 ) phi = 0.0
       se = sqrt(phi)
-c                                            ---- 1st order differential
+c                                              ---- 1st order derivative
       if ( nreq >= 1 ) then
         do i = 1,6
           dseds(i) = v(i) / se
         end do
       end if
-c                                            ---- 2nd order differential
+c                                              ---- 2nd order derivative
       if ( nreq >= 2 ) then
         do i = 1,6
           do j = 1,6
@@ -5858,7 +5859,7 @@ c                                            ---- 2nd order differential
       end if
 c
       return
-      end
+      end subroutine jancae_hill1948
 c
 c
 c
@@ -6687,16 +6688,25 @@ c
       end
 c
 c
-cc----------------------------------------------------------------(mises)
-c     von Mises yield function and its dfferentials
-c     ( 1913 )
+c************************************************************************
+c     VON MISES YIELD FUNCTION AND DERIVATIVES
 c
       subroutine jancae_mises ( s,se,dseds,d2seds2,nreq )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(6),dseds(6),d2seds2(6,6)
-      dimension c(6,6),v(6)
-c                                                      ---- coef. matrix
+      implicit none
+c
+      integer nreq
+      real*8 se
+			real*8 s(6),dseds(6)
+			real*8 d2seds2(6,6)
+c
+      integer i,j
+			real*8 phi
+      real*8 v(6)
+			real*8 c(6,6)
+c-----------------------------------------------------------------------
+c	
+c                                               ---- coefficients matrix
       call jancae_clear2 ( c,6,6 )
       do i = 1,3
         do j = 1,3
@@ -6712,13 +6722,13 @@ c
       call jancae_vvs ( phi,s,v,6 )
 c                                                 ---- equivalent stress
       se = sqrt(phi)
-c                                            ---- 1st order differential
+c                                              ---- 1st order derivative
       if ( nreq >= 1 ) then
         do i = 1,6
           dseds(i) = v(i) / se
         end do
       end if
-c                                            ---- 2nd order differential
+c                                              ---- 2nd order derivative
       if ( nreq >= 2 ) then
         do i = 1,6
           do j = 1,6
@@ -6728,7 +6738,7 @@ c                                            ---- 2nd order differential
       end if
 c
       return
-      end
+      end subroutine jancae_mises
 c
 c
 c
