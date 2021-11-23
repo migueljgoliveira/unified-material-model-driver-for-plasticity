@@ -34,14 +34,16 @@ c-----------------------------------------------------------------------
 c
       ntela = nint(prela(1))
       write(6,*)
-      write (6,*) '>> Elasticity',ntela
+      write (6,'(4XA)') '>>> Elasticity'
       select case ( ntela )
       case ( 0 )
-        write (6,*) 'Hooke Isotropic Elasticity'
-        write (6,*) 'Youngs modulus=',prela(1+1)
-        write (6,*) 'Poissons ratio=',prela(1+2)
+        write (6,'(8xA,I2)') '>> Young’s Modulus and Poisson’s Ratio'
+        ! write (6,'(12xA,I2)') ' > ID:',ntela
+        write (6,'(12xA,I2)') '. prela(1) =',prela(1)
+        write (6,'(12xA,F10.1)') '. prela(2) =',prela(1+1)
+        write (6,'(12xA,F5.2)') '. prela(3) =',prela(1+2)
       case ( 1 )
-        write (6,*) 'Hooke Isotropic Elasticity'
+        write (6,*) 'Bulk Modulus and Modulus of Rigidity'
         write (6,*) 'Bulk modulus  =',prela(1+1)
         write (6,*) 'Shear modulus =',prela(1+2)
       end select

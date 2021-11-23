@@ -1,6 +1,6 @@
 c***********************************************************************
 c
-c     UMMDp : Isotropic Hardening Laws
+c     UMMDp: Isotropic Hardening Laws
 c
 c***********************************************************************
 c
@@ -12,16 +12,20 @@ c      4 : Voce
 c      5 : Voce + Linear
 c      6 : Voce + Swift
 c
-c-----------------------------------------------------------------------
-c     hardening curve
+************************************************************************
+c     ISOTROPIC HARDENING LAW 
 c
       subroutine jancae_hardencurve ( sy,dsydp,d2sydp2,
      &                                nreq,p,prihd,ndihd )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension prihd(ndihd)
+      integer ndihd,nreq
+      real*8 sy,dsydp,d2sydp2,p
+      real*8 prihd(ndihd)
+c
+      integer ntihd
+      real*8 sy0,hard,c,e0,en,q,b,a
 c-----------------------------------------------------------------------
 c
       ntihd = nint(prihd(1))
@@ -33,8 +37,8 @@ c
           dsydp = 0.0
           if ( nreq >= 2 ) then
             d2sydp2 = 0.0
-					end if
-				end if
+          end if
+        end if
 c
       case ( 1 )                                                ! Linear
         sy0  = prihd(1+1)
@@ -44,8 +48,8 @@ c
           dsydp = hard
           if ( nreq >= 2 ) then
             d2sydp2 = 0.0
-					end if
-				end if
+          end if
+        end if
 c
       case ( 2 )                                                 ! Swift
         c  = prihd(1+1)
@@ -56,8 +60,8 @@ c
           dsydp = en*c*(e0+p)**(en-1.0d0)
           if ( nreq >= 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*(e0+p)**(en-2.0d0)
-					end if
-				end if
+          end if
+        end if
 c
       case ( 3 )                                               ! Ludwick
         sy0 = prihd(1+1)
@@ -68,8 +72,8 @@ c
           dsydp = en*c*p**(en-1.0d0)
           if ( nreq >= 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*p**(en-2.0d0)
-					end if
-				end if
+          end if
+        end if
 c
       case ( 4 )                                                  ! Voce
         sy0 = prihd(1+1)
@@ -80,8 +84,8 @@ c
           dsydp = q*b*exp(-b*p)
           if ( nreq >= 2 ) then
             d2sydp2 = -q*b*b*exp(-b*p)
-					end if
-				end if
+          end if
+        end if
 c
       case ( 5 )                                         ! Voce + Linear
         sy0 = prihd(1+1)
@@ -93,8 +97,8 @@ c
           dsydp = q*b*exp(-b*p)+c
           if ( nreq >= 2 ) then
             d2sydp2 = -q*b*b*exp(-b*p)
-					end if
-				end if
+          end if
+        end if
 c
       case ( 6 )                                          ! Voce + Swift
         a   = prihd(1+1)
@@ -108,10 +112,10 @@ c
         if ( nreq >= 1 ) then
           dsydp = a*(q*b*exp(-b*p)) +(1.0d0-a)*(en*c*(e0+p)**(en-1.0d0))
           if ( nreq >= 2 ) then
-            d2sydp2 = a*(-q*b*b*exp(-b*p)) + 
+            d2sydp2 = a*(-q*b*b*exp(-b*p)) +
      &                (1.0d0-a)*(en*c*(en-1.0d0)*(e0+p)**(en-2.0d0))
-					end if
-				end if
+          end if
+        end if
 c
       case default
         write (6,*) 'hardening type error',ntihd
