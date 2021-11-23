@@ -19,7 +19,7 @@ c
 c-----------------------------------------------------------------------
 c     this is dummy routine
 c
-      subroutine jancae_plasticity ( s1,s2,de,
+      subroutine ummdp_plasticity ( s1,s2,de,
      &                               p,dp,dpe,de33,
      &                               x1,x2,mxpbs,
      &                               ddsdde,
