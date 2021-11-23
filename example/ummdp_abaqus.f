@@ -2284,17 +2284,43 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
-c     print parameters for elastic info
+c***********************************************************************
+c
+c     UMMDp: Print Subroutines
+c
+c***********************************************************************
+c
+c     jancae_elast_print ( prela,ndela )
+c       print elasticity parameters
+c
+c     jancae_yfunc_print ( pryld,ndyld )
+c       print yield criteria parameters
+c
+c     jancae_harden_print ( prihd,ndihd )
+c       print isotropic hardening law parameters
+c
+c     jancae_kinematic_print ( prkin,ndkin,npbs )
+c       print kinematic hardening law parameters
+c
+c     jancae_rupture_print ( prrup,ndrup )
+c       print uncoupled rupture criterion parameters
+c     
+************************************************************************
+c     PRINT ELASTICITY PARAMETERS
 c
       subroutine jancae_elast_print ( prela,ndela )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension prela(ndela)
+      implicit none
+c
+      integer ndela
+      real*8 prela(ndela)
+c
+      integer ntela
+c-----------------------------------------------------------------------
 c
       ntela = nint(prela(1))
       write(6,*)
-      write (6,*) '*** Elastic Properties',ntela
+      write (6,*) '>> Elasticity',ntela
       select case ( ntela )
       case ( 0 )
         write (6,*) 'Hooke Isotropic Elasticity'
@@ -2307,24 +2333,27 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_elast_print
 c
 c
 c
-c-----------------------------------------------------------------------
-c     print type and parameters for yield criteria
+************************************************************************
+c     PRINT YIELD CRITERIA PARAMETERS
 c
       subroutine jancae_yfunc_print ( pryld,ndyld )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-			dimension pryld(ndyld)
+      integer ndyld
+      real*8 pryld(ndyld)
+c
+      integer i,j
+      integer ntyld,n0,n
 c-----------------------------------------------------------------------
 c
       ntyld = pryld(1)
       write (6,*)
-      write (6,*) '*** Yield Criterion',ntyld
+      write (6,*) '>> Yield Criterion',ntyld
       select case ( ntyld )
 c
       case ( 0 )                                             ! von Mises
@@ -2483,24 +2512,26 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_yfunc_print
 c
 c
 c
-c-----------------------------------------------------------------------
-c     print parameters for isotropic hardening laws info
+************************************************************************
+c     PRINT ISOTROPIC HARDENING LAW PARAMETERS
 c
       subroutine jancae_harden_print ( prihd,ndihd )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-			dimension prihd(ndihd)
+      integer ndihd
+      real*8 prihd(ndihd)
+c
+      integer ntihd
 c-----------------------------------------------------------------------
 c
       ntihd = nint(prihd(1))
       write (6,*)
-      write (6,*) '*** Isotropic Hardening Law',ntihd
+      write (6,*) '>> Isotropic Hardening Law',ntihd
       select case ( ntihd )
       case ( 0 )
         write (6,*) 'Perfect Plasticity'
@@ -2549,24 +2580,27 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_harden_print
 c
 c
 c
-c-----------------------------------------------------------------------
-c     print parameters for kinematic hardening laws
+************************************************************************
+c     PRINT KINEMATIC HARDENING LAW PARAMETERS
 c
       subroutine jancae_kinematic_print ( prkin,ndkin,npbs )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension prkin(ndkin)
+      integer ndkin,npbs
+      real*8 prkin(ndkin)
+c
+      integer i
+      integer ntkin,n0
 c-----------------------------------------------------------------------
 c
       ntkin = nint(prkin(1))
       write (6,*)
-      write (6,*) '*** Kinematic Hardening Law',ntkin
+      write (6,*) '>> Kinematic Hardening Law',ntkin
       select case ( ntkin )
       case ( 0 )                                ! No Kinematic Hardening
         write (6,*) 'No Kinematic Hardening'
@@ -2593,7 +2627,7 @@ c
           n0 = 1+(i-1)*2
           write (6,*) 'c(',i,')=',prkin(1+n0+1)
           write (6,*) 'g(',i,')=',prkin(1+n0+2)
-				end do
+        end do
 c
       case ( 5 )                       ! Chaboche (1979) - Ziegler Model
         write (6,*) 'Chaboche (1979) - Ziegler Model'
@@ -2603,7 +2637,7 @@ c
           n0 = 1+(i-1)*2
           write (6,*) 'c(',i,')=',prkin(1+n0+1)
           write (6,*) 'g(',i,')=',prkin(1+n0+2)
-				end do
+        end do
 c
       case ( 6 )                                        ! Yoshida-Uemori
         write (6,*) 'Yoshida-Uemori'
@@ -2616,24 +2650,26 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_kinematic_print
 c
 c
 c
-c-----------------------------------------------------------------------
-c     print parameters for uncoupled rupture criteria
+************************************************************************
+c     PRINT UNCOUPLED RUPTURE CRITERION PARAMETERS
 c
       subroutine jancae_rupture_print ( prrup,ndrup )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension prrup(ndrup)
+      integer ndrup
+      real*8 prrup(ndrup)
+c
+      integer ntrup
 c-----------------------------------------------------------------------
 c
       ntrup = nint(prrup(1))
       write (6,*)
-      write (6,*) '*** Uncoupled Rupture Criterion',ntrup
+      write (6,*) '>> Uncoupled Rupture Criterion',ntrup
 c
       select case ( ntrup )
 c
@@ -2673,7 +2709,7 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_rupture_print
 c
 c
 cc***********************************************************************
@@ -3230,59 +3266,64 @@ c
 c
 cc***********************************************************************
 c
-c     UMMDp : Utility Subroutines
+c     UMMDp: Utility Subroutines
 c
 c***********************************************************************
 c
 c     jancae_clear1 ( a,n )
-c       clear 1st order tensor (vector) a(n)
+c       clear 1st order vector
 c
 c     jancae_clear2 ( a,n,m )
-c       clear 2nd order tensor (matrix) a(n,m)
+c       clear 2nd order matrix
 c
 c     jancae_clear3 ( a,n,m,l )
-c       clear 3rd order tensor a(n,m,l)
+c       clear 3rd order tensor
 c
 c     jancae_setunitm ( a,n )
-c       set unit 2nd oder tensor [I]
+c       set unit 2nd order matrix
 c
 c     jancae_print1 ( text,a,n )
-c       print 1st order tensor with title (text)
+c       print vector with text
 c
 c     jancae_print2 ( text,a,n,m )
-c       print 2nd order tensor with title (text)
+c       print matrix with text
 c
 c     jancae_mv (v,a,u,nv,nu)
-c       mutiply matrix to vector v(nv)=a(nv,nu)*u(nu)
+c       mutiply matrix and vector
 c
 c     jancae_mm (a,b,c,na1,na2,nbc)
-c       mutiply matrix and matrix a(na1,na2)=b(na1,nbc)*c(nbc,na2)
+c       mutiply matrix and matrix
 c
 c     jancae_vvs ( s,u,v,n )
-c       calc. scalar (inner) product of v(n) & u(n)
+c       calculate scalar product of vectors 
 c
 c     jancae_minv ( b,a,n,d )
-c       calc. inverse matrix b(n,n)=a(n,n)^-1 and det(a)
-c       branch to following routines
-c       jancae_ludcmp( a,n,indx,d ) : LU-decomposition
-c       jancae_lubksb(a,n,indx,b)   : backward subsitution
-c       jancae_minv2 ( b,a,deta )   : for 2*2 matrix
-c       jancae_minv3 ( b,a,deta )   : for 3*3 matrix
+c       calculate inverse matrix using lu decomposition
+c
+c         jancae_ludcmp( a,n,indx,d )
+c           lu decomposition
+c         jancae_lubksb(a,n,indx,b)
+c           lu backward substitution
+c         jancae_minv2 ( b,a,deta )
+c           calculate inverse matrix 2x2
+c         jancae_minv3 ( b,a,deta )
+c           calculate inverse matrix 3x3
 c
 c     jancae_eigen_sym3 ( es,ev,a )
-c       calc. eigen value and normalized eigen vector (3*3sym)
+c       calculate eigenvalues and eigenvectors by jacobi method
 c
-c     jancae_printinfo.
-c       print inc.info. and element info.
+c     jancae_printinfo
+c       print informations for debug (info)
 c
 c     jancae_printinout
-c       print input and output of user subroutine
+c       print informations for debug (input/output)
 c
-c--------------------------------------------------------- jancae_clear1
-c     ZERO CLEAR VECTOR A(N)
+c
+c
+************************************************************************
+c     CLEAR 1st ORDER VECTOR A(N)
 c
       subroutine jancae_clear1 ( a,n )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3301,11 +3342,10 @@ c
 c
 c
 c
-c--------------------------------------------------------- jancae_clear2
-c     ZERO CLEAR VECTOR A(N,M)
+************************************************************************
+c     CLEAR 2ND ORDER MATRIX
 c
       subroutine jancae_clear2 ( a,n,m )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3326,11 +3366,10 @@ c
 c
 c
 c
-c--------------------------------------------------------- jancae_clear3
-c     ZERO CLEAR VECTOR A(N,M,L)
+************************************************************************
+c     CLEAR 3RD ORDER MATRIX
 c
       subroutine jancae_clear3 ( a,n,m,l )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3353,11 +3392,10 @@ c
 c
 c
 c
-c------------------------------------------------------- jancae_setunitm
-c     SET UNIT 2nd ORDER TENSOR [I]
+************************************************************************
+c     SET UNIT 2ND ORDER MATRIX
 c
       subroutine jancae_setunitm ( a,n )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3377,11 +3415,10 @@ c
 c
 c
 c
-c--------------------------------------------------------- jancae_print1
-c     PRINT VECTOR A(N) WITH TEXT
+************************************************************************
+c     PRINT VECTOR WITH TEXT
 c
       subroutine jancae_print1 ( text,a,n )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3402,7 +3439,7 @@ c
 c
 c
 ************************************************************************
-c     PRINT MATRIX A(N,M) WITH TEXT
+c     PRINT MATRIX WITH TEXT
 c
       subroutine jancae_print2 ( text,a,n,m )
 c-----------------------------------------------------------------------
@@ -3426,8 +3463,7 @@ c
 c
 c
 ************************************************************************
-c     CALCULATE MULTIPLICATION OF MATRIX AND VECTOR | {V} = [A]{U}
-c     
+c     MULTIPLY MATRIX AND VECTOR
 c
       subroutine jancae_mv ( v,a,u,nv,nu )
 c-----------------------------------------------------------------------
@@ -3453,9 +3489,8 @@ c
 c
 c
 ************************************************************************
-c     CALCULATE MULTIPLICATION OF MATRIX AND MATRIX | [A] = [B][C]
+c     MULTIPLY MATRIX AND MATRIX
 c     
-c
       subroutine jancae_mm ( a,b,c,na1,na2,nbc )
 c-----------------------------------------------------------------------
       implicit none
@@ -3481,7 +3516,7 @@ c
 c
 c
 ************************************************************************
-c     CALCULATE SCALAR PRODUCT OF VECTORS | S = {U}T{V}
+c     CALCULATE SCALAR PRODUCT OF VECTORS
 c
       subroutine jancae_vvs ( s,u,v,n )
 c-----------------------------------------------------------------------
@@ -3505,7 +3540,7 @@ c
 c
 c
 ************************************************************************
-c     CALCULATE INVERSE MATRIX USING LU DECOMPOSITION | [A] = [A]^-1
+c     CALCULATE INVERSE MATRIX USING LU DECOMPOSITION
 c
 c     Ref.: http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
 c
@@ -3615,7 +3650,8 @@ c
 			real*8 d,eps
       real*8 a(n,n)
 c
-			integer i,j,k,imax
+			integer i,j,k
+			integer imax
 			real*8 aamax,sum,dum,ajj
 			real*8 vtemp(n)
       character*32 text
@@ -3699,7 +3735,8 @@ c
 			real*8 eps
 			real*8 a(n,n),b(n)
 c
-			integer i,j,ii,ll
+			integer i,j
+			integer ii,ll
 			real*8 sum
 c-----------------------------------------------------------------------
 c
@@ -3909,7 +3946,8 @@ c
       real*8 es(3)
 			real*8 ev(3,3),a(3,3)
 c
-			integer msweep,i,j,is,ip,ir,iq
+			integer i,j,is,ip,iq,ir
+			integer msweep
 			real*8 eps,ax,er,sum,od,hd,theta,t,c,s,tau,h,g
       real*8 w(3,3),prc(3,3)
 c-----------------------------------------------------------------------
@@ -4017,7 +4055,7 @@ c
 ************************************************************************
 c     CHECKING EXISTENCE OF FILE NAMES 'FLNAME'
 c
-       logical function jancae_file_exist ( flname )
+      logical function jancae_file_exist ( flname )
 c
 c-----------------------------------------------------------------------
       implicit none
@@ -4037,7 +4075,7 @@ c
    10 jancae_file_exist = .false.
       return
 c
-      end function
+      end function jancae_file_exist
 c
 c
 c

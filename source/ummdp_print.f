@@ -1,14 +1,40 @@
-c-----------------------------------------------------------------------
-c     print parameters for elastic info
+c***********************************************************************
+c
+c     UMMDp: Print Subroutines
+c
+c***********************************************************************
+c
+c     jancae_elast_print ( prela,ndela )
+c       print elasticity parameters
+c
+c     jancae_yfunc_print ( pryld,ndyld )
+c       print yield criteria parameters
+c
+c     jancae_harden_print ( prihd,ndihd )
+c       print isotropic hardening law parameters
+c
+c     jancae_kinematic_print ( prkin,ndkin,npbs )
+c       print kinematic hardening law parameters
+c
+c     jancae_rupture_print ( prrup,ndrup )
+c       print uncoupled rupture criterion parameters
+c     
+************************************************************************
+c     PRINT ELASTICITY PARAMETERS
 c
       subroutine jancae_elast_print ( prela,ndela )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension prela(ndela)
+      implicit none
+c
+      integer ndela
+      real*8 prela(ndela)
+c
+      integer ntela
+c-----------------------------------------------------------------------
 c
       ntela = nint(prela(1))
       write(6,*)
-      write (6,*) '*** Elastic Properties',ntela
+      write (6,*) '>> Elasticity',ntela
       select case ( ntela )
       case ( 0 )
         write (6,*) 'Hooke Isotropic Elasticity'
@@ -21,24 +47,27 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_elast_print
 c
 c
 c
-c-----------------------------------------------------------------------
-c     print type and parameters for yield criteria
+************************************************************************
+c     PRINT YIELD CRITERIA PARAMETERS
 c
       subroutine jancae_yfunc_print ( pryld,ndyld )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-			dimension pryld(ndyld)
+      integer ndyld
+      real*8 pryld(ndyld)
+c
+      integer i,j
+      integer ntyld,n0,n
 c-----------------------------------------------------------------------
 c
       ntyld = pryld(1)
       write (6,*)
-      write (6,*) '*** Yield Criterion',ntyld
+      write (6,*) '>> Yield Criterion',ntyld
       select case ( ntyld )
 c
       case ( 0 )                                             ! von Mises
@@ -197,24 +226,26 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_yfunc_print
 c
 c
 c
-c-----------------------------------------------------------------------
-c     print parameters for isotropic hardening laws info
+************************************************************************
+c     PRINT ISOTROPIC HARDENING LAW PARAMETERS
 c
       subroutine jancae_harden_print ( prihd,ndihd )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-			dimension prihd(ndihd)
+      integer ndihd
+      real*8 prihd(ndihd)
+c
+      integer ntihd
 c-----------------------------------------------------------------------
 c
       ntihd = nint(prihd(1))
       write (6,*)
-      write (6,*) '*** Isotropic Hardening Law',ntihd
+      write (6,*) '>> Isotropic Hardening Law',ntihd
       select case ( ntihd )
       case ( 0 )
         write (6,*) 'Perfect Plasticity'
@@ -263,24 +294,27 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_harden_print
 c
 c
 c
-c-----------------------------------------------------------------------
-c     print parameters for kinematic hardening laws
+************************************************************************
+c     PRINT KINEMATIC HARDENING LAW PARAMETERS
 c
       subroutine jancae_kinematic_print ( prkin,ndkin,npbs )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension prkin(ndkin)
+      integer ndkin,npbs
+      real*8 prkin(ndkin)
+c
+      integer i
+      integer ntkin,n0
 c-----------------------------------------------------------------------
 c
       ntkin = nint(prkin(1))
       write (6,*)
-      write (6,*) '*** Kinematic Hardening Law',ntkin
+      write (6,*) '>> Kinematic Hardening Law',ntkin
       select case ( ntkin )
       case ( 0 )                                ! No Kinematic Hardening
         write (6,*) 'No Kinematic Hardening'
@@ -307,7 +341,7 @@ c
           n0 = 1+(i-1)*2
           write (6,*) 'c(',i,')=',prkin(1+n0+1)
           write (6,*) 'g(',i,')=',prkin(1+n0+2)
-				end do
+        end do
 c
       case ( 5 )                       ! Chaboche (1979) - Ziegler Model
         write (6,*) 'Chaboche (1979) - Ziegler Model'
@@ -317,7 +351,7 @@ c
           n0 = 1+(i-1)*2
           write (6,*) 'c(',i,')=',prkin(1+n0+1)
           write (6,*) 'g(',i,')=',prkin(1+n0+2)
-				end do
+        end do
 c
       case ( 6 )                                        ! Yoshida-Uemori
         write (6,*) 'Yoshida-Uemori'
@@ -330,24 +364,26 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_kinematic_print
 c
 c
 c
-c-----------------------------------------------------------------------
-c     print parameters for uncoupled rupture criteria
+************************************************************************
+c     PRINT UNCOUPLED RUPTURE CRITERION PARAMETERS
 c
       subroutine jancae_rupture_print ( prrup,ndrup )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension prrup(ndrup)
+      integer ndrup
+      real*8 prrup(ndrup)
+c
+      integer ntrup
 c-----------------------------------------------------------------------
 c
       ntrup = nint(prrup(1))
       write (6,*)
-      write (6,*) '*** Uncoupled Rupture Criterion',ntrup
+      write (6,*) '>> Uncoupled Rupture Criterion',ntrup
 c
       select case ( ntrup )
 c
@@ -387,7 +423,7 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_rupture_print
 c
 c
 c

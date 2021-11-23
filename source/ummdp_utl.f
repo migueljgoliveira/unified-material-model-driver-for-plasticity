@@ -384,7 +384,8 @@ c
 			real*8 d,eps
       real*8 a(n,n)
 c
-			integer i,j,k,imax
+			integer i,j,k
+			integer imax
 			real*8 aamax,sum,dum,ajj
 			real*8 vtemp(n)
       character*32 text
@@ -468,7 +469,8 @@ c
 			real*8 eps
 			real*8 a(n,n),b(n)
 c
-			integer i,j,ii,ll
+			integer i,j
+			integer ii,ll
 			real*8 sum
 c-----------------------------------------------------------------------
 c
@@ -678,7 +680,8 @@ c
       real*8 es(3)
 			real*8 ev(3,3),a(3,3)
 c
-			integer msweep,i,j,is,ip,ir,iq
+			integer i,j,is,ip,iq,ir
+			integer msweep
 			real*8 eps,ax,er,sum,od,hd,theta,t,c,s,tau,h,g
       real*8 w(3,3),prc(3,3)
 c-----------------------------------------------------------------------
