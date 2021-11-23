@@ -23,19 +23,26 @@ c      -5 : Yld89
 c      -6 : BBC 2008
 c      -7 : Hill 1990
 c
-c-----------------------------------------------------------------------
-c     yield criteria and its differentials
+************************************************************************
+c     CALCULATE YIELD FUNCTION AND DERIVATIVES
 c
       subroutine jancae_yfunc ( se,cdseds,cd2seds2,nreq,
      &                          cs,nttl,nnrm,nshr,
      &                          pryld,ndyld )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension cs(nttl),cdseds(nttl),cd2seds2(nttl,nttl),
-     &          pryld(ndyld)
-      dimension s(6),dseds(6),d2seds2(6,6),indx(6)
+      integer nreq,nttl,nnrm,nshr,ndyld
+      real*8 se
+			real*8 cdseds(nttl),cs(nttl),pryld(ndyld)
+			real*8 cd2seds2(nttl,nttl)
+c       
+      integer i,j
+      integer ntyld
+      integer indx(6)
+			real*8 ss
+	    real*8 s(6),dseds(6)
+			real*8 d2seds2(6,6)
 c-----------------------------------------------------------------------
 c
       ntyld = nint(pryld(1))
@@ -180,7 +187,7 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_yfunc
 c
 c
 c
