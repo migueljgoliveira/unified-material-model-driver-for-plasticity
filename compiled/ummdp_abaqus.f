@@ -1238,6 +1238,7 @@ c           2  detail of MsRM and summary of NR
 c           3  detail of NR
 c           4  input/output
 c           5  all status for debug
+c
 c       MsRM : Multistage Return Mapping
 c       NR   : Newton-Raphson
 c
@@ -3283,9 +3284,12 @@ c
       subroutine jancae_clear1 ( a,n )
 c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension a(n)
+      integer n
+      real*8 a(n)
+c
+      integer i
 c-----------------------------------------------------------------------
 c
       do i = 1,n
@@ -3293,7 +3297,7 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_clear1
 c
 c
 c
@@ -3303,9 +3307,12 @@ c
       subroutine jancae_clear2 ( a,n,m )
 c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension a(n,m)
+      integer n,m
+      real*8 a(n,m)
+c
+      integer i,j
 c-----------------------------------------------------------------------
 c
       do i = 1,n
@@ -3315,7 +3322,7 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_clear2
 c
 c
 c
@@ -3325,9 +3332,12 @@ c
       subroutine jancae_clear3 ( a,n,m,l )
 c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension a(n,m,l)
+      integer n,m,l
+      real*8 a(n,m,l)
+c
+      integer i,j,k
 c-----------------------------------------------------------------------
 c
       do i = 1,n
@@ -3339,7 +3349,7 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_clear3
 c
 c
 c
@@ -3349,9 +3359,12 @@ c
       subroutine jancae_setunitm ( a,n )
 c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension a(n,n)
+      integer n
+      real*8 a(n,n)
+c
+      integer i
 c-----------------------------------------------------------------------
 c
       call jancae_clear2 ( a,n,n )
@@ -3360,7 +3373,7 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_setunitm
 c
 c
 c
@@ -3370,10 +3383,13 @@ c
       subroutine jancae_print1 ( text,a,n )
 c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension a(n)
-      character text*32
+      integer n
+      real*8 a(n)
+      character*32 text
+c
+      integer i
 c-----------------------------------------------------------------------
 c
       write (6,*) text
@@ -3381,7 +3397,7 @@ c
  9000 format (6e16.8)
 c
       return
-      end
+      end subroutine jancae_print1
 c
 c
 c
@@ -3391,10 +3407,13 @@ c
       subroutine jancae_print2 ( text,a,n,m )
 c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension a(n,m)
-      character text*32
+      integer n,m
+      real*8 a(n,m)
+      character*32 text
+c
+      integer i,j
 c-----------------------------------------------------------------------
 c
       write (6,*) text
@@ -3404,7 +3423,7 @@ c
  9000 format (6e16.8)
 c
       return
-      end
+      end subroutine jancae_print2
 c
 c
 c
@@ -3415,9 +3434,13 @@ c
       subroutine jancae_mv ( v,a,u,nv,nu )
 c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension v(nv),a(nv,nu),u(nu)
+      integer nv,nu
+      real*8 v(nv),u(nu)
+      real*8 a(nv,nu)
+c
+      integer i,j
 c-----------------------------------------------------------------------
 c
       call jancae_clear1 ( v,nv )
@@ -3428,7 +3451,7 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_mv
 c
 c
 c
@@ -3439,9 +3462,12 @@ c
       subroutine jancae_mm ( a,b,c,na1,na2,nbc )
 c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension a(na1,na2),b(na1,nbc),c(nbc,na2)
+      integer na1,na2,nbc
+      real*8 a(na1,na2),b(na1,nbc),c(nbc,na2)
+c
+      integer i,j,k
 c-----------------------------------------------------------------------
 c
       call jancae_clear2 ( a,na1,na2 )
@@ -3454,7 +3480,7 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_mm
 c
 c
 c
@@ -3465,9 +3491,13 @@ c
       subroutine jancae_vvs ( s,u,v,n )
 c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension v(n),u(n)
+      integer n
+      real*8 s
+      real*8 v(n),u(n)
+c
+      integer i
 c-----------------------------------------------------------------------
 c
       s = 0.0
@@ -3476,7 +3506,7 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_vvs
 c
 c
 c
@@ -3488,12 +3518,17 @@ c
 c
 c     Ref. http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension a(n,n),b(n,n)
-      dimension indx(n),y(n),c(n,n),aorg(n,n)
-      character text*32
-      logical   check
+      integer n
+      real*8 d
+      real*8 a(n,n),b(n,n)
+c
+      integer i,j,k
+      real*8 eps,anorm,ani
+      real*8 indx(n),y(n),c(n,n),aorg(n,n)
+      character*32 text
+      logical check
 c-----------------------------------------------------------------------
 c
       check = .false.
@@ -3570,21 +3605,28 @@ c                                                             ---- check
       end if
 c
       return
-      end
+      end subroutine jancae_minv
 c
 c
 c
 c-----------------------------------------------------------------------
 c     LU decomposition
 c
-      subroutine jancae_ludcmp( a,n,indx,d,eps )
+      subroutine jancae_ludcmp ( a,n,indx,d,eps )
 c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension a(n,n),indx(n)
-      dimension vtemp(n)
-      character text*32
+      integer n
+      real*8 eps,d
+      real*8 indx(n)
+      real*8 a(n,n)
+c
+      integer i,j,k
+      integer imax
+      real*8 aamax,sum,dum,ajj
+      real*8 vtemp(n)
+      character*32 text
 c-----------------------------------------------------------------------
 c
       d = 1.0d0
@@ -3649,7 +3691,7 @@ c                                                 ---- get the det. of A
       end do
 c
       return
-      end
+      end subroutine jancae_ludcmp
 c
 c
 c
@@ -3971,6 +4013,7 @@ c
       write (6,*) 'stop in jancae_eigen_sym3'
       call jancae_exit ( 9000 )
 c
+      return
       end
 c
 c
