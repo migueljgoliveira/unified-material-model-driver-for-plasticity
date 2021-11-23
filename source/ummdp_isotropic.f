@@ -13,7 +13,7 @@ c      5 : Voce + Linear
 c      6 : Voce + Swift
 c
 ************************************************************************
-c     ISOTROPIC HARDENING LAW 
+c     CALCULATE ISOTROPIC HARDENING LAW 
 c
       subroutine jancae_hardencurve ( sy,dsydp,d2sydp2,
      &                                nreq,p,prihd,ndihd )
