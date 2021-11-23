@@ -1,58 +1,63 @@
 c***********************************************************************
 c
-c     UMMDp : Utility Subroutines
+c     UMMDp: Utility Subroutines
 c
 c***********************************************************************
 c
 c     jancae_clear1 ( a,n )
-c       clear 1st order tensor (vector) a(n)
+c       clear 1st order vector
 c
 c     jancae_clear2 ( a,n,m )
-c       clear 2nd order tensor (matrix) a(n,m)
+c       clear 2nd order matrix
 c
 c     jancae_clear3 ( a,n,m,l )
-c       clear 3rd order tensor a(n,m,l)
+c       clear 3rd order tensor
 c
 c     jancae_setunitm ( a,n )
-c       set unit 2nd oder tensor [I]
+c       set unit 2nd order matrix
 c
 c     jancae_print1 ( text,a,n )
-c       print 1st order tensor with title (text)
+c       print vector with text
 c
 c     jancae_print2 ( text,a,n,m )
-c       print 2nd order tensor with title (text)
+c       print matrix with text
 c
 c     jancae_mv (v,a,u,nv,nu)
-c       mutiply matrix to vector v(nv)=a(nv,nu)*u(nu)
+c       mutiply matrix and vector
 c
 c     jancae_mm (a,b,c,na1,na2,nbc)
-c       mutiply matrix and matrix a(na1,na2)=b(na1,nbc)*c(nbc,na2)
+c       mutiply matrix and matrix
 c
 c     jancae_vvs ( s,u,v,n )
-c       calc. scalar (inner) product of v(n) & u(n)
+c       calculate scalar product of vectors 
 c
 c     jancae_minv ( b,a,n,d )
-c       calc. inverse matrix b(n,n)=a(n,n)^-1 and det(a)
-c       branch to following routines
-c       jancae_ludcmp( a,n,indx,d ) : LU-decomposition
-c       jancae_lubksb(a,n,indx,b)   : backward subsitution
-c       jancae_minv2 ( b,a,deta )   : for 2*2 matrix
-c       jancae_minv3 ( b,a,deta )   : for 3*3 matrix
+c       calculate inverse matrix using lu decomposition
+c
+c         jancae_ludcmp( a,n,indx,d )
+c           lu decomposition
+c         jancae_lubksb(a,n,indx,b)
+c           lu backward substitution
+c         jancae_minv2 ( b,a,deta )
+c           calculate inverse matrix 2x2
+c         jancae_minv3 ( b,a,deta )
+c           calculate inverse matrix 3x3
 c
 c     jancae_eigen_sym3 ( es,ev,a )
-c       calc. eigen value and normalized eigen vector (3*3sym)
+c       calculate eigenvalues and eigenvectors by jacobi method
 c
-c     jancae_printinfo.
-c       print inc.info. and element info.
+c     jancae_printinfo
+c       print informations for debug (info)
 c
 c     jancae_printinout
-c       print input and output of user subroutine
+c       print informations for debug (input/output)
 c
-c-----------------------------------------------------------------------
-c     zero clear vector a(n)
+c
+c
+************************************************************************
+c     CLEAR 1st ORDER VECTOR A(N)
 c
       subroutine jancae_clear1 ( a,n )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -71,11 +76,10 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
-c     zero clear matrix a(n,m)
+************************************************************************
+c     CLEAR 2ND ORDER MATRIX
 c
       subroutine jancae_clear2 ( a,n,m )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -96,11 +100,10 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
-c     zero clear matrix a(n,m,l)
+************************************************************************
+c     CLEAR 3RD ORDER MATRIX
 c
       subroutine jancae_clear3 ( a,n,m,l )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -123,11 +126,10 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
-c     set unit 2nd oder tensor [I]
+************************************************************************
+c     SET UNIT 2ND ORDER MATRIX
 c
       subroutine jancae_setunitm ( a,n )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -147,11 +149,10 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
-c     print vector a(n) with text
+************************************************************************
+c     PRINT VECTOR WITH TEXT
 c
       subroutine jancae_print1 ( text,a,n )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -171,11 +172,10 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
-c     print matrix a(n,m) with text
+************************************************************************
+c     PRINT MATRIX WITH TEXT
 c
       subroutine jancae_print2 ( text,a,n,m )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -185,7 +185,6 @@ c
 c
       integer i,j
 c-----------------------------------------------------------------------
-c
       write (6,*) text
       do i = 1,n
         write (6,9000) (a(i,j),j=1,m)
@@ -197,12 +196,10 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
-c     calculate multiplication of matrix and vector
-c     {v}=[a]{u}
+************************************************************************
+c     MULTIPLY MATRIX AND VECTOR
 c
       subroutine jancae_mv ( v,a,u,nv,nu )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -225,12 +222,10 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
-c     calculate multiplication of matrix and matrix
-c     [a]=[b][c]
-c
+************************************************************************
+c     MULTIPLY MATRIX AND MATRIX
+c     
       subroutine jancae_mm ( a,b,c,na1,na2,nbc )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -254,12 +249,10 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
-c     calculate scaler product of vectors
-c     s={u}T{v}
+************************************************************************
+c     CALCULATE SCALAR PRODUCT OF VECTORS
 c
       subroutine jancae_vvs ( s,u,v,n )
-c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -280,13 +273,12 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
-c     calculate inverse matrix using LU decomposition
-c     [b]=[a]-1
+************************************************************************
+c     CALCULATE INVERSE MATRIX USING LU DECOMPOSITION
+c
+c     Ref.: http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
 c
       subroutine jancae_minv ( b,a,n,d )
-c
-c     Ref. http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -379,22 +371,22 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
-c     LU decomposition
+************************************************************************
+c     LU DECOMPOSITION
 c
       subroutine jancae_ludcmp ( a,n,indx,d,eps )
 c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
-      real*8 eps,d
-      real*8 indx(n)
+			integer n
+			integer indx(n)
+			real*8 d,eps
       real*8 a(n,n)
 c
-      integer i,j,k,imax
-      real*8 aamax,sum,dum,ajj
-      real*8 vtemp(n)
+			integer i,j,k,imax
+			real*8 aamax,sum,dum,ajj
+			real*8 vtemp(n)
       character*32 text
 c-----------------------------------------------------------------------
 c
@@ -464,15 +456,20 @@ c
 c
 c
 c
+************************************************************************
+c     LU BACKWARD SUBSTITUTION
+c
+      subroutine jancae_lubksb ( a,n,indx,b,eps )
 c-----------------------------------------------------------------------
-c     LU backward substitution
+      implicit none
 c
-      subroutine jancae_lubksb( a,n,indx,b,eps )
+			integer n
+			integer indx(n)
+			real*8 eps
+			real*8 a(n,n),b(n)
 c
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-c
-      dimension a(n,n),b(n),indx(n)
+			integer i,j,ii,ll
+			real*8 sum
 c-----------------------------------------------------------------------
 c
       ii = 0
@@ -498,19 +495,21 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_lubksb
 c
 c
 c
-c-----------------------------------------------------------------------
-c     calculate inverse matrix[2,2]
+************************************************************************
+c     CALCULATE INVERSE MATRIX 2x2 
 c
       subroutine jancae_minv2 ( b,a,deta,eps )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension b(2,2),a(2,2)
+			real*8 deta,eps
+			real*8 b(2,2),a(2,2)
+c
+			real*8 detai
 c-----------------------------------------------------------------------
 c
       deta = a(1,1)*a(2,2) - a(1,2)*a(2,1)
@@ -527,19 +526,21 @@ c
       b(2,2) = a(1,1) * detai
 c
       return
-      end
+      end subroutine jancae_minv2
 c
 c
 c
-c-----------------------------------------------------------------------
-c     calculate inverse matrix[3,3]
+************************************************************************
+c     CALCULATE INVERSE MATRIX 3x3
 c
       subroutine jancae_minv3 ( b,a,deta,eps )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension b(3,3),a(3,3)
+			real*8 deta,eps
+			real*8 b(3,3),a(3,3)
+c
+			real*8 detai
 c-----------------------------------------------------------------------
 c
       deta = a(1,1) * (a(2,2)*a(3,3) - a(2,3)*a(3,2)) +
@@ -563,24 +564,28 @@ c
       b(3,3) = ( a(1,1)*a(2,2) - a(1,2)*a(2,1) ) * detai
 c
       return
-      end
+      end subroutine jancae_minv3
 c
 c
 c
-c-----------------------------------------------------------------------
-c     print informations for debug (intro)
+************************************************************************
+c     PRINT INFORMATIONS FOR DEBUG (INFO)
 c
       subroutine jancae_printinfo ( inc,nnrm,nshr )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
+			integer inc,nnrm,nshr
+c
+      integer nttl,nerr
+c
+			integer ne,ip,lay
       common /jancae1/ne,ip,lay
 c-----------------------------------------------------------------------
 c
       nttl = nnrm + nshr
 c
-      write (6,*) '----- JANCAE.UMMDp debug info. -----'
+      write (6,*) '----- JANCAE.UMMDp Debug Info -----'
       write (6,*) 'increment=',inc
       write (6,*) 'elem,ip,lay=',ne,ip,lay
       write (6,*) 'nttl,nnrm,nshr=',nttl,nnrm,nshr
@@ -610,20 +615,21 @@ c
       end if
 c
       return
-      end
+      end subroutine jancae_printinfo
 c
 c
 c
-c-----------------------------------------------------------------------
-c     print informations for debug (input/output)
+************************************************************************
+c     PRINT INFORMATIONS FOR DEBUG (INPUT/OUTPUT)
 c
       subroutine jancae_printinout ( io,s,de,d,nttl,stv,nstv )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension s(nttl),de(nttl),d(nttl,nttl),stv(nstv)
-      character text*32
+			integer io,nttl,nstv
+			real*8 s(nttl),stv(nstv),de(nttl),d(nttl,nttl)
+c
+      character*32 text
 c-----------------------------------------------------------------------
 c
       if ( io == 0 ) then
@@ -640,7 +646,7 @@ c
       end if
       call jancae_print1 ( text,stv,nstv )
 c
-      if ( io==0 ) then
+      if ( io == 0 ) then
         text = 'driving strain increment'
         call jancae_print1 ( text,de,nttl )
       else
@@ -649,26 +655,32 @@ c
       end if
 c
       return
-      end
+      end subroutine jancae_printinout
 c
 c
 c
-c-----------------------------------------------------------------------
-c    calculate eigen value and eigen vector by jacobi method
+************************************************************************
+c     CALCULATE EIGENVALUES AND EIGENVECTORS BY JACOBI METHOD
 c
-c    ( this subroutine is copied from http://www.flagshyp.com/ )
+c     Ref.: http://www.flagshyp.com/
 c
-c    input  :  a(3,3)  : symmetric matrix to be analyzed
-c    output :  es(i)   : i-th eigen value
-c              ev(i,3) : normalized eigen vector for i-th eigen value
+c     input
+c       a(3,3)  : symmetric matrix to be analyzed
+c
+c     output
+c       es(i)   : i-th eigenvalue
+c       ev(i,3) : normalized eigenvector for i-th eigenvalue
 c
       subroutine jancae_eigen_sym3 ( es,ev,a )
-c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension   a(3,3),es(3),ev(3,3)
-      dimension   w(3,3),prc(3,3)
+      real*8 es(3)
+			real*8 ev(3,3),a(3,3)
+c
+			integer msweep,i,j,is,ip,ir,iq
+			real*8 eps,ax,er,sum,od,hd,theta,t,c,s,tau,h,g
+      real*8 w(3,3),prc(3,3)
 c-----------------------------------------------------------------------
 c
       msweep = 100
@@ -701,9 +713,7 @@ c                                    ---- initialise prc to the identity
         prc(i,i) = 1.0d0
         es(i) = w(i,i)
       end do
-c
 c                                                   ---- starts sweeping
-c
       do is = 1,msweep
 c
         sum = 0.0d0
@@ -713,10 +723,8 @@ c
           end do
         end do
 c       write (6,*) 'ite',is,sum,eps
-c
 c            ---- if the sum of off-diagonal terms is zero evaluates the
 c                                                     esches and returns
-c
         if ( abs(sum) < eps ) then
           do i = 1,3
             do j = 1,3
@@ -726,41 +734,31 @@ c
           end do
           return
         end if
-c
 c                             ---- performs the sweep in three rotations
 c                                         ---- one per off diagonal term
-c
         do ip = 1,2
           do iq = ip+1,3
             od = 100.0d0 * abs( w(ip,iq) )
             if ( abs(od) > eps ) then
               hd = es(iq) - es(ip)
-c
 c                                      ---- evaluates the rotation angle
-c
               theta = 0.5d0 * hd / w(ip,iq)
               t = 1.0d0/(abs(theta) + sqrt(1.0d0+theta**2))
               if ( theta < 0.0d0 ) t = -t
-c
 c                                   ---- re-evaluates the diagonal terms
-c
               c = 1.0d0 / sqrt(1.0d0+t**2)
               s = t * c
               tau = s / (1.0d0+c)
               h = t * w(ip,iq)
               es(ip) = es(ip) - h
               es(iq) = es(iq) + h
-c
 c                     ---- re-evaluates the remaining off-diagonal terms
-c
               ir = 6 - ip - iq
               g = w( min(ir,ip),max(ir,ip) )
               h = w( min(ir,iq),max(ir,iq) )
               w( min(ir,ip),max(ir,ip) ) = g - s*(h+g*tau)
               w( min(ir,iq),max(ir,iq) ) = h + s*(g-h*tau)
-c
 c                                          ---- rotates the eigenvectors
-c
               do ir = 1,3
                 g = prc(ir,ip)
                 h = prc(ir,iq)
@@ -772,9 +770,7 @@ c
           end do
         end do
       end do
-c
 c                              ---- if convergence is not achieved stops
-c
       write (6,*) 'did not converge in eigen calculation.'
       write (6,*) 'msweep=',msweep
       write (6,*) 'eps=',eps
@@ -783,19 +779,21 @@ c
       call jancae_exit ( 9000 )
 c
       return
-      end
+      end subroutine jancae_eigen_sym3
 c
 c
+c
+************************************************************************
+c     CHECKING EXISTENCE OF FILE NAMES 'FLNAME'
+c
+      logical function jancae_file_exist ( flname )
 c
 c-----------------------------------------------------------------------
-c     checking existence of file named "flname"
+      implicit none
 c
-       logical function jancae_file_exist ( flname )
+      character*16 flname
 c
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-c
-      character flname*16
+			integer nio
 c-----------------------------------------------------------------------
 c
       nio = 616
@@ -808,7 +806,7 @@ c
    10 jancae_file_exist = .false.
       return
 c
-      end
+      end function jancae_file_exist
 c
 c
 c
