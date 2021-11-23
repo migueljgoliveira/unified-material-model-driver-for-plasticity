@@ -66,8 +66,8 @@ c                                        ---- set debug and verbose mode
       call jancae_debugmode ( nvbs,nvbs0 )
 c                                       ---- output detailed information
       if ( nvbs >= 4 ) then
-        call jancae_printinfo  ( kinc,ndi,nshr )
-        call jancae_printinout ( 0,stress,dstran,ddsdde,ntens,
+        call jancae_print_info  ( kinc,ndi,nshr )
+        call jancae_print_inout ( 0,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
       end if
 c
@@ -126,7 +126,7 @@ c                                       ---- update of back stress comp.
       end if
 c                           ----  if debug mode, output return arguments
       if ( nvbs >= 4 ) then
-        call jancae_printinout ( 1,stress,dstran,ddsdde,ntens,
+        call jancae_print_inout ( 1,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
       end if
 c
@@ -311,14 +311,14 @@ c                                                 ---- equivalent stress
         do i = 1,ntens
           eta(i) = s(i) - xsum(i)
         end do
-        call jancae_yfunc ( se,dseds,d2seds2,0,
+        call jancae_yield ( se,dseds,d2seds2,0,
      &                      eta,ntens,ndi,nshr,
      &                      pryld,ndyld )
         uvar(1) = se
       end if
 c                                                       ---- flow stress
       if ( nuvarm >= 2 ) then
-        call jancae_hardencurve ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
+        call jancae_isotropic ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
         uvar(2) = sy
       end if
 c                                                       ---- back stress
@@ -346,13 +346,11 @@ c
 c
 c
 c-----------------------------------------------------------------------
-c     set internal state variables profile
+c     SET INTERNAL STATE VARIABLES PROFILE
 c
       subroutine jancae_isvprof ( isvrsvd,isvsclr )
-c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
-c
 c
       isvrsvd = 0             ! no reserved variables
 c

@@ -66,8 +66,8 @@ c                                        ---- set debug and verbose mode
       call jancae_debugmode ( nvbs,nvbs0 )
 c                                       ---- output detailed information
       if ( nvbs >= 4 ) then
-        call jancae_printinfo  ( kinc,ndi,nshr )
-        call jancae_printinout ( 0,stress,dstran,ddsdde,ntens,
+        call jancae_print_info  ( kinc,ndi,nshr )
+        call jancae_print_inout ( 0,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
       end if
 c
@@ -126,7 +126,7 @@ c                                       ---- update of back stress comp.
       end if
 c                           ----  if debug mode, output return arguments
       if ( nvbs >= 4 ) then
-        call jancae_printinout ( 1,stress,dstran,ddsdde,ntens,
+        call jancae_print_inout ( 1,stress,dstran,ddsdde,ntens,
      &                           statev,nstatv )
       end if
 c
@@ -311,14 +311,14 @@ c                                                 ---- equivalent stress
         do i = 1,ntens
           eta(i) = s(i) - xsum(i)
         end do
-        call jancae_yfunc ( se,dseds,d2seds2,0,
+        call jancae_yield ( se,dseds,d2seds2,0,
      &                      eta,ntens,ndi,nshr,
      &                      pryld,ndyld )
         uvar(1) = se
       end if
 c                                                       ---- flow stress
       if ( nuvarm >= 2 ) then
-        call jancae_hardencurve ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
+        call jancae_isotropic ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
         uvar(2) = sy
       end if
 c                                                       ---- back stress
@@ -346,13 +346,11 @@ c
 c
 c
 c-----------------------------------------------------------------------
-c     set internal state variables profile
+c     SET INTERNAL STATE VARIABLES PROFILE
 c
       subroutine jancae_isvprof ( isvrsvd,isvsclr )
-c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
-c
 c
       isvrsvd = 0             ! no reserved variables
 c
@@ -622,9 +620,9 @@ c
 c
       if ( ( nvbs >= 1 ) .or. ( nout /= 0 ) ) then
         write (6,*)
-        write (6,*) '**************************************'
-        write (6,*) '******* START OF JANCAE/UMMDp ********'
-        write (6,*) '**************************************'
+        write (6,*) '******************************'
+        write (6,*) '******* START OF UMMDp *******'
+        write (6,*) '******************************'
       end if
 c
 c                                          ---- copy material properties
@@ -652,12 +650,12 @@ c                                          ---- copy material properties
 c
       if ( nout /= 0 ) then
         write (6,*)
-        write (6,*) 'MATERIAL DATA LIST --------------------'
-        call jancae_elast_print     ( prela,ndela )
-        call jancae_yfunc_print     ( pryld,ndyld )
-        call jancae_harden_print    ( prihd,ndihd )
-        call jancae_kinematic_print ( prkin,ndkin,npbs )
-        call jancae_rupture_print   ( prrup,ndrup )
+        write (6,*) 'MATERIAL DATA LIST'
+        call jancae_print_elastic   ( prela,ndela )
+        call jancae_print_yield     ( pryld,ndyld )
+        call jancae_print_isotropic ( prihd,ndihd )
+        call jancae_print_kinematic ( prkin,ndkin,npbs )
+        call jancae_print_rupture   ( prrup,ndrup )
       end if
 c                                                           ---- set [U]
       call jancae_clear2( um,nttl,nnn )
@@ -736,18 +734,18 @@ c                                                       ---- back stress
         eta(i) = s2(i) - xt2(i)
       end do
 c                                                       ---- check yield
-      call jancae_yfunc  ( se,dseds,d2seds2,0,
+      call jancae_yield  ( se,dseds,d2seds2,0,
      &                     eta,nttl,nnrm,nshr,
      &                     pryld,ndyld )
-      call jancae_hardencurve ( sy,dsydp,d2sydp2,
-     &                          0,p,prihd,ndihd )
+      call jancae_isotropic ( sy,dsydp,d2sydp2,
+     &                        0,p,prihd,ndihd )
 c
       if ( nvbs >= 3 ) then
         write (6,*) 'plastic strain p=',p
         write (6,*) 'flow stress   sy=',sy
         write (6,*) 'equiv.stress  se=',se
         if ( npbs /= 0 ) then
-          call jancae_yfunc  ( xe,dseds,d2seds2,0,
+          call jancae_yield  ( xe,dseds,d2seds2,0,
      &                         xt1,nttl,nnrm,nshr,
      &                         pryld,ndyld )
           write (6,*) 'equiv.back.s  xe=',xe
@@ -836,7 +834,7 @@ c                                        ---- calc. se and differentials
         do i = 1,nttl
           eta(i) = s2(i) - xt2(i)
         end do
-        call jancae_yfunc ( se,dseds,d2seds2,2,
+        call jancae_yield ( se,dseds,d2seds2,2,
      &                      eta,nttl,nnrm,nshr,
      &                      pryld,ndyld )
 c
@@ -855,8 +853,8 @@ c
           call jancae_print2 ( text,d2seds2,nttl,nttl )
         end if
 c                                        ---- calc. sy and differentials
-        call jancae_hardencurve ( sy,dsydp,d2sydp2,
-     &                            1,pt,prihd,ndihd )
+        call jancae_isotropic ( sy,dsydp,d2sydp2,
+     &                          1,pt,prihd,ndihd )
 
         if ( nvbs >= 5 ) then
           write (6,*) 'plastic strain p=',pt
@@ -1617,11 +1615,11 @@ c
 c
 c
 c
-c***********************************************************************
-c
-c     UMMDp: Isotropic Hardening Laws
-c
-c***********************************************************************
+************************************************************************
+*
+*     ISOTROPIC HARDENING LAWS
+*
+************************************************************************
 c
 c      0 : Perfectly Plastic
 c      1 : Linear
@@ -1631,11 +1629,11 @@ c      4 : Voce
 c      5 : Voce + Linear
 c      6 : Voce + Swift
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE ISOTROPIC HARDENING LAW 
 c
-      subroutine jancae_hardencurve ( sy,dsydp,d2sydp2,
-     &                                nreq,p,prihd,ndihd )
+      subroutine jancae_isotropic ( sy,dsydp,d2sydp2,
+     &                              nreq,p,prihd,ndihd )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1742,15 +1740,15 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_isotropic
 c
 c
 c
-c***********************************************************************
-c
-c     UMMDp : Kinematic Hardening Laws
-c
-c***********************************************************************
+************************************************************************
+*
+*     KINEMATIC HARDENING LAWS
+*
+************************************************************************
 c
 c      0 : No Kinematic Hardening
 c      1 : Prager
@@ -1760,7 +1758,7 @@ c      4 : Chaboche (1979)
 c      5 : Chaboche (1979) - Ziegler
 c      6 : Yoshida-Uemori
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE KINEMATIC HARDENING LAW
 c
       subroutine jancae_kinematic ( vk,dvkdp,
@@ -1864,7 +1862,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE 1ST AND 2ND DERIVATIVES FOR KINEMATIC HARDENING LAWS
 c
       subroutine jancae_dseds_kin ( eta,seta,dseds,d2seds2,
@@ -1883,7 +1881,7 @@ c
 c-----------------------------------------------------------------------
 c
 c                    ---- dseds and d2seds2 for plastic strain increment
-      call jancae_yfunc  ( seta,dseds,d2seds2,2,
+      call jancae_yield  ( seta,dseds,d2seds2,2,
      &                     eta,nttl,nnrm,nshr,
      &                     pryld,ndyld )
 c
@@ -1919,7 +1917,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     PRAGER KINEMATIC HARDENING LAW
 c
       subroutine jancae_kin_prager ( vk,dvkdp,
@@ -1979,7 +1977,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     ZIEGLER KINEMATIC HARDENING LAW
 c
       subroutine jancae_kin_ziegler ( vk,dvkdp,
@@ -2036,7 +2034,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     ARMSTRONG-FREDERICK (1966) KINEMATIC HARDENING LAW
 c
       subroutine jancae_kin_armstrong ( vk,dvkdp,
@@ -2099,7 +2097,7 @@ c
       end subroutine jancae_kin_armstrong
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CHABOCHE (1979) KINEMATIC HARDENING LAW
 c
       subroutine jancae_kin_chaboche ( vk,dvkdp,
@@ -2162,7 +2160,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CHABOCHE (1979) - ZIEGLER KINEMATIC HARDENING LAW
 c
       subroutine jancae_kin_chaboche_ziegler ( vk,dvkdp,
@@ -2225,7 +2223,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     YOSHIDA-UEMORI KINEMATIC HARDENING LAW
 c
       subroutine jancae_kin_yoshida_uemori ( vk,dvkdp,
@@ -2304,32 +2302,37 @@ c
       end subroutine jancae_kin_yoshida_uemori
 c
 c
+c************************************************************************
+*
+*     PRINT SUBROUTINES
+*
+************************************************************************
 c
-c***********************************************************************
-c
-c     UMMDp: Print Subroutines
-c
-c***********************************************************************
-c
-c     jancae_elast_print ( prela,ndela )
+c     jancae_print_elastic ( prela,ndela )
 c       print elasticity parameters
 c
-c     jancae_yfunc_print ( pryld,ndyld )
+c     jancae_print_yield ( pryld,ndyld )
 c       print yield criteria parameters
 c
-c     jancae_harden_print ( prihd,ndihd )
+c     jancae_print_isotropci ( prihd,ndihd )
 c       print isotropic hardening law parameters
 c
-c     jancae_kinematic_print ( prkin,ndkin,npbs )
+c     jancae_print_kinematic ( prkin,ndkin,npbs )
 c       print kinematic hardening law parameters
 c
-c     jancae_rupture_print ( prrup,ndrup )
+c     jancae_print_rupture ( prrup,ndrup )
 c       print uncoupled rupture criterion parameters
 c     
-************************************************************************
+c     jancae_print_info
+c       print informations for debug (info)
+c
+c     jancae_print_inout
+c       print informations for debug (input/output)
+c
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT ELASTICITY PARAMETERS
 c
-      subroutine jancae_elast_print ( prela,ndela )
+      subroutine jancae_print_elastic ( prela,ndela )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2356,14 +2359,14 @@ c
       end select
 c
       return
-      end subroutine jancae_elast_print
+      end subroutine jancae_print_elastic
 c
 c
 c
-************************************************************************
-c     PRINT YIELD CRITERIA PARAMETERS
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c     PRINT YIELD FUNCTION PARAMETERS
 c
-      subroutine jancae_yfunc_print ( pryld,ndyld )
+      subroutine jancae_print_yield ( pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2376,7 +2379,7 @@ c-----------------------------------------------------------------------
 c
       ntyld = pryld(1)
       write (6,*)
-      write (6,*) '>> Yield Criterion',ntyld
+      write (6,*) '>> Yield Function',ntyld
       select case ( ntyld )
 c
       case ( 0 )                                             ! von Mises
@@ -2535,14 +2538,14 @@ c
       end select
 c
       return
-      end subroutine jancae_yfunc_print
+      end subroutine jancae_print_yield
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT ISOTROPIC HARDENING LAW PARAMETERS
 c
-      subroutine jancae_harden_print ( prihd,ndihd )
+      subroutine jancae_print_isotropic ( prihd,ndihd )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2603,14 +2606,14 @@ c
       end select
 c
       return
-      end subroutine jancae_harden_print
+      end subroutine jancae_print_isotropic
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT KINEMATIC HARDENING LAW PARAMETERS
 c
-      subroutine jancae_kinematic_print ( prkin,ndkin,npbs )
+      subroutine jancae_print_kinematic ( prkin,ndkin,npbs )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2673,14 +2676,14 @@ c
       end select
 c
       return
-      end subroutine jancae_kinematic_print
+      end subroutine jancae_print_kinematic
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT UNCOUPLED RUPTURE CRITERION PARAMETERS
 c
-      subroutine jancae_rupture_print ( prrup,ndrup )
+      subroutine jancae_print_rupture ( prrup,ndrup )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2732,14 +2735,105 @@ c
       end select
 c
       return
-      end subroutine jancae_rupture_print
+      end subroutine jancae_print_rupture
 c
 c
-cc***********************************************************************
 c
-c     UMMDp : Uncoupled Rupture Criteria
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c     PRINT INFORMATIONS FOR DEBUG (INFO)
 c
-c**********************************************************************
+      subroutine jancae_print_info ( inc,nnrm,nshr )
+c-----------------------------------------------------------------------
+      implicit none
+c
+			integer inc,nnrm,nshr
+c
+      integer nttl,nerr
+c
+			integer ne,ip,lay
+      common /jancae1/ne,ip,lay
+c-----------------------------------------------------------------------
+c
+      nttl = nnrm + nshr
+c
+      write (6,*) '----- JANCAE.UMMDp Debug Info -----'
+      write (6,*) 'increment=',inc
+      write (6,*) 'elem,ip,lay=',ne,ip,lay
+      write (6,*) 'nttl,nnrm,nshr=',nttl,nnrm,nshr
+      nerr = 0
+      if ( nnrm == 3 ) then
+        if ( nshr == 3 ) then
+          write (6,*) '3d solid element'
+        else if ( nshr == 1 ) then
+          write (6,*) 'plane strain or axi-sym solid element'
+        else
+          nerr = nerr + 1
+        end if
+      else if ( nnrm == 2 ) then
+        if ( nshr == 1 ) then
+          write (6,*) 'plane stress or thin shell element'
+        else if ( nshr == 3 ) then
+          write (6,*) 'thick shell element'
+        else
+          nerr = nerr + 1
+        end if
+      else
+        nerr = nerr + 1
+      end if
+      if ( nerr /= 0 ) then
+        write (6,*) 'no supported element type',nnrm,nshr
+        call jancae_exit ( 9000 )
+      end if
+c
+      return
+      end subroutine jancae_print_info
+c
+c
+c
+************************************************************************
+c     PRINT INFORMATIONS FOR DEBUG (INPUT/OUTPUT)
+c
+      subroutine jancae_print_inout ( io,s,de,d,nttl,stv,nstv )
+c-----------------------------------------------------------------------
+      implicit none
+c
+			integer io,nttl,nstv
+			real*8 s(nttl),stv(nstv),de(nttl),d(nttl,nttl)
+c
+      character*32 text
+c-----------------------------------------------------------------------
+c
+      if ( io == 0 ) then
+        text = 'initial stresses'
+      else
+        text = 'updated stresses'
+      end if
+      call jancae_print1 ( text,s,nttl )
+c
+      if ( io == 0 ) then
+        text = 'initial internal state var.'
+      else
+        text = 'updated internal state var.'
+      end if
+      call jancae_print1 ( text,stv,nstv )
+c
+      if ( io == 0 ) then
+        text = 'driving strain increment'
+        call jancae_print1 ( text,de,nttl )
+      else
+        text = 'tangent modulus matrix'
+        call jancae_print2 ( text,d,nttl,nttl )
+      end if
+c
+      return
+      end subroutine jancae_print_inout
+c
+c
+c************************************************************************
+*
+*     UNCOUPLED RUPTURE CRITERIA
+*
+c***********************************************************************
 c
 c      0 : No Rupture Criterion
 c
@@ -2750,7 +2844,7 @@ c      4 : Ayada
 c      5 : Brozzo
 c      6 : Forming Limit Diagram (only plane-stress)
 c
-c-----------------------------------------------------------------------
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     calculated rupture criteria
 c
       subroutine jancae_rupture ( ntens,sdv,nsdv,uvar2,uvar1,nuvarm,
@@ -2828,7 +2922,7 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     Equivalent Plastic Strain
 c
       subroutine jancae_rup_eqstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
@@ -2861,7 +2955,7 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     Cockroft and Latham
 c
       subroutine jancae_rup_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
@@ -2929,7 +3023,7 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     Rice and Tracey
 c
       subroutine jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
@@ -2997,7 +3091,7 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     Ayada
 c
       subroutine jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
@@ -3065,7 +3159,7 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     Brozzo
 c
       subroutine jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
@@ -3147,7 +3241,7 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     Forming Limit Diagram (FLD)
 c       . only plane-stress formulation
 c
@@ -3287,11 +3381,11 @@ c
       end
 c
 c
-cc***********************************************************************
-c
-c     UMMDp: Utility Subroutines
-c
-c***********************************************************************
+c************************************************************************
+*
+*     UTILITY SUBROUTINES
+*
+************************************************************************
 c
 c     jancae_clear1 ( a,n )
 c       clear 1st order vector
@@ -3343,7 +3437,7 @@ c       print informations for debug (input/output)
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CLEAR 1st ORDER VECTOR A(N)
 c
       subroutine jancae_clear1 ( a,n )
@@ -3365,7 +3459,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CLEAR 2ND ORDER MATRIX
 c
       subroutine jancae_clear2 ( a,n,m )
@@ -3389,7 +3483,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CLEAR 3RD ORDER MATRIX
 c
       subroutine jancae_clear3 ( a,n,m,l )
@@ -3415,7 +3509,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     SET UNIT 2ND ORDER MATRIX
 c
       subroutine jancae_setunitm ( a,n )
@@ -3438,7 +3532,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT VECTOR WITH TEXT
 c
       subroutine jancae_print1 ( text,a,n )
@@ -3461,7 +3555,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT MATRIX WITH TEXT
 c
       subroutine jancae_print2 ( text,a,n,m )
@@ -3485,7 +3579,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     MULTIPLY MATRIX AND VECTOR
 c
       subroutine jancae_mv ( v,a,u,nv,nu )
@@ -3511,7 +3605,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     MULTIPLY MATRIX AND MATRIX
 c     
       subroutine jancae_mm ( a,b,c,na1,na2,nbc )
@@ -3538,7 +3632,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE SCALAR PRODUCT OF VECTORS
 c
       subroutine jancae_vvs ( s,u,v,n )
@@ -3562,7 +3656,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE INVERSE MATRIX USING LU DECOMPOSITION
 c
 c     Ref.: http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
@@ -3660,7 +3754,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     LU DECOMPOSITION
 c
       subroutine jancae_ludcmp ( a,n,indx,d,eps )
@@ -3746,7 +3840,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     LU BACKWARD SUBSTITUTION
 c
       subroutine jancae_lubksb ( a,n,indx,b,eps )
@@ -3790,7 +3884,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE INVERSE MATRIX 2x2 
 c
       subroutine jancae_minv2 ( b,a,deta,eps )
@@ -3821,7 +3915,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE INVERSE MATRIX 3x3
 c
       subroutine jancae_minv3 ( b,a,deta,eps )
@@ -3859,98 +3953,7 @@ c
 c
 c
 c
-************************************************************************
-c     PRINT INFORMATIONS FOR DEBUG (INFO)
-c
-      subroutine jancae_printinfo ( inc,nnrm,nshr )
-c-----------------------------------------------------------------------
-      implicit none
-c
-			integer inc,nnrm,nshr
-c
-      integer nttl,nerr
-c
-			integer ne,ip,lay
-      common /jancae1/ne,ip,lay
-c-----------------------------------------------------------------------
-c
-      nttl = nnrm + nshr
-c
-      write (6,*) '----- JANCAE.UMMDp Debug Info -----'
-      write (6,*) 'increment=',inc
-      write (6,*) 'elem,ip,lay=',ne,ip,lay
-      write (6,*) 'nttl,nnrm,nshr=',nttl,nnrm,nshr
-      nerr = 0
-      if ( nnrm == 3 ) then
-        if ( nshr == 3 ) then
-          write (6,*) '3d solid element'
-        else if ( nshr == 1 ) then
-          write (6,*) 'plane strain or axi-sym solid element'
-        else
-          nerr = nerr + 1
-        end if
-      else if ( nnrm == 2 ) then
-        if ( nshr == 1 ) then
-          write (6,*) 'plane stress or thin shell element'
-        else if ( nshr == 3 ) then
-          write (6,*) 'thick shell element'
-        else
-          nerr = nerr + 1
-        end if
-      else
-        nerr = nerr + 1
-      end if
-      if ( nerr /= 0 ) then
-        write (6,*) 'no supported element type',nnrm,nshr
-        call jancae_exit ( 9000 )
-      end if
-c
-      return
-      end subroutine jancae_printinfo
-c
-c
-c
-************************************************************************
-c     PRINT INFORMATIONS FOR DEBUG (INPUT/OUTPUT)
-c
-      subroutine jancae_printinout ( io,s,de,d,nttl,stv,nstv )
-c-----------------------------------------------------------------------
-      implicit none
-c
-			integer io,nttl,nstv
-			real*8 s(nttl),stv(nstv),de(nttl),d(nttl,nttl)
-c
-      character*32 text
-c-----------------------------------------------------------------------
-c
-      if ( io == 0 ) then
-        text = 'initial stresses'
-      else
-        text = 'updated stresses'
-      end if
-      call jancae_print1 ( text,s,nttl )
-c
-      if ( io == 0 ) then
-        text = 'initial internal state var.'
-      else
-        text = 'updated internal state var.'
-      end if
-      call jancae_print1 ( text,stv,nstv )
-c
-      if ( io == 0 ) then
-        text = 'driving strain increment'
-        call jancae_print1 ( text,de,nttl )
-      else
-        text = 'tangent modulus matrix'
-        call jancae_print2 ( text,d,nttl,nttl )
-      end if
-c
-      return
-      end subroutine jancae_printinout
-c
-c
-c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE EIGENVALUES AND EIGENVECTORS BY JACOBI METHOD
 c
 c     Ref.: http://www.flagshyp.com/
@@ -4075,7 +4078,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CHECKING EXISTENCE OF FILE NAMES 'FLNAME'
 c
       logical function jancae_file_exist ( flname )
@@ -4102,11 +4105,11 @@ c
 c
 c
 c
-c***********************************************************************
-c
-c     UMMDp : Yield Criteria
-c
-c***********************************************************************
+************************************************************************
+*
+*     YIELD FUNCTIONS
+*
+************************************************************************
 c
 c      0 : von Mises (1913)
 c
@@ -4127,10 +4130,10 @@ c      -5 : Yld89
 c      -6 : BBC 2008
 c      -7 : Hill 1990
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE YIELD FUNCTION AND DERIVATIVES
 c
-      subroutine jancae_yfunc ( se,cdseds,cd2seds2,nreq,
+      subroutine jancae_yield ( se,cdseds,cd2seds2,nreq,
      &                          cs,nttl,nnrm,nshr,
      &                          pryld,ndyld )
 c-----------------------------------------------------------------------
@@ -4153,7 +4156,7 @@ c
 c
       if ( ntyld < 0 ) then
         if ( ( nnrm /= 2 ) .or. ( nshr /= 1 ) ) then
-          write (6,*) 'error in jancae_yfunc'
+          write (6,*) 'error in jancae_yield'
           write (6,*) 'ntyld<0 for plane stress'
           write (6,*) 'nnrm,nshr,ntyld:',nnrm,nshr,ntyld
           call jancae_exit (9000)
@@ -4225,7 +4228,7 @@ c
      &                            pryld,ndyld )
 c
       case default
-        write (6,*) 'error in jancae_yfunc'
+        write (6,*) 'error in jancae_yield'
         write (6,*) 'ntyld error :',ntyld
         call jancae_exit (9000)
       end select
@@ -4285,13 +4288,13 @@ c
      &                         pryld,ndyld )
 c
       case default
-        write (6,*) 'error in jancae_yfunc'
+        write (6,*) 'error in jancae_yield'
         write (6,*) 'ntyld error :',ntyld
         call jancae_exit (9000)
       end select
 c
       return
-      end subroutine jancae_yfunc
+      end subroutine jancae_yield
 c
 c
 cc--------------------------------------------------------------(bbc2005)
@@ -8222,22 +8225,26 @@ c
       end
 c
 c
-cc--------------------------------------------------------------(yld2000)
-c     Barlat YLD2000 yield function and its dfferentials
-c     ( IJP v.19(203) p1297-1319. )
+c************************************************************************
+c     YLD2000-2D YIELD FUNCTION AND DERIVATIVES
 c
-
       subroutine jancae_yld2000 ( s,se,dseds,d2seds2,nreq,
      &                            pryld,ndyld )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(3),dseds(3),d2seds2(3,3),pryld(ndyld)
-      dimension a(8),am(2,3,3),x(2,2),y(2,3),phi(2),
-     &          dsedphi(2),dphidx(2,2),
-     &          dxdy(2,2,3),dyds(2,3,3),
-     &          d2sedphi2(2,2),d2phidx2(2,2,2),
-     &          d2xdy2(2,2,3,3)
+      implicit none
 c
+      integer nreq,ndyld
+      real*8 se
+			real*8 s(3),dseds(3),pryld(ndyld)
+			real*8 d2seds2(3,3)
+c
+      integer i,j,k,l,m,n,nd,nd1,nd2
+			real*8 em,q
+      real*8 a(8),phi(2),dsedphi(2),dphidx(2,2)
+			real*8 x(2,2),y(2,3),d2sedphi2(2,2)
+			real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3),d2phidx2(2,2,2)
+			real*8 d2xdy2(2,2,3,3)
+c-----------------------------------------------------------------------         
 c
 c     variables  : symbols in Barlat's paper
 c
@@ -8261,14 +8268,14 @@ c                                            ---- anisotropic parameters
         a(i) = pryld(i+1)
       end do
       em = pryld(9+1)
-c                                         ---- set linear transf. matrix
+c                                  ---- set linear transformation matrix
       call jancae_yld2000_2d_am ( a,am )
 c                                                 ---- equivalent stress
       call jancae_yld2000_2d_xyphi ( s,em,am,x,y,phi )
       q = phi(1) + phi(2)
       if ( q <= 0.0 ) q = 0.0
       se = (0.5d0*q) ** (1.0d0/em)
-c                                            ---- 1st order differential
+c                                              ---- 1st order derivative
       if ( nreq >= 1 ) then
         call jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
      &                               dsedphi,dphidx,
@@ -8285,7 +8292,7 @@ c                                            ---- 1st order differential
           end do
         end do
       end if
-c                                            ---- 2nd order differential
+c                                              ---- 2nd order derivative
       if ( nreq >= 2 ) then
         call jancae_yld2000_2d_ds2 ( phi,x,y,em,
      &                               d2sedphi2,d2phidx2,
@@ -8340,17 +8347,22 @@ c                                            ---- 2nd order differential
       end if
 c
       return
-      end
+      end subroutine jancae_yld2000
 c
 c
 c
-c--------------------------------------------------------------(yld2000)
-c     set barlat-yld2k linear transformation matrix am
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     SET LINEAR TRANSFORMATION MATRIX
 c
       subroutine jancae_yld2000_2d_am ( a,am )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension a(8),am(2,3,3)
+      implicit none
+c
+      real*8 a(8)
+			real*8 am(2,3,3)
+c
+      integer i,j
+c-----------------------------------------------------------------------
 c
 c                                      ---- linear transformation matrix
       am(1,1,1) =  2.0d0*a(1)
@@ -8381,18 +8393,26 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_yld2000_2d_am
 c
 c
 c
-c--------------------------------------------------------------(yld2000)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. barlat-yld2k function x,y,phi
 c
       subroutine jancae_yld2000_2d_xyphi ( s,em,am,x,y,phi )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(3),am(2,3,3),x(2,2),y(2,3),phi(2)
-      dimension p(2)
+      implicit none
+c
+      real*8 em
+      real*8 s(3),phi(2)
+      real*8 x(2,2),y(2,3)
+			real*8 am(2,3,3)
+c
+      integer i,j,nd
+			real*8 a
+      real*8 p(2)
+c-----------------------------------------------------------------------
 c
       p(1) =  1.0d0
       p(2) = -1.0d0
@@ -8421,24 +8441,28 @@ c                                                 ---- phi(1) and phi(2)
      &          abs(2.0d0*x(nd,1)+x(nd,2))**em
 c
       return
-      end
+      end subroutine jancae_yld2000_2d_xyphi
 c
 c
 c
-c--------------------------------------------------------------(yld2000)
-c     set 1st order differential of parameters
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     SET 1ST ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
      &                                   dsedphi,dphidx,
      &                                   dxdy,dyds,se )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension am(2,3,3),x(2,2),y(2,3),phi(2),
-     &          dsedphi(2),dphidx(2,2),
-     &          dxdy(2,2,3),dyds(2,3,3)
+      real*8 se,em
+      real*8 phi(2),dsedphi(2)
+			real*8 x(2,2),y(2,3),dphidx(2,2)
+			real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3)
 c
-      dimension p(2)
+      integer i,j,nd
+      real*8 eps,emi,q,a,a0,a1,a2,b0,b1,b2,sgn0,sgn1,sgn2
+      real*8 p(2)
+c-----------------------------------------------------------------------
 c
       eps = 1.0d-16
 c
@@ -8501,22 +8525,29 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_yld2000_2d_ds1
 c
 c
 c
-c--------------------------------------------------------------(yld2000)
-c     set 2nd order differential of parameters
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     SET 2ND ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine jancae_yld2000_2d_ds2 ( phi,x,y,em,
      &                                   d2sedphi2,d2phidx2,
      &                                   d2xdy2,se )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension phi(2),x(2,2),y(2,3),
-     &          d2sedphi2(2,2),d2phidx2(2,2,2),
-     &          d2xdy2(2,2,3,3)
-      dimension p(2)
+      implicit none
+c
+      real*8 em,se
+      real*8 phi(2)
+			real*8 x(2,2),y(2,3),d2sedphi2(2,2)
+			real*8 d2phidx2(2,2,2)
+			real*8 d2xdy2(2,2,3,3)
+c
+      integer i,j,m,nd,nd1,nd2,ij
+      real*8 eps,emi,q,a
+      real*8 p(2)
+c-----------------------------------------------------------------------
 c
       eps = 1.0d-16
 c
@@ -8599,7 +8630,7 @@ c                                                           ---- d2x/dy2
       end do
 c
       return
-      end
+      end subroutine jancae_yld2000_2d_ds2
 c
 c
 c

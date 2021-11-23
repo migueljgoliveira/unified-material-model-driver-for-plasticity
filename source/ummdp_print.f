@@ -1,28 +1,34 @@
-c***********************************************************************
+************************************************************************
+*
+*     PRINT SUBROUTINES
+*
+************************************************************************
 c
-c     UMMDp: Print Subroutines
-c
-c***********************************************************************
-c
-c     jancae_elast_print ( prela,ndela )
+c     jancae_print_elastic ( prela,ndela )
 c       print elasticity parameters
 c
-c     jancae_yfunc_print ( pryld,ndyld )
+c     jancae_print_yield ( pryld,ndyld )
 c       print yield criteria parameters
 c
-c     jancae_harden_print ( prihd,ndihd )
+c     jancae_print_isotropci ( prihd,ndihd )
 c       print isotropic hardening law parameters
 c
-c     jancae_kinematic_print ( prkin,ndkin,npbs )
+c     jancae_print_kinematic ( prkin,ndkin,npbs )
 c       print kinematic hardening law parameters
 c
-c     jancae_rupture_print ( prrup,ndrup )
+c     jancae_print_rupture ( prrup,ndrup )
 c       print uncoupled rupture criterion parameters
 c     
-************************************************************************
+c     jancae_print_info
+c       print informations for debug (info)
+c
+c     jancae_print_inout
+c       print informations for debug (input/output)
+c
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT ELASTICITY PARAMETERS
 c
-      subroutine jancae_elast_print ( prela,ndela )
+      subroutine jancae_print_elastic ( prela,ndela )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -49,14 +55,14 @@ c
       end select
 c
       return
-      end subroutine jancae_elast_print
+      end subroutine jancae_print_elastic
 c
 c
 c
-************************************************************************
-c     PRINT YIELD CRITERIA PARAMETERS
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c     PRINT YIELD FUNCTION PARAMETERS
 c
-      subroutine jancae_yfunc_print ( pryld,ndyld )
+      subroutine jancae_print_yield ( pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -69,7 +75,7 @@ c-----------------------------------------------------------------------
 c
       ntyld = pryld(1)
       write (6,*)
-      write (6,*) '>> Yield Criterion',ntyld
+      write (6,*) '>> Yield Function',ntyld
       select case ( ntyld )
 c
       case ( 0 )                                             ! von Mises
@@ -228,14 +234,14 @@ c
       end select
 c
       return
-      end subroutine jancae_yfunc_print
+      end subroutine jancae_print_yield
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT ISOTROPIC HARDENING LAW PARAMETERS
 c
-      subroutine jancae_harden_print ( prihd,ndihd )
+      subroutine jancae_print_isotropic ( prihd,ndihd )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -296,14 +302,14 @@ c
       end select
 c
       return
-      end subroutine jancae_harden_print
+      end subroutine jancae_print_isotropic
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT KINEMATIC HARDENING LAW PARAMETERS
 c
-      subroutine jancae_kinematic_print ( prkin,ndkin,npbs )
+      subroutine jancae_print_kinematic ( prkin,ndkin,npbs )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -366,14 +372,14 @@ c
       end select
 c
       return
-      end subroutine jancae_kinematic_print
+      end subroutine jancae_print_kinematic
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT UNCOUPLED RUPTURE CRITERION PARAMETERS
 c
-      subroutine jancae_rupture_print ( prrup,ndrup )
+      subroutine jancae_print_rupture ( prrup,ndrup )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -425,7 +431,98 @@ c
       end select
 c
       return
-      end subroutine jancae_rupture_print
+      end subroutine jancae_print_rupture
+c
+c
+c
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c     PRINT INFORMATIONS FOR DEBUG (INFO)
+c
+      subroutine jancae_print_info ( inc,nnrm,nshr )
+c-----------------------------------------------------------------------
+      implicit none
+c
+			integer inc,nnrm,nshr
+c
+      integer nttl,nerr
+c
+			integer ne,ip,lay
+      common /jancae1/ne,ip,lay
+c-----------------------------------------------------------------------
+c
+      nttl = nnrm + nshr
+c
+      write (6,*) '----- JANCAE.UMMDp Debug Info -----'
+      write (6,*) 'increment=',inc
+      write (6,*) 'elem,ip,lay=',ne,ip,lay
+      write (6,*) 'nttl,nnrm,nshr=',nttl,nnrm,nshr
+      nerr = 0
+      if ( nnrm == 3 ) then
+        if ( nshr == 3 ) then
+          write (6,*) '3d solid element'
+        else if ( nshr == 1 ) then
+          write (6,*) 'plane strain or axi-sym solid element'
+        else
+          nerr = nerr + 1
+        end if
+      else if ( nnrm == 2 ) then
+        if ( nshr == 1 ) then
+          write (6,*) 'plane stress or thin shell element'
+        else if ( nshr == 3 ) then
+          write (6,*) 'thick shell element'
+        else
+          nerr = nerr + 1
+        end if
+      else
+        nerr = nerr + 1
+      end if
+      if ( nerr /= 0 ) then
+        write (6,*) 'no supported element type',nnrm,nshr
+        call jancae_exit ( 9000 )
+      end if
+c
+      return
+      end subroutine jancae_print_info
+c
+c
+c
+************************************************************************
+c     PRINT INFORMATIONS FOR DEBUG (INPUT/OUTPUT)
+c
+      subroutine jancae_print_inout ( io,s,de,d,nttl,stv,nstv )
+c-----------------------------------------------------------------------
+      implicit none
+c
+			integer io,nttl,nstv
+			real*8 s(nttl),stv(nstv),de(nttl),d(nttl,nttl)
+c
+      character*32 text
+c-----------------------------------------------------------------------
+c
+      if ( io == 0 ) then
+        text = 'initial stresses'
+      else
+        text = 'updated stresses'
+      end if
+      call jancae_print1 ( text,s,nttl )
+c
+      if ( io == 0 ) then
+        text = 'initial internal state var.'
+      else
+        text = 'updated internal state var.'
+      end if
+      call jancae_print1 ( text,stv,nstv )
+c
+      if ( io == 0 ) then
+        text = 'driving strain increment'
+        call jancae_print1 ( text,de,nttl )
+      else
+        text = 'tangent modulus matrix'
+        call jancae_print2 ( text,d,nttl,nttl )
+      end if
+c
+      return
+      end subroutine jancae_print_inout
 c
 c
 c

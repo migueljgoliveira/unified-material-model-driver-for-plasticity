@@ -1,8 +1,8 @@
-c***********************************************************************
-c
-c     UMMDp: Isotropic Hardening Laws
-c
-c***********************************************************************
+************************************************************************
+*
+*     ISOTROPIC HARDENING LAWS
+*
+************************************************************************
 c
 c      0 : Perfectly Plastic
 c      1 : Linear
@@ -12,11 +12,11 @@ c      4 : Voce
 c      5 : Voce + Linear
 c      6 : Voce + Swift
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE ISOTROPIC HARDENING LAW 
 c
-      subroutine jancae_hardencurve ( sy,dsydp,d2sydp2,
-     &                                nreq,p,prihd,ndihd )
+      subroutine jancae_isotropic ( sy,dsydp,d2sydp2,
+     &                              nreq,p,prihd,ndihd )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -123,7 +123,7 @@ c
       end select
 c
       return
-      end
+      end subroutine jancae_isotropic
 c
 c
 c

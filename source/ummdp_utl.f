@@ -1,8 +1,8 @@
-c***********************************************************************
-c
-c     UMMDp: Utility Subroutines
-c
-c***********************************************************************
+************************************************************************
+*
+*     UTILITY SUBROUTINES
+*
+************************************************************************
 c
 c     jancae_clear1 ( a,n )
 c       clear 1st order vector
@@ -54,7 +54,7 @@ c       print informations for debug (input/output)
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CLEAR 1st ORDER VECTOR A(N)
 c
       subroutine jancae_clear1 ( a,n )
@@ -76,7 +76,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CLEAR 2ND ORDER MATRIX
 c
       subroutine jancae_clear2 ( a,n,m )
@@ -100,7 +100,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CLEAR 3RD ORDER MATRIX
 c
       subroutine jancae_clear3 ( a,n,m,l )
@@ -126,7 +126,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     SET UNIT 2ND ORDER MATRIX
 c
       subroutine jancae_setunitm ( a,n )
@@ -149,7 +149,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT VECTOR WITH TEXT
 c
       subroutine jancae_print1 ( text,a,n )
@@ -172,7 +172,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT MATRIX WITH TEXT
 c
       subroutine jancae_print2 ( text,a,n,m )
@@ -196,7 +196,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     MULTIPLY MATRIX AND VECTOR
 c
       subroutine jancae_mv ( v,a,u,nv,nu )
@@ -222,7 +222,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     MULTIPLY MATRIX AND MATRIX
 c     
       subroutine jancae_mm ( a,b,c,na1,na2,nbc )
@@ -249,7 +249,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE SCALAR PRODUCT OF VECTORS
 c
       subroutine jancae_vvs ( s,u,v,n )
@@ -273,7 +273,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE INVERSE MATRIX USING LU DECOMPOSITION
 c
 c     Ref.: http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
@@ -371,7 +371,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     LU DECOMPOSITION
 c
       subroutine jancae_ludcmp ( a,n,indx,d,eps )
@@ -457,7 +457,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     LU BACKWARD SUBSTITUTION
 c
       subroutine jancae_lubksb ( a,n,indx,b,eps )
@@ -501,7 +501,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE INVERSE MATRIX 2x2 
 c
       subroutine jancae_minv2 ( b,a,deta,eps )
@@ -532,7 +532,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE INVERSE MATRIX 3x3
 c
       subroutine jancae_minv3 ( b,a,deta,eps )
@@ -570,98 +570,7 @@ c
 c
 c
 c
-************************************************************************
-c     PRINT INFORMATIONS FOR DEBUG (INFO)
-c
-      subroutine jancae_printinfo ( inc,nnrm,nshr )
-c-----------------------------------------------------------------------
-      implicit none
-c
-			integer inc,nnrm,nshr
-c
-      integer nttl,nerr
-c
-			integer ne,ip,lay
-      common /jancae1/ne,ip,lay
-c-----------------------------------------------------------------------
-c
-      nttl = nnrm + nshr
-c
-      write (6,*) '----- JANCAE.UMMDp Debug Info -----'
-      write (6,*) 'increment=',inc
-      write (6,*) 'elem,ip,lay=',ne,ip,lay
-      write (6,*) 'nttl,nnrm,nshr=',nttl,nnrm,nshr
-      nerr = 0
-      if ( nnrm == 3 ) then
-        if ( nshr == 3 ) then
-          write (6,*) '3d solid element'
-        else if ( nshr == 1 ) then
-          write (6,*) 'plane strain or axi-sym solid element'
-        else
-          nerr = nerr + 1
-        end if
-      else if ( nnrm == 2 ) then
-        if ( nshr == 1 ) then
-          write (6,*) 'plane stress or thin shell element'
-        else if ( nshr == 3 ) then
-          write (6,*) 'thick shell element'
-        else
-          nerr = nerr + 1
-        end if
-      else
-        nerr = nerr + 1
-      end if
-      if ( nerr /= 0 ) then
-        write (6,*) 'no supported element type',nnrm,nshr
-        call jancae_exit ( 9000 )
-      end if
-c
-      return
-      end subroutine jancae_printinfo
-c
-c
-c
-************************************************************************
-c     PRINT INFORMATIONS FOR DEBUG (INPUT/OUTPUT)
-c
-      subroutine jancae_printinout ( io,s,de,d,nttl,stv,nstv )
-c-----------------------------------------------------------------------
-      implicit none
-c
-			integer io,nttl,nstv
-			real*8 s(nttl),stv(nstv),de(nttl),d(nttl,nttl)
-c
-      character*32 text
-c-----------------------------------------------------------------------
-c
-      if ( io == 0 ) then
-        text = 'initial stresses'
-      else
-        text = 'updated stresses'
-      end if
-      call jancae_print1 ( text,s,nttl )
-c
-      if ( io == 0 ) then
-        text = 'initial internal state var.'
-      else
-        text = 'updated internal state var.'
-      end if
-      call jancae_print1 ( text,stv,nstv )
-c
-      if ( io == 0 ) then
-        text = 'driving strain increment'
-        call jancae_print1 ( text,de,nttl )
-      else
-        text = 'tangent modulus matrix'
-        call jancae_print2 ( text,d,nttl,nttl )
-      end if
-c
-      return
-      end subroutine jancae_printinout
-c
-c
-c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE EIGENVALUES AND EIGENVECTORS BY JACOBI METHOD
 c
 c     Ref.: http://www.flagshyp.com/
@@ -786,7 +695,7 @@ c
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CHECKING EXISTENCE OF FILE NAMES 'FLNAME'
 c
       logical function jancae_file_exist ( flname )

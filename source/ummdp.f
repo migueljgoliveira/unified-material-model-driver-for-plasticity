@@ -237,9 +237,9 @@ c
 c
       if ( ( nvbs >= 1 ) .or. ( nout /= 0 ) ) then
         write (6,*)
-        write (6,*) '**************************************'
-        write (6,*) '******* START OF JANCAE/UMMDp ********'
-        write (6,*) '**************************************'
+        write (6,*) '******************************'
+        write (6,*) '******* START OF UMMDp *******'
+        write (6,*) '******************************'
       end if
 c
 c                                          ---- copy material properties
@@ -267,12 +267,12 @@ c                                          ---- copy material properties
 c
       if ( nout /= 0 ) then
         write (6,*)
-        write (6,*) 'MATERIAL DATA LIST --------------------'
-        call jancae_elast_print     ( prela,ndela )
-        call jancae_yfunc_print     ( pryld,ndyld )
-        call jancae_harden_print    ( prihd,ndihd )
-        call jancae_kinematic_print ( prkin,ndkin,npbs )
-        call jancae_rupture_print   ( prrup,ndrup )
+        write (6,*) 'MATERIAL DATA LIST'
+        call jancae_print_elastic   ( prela,ndela )
+        call jancae_print_yield     ( pryld,ndyld )
+        call jancae_print_isotropic ( prihd,ndihd )
+        call jancae_print_kinematic ( prkin,ndkin,npbs )
+        call jancae_print_rupture   ( prrup,ndrup )
       end if
 c                                                           ---- set [U]
       call jancae_clear2( um,nttl,nnn )
@@ -351,18 +351,18 @@ c                                                       ---- back stress
         eta(i) = s2(i) - xt2(i)
       end do
 c                                                       ---- check yield
-      call jancae_yfunc  ( se,dseds,d2seds2,0,
+      call jancae_yield  ( se,dseds,d2seds2,0,
      &                     eta,nttl,nnrm,nshr,
      &                     pryld,ndyld )
-      call jancae_hardencurve ( sy,dsydp,d2sydp2,
-     &                          0,p,prihd,ndihd )
+      call jancae_isotropic ( sy,dsydp,d2sydp2,
+     &                        0,p,prihd,ndihd )
 c
       if ( nvbs >= 3 ) then
         write (6,*) 'plastic strain p=',p
         write (6,*) 'flow stress   sy=',sy
         write (6,*) 'equiv.stress  se=',se
         if ( npbs /= 0 ) then
-          call jancae_yfunc  ( xe,dseds,d2seds2,0,
+          call jancae_yield  ( xe,dseds,d2seds2,0,
      &                         xt1,nttl,nnrm,nshr,
      &                         pryld,ndyld )
           write (6,*) 'equiv.back.s  xe=',xe
@@ -451,7 +451,7 @@ c                                        ---- calc. se and differentials
         do i = 1,nttl
           eta(i) = s2(i) - xt2(i)
         end do
-        call jancae_yfunc ( se,dseds,d2seds2,2,
+        call jancae_yield ( se,dseds,d2seds2,2,
      &                      eta,nttl,nnrm,nshr,
      &                      pryld,ndyld )
 c
@@ -470,8 +470,8 @@ c
           call jancae_print2 ( text,d2seds2,nttl,nttl )
         end if
 c                                        ---- calc. sy and differentials
-        call jancae_hardencurve ( sy,dsydp,d2sydp2,
-     &                            1,pt,prihd,ndihd )
+        call jancae_isotropic ( sy,dsydp,d2sydp2,
+     &                          1,pt,prihd,ndihd )
 
         if ( nvbs >= 5 ) then
           write (6,*) 'plastic strain p=',pt

@@ -1,8 +1,8 @@
-c***********************************************************************
-c
-c     UMMDp : Kinematic Hardening Laws
-c
-c***********************************************************************
+************************************************************************
+*
+*     KINEMATIC HARDENING LAWS
+*
+************************************************************************
 c
 c      0 : No Kinematic Hardening
 c      1 : Prager
@@ -12,7 +12,7 @@ c      4 : Chaboche (1979)
 c      5 : Chaboche (1979) - Ziegler
 c      6 : Yoshida-Uemori
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE KINEMATIC HARDENING LAW
 c
       subroutine jancae_kinematic ( vk,dvkdp,
@@ -116,7 +116,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE 1ST AND 2ND DERIVATIVES FOR KINEMATIC HARDENING LAWS
 c
       subroutine jancae_dseds_kin ( eta,seta,dseds,d2seds2,
@@ -135,7 +135,7 @@ c
 c-----------------------------------------------------------------------
 c
 c                    ---- dseds and d2seds2 for plastic strain increment
-      call jancae_yfunc  ( seta,dseds,d2seds2,2,
+      call jancae_yield  ( seta,dseds,d2seds2,2,
      &                     eta,nttl,nnrm,nshr,
      &                     pryld,ndyld )
 c
@@ -171,7 +171,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     PRAGER KINEMATIC HARDENING LAW
 c
       subroutine jancae_kin_prager ( vk,dvkdp,
@@ -231,7 +231,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     ZIEGLER KINEMATIC HARDENING LAW
 c
       subroutine jancae_kin_ziegler ( vk,dvkdp,
@@ -288,7 +288,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     ARMSTRONG-FREDERICK (1966) KINEMATIC HARDENING LAW
 c
       subroutine jancae_kin_armstrong ( vk,dvkdp,
@@ -351,7 +351,7 @@ c
       end subroutine jancae_kin_armstrong
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CHABOCHE (1979) KINEMATIC HARDENING LAW
 c
       subroutine jancae_kin_chaboche ( vk,dvkdp,
@@ -414,7 +414,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CHABOCHE (1979) - ZIEGLER KINEMATIC HARDENING LAW
 c
       subroutine jancae_kin_chaboche_ziegler ( vk,dvkdp,
@@ -477,7 +477,7 @@ c
 c
 c
 c
-************************************************************************
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     YOSHIDA-UEMORI KINEMATIC HARDENING LAW
 c
       subroutine jancae_kin_yoshida_uemori ( vk,dvkdp,

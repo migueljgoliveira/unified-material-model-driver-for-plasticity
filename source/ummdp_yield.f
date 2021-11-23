@@ -1,8 +1,8 @@
-c***********************************************************************
-c
-c     UMMDp : Yield Criteria
-c
-c***********************************************************************
+************************************************************************
+*
+*     YIELD FUNCTIONS
+*
+************************************************************************
 c
 c      0 : von Mises (1913)
 c
@@ -23,10 +23,10 @@ c      -5 : Yld89
 c      -6 : BBC 2008
 c      -7 : Hill 1990
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE YIELD FUNCTION AND DERIVATIVES
 c
-      subroutine jancae_yfunc ( se,cdseds,cd2seds2,nreq,
+      subroutine jancae_yield ( se,cdseds,cd2seds2,nreq,
      &                          cs,nttl,nnrm,nshr,
      &                          pryld,ndyld )
 c-----------------------------------------------------------------------
@@ -49,7 +49,7 @@ c
 c
       if ( ntyld < 0 ) then
         if ( ( nnrm /= 2 ) .or. ( nshr /= 1 ) ) then
-          write (6,*) 'error in jancae_yfunc'
+          write (6,*) 'error in jancae_yield'
           write (6,*) 'ntyld<0 for plane stress'
           write (6,*) 'nnrm,nshr,ntyld:',nnrm,nshr,ntyld
           call jancae_exit (9000)
@@ -121,7 +121,7 @@ c
      &                            pryld,ndyld )
 c
       case default
-        write (6,*) 'error in jancae_yfunc'
+        write (6,*) 'error in jancae_yield'
         write (6,*) 'ntyld error :',ntyld
         call jancae_exit (9000)
       end select
@@ -181,13 +181,13 @@ c
      &                         pryld,ndyld )
 c
       case default
-        write (6,*) 'error in jancae_yfunc'
+        write (6,*) 'error in jancae_yield'
         write (6,*) 'ntyld error :',ntyld
         call jancae_exit (9000)
       end select
 c
       return
-      end subroutine jancae_yfunc
+      end subroutine jancae_yield
 c
 c
 c

@@ -1,19 +1,23 @@
-c--------------------------------------------------------------(yld2000)
-c     Barlat YLD2000 yield function and its dfferentials
-c     ( IJP v.19(203) p1297-1319. )
+************************************************************************
+c     YLD2000-2D YIELD FUNCTION AND DERIVATIVES
 c
-
       subroutine jancae_yld2000 ( s,se,dseds,d2seds2,nreq,
      &                            pryld,ndyld )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(3),dseds(3),d2seds2(3,3),pryld(ndyld)
-      dimension a(8),am(2,3,3),x(2,2),y(2,3),phi(2),
-     &          dsedphi(2),dphidx(2,2),
-     &          dxdy(2,2,3),dyds(2,3,3),
-     &          d2sedphi2(2,2),d2phidx2(2,2,2),
-     &          d2xdy2(2,2,3,3)
+      implicit none
 c
+      integer nreq,ndyld
+      real*8 se
+			real*8 s(3),dseds(3),pryld(ndyld)
+			real*8 d2seds2(3,3)
+c
+      integer i,j,k,l,m,n,nd,nd1,nd2
+			real*8 em,q
+      real*8 a(8),phi(2),dsedphi(2),dphidx(2,2)
+			real*8 x(2,2),y(2,3),d2sedphi2(2,2)
+			real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3),d2phidx2(2,2,2)
+			real*8 d2xdy2(2,2,3,3)
+c-----------------------------------------------------------------------         
 c
 c     variables  : symbols in Barlat's paper
 c
@@ -37,14 +41,14 @@ c                                            ---- anisotropic parameters
         a(i) = pryld(i+1)
       end do
       em = pryld(9+1)
-c                                         ---- set linear transf. matrix
+c                                  ---- set linear transformation matrix
       call jancae_yld2000_2d_am ( a,am )
 c                                                 ---- equivalent stress
       call jancae_yld2000_2d_xyphi ( s,em,am,x,y,phi )
       q = phi(1) + phi(2)
       if ( q <= 0.0 ) q = 0.0
       se = (0.5d0*q) ** (1.0d0/em)
-c                                            ---- 1st order differential
+c                                              ---- 1st order derivative
       if ( nreq >= 1 ) then
         call jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
      &                               dsedphi,dphidx,
@@ -61,7 +65,7 @@ c                                            ---- 1st order differential
           end do
         end do
       end if
-c                                            ---- 2nd order differential
+c                                              ---- 2nd order derivative
       if ( nreq >= 2 ) then
         call jancae_yld2000_2d_ds2 ( phi,x,y,em,
      &                               d2sedphi2,d2phidx2,
@@ -116,17 +120,22 @@ c                                            ---- 2nd order differential
       end if
 c
       return
-      end
+      end subroutine jancae_yld2000
 c
 c
 c
-c--------------------------------------------------------------(yld2000)
-c     set barlat-yld2k linear transformation matrix am
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     SET LINEAR TRANSFORMATION MATRIX
 c
       subroutine jancae_yld2000_2d_am ( a,am )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension a(8),am(2,3,3)
+      implicit none
+c
+      real*8 a(8)
+			real*8 am(2,3,3)
+c
+      integer i,j
+c-----------------------------------------------------------------------
 c
 c                                      ---- linear transformation matrix
       am(1,1,1) =  2.0d0*a(1)
@@ -157,18 +166,26 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_yld2000_2d_am
 c
 c
 c
-c--------------------------------------------------------------(yld2000)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. barlat-yld2k function x,y,phi
 c
       subroutine jancae_yld2000_2d_xyphi ( s,em,am,x,y,phi )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(3),am(2,3,3),x(2,2),y(2,3),phi(2)
-      dimension p(2)
+      implicit none
+c
+      real*8 em
+      real*8 s(3),phi(2)
+      real*8 x(2,2),y(2,3)
+			real*8 am(2,3,3)
+c
+      integer i,j,nd
+			real*8 a
+      real*8 p(2)
+c-----------------------------------------------------------------------
 c
       p(1) =  1.0d0
       p(2) = -1.0d0
@@ -197,24 +214,28 @@ c                                                 ---- phi(1) and phi(2)
      &          abs(2.0d0*x(nd,1)+x(nd,2))**em
 c
       return
-      end
+      end subroutine jancae_yld2000_2d_xyphi
 c
 c
 c
-c--------------------------------------------------------------(yld2000)
-c     set 1st order differential of parameters
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     SET 1ST ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
      &                                   dsedphi,dphidx,
      &                                   dxdy,dyds,se )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension am(2,3,3),x(2,2),y(2,3),phi(2),
-     &          dsedphi(2),dphidx(2,2),
-     &          dxdy(2,2,3),dyds(2,3,3)
+      real*8 se,em
+      real*8 phi(2),dsedphi(2)
+			real*8 x(2,2),y(2,3),dphidx(2,2)
+			real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3)
 c
-      dimension p(2)
+      integer i,j,nd
+      real*8 eps,emi,q,a,a0,a1,a2,b0,b1,b2,sgn0,sgn1,sgn2
+      real*8 p(2)
+c-----------------------------------------------------------------------
 c
       eps = 1.0d-16
 c
@@ -277,22 +298,29 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_yld2000_2d_ds1
 c
 c
 c
-c--------------------------------------------------------------(yld2000)
-c     set 2nd order differential of parameters
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     SET 2ND ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine jancae_yld2000_2d_ds2 ( phi,x,y,em,
      &                                   d2sedphi2,d2phidx2,
      &                                   d2xdy2,se )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension phi(2),x(2,2),y(2,3),
-     &          d2sedphi2(2,2),d2phidx2(2,2,2),
-     &          d2xdy2(2,2,3,3)
-      dimension p(2)
+      implicit none
+c
+      real*8 em,se
+      real*8 phi(2)
+			real*8 x(2,2),y(2,3),d2sedphi2(2,2)
+			real*8 d2phidx2(2,2,2)
+			real*8 d2xdy2(2,2,3,3)
+c
+      integer i,j,m,nd,nd1,nd2,ij
+      real*8 eps,emi,q,a
+      real*8 p(2)
+c-----------------------------------------------------------------------
 c
       eps = 1.0d-16
 c
@@ -375,7 +403,7 @@ c                                                           ---- d2x/dy2
       end do
 c
       return
-      end
+      end subroutine jancae_yld2000_2d_ds2
 c
 c
 c
