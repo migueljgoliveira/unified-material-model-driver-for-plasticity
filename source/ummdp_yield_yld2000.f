@@ -1,6 +1,8 @@
 ************************************************************************
 c     YLD2000-2D YIELD FUNCTION AND DERIVATIVES
 c
+c       doi: https://doi.org/10.1016/S0749-6419(02)00019-0
+c
       subroutine jancae_yld2000 ( s,se,dseds,d2seds2,nreq,
      &                            pryld,ndyld )
 c-----------------------------------------------------------------------

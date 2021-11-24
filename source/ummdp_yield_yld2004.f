@@ -1,6 +1,8 @@
 ************************************************************************
 c     YLD2004-18p YIELD FUNCTION AND DERIVATIVES
 c
+c       doi: 
+c
       subroutine jancae_yld2004_18p ( s,se,dseds,d2seds2,nreq,
      1                                pryld,ndyld )
 c-----------------------------------------------------------------------

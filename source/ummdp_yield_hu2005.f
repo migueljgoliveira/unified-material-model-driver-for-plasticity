@@ -1,17 +1,26 @@
-c---------------------------------------------------------------(hu2005)
-c     WeiLong Hu (2005) yield function and its dfferentials
+************************************************************************
+c     HU2005 YIELD FUNCTION AND DERIVATIVES
 c
-c     "An orthotropic yield criterion in a 3-D general stress state"
-c      IJP,v.21(2005), pp.1771-1796. )
+c       doi: https://doi.org/10.1016/j.ijplas.2004.11.004
 c
       subroutine jancae_hu2005 ( s,se,dseds,d2seds2,nreq,
-     &                            pryld,ndyld )
+     1                           pryld,ndyld )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      parameter (maxa=100)
-      dimension s(6),dseds(6),d2seds2(6,6),pryld(ndyld)
-      dimension a(maxa),ipow(maxa,3)
+      implicit none
 c
+      integer,parameter :: maxa = 100
+c
+      integer,intent(in) :: nreq,ndyld
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
+c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+			real*8,intent(out) :: d2seds2(3,3)
+c 
+      integer nd0,n,nterms,it,jy,jx,ndmax
+      real*8 a(maxa)
+      real*8 ipow(maxa,3)
+c-----------------------------------------------------------------------
 c
       nd0 = 2
 c
@@ -26,7 +35,7 @@ c
       end if
 c
       n = 0
-      ipow = 0
+      ipow = 0.0d0
       do it = 0,nd0
         ndmax = nd0*2 - it*2
         do jy = 0,ndmax
@@ -50,10 +59,10 @@ c
       a(9) =  pryld(1+6)    ! X7
 c
       call jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,
-     &                          nd0,a,ipow,maxa,nterms )
+     1                          nd0,a,ipow,maxa,nterms )
 c
       return
-      end
+      end subroutine jancae_hu2005
 c
 c
 c
