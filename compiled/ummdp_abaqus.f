@@ -4305,12 +4305,12 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer,intent(in)  :: nreq,ndyld
-      real*8 ,intent(in)  :: s(3),pryld(ndyld)
+      integer,intent(in) :: nreq,ndyld
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
 c
-      real*8 ,intent(out) :: se
-      real*8 ,intent(out) :: dseds(3)
-			real*8 ,intent(out) :: d2seds2(3,3)
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+			real*8,intent(out) :: d2seds2(3,3)
 c
       integer k,i,j,d,e,mm,fact,ii,jj
       real*8 a,b,L,M,N,P,Q,R,nn,fir,las,oo,pp,phi,Al,AA,BB,CC,DD,kk,
@@ -4569,7 +4569,7 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
+      integer,intent(in) :: n
 c
       integer i
 c-----------------------------------------------------------------------
@@ -4585,43 +4585,23 @@ c
       end function fact
 c
 c
-cc--------------------------------------------------------------(bbc2008)
+c************************************************************************
+c     BBC2008 YIELD FUNCTION AND DERIVATIVES
 c
-c     BBC2008 yield function & its differentials for JANCAE UMMDp
-c
-c     Title: Plane-Stress Yield Criterion For Highly-Anisotropic 
-c            Sheet Metals
-c     Authors: Dan-Sorin Comsa, Dorel Banabic
-c              (Technical University of Cluj-Napoca, 15C. Daicoviciu, 
-c              400020 Cluj-Napoca, Romania)
-c     Paper: Numisheet 2008, Sep. 1-5, 2008 - Interlaken, Switzerland
-c
-c
-c-----------------------------------------------------------------------
-c     coded by Kunio TAKEKOSHI (Terrabyte Co., Ltd)
-c      - January  7, 2011 Initiall release
-c      - January 15, 2011 Rewrite explanations.
-c      - February 24, 2015 clean up (deleted some comments etc.)
-c
-c     modified by H.Takizawa (JANCAE)
-c      - February 23, 2015
-c--------------------------------------------------------------(bbc2008)
       subroutine jancae_bbc2008 (s,se,dseds,d2seds2,nreq,
-     &                           pryld,ndyld)
-c
+     1                           pryld,ndyld)
+c-----------------------------------------------------------------------
       implicit none
 c
-c                                                    ---- input & output
-      integer, intent(in) :: nreq , ndyld
-      real*8, intent(in) :: s(3), pryld(ndyld)
-      real*8, intent(out) :: se, dseds(3), d2seds2(3,3)
-
-c                                                   ---- local variables
+      integer,intent(in) :: nreq,ndyld
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
 c
-c     nds and ndk are used as s and k in the literature of BBC2008, 
-c       respectively.
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+			real*8,intent(out) :: d2seds2(3,3)
 c
-      integer :: nds, ndk
+      integer nds,ndk
+c-----------------------------------------------------------------------
 c
       nds = nint(pryld(2))
       ndk = nint(pryld(3))
@@ -4633,8 +4613,28 @@ c
       end subroutine jancae_bbc2008
 c
 c
-c     <<local variables>>
 c
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      subroutine jancae_bbc2008_core ( s,se,dseds,d2seds2,nreq,
+     &                                 pryld,ndyld,sp,kp )
+c-----------------------------------------------------------------------
+      implicit none
+c
+      integer,intent(in) :: nreq,ndyld,sp,kp
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
+c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+      real*8,intent(out) :: d2seds2(3,3)
+c
+      integer csp,m,eta
+      real*8 se1,wp,phiL,phiM,phiN,phiL_m,phiM_kp_m,phiN_m,se2k,
+     1       jancae_bbc2008_get_se 
+      real*8 wpi(2),dFds(3),dphiLds(3),dphiMds(3),dphiNds(3)
+      real*8 d2Fds2(3,3),d2phiLds2(3,3),d2phiMds2(3,3),d2phiNds2(3,3)
+      real*8 Lp(sp,3,3),Mp(sp,3,3),Np(sp,3,3)
+      real*8 kCm(0:kp)
+c-----------------------------------------------------------------------
 c     se1: The factor to normalize equivalent stress calculated by 
 c          original formula.
 c     kCm(): Combination variables (caution, this array starts from zero.)
@@ -4683,43 +4683,13 @@ c
 c     Here, (x.y.10), (x.y.2d) etc are equation numbering used in a 
 c       text / a paper which will be released by JANCAE.
 c
-c--------------------------------------------------------------(bbc2008)
-      subroutine jancae_bbc2008_core ( s,se,dseds,d2seds2,nreq,
-     &                                 pryld,ndyld,sp,kp )
-c
-      implicit none
-c
-c                                                    ---- input & output
-      integer, intent(in) :: nreq , ndyld , sp , kp
-      real*8, intent(in) :: s(3), pryld(ndyld)
-      real*8, intent(out) :: se, dseds(3), d2seds2(3,3)
-c
-c                                                   ---- local variables
-      integer csp, m, eta
-c
-c                                       ---- local variables for BBC2008
-      real*8  :: se1, wp
-      real*8  :: Lp(sp,3,3), Mp(sp,3,3), Np(sp,3,3)
-      real*8  :: kCm(0:kp)
-c
-c                                               ---- temporary variables
-      real*8 wpi(2)
-      real*8 dFds(3), d2Fds2(3,3)
-      real*8 phiL, phiM, phiN
-      real*8 dphiLds(3), dphiMds(3), dphiNds(3)
-      real*8 d2phiLds2(3,3), d2phiMds2(3,3), d2phiNds2(3,3)
-c                                    ---- phiL_m = phiL^m, se2k = se^2kp
-      real*8 phiL_m, phiM_kp_m, phiN_m, se2k
-c
-c                                                   ---- local functions
-      real*8 jancae_bbc2008_get_se
-c
+c-----------------------------------------------------------------------
 c     ----------------
 c        parameters
 c     ----------------
 c
       call jancae_bbc2008_setup ( pryld,ndyld,sp,kp,wp,
-     &                            Lp,Mp,Np,kCm,se1)
+     1                            Lp,Mp,Np,kCm,se1)
 c
 c ----------------
 c  se section
@@ -4748,7 +4718,7 @@ c                              ---- long-long-long do loops starts here.
       do csp = 1,sp
 c
         call jancae_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,
-     &                                  csp,sp,wp,Lp,Mp,Np,s )
+     1                                  csp,sp,wp,Lp,Mp,Np,s )
 c
         do m = 0,kp
 c
@@ -4775,10 +4745,10 @@ c
 c
 c                                             ---- <dseds>, see (x.y.2f)
           dFds(1:3) = dFds(1:3) + kCm(m) * 
-     &                    (  wpi(1)*(  dphiMds(1:3) * phiL_m
-     &                               + dphiLds(1:3) * phiM_kp_m )
-     &                     + wpi(2)*(  dphiMds(1:3) * phiN_m
-     &                               + dphiNds(1:3) * phiM_kp_m ))
+     1                    (  wpi(1)*(  dphiMds(1:3) * phiL_m
+     2                               + dphiLds(1:3) * phiM_kp_m )
+     3                     + wpi(2)*(  dphiMds(1:3) * phiN_m
+     4                               + dphiNds(1:3) * phiM_kp_m ))
 c
 c
 c                     ---- <d2seds2>, see (x.y.2g), d2F/ds(eta)ds(gamma)
@@ -4791,14 +4761,14 @@ c
 c
             do eta = 1,3
               d2Fds2(eta,1:3) = d2Fds2(eta,1:3) + kCm(m)
-     &             * (  wpi(1) * (  d2phiMds2(eta,1:3) * phiL_m
-     &                            + dphiMds(1:3) * dphiLds(eta)
-     &                            + dphiLds(1:3) * dphiMds(eta)
-     &                            + d2phiLds2(eta,1:3) * phiM_kp_m )
-     &                + wpi(2) * (  d2phiMds2(eta,1:3) * phiN_m
-     &                            + dphiMds(1:3) * dphiNds(eta)
-     &                            + dphiNds(1:3) * dphiMds(eta)
-     &                            + d2phiNds2(eta,1:3) * phiM_kp_m ))
+     1             * (  wpi(1) * (  d2phiMds2(eta,1:3) * phiL_m
+     2                            + dphiMds(1:3) * dphiLds(eta)
+     3                            + dphiLds(1:3) * dphiMds(eta)
+     4                            + d2phiLds2(eta,1:3) * phiM_kp_m )
+     5                + wpi(2) * (  d2phiMds2(eta,1:3) * phiN_m
+     6                            + dphiMds(1:3) * dphiNds(eta)
+     7                            + dphiNds(1:3) * dphiMds(eta)
+     8                            + d2phiNds2(eta,1:3) * phiM_kp_m ))
             end do
 c
           end if
@@ -4817,32 +4787,35 @@ c                  ---- < d2seds2 >, see (x.y.2g), d2se/ds(eta)ds(gamma)
       if ( nreq == 2 ) then
         do eta = 1,3
           d2seds2(eta,1:3) = 
-     &            d2Fds2(eta,1:3) * se / (se1 * 2.0d0 * kp * se2k)
-     &            - (2.0d0*kp-1.0d0) * dseds(eta) * dseds(1:3) / se
+     1            d2Fds2(eta,1:3) * se / (se1 * 2.0d0 * kp * se2k)
+     2            - (2.0d0*kp-1.0d0) * dseds(eta) * dseds(1:3) / se
         end do
       end if
 c
       return
-      end
+      end subroutine jancae_bbc2008_core
 c
 c
 c
-c--------------------------------------------------------------(bbc2008)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     jancae_bbc2008_get_w_phi ()
 c     A subroutine to get w^(i-1), w^(s-i) and phiX variables
 c-----------------------------------------------------------------------
       subroutine jancae_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,
      &                                      wp,Lp,Mp,Np,s )
-c
+c-----------------------------------------------------------------------
       implicit none
 c
-      real*8, intent(out) :: wpi(2), phiM, phiL, phiN
-      integer, intent(in) :: csp, sp
-      real*8, intent(in) :: wp
-      real*8, intent(in) :: s(3), Lp(sp,3,3)
-      real*8, intent(in) :: Mp(sp,3,3), Np(sp,3,3)
+      integer,intent(in) :: csp, sp
+      real*8 ,intent(in) :: wp
+      real*8 ,intent(in) :: s(3)
+      real*8 ,intent(in) :: Lp(sp,3,3),Mp(sp,3,3),Np(sp,3,3)
+c
+      real*8,intent(out) :: phiM, phiL, phiN
+      real*8,intent(out) :: wpi(2)
 c
       real*8 jancae_bbc2008_get_phiX
+c-----------------------------------------------------------------------
 c
       wpi(1) = wp**(csp-1)
       wpi(2) = wp**(sp-csp)
@@ -4851,37 +4824,34 @@ c
       phiN = jancae_bbc2008_get_phiX (Np, s, csp , sp)
 c
       return
-      end
+      end subroutine jancae_bbc2008_get_w_phi
 c
 c
 c
-c--------------------------------------------------------------(bbc2008)
-c     jancae_bbc2008_get_se (sp, kp, wp, s, Lp, Mp, Np, kCm)
-c     get equiv. stress
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE EQUIVALENT STRESS
 c
-c     Caution!
-c      The unit of get_se is (stress)^(2*kp).
-c-----------------------------------------------------------------------
       real*8 function jancae_bbc2008_get_se ( sp,kp,wp,s,Lp,Mp,Np,kCm )
-c
+c-----------------------------------------------------------------------
       implicit none
 c
-      integer, intent(in) :: sp, kp
-      real*8, intent(in) :: wp, s(3)
-      real*8, intent(in) :: Lp(sp,3,3)
-      real*8, intent(in) :: Mp(sp,3,3), Np(sp,3,3)
-      real*8, intent(in) :: kCm(0:kp)
+      integer,intent(in) :: sp,kp
+      real*8 ,intent(in) :: wp
+      real*8 ,intent(in) :: s(3)
+      real*8 ,intent(in) :: Lp(sp,3,3),Mp(sp,3,3),Np(sp,3,3)
+      real*8 ,intent(in) :: kCm(0:kp)
 c
-      integer csp, m
-      real*8 phiM, phiL, phiN
-      real*8 wpi(2), phiL_m, phiM_kp_m, phiN_m
+      integer csp,m
+      real*8 phiM,phiL,phiN,phiL_m,phiM_kp_m,phiN_m
+      real*8 wpi(2)
+c-----------------------------------------------------------------------
 c
       jancae_bbc2008_get_se = 0.0d0
 c
       do csp = 1,sp
 c
         call jancae_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,wp,
-     &                                  Lp,Mp,Np,s )
+     1                                  Lp,Mp,Np,s )
 c
         do m = 0,kp
 c
@@ -4898,22 +4868,36 @@ c
           end if
 c
           jancae_bbc2008_get_se = 
-     &    jancae_bbc2008_get_se 
-     &     + kCm(m) * phiM_kp_m * ( wpi(1) * phiL_m + wpi(2) * phiN_m )
+     1    jancae_bbc2008_get_se 
+     2     + kCm(m) * phiM_kp_m * ( wpi(1) * phiL_m + wpi(2) * phiN_m )
 c
         end do
 c
       end do
 c
       return
-      end
+      end function jancae_bbc2008_get_se
 c
 c
 c
-c--------------------------------------------------------------(bbc2008)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     jancae_bbc2008_get_phiX (Xp, s, csp , sp)
 c     A function to calculate s(a)*X(a,b)*s(b) (summation convention)
 c
+      real*8 function jancae_bbc2008_get_phiX ( Xp,s,csp,sp )
+c-----------------------------------------------------------------------
+      implicit none
+c
+      integer,parameter :: nc = 3
+c
+      integer,intent(in) :: csp,sp
+      real*8 ,intent(in) :: s(nc)
+      real*8 ,intent(in) :: Xp(sp,nc,nc)
+c
+      integer i
+      real*8 v(nc)
+      real*8 XXp(nc,nc)
+c-----------------------------------------------------------------------
 c     Xp: coefficient tensor
 c     s : stress vector
 c     csp: CURRENT sp value, 1<=csp<=sp
@@ -4922,17 +4906,6 @@ c     local variables
 c     nc: the number of components.
 c     XXp: = Xp(csp, nc, nc)
 c-----------------------------------------------------------------------
-c
-      real*8 function jancae_bbc2008_get_phiX ( Xp,s,csp,sp)
-c
-      implicit none
-      integer, parameter :: nc = 3
-c
-      integer, intent(in) :: csp , sp
-      real*8, intent(in) :: Xp(sp, nc, nc), s(nc)
-c
-      integer i
-      real*8 XXp(nc, nc), v(nc)
 c
 c                                  ---- convert 3rd tensor to 2nd tensor
       do i = 1,nc
@@ -4943,15 +4916,32 @@ c
       call jancae_vvs (jancae_bbc2008_get_phiX,v,s,nc)
 c
       return
-      end
+      end function jancae_bbc2008_get_phiX
 c
 c
 c
-c-----------------------------------------------------------------------
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     jancae_bbc2008_get_dphiXds (dphiXds, Xp, s, csp, lambda,sp)
 c     A subroutine to calculate d(phiX^(lambda))/ds.
 c     It returns dphiXds(nc).
 c
+      subroutine jancae_bbc2008_get_dphiXds (dphiXds,Xp,s,csp,lambda,sp)
+c-----------------------------------------------------------------------
+      implicit none
+c
+      integer,parameter :: nc = 3
+c
+      integer,intent(in) :: csp,lambda,sp
+      real*8 ,intent(in) :: s(nc)
+      real*8 ,intent(in) :: Xp(sp,nc,nc)
+c
+      real*8,intent(out) :: dphiXds(nc)
+c
+      integer i
+      real*8 phi
+      real*8 v(nc)
+      real*8 XXp(nc,nc)
+c-----------------------------------------------------------------------
 c     dphiXds: d(phiX^(lambda))/ds
 c     Xp: coefficient tensor
 c     s : stress vector
@@ -4962,20 +4952,7 @@ c
 c     local variables
 c     nc: the number of components.
 c     XXp: = Xp(csp, nc, nc)
-c--------------------------------------------------------------(bbc2008)
-c
-      subroutine jancae_bbc2008_get_dphiXds (dphiXds,Xp,s,csp,lambda,sp)
-c
-      implicit none
-      integer, parameter :: nc = 3
-c
-      integer, intent(in) :: csp, lambda , sp
-      real*8, intent(in) :: Xp(sp, nc, nc), s(nc)
-      real*8, intent(out) :: dphiXds(nc)
-c
-      integer i
-      real*8 XXp(nc, nc), v(nc), phi
-c
+c-----------------------------------------------------------------------
       call jancae_clear1(dphiXds,nc)
 c
 c                              ---- If lambda is 0, return dphiXds = {0}
@@ -5004,15 +4981,33 @@ c
       end if
 c
       return
-      end
+      end subroutine jancae_bbc2008_get_dphiXds
 c
 c
 c
-c-----------------------------------------------------------------------
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     jancae_bbc2008_get_d2phiXds2 (d2phiXds2, Xp, s, csp, lambda,sp)
 c     A subroutine to calculate d2(phiX^(lambda))/(dsds').
 c     It returns d2phiXdsds(nc,nc).
 c
+      subroutine jancae_bbc2008_get_d2phiXds2 ( d2phiXds2,Xp,s,csp,
+     1                                          lambda,sp )
+c-----------------------------------------------------------------------
+      implicit none
+c
+      integer,parameter :: nc = 3
+c
+      integer,intent(in) :: csp,lambda,sp
+      real*8 ,intent(in) :: s(nc)
+      real*8 ,intent(in) :: Xp(sp,nc,nc)
+c
+      real*8,intent(out) :: d2phiXds2(nc,nc)
+c
+      integer i
+      real*8 phi,phi_lambda2
+      real*8 v(nc)
+      real*8 XXp(nc,nc)
+c-----------------------------------------------------------------------
 c     d2phiXdsds: d2(phiX^(lambda))/(dsds')
 c     Xp: coefficient tensor
 c     s : stress vector
@@ -5023,20 +5018,7 @@ c
 c     local variables
 c     nc: the number of components.
 c     XXp: = Xp(csp, nc, nc)
-c--------------------------------------------------------------(bbc2008)
-c
-      subroutine jancae_bbc2008_get_d2phiXds2
-     &                     (d2phiXds2,Xp,s,csp,lambda,sp)
-c
-      implicit none
-      integer, parameter :: nc = 3
-c
-      integer, intent(in) :: csp, lambda ,sp
-      real*8, intent(in) :: Xp(sp, nc, nc), s(nc)
-      real*8, intent(out) :: d2phiXds2(nc, nc)
-c
-      integer i
-      real*8 XXp(nc, nc), v(nc), phi, phi_lambda2
+c-----------------------------------------------------------------------
 c
 c                             ---- see eq.(x.y.2e), the case lambda <= 1
       if ( lambda <= 1 ) then
@@ -5064,40 +5046,36 @@ c
 c                                            ---- d2phiX/(ds(i)ds(1:nc))
       do i = 1,nc
         d2phiXds2(i, 1:nc) = 2.0d0 * lambda * phi_lambda2 * 
-     &   ( 2.0d0 * (lambda - 1) * v(1:nc) * v(i)
-     &    + phi * XXp(1:nc, i) )
+     1   ( 2.0d0 * (lambda - 1) * v(1:nc) * v(i)
+     2    + phi * XXp(1:nc, i) )
       end do
 c
       return
-      end
+      end subroutine jancae_bbc2008_get_d2phiXds2
 c
 c
 c
-c--------------------------------------------------------------(bbc2008)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     setup_bbc2008_parameters()
 c     A routine to setup local variables.
-c-----------------------------------------------------------------------
+c
       subroutine jancae_bbc2008_setup ( pryld,ndyld,sp,kp,wp,
      &                                  Lp,Mp,Np,kCm,se1 )
-c
+c-----------------------------------------------------------------------
       implicit none
 c
-      integer, intent(in) :: sp, kp , ndyld
-      real*8, intent(in) :: pryld(ndyld)
-      real*8, intent(inout) :: wp, se1
-      real*8, intent(inout) :: Lp(sp,3,3)
-      real*8, intent(inout) :: Mp(sp,3,3), Np(sp,3,3)
-      real*8, intent(inout) :: kCm(0:kp)
+      integer,intent(in) :: sp,kp,ndyld
+      real*8 ,intent(in) :: pryld(ndyld)
 c
-c                                                   ---- local variables
-      integer csp, k, l, m, n
-      real*8  Comb(kp*2, 0:kp*2)
+      real*8,intent(inout) :: wp,se1
+      real*8,intent(inout) :: Lp(sp,3,3),Mp(sp,3,3),Np(sp,3,3)
+      real*8,intent(inout) :: kCm(0:kp)
 c
-c                                  ---- dummy variable to calculate se1.
-      real*8 dummy_s(3)
-c
-c                                                          ---- function
+      integer csp,k,l,m,n
       real*8 jancae_bbc2008_get_se
+      real*8 dummy_s(3)
+      real*8 Comb(kp*2,0:kp*2)
+c-----------------------------------------------------------------------
 c
       wp = 1.5d0 ** (1.0d0/sp)
 c
@@ -5133,7 +5111,6 @@ c
 
       end do
 c
-c
 c                                                           ---- tensors
       do csp = 1,sp
 c                                                      ---- L^(i) tensor
@@ -5165,26 +5142,28 @@ c
       se1 = jancae_bbc2008_get_se (sp, kp, wp, dummy_s, Lp, Mp, Np, kCm)
 c
       return
-      end
+      end subroutine jancae_bbc2008_setup
 c
 c
 c
-c--------------------------------------------------------------(bbc2008)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     setup_MN_tensors (ic,csp,pryld,ndyld, Xp,sp)
 c       ic: initial counter
 c       
 c       This routine returns Mp or Np tensor.
 c       Mp and Np tensors are the same style,
 c       thus this subroutine has been created.
-c-----------------------------------------------------------------------
-      subroutine jancae_bbc2008_setup_MN_tensors ( ic,csp,
-     &                                             pryld,ndyld,Xp,sp )
 c
+      subroutine jancae_bbc2008_setup_MN_tensors ( ic,csp,
+     1                                             pryld,ndyld,Xp,sp )
+c-----------------------------------------------------------------------
       implicit none
 c
-      integer, intent(in) :: ic,csp,sp,ndyld
-      real*8, intent(in) :: pryld(ndyld)
-      real*8, intent(inout) :: Xp(sp,3,3)
+      integer,intent(in) :: ic,csp,sp,ndyld
+      real*8 ,intent(in) :: pryld(ndyld)
+c
+      real*8,intent(inout) :: Xp(sp,3,3)
+c-----------------------------------------------------------------------
 c
       Xp(csp,1,1) = pryld(ic+1)**2
       Xp(csp,1,2) = -pryld(ic+1)*pryld(ic+2)
@@ -5197,7 +5176,7 @@ c
       Xp(csp,3,2) = Xp(csp,2,3)
 c
       return
-      end
+      end subroutine jancae_bbc2008_setup_MN_tensors
 c
 c
 c************************************************************************
@@ -5647,7 +5626,7 @@ c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     NUMERICAL DIFFERENTIATION FOR EQUIVALENT STRESS
 c
-      double precision function cpb2006_seND ( s,ct,phi,ck,a,ai )
+      real*8 function cpb2006_seND ( s,ct,phi,ck,a,ai )
 c-----------------------------------------------------------------------
       implicit none
 c 
@@ -5816,10 +5795,12 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer nreq,ndyld
-      real*8 se
-			real*8 s(6),dseds(6),pryld(ndyld)
-			real*8 d2seds2(6,6)
+      integer,intent(in) :: nreq,ndyld
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
+c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+			real*8,intent(out) :: d2seds2(3,3)
 c
       integer i,j
 			real*8 pf,pg,ph,pl,pm,pn,phi
@@ -6711,10 +6692,13 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer nreq
-      real*8 se
-			real*8 s(6),dseds(6)
-			real*8 d2seds2(6,6)
+c
+      integer,intent(in) :: nreq
+      real*8 ,intent(in) :: s(3)
+c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+			real*8,intent(out) :: d2seds2(3,3)
 c
       integer i,j
 			real*8 phi
@@ -8373,8 +8357,9 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8 a(8)
-			real*8 am(2,3,3)
+      real*8,intent(in) :: a(8)
+c
+			real*8,intent(out) :: am(2,3,3)
 c
       integer i,j
 c-----------------------------------------------------------------------
@@ -8419,10 +8404,13 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8 em
-      real*8 s(3),phi(2)
-      real*8 x(2,2),y(2,3)
-			real*8 am(2,3,3)
+      real*8,intent(in) :: em
+      real*8,intent(in) :: s(3)
+      real*8,intent(in) ::  am(2,3,3)
+c
+      real*8,intent(out) :: phi(2)
+      real*8,intent(out) :: x(2,2),y(2,3)
+			
 c
       integer i,j,nd
 			real*8 a

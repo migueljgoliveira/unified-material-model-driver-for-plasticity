@@ -445,7 +445,7 @@ c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     NUMERICAL DIFFERENTIATION FOR EQUIVALENT STRESS
 c
-      double precision function cpb2006_seND ( s,ct,phi,ck,a,ai )
+      real*8 function cpb2006_seND ( s,ct,phi,ck,a,ai )
 c-----------------------------------------------------------------------
       implicit none
 c 

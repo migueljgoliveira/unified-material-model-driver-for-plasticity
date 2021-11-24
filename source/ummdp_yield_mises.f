@@ -5,10 +5,13 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer nreq
-      real*8 se
-			real*8 s(6),dseds(6)
-			real*8 d2seds2(6,6)
+c
+      integer,intent(in) :: nreq
+      real*8 ,intent(in) :: s(3)
+c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+			real*8,intent(out) :: d2seds2(3,3)
 c
       integer i,j
 			real*8 phi

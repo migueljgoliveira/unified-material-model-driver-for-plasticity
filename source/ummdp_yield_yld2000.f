@@ -133,8 +133,9 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8 a(8)
-			real*8 am(2,3,3)
+      real*8,intent(in) :: a(8)
+c
+			real*8,intent(out) :: am(2,3,3)
 c
       integer i,j
 c-----------------------------------------------------------------------
@@ -179,10 +180,13 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8 em
-      real*8 s(3),phi(2)
-      real*8 x(2,2),y(2,3)
-			real*8 am(2,3,3)
+      real*8,intent(in) :: em
+      real*8,intent(in) :: s(3)
+      real*8,intent(in) ::  am(2,3,3)
+c
+      real*8,intent(out) :: phi(2)
+      real*8,intent(out) :: x(2,2),y(2,3)
+			
 c
       integer i,j,nd
 			real*8 a
