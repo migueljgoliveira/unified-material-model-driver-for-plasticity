@@ -1,36 +1,31 @@
-c-------------------------------------------------------------(hill1990)
-c     Hill 1990 anisotropic yield function and its dfferentials
+************************************************************************
+c     HILL 1990 YIELD FUNCTION AND DERIVATIVES
 c
-c     ---( 1990 ) Pergamon Press Plc.
-c      by R.Hill (Department of Applied Mathematics and Theoretical
-c                 Physics, University of Cambridge, Cambridge) EW, U.K)
-c
-c     "Constitutive Modelling of Orthotropic Plasticity in Sheet Metals"
-c      Received in 18 July 1989)
-c      J. Mech. Physics. Solids Vol.38, No.3, pp-405-417,  1990
-c      Printed in Great Britain
-c-----------------------------------------------------------------------
-c     coded by Tatsuhiko Ine ( at NIED ), 22/11/2010
-c-----------------------------------------------------------------------
+c       doi: https://doi.org/10.1016/0022-5096(90)90006-P
 c
       subroutine jancae_hill1990 ( s,se,dseds,d2seds2,nreq,
-     &                             pryld,ndyld )
+     1                             pryld,ndyld )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(3),dseds(3),d2seds2(3,3),pryld(ndyld)
+      implicit none
 c
-      dimension c(3,3),v(3)
-      dimension A1(3),A2(3,3),A3(3,3),A4(3,3)
-      dimension dfds1(3),dfds2(3),dfds3(3),dfds4(3)
-      dimension dfds_t(3)
-      dimension dxds1(3),dxds2(3),dxds3(3),dxds4(3)
-      dimension d2fds1(3,3),d2fds2(3,3),d2fds3(3,3),d2fds4(3,3)
-      dimension d2fds_t(3,3)
-      dimension dx1dx1(3,3),dx2dx2(3,3),dx3dx3(3,3),dx4dx4(3,3)
-      dimension df4df3(3,3),df3df4(3,3)
-      dimension d2xds1(3,3),d2xds2(3,3),d2xds3(3,3),d2xds4(3,3)
-      character text*32
+      integer,intent(in) :: nreq,ndyld
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
 c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+			real*8,intent(out) :: d2seds2(3,3)
+c
+      integer i,j
+      real*8 a,b,tau,sigb,am,syini,sigbtm,alarge,x1,x2,x3,x4,fai1,fai2,
+     1       fai3,fai4,fyild,wrk,wrk1,wrk2,wrk3,wrk4
+      real*8 v(3),a1(3),dfds1(3),dfds2(3),dfds3(3),dfds4(3),dfds_t(3),
+     1       dxds1(3),dxds2(3),dxds3(3),dxds4(3)
+      real*8 c(3,3),a2(3,3),a3(3,3),a4(3,3),d2fds1(3,3),d2fds2(3,3),
+     1       d2fds3(3,3),d2fds4(3,3),d2fds_t(3,3),dx1dx1(3,3),
+     2       dx2dx2(3,3),dx3dx3(3,3),dx4dx4(3,3),df4df3(3,3),
+     3       df3df4(3,3),d2xds1(3,3),d2xds2(3,3),d2xds3(3,3),d2xds4(3,3)
+      character*32 text
+c-----------------------------------------------------------------------
 c                                                         ---- variables
 c
 c     s(3) : stress
@@ -66,15 +61,16 @@ c     d2fds2(3,3)  : d2f2/ds2 =fai2 2nd order derivative by stress
 c     d2fds3(3,3)  : d2f3/ds2 =fai3 2nd order derivative by stress
 c     d2fds4(3,3)  : d2f4/ds2 =fai4 2nd order derivative by stress
 c     d2fds_t(3,3) : d2f/ds2 =fai  2nd order derivative by stress
+c-----------------------------------------------------------------------
 c
 c                                       ---- define a1-matrix, a2-matrix
       data a1/ 1.0d0 , 1.0d0 , 0.0d0 /,
-     &     a2/ 1.0d0 ,-1.0d0 , 0.0d0 ,
-     &        -1.0d0 , 1.0d0 , 0.d00 ,
-     &         0.0d0 , 0.0d0 , 4.0d0 /,
-     &     a3/ 1.0d0 , 0.0d0 , 0.0d0 ,
-     &         0.0d0 , 1.0d0 , 0.0d0 ,
-     &         0.0d0 , 0.0d0 , 2.0d0 /
+     1     a2/ 1.0d0 ,-1.0d0 , 0.0d0 ,
+     2        -1.0d0 , 1.0d0 , 0.d00 ,
+     3         0.0d0 , 0.0d0 , 4.0d0 /,
+     4     a3/ 1.0d0 , 0.0d0 , 0.0d0 ,
+     5         0.0d0 , 1.0d0 , 0.0d0 ,
+     6         0.0d0 , 0.0d0 , 2.0d0 /
 c                                        ---- set anisotropic parameters
       a    = pryld(1+1)
       b    = pryld(1+2)
@@ -114,7 +110,7 @@ c
 c                                                 ---- equivalent stress
       se = (fyild/alarge)**(1.0d0/am)
 c
-      if ( nreq >= 1 ) return
+      if ( nreq <= 1 ) return
 
 c               ---- 1st order differential coefficient of yield fuction
 c     dfdsi(i) : diff. of fai-i(i) with respect to s(j)
@@ -163,7 +159,7 @@ c           ---- 1st order differential coefficient of equivalent stress
       end do
 c
 c
-      if ( nreq >= 2 ) return
+      if ( nreq <= 2 ) return
 c
 c            --- 2st order differential coefficient of equivalent stress
 c                                                   with respect to s(j)
@@ -215,9 +211,9 @@ c                                                 ---- [d2fai3/ds2]*fai4
           end do
         end do
 c                                          ---- [dfai4/ds]*[dfai3/ds](T)
-        do i=1,3
-          do j=1,3
-            df4df3(i,j)= dfds4(i)*dfds3(j)
+        do i = 1,3
+          do j = 1,3
+            df4df3(i,j) = dfds4(i) * dfds3(j)
           end do
         end do
 c                                                        ---- d2fai4/ds2
@@ -234,8 +230,8 @@ c
         do i = 1,3
           do j = 1,3
             d2fds_t(i,j) = d2fds1(i,j) + d2fds2(i,j) + 
-     &                     d2fds3(i,j)*fai4 + df4df3(i,j) + 
-     &                     df4df3(j,i) + fai3*d2fds4(i,j)
+     1                     d2fds3(i,j)*fai4 + df4df3(i,j) + 
+     2                     df4df3(j,i) + fai3*d2fds4(i,j)
           end do
         end do
 c
@@ -251,12 +247,12 @@ c
         do i = 1,3
           do j = 1,3
             d2seds2(i,j) = wrk2 * dfds_t(i) * dfds_t(j) + 
-     &                     wrk4 * d2fds_t(i,j)
+     1                     wrk4 * d2fds_t(i,j)
           end do
         end do
 c
       return
-      end
+      end subroutine jancae_hill1990
 c
 c
 c

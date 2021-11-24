@@ -1,6 +1,8 @@
 ************************************************************************
 c     GOTOH BIQUADRATIC YIELD FUNCTION AND DERIVATIVES
 c
+c       doi:
+c
       subroutine jancae_gotoh ( s,se,dseds,d2seds2,nreq,
      1                          pryld,ndyld )
 c------------------------------------------------------------- variables

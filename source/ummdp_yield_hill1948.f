@@ -1,6 +1,8 @@
 ************************************************************************
 c     Hill 1948 YIELD FUNCTION AND DERIVATIVES
 c
+c       doi:
+c
       subroutine jancae_hill1948 ( s,se,dseds,d2seds2,nreq,
      1                             pryld,ndyld )
 c-----------------------------------------------------------------------

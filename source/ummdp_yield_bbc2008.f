@@ -1,6 +1,8 @@
 ************************************************************************
 c     BBC2008 YIELD FUNCTION AND DERIVATIVES
 c
+c       doi: 
+c
       subroutine jancae_bbc2008 (s,se,dseds,d2seds2,nreq,
      1                           pryld,ndyld)
 c-----------------------------------------------------------------------
