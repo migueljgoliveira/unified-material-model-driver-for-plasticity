@@ -20,7 +20,7 @@ c
       ndk = nint(pryld(3))
 c
       call jancae_bbc2008_core ( s,se,dseds,d2seds2,nreq,
-     &                           pryld,ndyld,nds,ndk )
+     1                           pryld,ndyld,nds,ndk )
 c
       return
       end subroutine jancae_bbc2008
@@ -29,7 +29,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       subroutine jancae_bbc2008_core ( s,se,dseds,d2seds2,nreq,
-     &                                 pryld,ndyld,sp,kp )
+     1                                 pryld,ndyld,sp,kp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -169,7 +169,7 @@ c                     ---- <d2seds2>, see (x.y.2g), d2F/ds(eta)ds(gamma)
 c
             call jancae_bbc2008_get_d2phiXds2 (d2phiLds2,Lp,s,csp,m,sp)
             call jancae_bbc2008_get_d2phiXds2 (d2phiMds2,Mp,s,csp,
-     &                                                       (kp-m),sp)
+     1                                                       (kp-m),sp)
             call jancae_bbc2008_get_d2phiXds2 (d2phiNds2,Np,s,csp,m,sp)
 c
             do eta = 1,3
@@ -215,7 +215,7 @@ c     jancae_bbc2008_get_w_phi ()
 c     A subroutine to get w^(i-1), w^(s-i) and phiX variables
 c
       subroutine jancae_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,
-     &                                      wp,Lp,Mp,Np,s )
+     1                                      wp,Lp,Mp,Np,s )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -473,7 +473,7 @@ c     setup_bbc2008_parameters()
 c     A routine to setup local variables.
 c
       subroutine jancae_bbc2008_setup ( pryld,ndyld,sp,kp,wp,
-     &                                  Lp,Mp,Np,kCm,se1 )
+     1                                  Lp,Mp,Np,kCm,se1 )
 c-----------------------------------------------------------------------
       implicit none
 c

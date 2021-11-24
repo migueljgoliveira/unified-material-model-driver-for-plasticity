@@ -6,12 +6,12 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer,intent(in)  :: nreq,ndyld
-      real*8 ,intent(in)  :: s(3),pryld(ndyld)
+      integer,intent(in) :: nreq,ndyld
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
 c
-      real*8 ,intent(out) :: se
-      real*8 ,intent(out) :: dseds(3)
-			real*8 ,intent(out) :: d2seds2(3,3)
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+			real*8,intent(out) :: d2seds2(3,3)
 c
       integer i,j,k,l,m,n,nd,nd1,nd2
 			real*8 em,q

@@ -1,17 +1,26 @@
-c----------------------------------------------------------------(gotoh)
-c     Gotoh biquadratic yield function and its dfferentials
-c     (J.JSTP vol.19 no.208 p377-385 (1978-5) )
+************************************************************************
+c     GOTOH BIQUADRATIC YIELD FUNCTION AND DERIVATIVES
 c
       subroutine jancae_gotoh ( s,se,dseds,d2seds2,nreq,
-     &                          pryld,ndyld )
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(3),dseds(3),d2seds2(3,3),pryld(ndyld)
-      dimension a(9),c(4,4),v(4),
-     &          t(4),dtds(4,3),d2tds2(4,3,3)
+     1                          pryld,ndyld )
+c------------------------------------------------------------- variables
+      implicit none
 c
+      integer,intent(in) :: nreq,ndyld
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
+c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+			real*8,intent(out) :: d2seds2(3,3)
+c
+      integer i,j,k,m,n
+      real*8 phi,q
+      real*8 a(9),v(4),t(4)
+      real*8 c(4,4),dtds(4,3)
+      real*8 d2tds2(4,3,3)
+c-----------------------------------------------------------------------
 c     a(i)      : coef.s of Gotoh's 4th order function
-c     t(i)      : stress^2 vector 
+c     t(i)      : stress^2 vector
 c                 ={ sx^2, sx*sy, sy^2, txy^2 }
 c     c(i,j)    : matrix to calc. se
 c              Gotoh's function se = ( {t}^T*[c]*{t} )^(1/4)
@@ -19,6 +28,7 @@ c
 c     dtds(i,j) : diff. of t(i) with respect to s(j)
 c     d2tds2(i,j,k)
 c               : 2nd order diff. of t(i) w.r.t s(j) & s(k)
+c-----------------------------------------------------------------------
 c
 c                                            ---- anisotropic parameters
       do i = 1,9
@@ -49,7 +59,7 @@ c                                                 ---- equivalent stress
       call jancae_mv  ( v,c,t,4,4 )
       call jancae_vvs ( phi,t,v,4 )
 c
-      if ( phi <= 0.0 ) phi = 0.0
+      if ( phi <= 0.0d0 ) phi = 0.0d0
       se = sqrt(sqrt(phi))
 c                                            ---- 1st order differential
       if ( nreq >= 1 ) then
@@ -86,9 +96,9 @@ c                                            ---- 2nd order differential
             do m = 1,4
               do n = 1,4
                 d2seds2(i,j) = d2seds2(i,j)+
-     &                       2.0d0*c(m          ,n       )*
-     &                        ( dtds(m,i)*dtds(  n  ,j)+
-     &                           t(  m)  *d2tds2(n,i,j)  )
+     1                       2.0d0*c(m          ,n       )*
+     2                        ( dtds(m,i)*dtds(  n  ,j)+
+     3                           t(  m)  *d2tds2(n,i,j)  )
               end do
             end do
           end do
@@ -96,13 +106,13 @@ c                                            ---- 2nd order differential
         do i = 1,3
           do j = 1,3
             d2seds2(i,j) = q*(d2seds2(  i,   j)
-     &                      -0.75d0*v(i)*v(j)/phi)
+     1                      -0.75d0*v(i)*v(j)/phi)
           end do
         end do
       end if
 c
       return
-      end
+      end subroutine jancae_gotoh
 c
 c
 c
