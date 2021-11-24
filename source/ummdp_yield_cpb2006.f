@@ -12,11 +12,11 @@ c-----------------------------------------------------------------------
       implicit none
 c
       integer,intent(in) :: nreq,ndyld
-      real*8 ,intent(in) :: s(3),pryld(ndyld)
+      real*8 ,intent(in) :: s(6),pryld(ndyld)
 c
       real*8,intent(out) :: se
-      real*8,intent(out) :: dseds(3)
-			real*8,intent(out) :: d2seds2(3,3)
+      real*8,intent(out) :: dseds(6)
+			real*8,intent(out) :: d2seds2(6,6)
 c
       integer i,j,k,m,n,l,iq,ip,ir
       real*8 pi,eps,a,ck,ai,H1,H2,H3,p,q,theta,F,D,DseDF,denom,D2seDF2,
