@@ -1,30 +1,30 @@
-c----------------------------------------------------------(yld2004-18p)
-c     Barlat Yld2004-18p yield function and its dfferentials
-c     ( IJP v.21(2005) p1009-1039. )
+************************************************************************
+c     YLD2004-18p YIELD FUNCTION AND DERIVATIVES
 c
       subroutine jancae_yld2004_18p ( s,se,dseds,d2seds2,nreq,
      1                                pryld,ndyld )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(6),dseds(6),d2seds2(6,6),pryld(ndyld)
+      implicit none
 c
-      dimension sp1(6),sp2(6),cp1(6,6),cp2(6,6),cl(6,6),ctp1(6,6)
-      dimension ctp2(6,6),psp1(3),psp2(3),hp1(3),hp2(3)
-      dimension dfadpsp1(3),dfadpsp2(3),dpsdhp1(3,3),dpsdhp2(3,3)
-      dimension dfadhp1(3),dfadhp2(3)
-      dimension dhdsp1(3,6),dhdsp2(3,6),dsdsp1(6,6),dsdsp2(6,6)
-      dimension dfads(6)
-      dimension d2fadpsp11(3,3),d2fadpsp22(3,3)
-      dimension d2fadpsp12(3,3),d2fadpsp21(3,3)
-      dimension d2fadhp11(3,3),d2fadhp22(3,3)
-      dimension d2fadhp12(3,3),d2fadhp21(3,3)
-      dimension d2psdhp11(3,3,3),d2psdhp22(3,3,3)
-      dimension d2hdsp11(3,6,6),d2hdsp22(3,6,6)
-      dimension d2fads2(6,6)
-      dimension delta(3,3)
-      dimension xx1(3,6),xx2(3,6)
+      integer nreq,ndyld
+      real*8 se
+      real*8 s(6),dseds(6),pryld(ndyld)
+      real*8 d2seds2(6,6)
 c
-c                                                         ---- variables
+      integer i,j,k,l,m,n,ip,iq,ir
+      real*8 am,ami,dc,pi,eps2,eps3,del,cetpq1,cetpq2,fai,dsedfa,
+     1       d2sedfa2,dummy
+      real*8 sp1(6),sp2(6),psp1(3),psp2(3),hp1(3),hp2(3),
+     1       dfadpsp1(3),dfadpsp2(3),dfadhp1(3),dfadhp2(3),dfads(6)
+      real*8 cp1(6,6),cp2(6,6),cl(6,6),ctp1(6,6),ctp2(6,6),
+     1       dpsdhp1(3,3),dpsdhp2(3,3),dhdsp1(3,6),dhdsp2(3,6),
+     2       dsdsp1(6,6),dsdsp2(6,6),d2fadpsp11(3,3),d2fadpsp22(3,3),
+     3       d2fadpsp12(3,3),d2fadpsp21(3,3),d2fadhp11(3,3),
+     4       d2fadhp22(3,3),d2fadhp12(3,3),d2fadhp21(3,3),d2fads2(6,6),
+     5       delta(3,3),xx1(3,6),xx2(3,6)
+      real*8 d2psdhp11(3,3,3),d2psdhp22(3,3,3),d2hdsp11(3,6,6),
+     1       d2hdsp22(3,6,6)
+c-----------------------------------------------------------------------
 c
 c     sp1(6),sp2(6)     : linear-transformed stress
 c     cp1(6,6),cp2(6,6) : matrix for anisotropic parameters
@@ -436,14 +436,19 @@ c
 c
 c
 c
-c----------------------------------------------------------(yld2004-18p)
-c      calculate  coefficient of equivalent stress dc
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE COEFFICIENT OF EQUIVALENT STRESS 1
 c
       subroutine jancae_yld2004_18p_coef ( cp1,cp2,pi,am,dc )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension cp1(6,6),cp2(6,6),bbp1(3),bbp2(3)
+      implicit none
 c
+      real*8 pi,am,dc
+      real*8 cp1(6,6),cp2(6,6)
+c
+      integer i,j
+      real*8 bbp1(3),bbp2(3)
+c-----------------------------------------------------------------------
       call jancae_yld2004_18p_coef_sub ( cp1,pi,bbp1 )
       call jancae_yld2004_18p_coef_sub ( cp2,pi,bbp2 )
       dc = 0.0d0
@@ -454,18 +459,23 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_yld2004_18p_coef
 c
 c
 c
-c----------------------------------------------------------(yld2004-18p)
-c     calculate  coefficient of equivalent stress dc 2
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE COEFFICIENT OF EQUIVALENT STRESS 2
 c
       subroutine jancae_yld2004_18p_coef_sub ( cp,pi,bbp )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension cp(6,6),aap(3),bbp(3)
+      implicit none
 c
+      real*8 pi
+      real*8 cp(6,6)
+c
+      real*8 ppp,qqp,ttp
+      real*8 aap(3),bbp(3)
+c-----------------------------------------------------------------------
 c                                                  ---- coefficients aap
       aap(1) = (cp(1,2)+cp(1,3)-2.0d0*cp(2,1) +
      1          cp(2,3)-2.0d0*cp(3,1)+cp(3,2))/9.0d0
@@ -484,21 +494,25 @@ c                                                  ---- coefficients bbp
       bbp(3) = 2.0d0*sqrt(ppp)*cos((ttp+2.0d0*pi)/3.0d0) + aap(1)
 c
       return
-      end
+      end subroutine jancae_yld2004_18p_coef_sub
 c
 c
 c
-c----------------------------------------------------------(yld2004-18p)
-c     calculate yield function
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE YIELD FUNCTION 1
 c
       subroutine jancae_yld2004_18p_yf ( ctp1,ctp2,s,am,ami,dc,pi,
      1                                   sp1,sp2,psp1,psp2,hp1,hp2,
      2                                   cetpq1,cetpq2,fai,se )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension ctp1(6,6),ctp2(6,6),s(6)
-      dimension sp1(6),sp2(6),psp1(3),psp2(3),hp1(3),hp2(3)
+      implicit none
 c
+      real*8 am,ami,dc,pi,cetpq1,cetpq2,fai,se
+      real*8 s(6),sp1(6),sp2(6),psp1(3),psp2(3),hp1(3),hp2(3)
+      real*8 ctp1(6,6),ctp2(6,6)
+c
+      integer i,j
+c-----------------------------------------------------------------------
       call jancae_yld2004_18p_yfsub ( ctp1,s,pi,sp1,psp1,hp1,cetpq1 )
       call jancae_yld2004_18p_yfsub ( ctp2,s,pi,sp2,psp2,hp2,cetpq2 )
 c                                                    ---- yield function
@@ -512,27 +526,35 @@ c                                                 ---- equivalent stress
       se = (fai/dc) ** ami
 c
       return
-      end
+      end subroutine jancae_yld2004_18p_yf
 c
 c
 c
-c----------------------------------------------------------(yld2004-18p)
-c     calculate yield function2
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE YIELD FUNCTION 2
 c
       subroutine jancae_yld2004_18p_yfsub ( ctp,s,pi,sp,psp,hp,cetpq )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension ctp(6,6),s(6)
-      dimension sp(6),psp(3),hp(3)
+      implicit none
+c
+      real*8 pi,cetpq
+      real*8 s(6),sp(6),psp(3),hp(3)
+      real*8 ctp(6,6)
+c
+      integer i
+      real*8 hpq,cep,ceq,cet
+c-----------------------------------------------------------------------
 c
 c                                         ---- linear-transformed stress
       call jancae_mv ( sp,ctp,s,6,6 )
+c
 c                                                  ---- invariants of sp
       hp(1) = (sp(1)+sp(2)+sp(3)) / 3.0d0
       hp(2) = (sp(5)**2+sp(6)**2+sp(4)**2 - 
      1         sp(2)*sp(3)-sp(3)*sp(1)-sp(1)*sp(2)) / 3.0d0
       hp(3) = (2.0d0*sp(5)*sp(6)*sp(4)+sp(1)*sp(2)*sp(3) -
      1         sp(1)*sp(6)**2-sp(2)*sp(5)**2-sp(3)*sp(4)**2) / 2.0d0
+c
 c                           ---- coefficients of characteristic equation
       hpq = sqrt(hp(1)**2 + hp(2)**2 + hp(3)**2)
       if ( hpq > 1.0e-16 ) then
@@ -542,6 +564,7 @@ c                           ---- coefficients of characteristic equation
         if ( cetpq >  1.0d0 ) cetpq =  1.0d0
         if ( cetpq < -1.0d0 ) cetpq = -1.0d0
         cet = acos(cetpq)
+c
 c                                           ---- principal values of sp1
         psp(1) = 2.0d0*sqrt(cep)*cos(cet/3.0d0) + hp(1)
         psp(2) = 2.0d0*sqrt(cep)*cos((cet+4.0d0*pi)/3.0d0) + hp(1)
@@ -554,19 +577,26 @@ c                                           ---- principal values of sp1
       end if
 c
       return
-      end
+      end subroutine jancae_yld2004_18p_yfsub
 c
 c
 c
-c----------------------------------------------------------(yld2004-18p)
-c     numerical differential for 2nd order differentials
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     NUMERICAL DIFFERENTIATION FOR 2ND ORDER DERIVATIVES
 c
       subroutine jancae_yld2004_18p_nu2 ( ctp1,ctp2,s,se,am,ami,
      1                                    dc,pi,del,d2seds2 )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(6),ctp1(6,6),ctp2(6,6),d2seds2(6,6)
-      dimension sp1(6),sp2(6),psp1(3),psp2(3),hp1(3),hp2(3),s0(6)
+      implicit none
+c
+      real*8 se,am,ami,dc,pi,del
+      real*8 s(6)
+      real*8 ctp1(6,6),ctp2(6,6),d2seds2(6,6)
+c
+      integer i,j
+      real*8 cetpq1,cetpq2,fai,sea,seb,seaa,seba,seab,sebb,abc1,abc2
+      real*8 sp1(6),sp2(6),psp1(3),psp2(3),hp1(3),hp2(3),s0(6)
+c-----------------------------------------------------------------------
 c
       s0(:) = s(:)
       do i = 1, 6
@@ -615,17 +645,23 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_yld2004_18p_nu2
 c
 c
 c
-c----------------------------------------------------------(yld2004-18p)
-c     calculate d(psp)/d(hp)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE d(psp)/d(hp)
 c
       subroutine jancae_yld2004_18p_dpsdhp ( i,psp,hp,dpsdhp )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension psp(3),hp(3),dpsdhp(3,3)
+      implicit none
+c
+      integer i
+      real*8 psp(3),hp(3)
+      real*8 dpsdhp(3,3)
+c
+      real*8 dummy
+c-----------------------------------------------------------------------
 c
       dummy = psp(i)**2-2.0d0*hp(1)*psp(i) - hp(2)
       dpsdhp(i,1) = psp(i)**2/dummy
@@ -633,18 +669,23 @@ c
       dpsdhp(i,3) = 2.0d0/3.0d0/dummy
 c
       return
-      end
+      end subroutine jancae_yld2004_18p_dpsdhp
 c
 c
 c
-c----------------------------------------------------------(yld2004-18p)
-c     calculate d2(psp)/d(hp)2
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE d2(psp)/d(hp)2
 c
       subroutine jancae_yld2004_18p_d2psdhp ( i,psp,hp,d2psdhp )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension psp(3),hp(3),d2psdhp(3,3,3)
+      implicit none
 c
+      integer i
+      real*8 psp(3),hp(3)
+      real*8 d2psdhp(3,3,3)
+c
+      real*8 dummy
+c-----------------------------------------------------------------------
       dummy = (psp(i)**2-2.0d0*hp(1)*psp(i)-hp(2)) ** 3
       d2psdhp(i,1,1) = 2.0d0*psp(i)**3*
      1                 (psp(i)**2-3.0d0*hp(1)*psp(i)-2.0d0*hp(2))/dummy
@@ -660,7 +701,7 @@ c
       d2psdhp(i,1,3) = d2psdhp(i,3,1)
 c
       return
-      end
+      end subroutine jancae_yld2004_18p_d2psdhp
 c
 c
 c

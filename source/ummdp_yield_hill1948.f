@@ -2,7 +2,7 @@
 c     Hill 1948 YIELD FUNCTION AND DERIVATIVES
 c
       subroutine jancae_hill1948 ( s,se,dseds,d2seds2,nreq,
-     &                             pryld,ndyld )
+     1                             pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
