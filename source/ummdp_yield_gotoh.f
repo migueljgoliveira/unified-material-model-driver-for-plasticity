@@ -3,8 +3,7 @@ c     GOTOH BIQUADRATIC YIELD FUNCTION AND DERIVATIVES
 c
 c       doi:
 c
-      subroutine jancae_gotoh ( s,se,dseds,d2seds2,nreq,
-     1                          pryld,ndyld )
+      subroutine ummdp_gotoh ( s,se,dseds,d2seds2,nreq,pryld,ndyld )          
 c------------------------------------------------------------- variables
       implicit none
 c
@@ -58,20 +57,20 @@ c                                                    ---- t-vector (s^2)
       t(3) = s(2) * s(2)
       t(4) = s(3) * s(3)
 c                                                 ---- equivalent stress
-      call jancae_mv  ( v,c,t,4,4 )
-      call jancae_vvs ( phi,t,v,4 )
+      call ummdp_utility_mv  ( v,c,t,4,4 )
+      call ummdp_utility_vvs ( phi,t,v,4 )
 c
       if ( phi <= 0.0d0 ) phi = 0.0d0
       se = sqrt(sqrt(phi))
 c                                            ---- 1st order differential
       if ( nreq >= 1 ) then
-        call jancae_clear2 ( dtds,4,3 )
+        call ummdp_utility_clear2 ( dtds,4,3 )
         dtds(1,1) = s(1) * 2.0d0
         dtds(2,1) = s(2)
         dtds(2,2) = s(1)
         dtds(3,2) = s(2) * 2.0d0
         dtds(4,3) = s(3) * 2.0d0
-        call jancae_clear1 ( v,4 )
+        call ummdp_utility_clear1 ( v,4 )
         do i = 1,3
           do j = 1,4
             do k = 1,4
@@ -86,13 +85,13 @@ c                                            ---- 1st order differential
       end if
 c                                            ---- 2nd order differential
       if ( nreq >= 2 ) then
-        call jancae_clear3 ( d2tds2,4,3,3 )
+        call ummdp_utility_clear3 ( d2tds2,4,3,3 )
         d2tds2(1,1,1) = 2.0d0
         d2tds2(2,1,2) = 1.0d0
         d2tds2(2,2,1) = 1.0d0
         d2tds2(3,2,2) = 2.0d0
         d2tds2(4,3,3) = 2.0d0
-        call jancae_clear2 ( d2seds2,3,3 )
+        call ummdp_utility_clear2 ( d2seds2,3,3 )
         do i = 1,3
           do j = 1,3
             do m = 1,4
@@ -114,7 +113,7 @@ c                                            ---- 2nd order differential
       end if
 c
       return
-      end subroutine jancae_gotoh
+      end subroutine ummdp_gotoh
 c
 c
 c

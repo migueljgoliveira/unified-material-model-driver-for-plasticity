@@ -71,12 +71,12 @@ c                        lay : layer no. of shell
 c
 c                                        ---- set debug and verbose mode
       nvbs0 = props(1)
-      call jancae_debugmode ( nvbs,nvbs0 )
+      call ummdp_debugmode ( nvbs,nvbs0 )
 c                                       ---- output detailed information
       if ( nvbs >= 4 ) then
-        call jancae_print_info  ( kinc,ndi,nshr )
-        call jancae_print_inout ( 0,stress,dstran,ddsdde,ntens,
-     &                           statev,nstatv )
+        call ummdp_print_info  ( kinc,ndi,nshr )
+        call ummdp_print_inout ( 0,stress,dstran,ddsdde,ntens,statev
+     1                           nstatv )
       end if
 c
 c                                           ---- set material properties
@@ -84,32 +84,26 @@ c                                           ---- set material properties
         prop(i-1) = props(i)
       end do
 c		
-      call jancae_prop_dim ( prop,nprop,propdim,
-     &                       ndela,ndyld,ndihd,ndkin,
-     &                       npbs,ndrup )
+      call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
+     1                      npbs,ndrup )                 
       if ( npbs > mxpbs ) then
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
         write (6,*) 'mxpbs=',mxpbs
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c                                                      ---- check nstatv
-      call jancae_check_nisv ( nstatv,ntens,npbs )
+      call ummdp_check_nisv ( nstatv,ntens,npbs )
 c                             ---- copy current internal state variables
-      call jancae_isvprof ( isvrsvd,isvsclr )
-      call jancae_isv2pex ( isvrsvd,isvsclr,
-     &                      statev,nstatv,
-     &                      p,pe,x1,ntens,mxpbs,npbs )
+      call ummdp_isvprof ( isvrsvd,isvsclr )
+      call ummdp_isv2pex ( isvrsvd,isvsclr,statev,nstatv,p,pe,x1,ntens,
+     1                     mxpbs,npbs )                      
 c
 c                             ---- update stress and set tangent modulus
       mjac = 0
-      call ummdp_plasticity ( stress,s2,dstran,
-     &                        p,dp,dpe,de33,
-     &                        x1,x2,mxpbs,
-     &                        ddsdde,
-     &                        ndi,nshr,ntens,
-     &                        nvbs,mjac,
-     &                        prop,nprop,propdim )
+      call ummdp_plasticity ( stress,s2,dstran,p,dp,dpe,de33,x1,x2,
+     1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
+     2                        prop,nprop,propdim )                   
 c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
@@ -134,8 +128,8 @@ c                                  ---- update of back stress components
       end if
 c                           ----  if debug mode, output return arguments
       if ( nvbs >= 4 ) then
-        call jancae_print_inout ( 1,stress,dstran,ddsdde,ntens,
-     &                           statev,nstatv )
+        call ummdp_print_inout ( 1,stress,dstran,ddsdde,ntens,statev,
+     1                           nstatv )
       end if
 c                                                  ---- close debug file
       close(6)
@@ -148,7 +142,7 @@ c
 c-----------------------------------------------------------------------
 c     SET INTERNAL STATE VARIABLES PROFILE
 c
-      subroutine jancae_isvprof ( isvrsvd,isvsclr )
+      subroutine ummdp_isvprof ( isvrsvd,isvsclr )
 c-----------------------------------------------------------------------
 c
       isvrsvd = 0           ! no reserved variables
@@ -156,7 +150,7 @@ c
       isvsclr = 1           ! statev(1) is for equivalent plastic strain
 c
       return
-      end
+      end subroutine ummdp_isvprof
 c
 c
 c
@@ -170,7 +164,7 @@ c-----------------------------------------------------------------------
 !       dimension aux1(ndi,ndi),aux2(ndi,ndi),aux3(ndi,ndi)
 !       dimension auxrot(ndi,ndi)
 ! c                                              ---- set statev to tensor
-!       call jancae_clear2( aux1,ndi,ndi )
+!       call ummdp_clear2( aux1,ndi,ndi )
 !       do i = 1,ndi
 !         do j = 1,ndi
 !           if ( i == j ) then
@@ -185,15 +179,15 @@ c-----------------------------------------------------------------------
 !         end do
 !       end do
 ! c                                               ---- copy drot to auxrot
-!       call jancae_clear2( aux1,ndi,ndi )
+!       call ummdp_clear2( aux1,ndi,ndi )
 !       do i = 1,ndi
 !         do j = 1,ndi
 !           auxrot(i,j) = drot(i,j)
 !         end do
 !       end do
 ! c                                                     ---- rotate statev
-!       call jancae_mm ( aux2,auxrot,aux1,ndi,ndi,ndi )
-!       call jancae_mm ( aux3,aux2,transpose(auxrot),ndi,ndi,ndi )
+!       call ummdp_mm ( aux2,auxrot,aux1,ndi,ndi,ndi )
+!       call ummdp_mm ( aux3,aux2,transpose(auxrot),ndi,ndi,ndi )
 ! c                                     ---- set rotated tensor to ustatev
 !       do i = 1,ndi
 !         do j = 1,ndi
@@ -214,23 +208,23 @@ c-----------------------------------------------------------------------
 ! c
 ! c
 ! c
-! c-----------------------------------------------------------------------
-! c     exit program by error
-! c
-!       subroutine jancae_exit (nexit)
-! c
-! c-----------------------------------------------------------------------
-!       common /jancae1/ne,ip,lay
-! c                                  nexit : exit code
-!       write (6,*) 'error code :',nexit
-!       write (6,*) 'element no.           :',ne
-!       write (6,*) 'integration point no. :',ip
-!       write (6,*) 'layer no.             :',lay
-! c
-!       ! stop
-! c
-!       return
-!       end
+************************************************************************
+c     EXIT PROGRAM BY ERROR
+c
+      subroutine ummdp_exit ( nexit )
+c-----------------------------------------------------------------------
+      common /jancae1/ne,ip,lay
+c-----------------------------------------------------------------------
+c
+      write (6,*) 'error code :',nexit
+      write (6,*) 'element no.           :',ne
+      write (6,*) 'integration point no. :',ip
+      write (6,*) 'layer no.             :',lay
+c
+      ! stop
+c
+      return
+      end subroutine ummdp_exit
 c
 c
 c

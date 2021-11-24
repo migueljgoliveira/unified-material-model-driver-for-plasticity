@@ -3,8 +3,7 @@ c     YEGTER YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2005.04.009
 c
-      subroutine jancae_vegter ( s,se,dseds,d2seds2,nreq,
-     1                           pryld,ndyld )
+      subroutine ummdp_vegter ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -19,19 +18,18 @@ c
 c-----------------------------------------------------------------------
 c
       nf = nint(pryld(2)) - 1
-      call jancae_vegter_core ( s,se,dseds,d2seds2,nreq,
-     1                          pryld,ndyld,nf )
+      call ummdp_vegter_core ( s,se,dseds,d2seds2,nreq,pryld,ndyld,nf )           
 c
       return
-      end subroutine jancae_vegter
+      end subroutine ummdp_vegter
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     VEGTER CORE SUBROUTINE
 c
-      subroutine jancae_vegter_core ( s,se,dseds,d2seds2,nreq,
-     1                                pryld,ndyld,nf )
+      subroutine ummdp_vegter_core ( s,se,dseds,d2seds2,nreq,
+     1                               pryld,ndyld,nf )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -107,12 +105,12 @@ c
       if(abs(s(1))<=TOL0.and.abs(s(2))<=TOL0.and.
      1                                         abs(s(3))<=TOL0)then
       isflag=0
-      call jancae_clear1 ( x,4 )
+      call ummdp_utility_clear1 ( x,4 )
       goto 100
 c
       else
       isflag=1
-      call jancae_clear1 ( x,4 )
+      call ummdp_utility_clear1 ( x,4 )
 c
 c                           ---- exception treatment if s(1)=s(2),s(3)=0
 c
@@ -227,7 +225,7 @@ c
          nn(2)=rsh
          mm(1)=1.0d0
          mm(2)=run
-         call jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                            
       case ( 2 )                                           ! iareaflag=2
          a(1)=fun1
@@ -238,7 +236,7 @@ c
          nn(2)=run
          mm(1)=1.0d0
          mm(2)=rps
-         call jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                   
       case ( 3 )                                           ! iareaflag=3
          a(1)=fps1
@@ -249,7 +247,7 @@ c
          nn(2)=rps
          mm(1)=1.0d0
          mm(2)=rbi
-         call jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                            
       case ( 4 )                                           ! iareaflag=4
          a(1)=-fbi1
@@ -260,7 +258,7 @@ c
          nn(2)=-rbi
          mm(1)=-rpsr
          mm(2)=-1.0d0
-         call jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                            
       case ( 5 )                                           ! iareaflag=5
          a(1)=-fps2r
@@ -271,7 +269,7 @@ c
          nn(2)=-1.0d0
          mm(1)=-runr
          mm(2)=-1.0d0
-         call jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                    
       case ( 6 )                                           ! iareaflag=6
          a(1)=-fun2r
@@ -282,19 +280,19 @@ c
          nn(2)=-1.0d0
          mm(1)=1.0d0
          mm(2)=rsh
-         call jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c
       case default
          write (6,*) 'iareaflag error :',iareaflag
-         call jancae_exit (9000)
+         call ummdp_exit (9000)
       end select
 
 c                            ---- calc. fourier coefficient mu(0<=mu<=1)
-      call jancae_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta
+      call ummdp_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta
      1                                            ,aa,bb,cc,dd )
 c
 c                            ---- calc. normalized yield locus f(i)i=1~2
-      call jancae_vegter_calc_fi ( x,a,b,c,mu,f )
+      call ummdp_vegter_calc_fi ( x,a,b,c,mu,f )
       go to 200
 c
 c                                                 ---- equivalent stress
@@ -317,11 +315,11 @@ c
       if ( nreq>=1 ) then
 c                        ---- set dadc,dcdc,dndc,dmdc for eq.(A.7)^(A.9)
 c
-      call jancae_clear1 ( dadc,2 )
-      call jancae_clear1 ( dbdc,2 )
-      call jancae_clear1 ( dcdc,2 )
-      call jancae_clear1 ( dndc,2 )
-      call jancae_clear1 ( dmdc,2 )
+      call ummdp_utility_clear1 ( dadc,2 )
+      call ummdp_utility_clear1 ( dbdc,2 )
+      call ummdp_utility_clear1 ( dcdc,2 )
+      call ummdp_utility_clear1 ( dndc,2 )
+      call ummdp_utility_clear1 ( dmdc,2 )
 c
       select case ( iareaflag )
 c                                            
@@ -370,7 +368,7 @@ c
               dmdc(2)=dmdc(2)+omg(m)*dble(m)**2
           end do
         end if
-      call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
@@ -416,7 +414,7 @@ c
 c
           dmdc(1)=0.0d0
           dmdc(2)=0.0d0
-      call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                           
@@ -443,7 +441,7 @@ c
           dmdc(1)=0.0d0
           dmdctmp=r_bi0+1.0d0-(r_bi0-1.0d0)*vcos2t
           dmdc(2)=2.0d0*(r_bi0*r_bi0-1.0d0)/(dmdctmp*dmdctmp)
-      call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
@@ -470,7 +468,7 @@ c
 c
           dmdc(1)=0.0d0
           dmdc(2)=0.0d0
-      call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
@@ -516,7 +514,7 @@ c
          end do
        end if
           dmdc(2)=0.0d0
-      call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
@@ -565,22 +563,22 @@ c
 c
           dmdc(1)=0.0d0
           dmdc(2)=0.0d0
-      call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
       case default
         write (6,*) 'iareaflag error(dseds) :',iareaflag
-        call jancae_exit (9000)
+        call ummdp_exit (9000)
       end select
 c
 c
 c                             ---- calc. dphidx(i) (i=1~3)  eq.(21)~(23)
-      call jancae_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,dcdc,
+      call ummdp_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,dcdc,
      1                      mm,nn,dndc,dmdc,f,iareaflag,mu,x,dfdmu,dfdc)
 c
 c
 c                                   ---- calc. dseds(i) (i=1~3)  eq.(20)
-      call jancae_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,vsin2t,
+      call ummdp_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,vsin2t,
      1                                iareaflag,isflag,dxds)
 c
       end if
@@ -590,11 +588,11 @@ c                                            ---- 2nd order differential
       if ( nreq>=2 ) then
 c                     ---- set d2adc2,d2cdc2,d2ndc2,d2mdc2 for d2bdc2(2)
 c
-      call jancae_clear1 ( d2adc2,2 )
-      call jancae_clear1 ( d2bdc2,2 )
-      call jancae_clear1 ( d2cdc2,2 )
-      call jancae_clear1 ( d2ndc2,2 )
-      call jancae_clear1 ( d2mdc2,2 )
+      call ummdp_utility_clear1 ( d2adc2,2 )
+      call ummdp_utility_clear1 ( d2bdc2,2 )
+      call ummdp_utility_clear1 ( d2cdc2,2 )
+      call ummdp_utility_clear1 ( d2ndc2,2 )
+      call ummdp_utility_clear1 ( d2mdc2,2 )
 c
 c                     ---- define exception treatment condition of theta
 c                        ---- if theta<=0.002865deg then apply exception
@@ -654,7 +652,7 @@ c
          do m=0,nf
           d2mdc2(2)=d2mdc2(2)+omg(m)*dble(m)*vvtmp(m)
          end do
-      call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -676,7 +674,7 @@ c
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
-      call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -696,7 +694,7 @@ c
              d2mdc2tmp=r_bi0+1.0d0-(r_bi0-1.0d0)*vcos2t
           d2mdc2(2)=4.0d0*(r_bi0**2-1.0d0)*(r_bi0-1.0d0)/
      1                                              (d2mdc2tmp**3)
-      call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -716,7 +714,7 @@ c
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
-      call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                           
@@ -738,7 +736,7 @@ c
           d2mdc2(1)=d2mdc2(1)+omg(m)*dble(m)*vvtmp_rv(m)
          end do
           d2mdc2(2)=0.0d0
-      call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -760,37 +758,37 @@ cn
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
-      call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
       case default
         write (6,*) 'iareaflag error(d2seds2) :',iareaflag
-        call jancae_exit (9000)
+        call ummdp_exit (9000)
       end select
 c
 c
 c                                     ---- calc. d2phidx2(k,l) (k,l=1~3)
-      call jancae_vegter_calc_d2phidx2 (d2phidx2,se,a,b,c,dadc,dbdc,
+      call ummdp_vegter_calc_d2phidx2 (d2phidx2,se,a,b,c,dadc,dbdc,
      1             dcdc,mm,nn,dndc,dmdc,f,iareaflag,mu,x,d2adc2,d2bdc2,
      2            d2cdc2,d2ndc2,d2mdc2,dfdmu,dfdc,s,aa,bb,cc,dd,dphidx)
 c
 c
 c                                      ---- calc. d2seds2(i,j) (i,j=1~3)
-      call jancae_vegter_calc_d2seds2 (d2seds2,d2phidx2,se,a,b,c,mu,x,
+      call ummdp_vegter_calc_d2seds2 (d2seds2,d2phidx2,se,a,b,c,mu,x,
      1         vcos2t,vsin2t,iareaflag,dxds,dphidx,isflag,s,dseds,
      2                                 pryld,ndyld)
 c
       end if
 c
       return
-      end subroutine jancae_vegter_core
+      end subroutine ummdp_vegter_core
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE HINGEPOINT b(i,i=1~2)
 c
-      subroutine jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+      subroutine ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -810,22 +808,22 @@ c
       bb = nn(1)*mm(2)-mm(1)*nn(2)
       if ( abs(bb) <= TOL ) then
          write (6,*) 'hingepoint singular error! '
-         call jancae_exit (9000)
+         call ummdp_exit (9000)
       end if
 c
       b(1) = b1u / bb
       b(2) = b2u / bb
 c
       return
-      end subroutine jancae_vegter_hingepoint
+      end subroutine ummdp_vegter_hingepoint
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE FOURIER COEFFICIENT mu(0<=mu<=1)
 c
-      subroutine jancae_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta,
-     1                                   aa,bb,cc,dd)
+      subroutine ummdp_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta,
+     1                                  aa,bb,cc,dd)
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -849,7 +847,7 @@ c
 c
       if ( abs(aa) <= tol1 ) then
          write (6,*) 'calc. mu singular error! ',abs(aa),iareaflag
-         call jancae_exit (9000)
+         call ummdp_exit (9000)
       end if
 c
       dd = bb*bb - 4.0d0*aa*cc
@@ -859,7 +857,7 @@ c
 c
       else
          write (6,*) 'negative dd ! ',dd,iareaflag
-         call jancae_exit (9000)
+         call ummdp_exit (9000)
       end if
 c
       if ( xx(1) >= 0.0d0 .and. xx(1) <= 1.0000005d0 ) then
@@ -873,18 +871,18 @@ c
       else
         write (6,*) 'can not find mu ! solve error ',iareaflag,xx(1)
      1              ,xx(2)
-         call jancae_exit (9000)
+         call ummdp_exit (9000)
       end if
 c
       return
-      end subroutine jancae_vegter_calc_mu
+      end subroutine ummdp_vegter_calc_mu
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE NORMALIZED YIELD LOCUS
 c
-      subroutine jancae_vegter_calc_fi ( x,a,b,c,mu,f )
+      subroutine ummdp_vegter_calc_fi ( x,a,b,c,mu,f )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -901,15 +899,15 @@ c
       end do
 c
       return
-      end subroutine jancae_vegter_calc_fi
+      end subroutine ummdp_vegter_calc_fi
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CAKCULATE dbdc(i) (i=1~2) eq.(A.7)
 c
-      subroutine jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                                     dndc,dmdc,iareaflag,P,nnmm)
+      subroutine ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+     1                                    dndc,dmdc,iareaflag,P,nnmm )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -935,7 +933,7 @@ c
       nnmm = nn(1)*mm(2) - mm(1)*nn(2)
          if ( abs(nnmm) < tol ) then
             write (6,*) 'nnmm too small! ',nnmm
-            call jancae_exit (9000)
+            call ummdp_exit (9000)
          end if
       nminv = 1.0d0 / nnmm
 c
@@ -943,16 +941,16 @@ c
       dbdc(2) = nminv * (P(2)*nn(1)-P(1)*mm(1))
 c
       return
-      end subroutine jancae_vegter_calc_dbdc
+      end subroutine ummdp_vegter_calc_dbdc
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. dphidx(i) (i=1~3)  eq.(21)~(23)
 c
-      subroutine jancae_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,
-     1                                       dcdc,mm,nn,dndc,dmdc,f,  
-     2                                       iareaflag,mu,x,dfdmu,dfdc )
+      subroutine ummdp_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,
+     1                                      dcdc,mm,nn,dndc,dmdc,f,  
+     2                                      iareaflag,mu,x,dfdmu,dfdc )
 c-----------------------------------------------------------------------   
       implicit none
 c
@@ -986,7 +984,7 @@ c                            ---- calc. dphidx(i) (i=1~3)  eq.(21),(C.1)
       dphidxcinv = f(1)*dfdmu(2) - f(2)*dfdmu(1)
       if ( abs(dphidxcinv) < tol3 ) then
         write (6,*) 'eq.(21) too small! ',dphidxcinv
-        call jancae_exit (9000)
+        call ummdp_exit (9000)
       end if
       dphidxcoe = 1.0d0 / dphidxcinv
 c
@@ -1032,16 +1030,16 @@ c
       end do
 c
       return
-      end subroutine jancae_vegter_calc_dphidx
+      end subroutine ummdp_vegter_calc_dphidx
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE FIRST ORDER DERIVATIVE
 c
-      subroutine jancae_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,
-     1                                      vsin2t,iareaflag,isflag,
-     2                                      dxds )
+      subroutine ummdp_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,
+     1                                     vsin2t,iareaflag,isflag,
+     2                                     dxds )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1107,7 +1105,7 @@ c
       end if
 c
 c                                   ---- calc. dseds(i) (1=1~3)  eq.(20)
-      call jancae_clear1 ( dseds,3 )
+      call ummdp_utility_clear1 ( dseds,3 )
 c
       do i = 1,3
         do j = 1,3
@@ -1116,17 +1114,17 @@ c
       end do
 c
       return
-      end subroutine jancae_vegter_calc_dseds
+      end subroutine ummdp_vegter_calc_dseds
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2bdc2(i) (i=1~2)
 c
-      subroutine jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                                       dndc,dmdc,iareaflag,d2adc2,
-     2                                       d2bdc2,d2cdc2,d2ndc2,
-     3                                       d2mdc2,P,nnmm,s )      
+      subroutine ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+     1                                      dndc,dmdc,iareaflag,d2adc2,
+     2                                      d2bdc2,d2cdc2,d2ndc2,
+     3                                      d2mdc2,P,nnmm,s )      
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1167,19 +1165,19 @@ c
      2            + dp2n1p1m1/nnmm
 c
       return
-      end subroutine jancae_vegter_calc_d2bdc2
+      end subroutine ummdp_vegter_calc_d2bdc2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2phidx2(k,l) (k,l=1~3)
 c
-      subroutine jancae_vegter_calc_d2phidx2 ( d2phidx2,se,a,b,c,dadc,
-     1                                         dbdc,dcdc,mm,nn,dndc,
-     2                                         dmdc,f,iareaflag,mu,x,
-     3                                         d2adc2,d2bdc2,d2cdc2,
-     4                                         d2ndc2,d2mdc2,dfdmu,dfdc,
-     5                                         s,aa,bb,cc,dd,dphidx )
+      subroutine ummdp_vegter_calc_d2phidx2 ( d2phidx2,se,a,b,c,dadc,
+     1                                        dbdc,dcdc,mm,nn,dndc,
+     2                                        dmdc,f,iareaflag,mu,x,
+     3                                        d2adc2,d2bdc2,d2cdc2,
+     4                                        d2ndc2,d2mdc2,dfdmu,dfdc,
+     5                                        s,aa,bb,cc,dd,dphidx )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1295,18 +1293,18 @@ c
       end do
 c
       return
-      end subroutine jancae_vegter_calc_d2phidx2
+      end subroutine ummdp_vegter_calc_d2phidx2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2seds2(i,j) (i,j=1~3)
 c
-      subroutine jancae_vegter_calc_d2seds2 ( d2seds2,d2phidx2,se,a,b,c,
-     1                                        mu,x,vcos2t,vsin2t,
-     2                                        iareaflag,dxds,dphidx,
-     3                                        isflag,s,dseds,pryld,
-     4                                        ndyld )      
+      subroutine ummdp_vegter_calc_d2seds2 ( d2seds2,d2phidx2,se,a,b,c,
+     1                                       mu,x,vcos2t,vsin2t,
+     2                                       iareaflag,dxds,dphidx,
+     3                                       isflag,s,dseds,pryld,
+     4                                       ndyld )      
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1401,10 +1399,10 @@ c
 c
 c                                      ---- calc. d2seds2(i,j) (i,j=1~3)
 c
-      call jancae_clear2 ( d2seds2,3,3 )
+      call ummdp_utility_clear2 ( d2seds2,3,3 )
 c
       if (iflag/=0) then
-      call jancae_vegter_d2seds2n(d2seds2,s,dseds,pryld,ndyld,se)
+      call ummdp_vegter_d2seds2n(d2seds2,s,dseds,pryld,ndyld,se)
 c
       else
       do i=1,3
@@ -1422,15 +1420,15 @@ c
       end if
 c
       return
-      end subroutine jancae_vegter_calc_d2seds2
+      end subroutine ummdp_vegter_calc_d2seds2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     numerical differential for 2nd order differentials
 c
-      subroutine jancae_vegter_d2seds2n ( d2seds2,s,dseds,
-     1                                    pryld,ndyld,se )
+      subroutine ummdp_vegter_d2seds2n ( d2seds2,s,dseds,
+     1                                   pryld,ndyld,se )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1454,10 +1452,10 @@ c
           if ( j==k ) then
             se0=se
             ss(j)=s0(j)-delta
-            call jancae_vegter_yieldfunc(3,ss,sea,dseds,d2seds2,0,
+            call ummdp_vegter_yieldfunc(3,ss,sea,dseds,d2seds2,0,
      1                                   pryld,ndyld)
             ss(j)=s0(j)+delta
-            call jancae_vegter_yieldfunc(3,ss,seb,dseds,d2seds2,0,
+            call ummdp_vegter_yieldfunc(3,ss,seb,dseds,d2seds2,0,
      1                                    pryld,ndyld)
             ss(j)=s0(j)
             a=(se0-sea)/delta
@@ -1466,19 +1464,19 @@ c
           else
             ss(j)=s0(j)-delta
             ss(k)=s0(k)-delta
-            call jancae_vegter_yieldfunc(3,ss,seaa,dseds,d2seds2,0,
+            call ummdp_vegter_yieldfunc(3,ss,seaa,dseds,d2seds2,0,
      1                                    pryld,ndyld)
             ss(j)=s0(j)+delta
             ss(k)=s0(k)-delta
-            call jancae_vegter_yieldfunc(3,ss,seba,dseds,d2seds2,0,
+            call ummdp_vegter_yieldfunc(3,ss,seba,dseds,d2seds2,0,
      1                                    pryld,ndyld)
             ss(j)=s0(j)-delta
             ss(k)=s0(k)+delta
-            call jancae_vegter_yieldfunc(3,ss,seab,dseds,d2seds2,0,
+            call ummdp_vegter_yieldfunc(3,ss,seab,dseds,d2seds2,0,
      1                                    pryld,ndyld)
             ss(j)=s0(j)+delta
             ss(k)=s0(k)+delta
-            call jancae_vegter_yieldfunc(3,ss,sebb,dseds,d2seds2,0,
+            call ummdp_vegter_yieldfunc(3,ss,sebb,dseds,d2seds2,0,
      1                                    pryld,ndyld)
             ss(j)=s0(j)
             ss(k)=s0(k)
@@ -1490,15 +1488,15 @@ c
       end do
 c
       return
-      end subroutine jancae_vegter_d2seds2n
+      end subroutine ummdp_vegter_d2seds2n
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. equivalent stress for d2seds2n
 c
-      subroutine jancae_vegter_yieldfunc ( nttl,s,se,dseds,d2seds2,
-     1                                     nreq,pryld,ndyld )
+      subroutine ummdp_vegter_yieldfunc ( nttl,s,se,dseds,d2seds2,
+     1                                    nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1510,10 +1508,10 @@ c
       real*8,intent(out) :: d2seds2(3,3)
 c-----------------------------------------------------------------------
 c
-      call jancae_vegter ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      call ummdp_vegter ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c
       return
-      end subroutine jancae_vegter_yieldfunc
+      end subroutine ummdp_vegter_yieldfunc
 c
 c
 c

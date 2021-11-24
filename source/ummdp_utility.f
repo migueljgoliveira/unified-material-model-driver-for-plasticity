@@ -4,60 +4,55 @@
 *
 ************************************************************************
 c
-c     jancae_clear1 ( a,n )
+c     ummdp_utility_clear1 ( a,n )
 c       clear 1st order vector
 c
-c     jancae_clear2 ( a,n,m )
+c     ummdp_utility_clear2 ( a,n,m )
 c       clear 2nd order matrix
 c
-c     jancae_clear3 ( a,n,m,l )
+c     ummdp_utility_clear3 ( a,n,m,l )
 c       clear 3rd order tensor
 c
-c     jancae_setunitm ( a,n )
+c     ummdp_utility_setunitm ( a,n )
 c       set unit 2nd order matrix
 c
-c     jancae_print1 ( text,a,n )
+c     ummdp_utility_print1 ( text,a,n )
 c       print vector with text
 c
-c     jancae_print2 ( text,a,n,m )
+c     ummdp_utility_print2 ( text,a,n,m )
 c       print matrix with text
 c
-c     jancae_mv (v,a,u,nv,nu)
+c     ummdp_utility_mv (v,a,u,nv,nu)
 c       mutiply matrix and vector
 c
-c     jancae_mm (a,b,c,na1,na2,nbc)
+c     ummdp_utility_mm (a,b,c,na1,na2,nbc)
 c       mutiply matrix and matrix
 c
-c     jancae_vvs ( s,u,v,n )
+c     ummdp_utility_vvs ( s,u,v,n )
 c       calculate scalar product of vectors 
 c
-c     jancae_minv ( b,a,n,d )
+c     ummdp_utility_minv ( b,a,n,d )
 c       calculate inverse matrix using lu decomposition
 c
-c         jancae_ludcmp( a,n,indx,d )
+c         ummdp_utility_ludcmp( a,n,indx,d )
 c           lu decomposition
-c         jancae_lubksb(a,n,indx,b)
+c         ummdp_utility_lubksb(a,n,indx,b)
 c           lu backward substitution
-c         jancae_minv2 ( b,a,deta )
+c         ummdp_utility_minv2 ( b,a,deta )
 c           calculate inverse matrix 2x2
-c         jancae_minv3 ( b,a,deta )
+c         ummdp_utility_minv3 ( b,a,deta )
 c           calculate inverse matrix 3x3
 c
-c     jancae_eigen_sym3 ( es,ev,a )
+c     ummdp_utility_eigen_sym3 ( es,ev,a )
 c       calculate eigenvalues and eigenvectors by jacobi method
 c
-c     jancae_printinfo
-c       print informations for debug (info)
-c
-c     jancae_printinout
-c       print informations for debug (input/output)
-c
-c
+c     ummdp_utility_file_exist ( flname )
+c       checking existence of files
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CLEAR 1st ORDER VECTOR A(N)
 c
-      subroutine jancae_clear1 ( a,n )
+      subroutine ummdp_utility_clear1 ( a,n )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -72,14 +67,14 @@ c
       end do
 c
       return
-      end subroutine jancae_clear1
+      end subroutine ummdp_utility_clear1
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CLEAR 2ND ORDER MATRIX
 c
-      subroutine jancae_clear2 ( a,n,m )
+      subroutine ummdp_utility_clear2 ( a,n,m )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -96,14 +91,14 @@ c
       end do
 c
       return
-      end subroutine jancae_clear2
+      end subroutine ummdp_utility_clear2
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CLEAR 3RD ORDER MATRIX
 c
-      subroutine jancae_clear3 ( a,n,m,l )
+      subroutine ummdp_utility_clear3 ( a,n,m,l )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -122,14 +117,14 @@ c
       end do
 c
       return
-      end subroutine jancae_clear3
+      end subroutine ummdp_utility_clear3
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     SET UNIT 2ND ORDER MATRIX
 c
-      subroutine jancae_setunitm ( a,n )
+      subroutine ummdp_utility_setunitm ( a,n )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -139,20 +134,20 @@ c
       integer i
 c-----------------------------------------------------------------------
 c
-      call jancae_clear2 ( a,n,n )
+      call ummdp_utility_clear2 ( a,n,n )
       do i = 1,n
         a(i,i) = 1.0d0
       end do
 c
       return
-      end subroutine jancae_setunitm
+      end subroutine ummdp_utility_setunitm
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT VECTOR WITH TEXT
 c
-      subroutine jancae_print1 ( text,a,n )
+      subroutine ummdp_utility_print1 ( text,a,n )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -168,14 +163,14 @@ c
  9000 format (6e16.8)
 c
       return
-      end subroutine jancae_print1
+      end subroutine ummdp_utility_print1
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT MATRIX WITH TEXT
 c
-      subroutine jancae_print2 ( text,a,n,m )
+      subroutine ummdp_utility_print2 ( text,a,n,m )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -192,14 +187,14 @@ c-----------------------------------------------------------------------
  9000 format (6e16.8)
 c
       return
-      end subroutine jancae_print2
+      end subroutine ummdp_utility_print2
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     MULTIPLY MATRIX AND VECTOR
 c
-      subroutine jancae_mv ( v,a,u,nv,nu )
+      subroutine ummdp_utility_mv ( v,a,u,nv,nu )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -210,7 +205,7 @@ c
       integer i,j
 c-----------------------------------------------------------------------
 c
-      call jancae_clear1 ( v,nv )
+      call ummdp_utility_clear1 ( v,nv )
       do i = 1,nv
         do j = 1,nu
           v(i) = v(i) + a(i,j)*u(j)
@@ -218,14 +213,14 @@ c
       end do
 c
       return
-      end subroutine jancae_mv
+      end subroutine ummdp_utility_mv
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     MULTIPLY MATRIX AND MATRIX
 c     
-      subroutine jancae_mm ( a,b,c,na1,na2,nbc )
+      subroutine ummdp_utility_mm ( a,b,c,na1,na2,nbc )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -235,7 +230,7 @@ c
       integer i,j,k
 c-----------------------------------------------------------------------
 c
-      call jancae_clear2 ( a,na1,na2 )
+      call ummdp_utility_clear2 ( a,na1,na2 )
       do i = 1,na1
         do j = 1,na2
           do k = 1,nbc
@@ -245,14 +240,14 @@ c
       end do
 c
       return
-      end subroutine jancae_mm
+      end subroutine ummdp_utility_mm
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE SCALAR PRODUCT OF VECTORS
 c
-      subroutine jancae_vvs ( s,u,v,n )
+      subroutine ummdp_utility_vvs ( s,u,v,n )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -269,7 +264,7 @@ c
       end do
 c
       return
-      end subroutine jancae_vvs
+      end subroutine ummdp_utility_vvs
 c
 c
 c
@@ -278,7 +273,7 @@ c     CALCULATE INVERSE MATRIX USING LU DECOMPOSITION
 c
 c     Ref.: http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
 c
-      subroutine jancae_minv ( b,a,n,d )
+      subroutine ummdp_utility_minv ( b,a,n,d )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -315,25 +310,25 @@ c
       end do
 c
       if ( n == 2 ) then
-        call jancae_minv2 ( b,a,d,eps )
+        call ummdp_utility_minv2 ( b,a,d,eps )
         goto 100
       else if ( n == 3 ) then
-        call jancae_minv3 ( b,a,d,eps )
+        call ummdp_utility_minv3 ( b,a,d,eps )
         goto 100
       end if
 c
-      call jancae_ludcmp ( a,n,indx,d,eps )
+      call ummdp_utility_ludcmp ( a,n,indx,d,eps )
 c                                                 ---- check determinant
       if ( abs(d) <= eps ) then
          write (6,*) 'determinant det[a] error',d
          write (6,*) 'stop in minv'
-         call jancae_exit ( 9000 ) 
+         call ummdp_exit ( 9000 ) 
       end if
 c                                                            ---- B=A^-1
       do j = 1,n
-        call jancae_clear1 ( y,n )
+        call ummdp_utility_clear1 ( y,n )
         y(j) = 1.0d0
-        call jancae_lubksb ( a,n,indx,y,eps )
+        call ummdp_utility_lubksb ( a,n,indx,y,eps )
         do i = 1,n
           b(i,j) = y(i)
         end do
@@ -351,10 +346,10 @@ c                                                             ---- check
       if ( check ) then
         write (6,*) 'check inverse matrix',n
         text = 'original matrix [A]'
-        call jancae_print2 ( text,a,n,n )
+        call ummdp_utility_print2 ( text,a,n,n )
         text = 'inversed matrix [A]^-1'
-        call jancae_print2 ( text,b,n,n )
-        call jancae_clear2 ( c,n,n )
+        call ummdp_utility_print2 ( text,b,n,n )
+        call ummdp_utility_clear2 ( c,n,n )
         do i = 1,n
           do j = 1,n
             do k = 1,n
@@ -363,18 +358,18 @@ c                                                             ---- check
           end do
         end do
         text = '[A]^-1*[A]=[I] ?'
-        call jancae_print2 ( text,c,n,n )
+        call ummdp_utility_print2 ( text,c,n,n )
       end if
 c
       return
-      end subroutine jancae_minv
+      end subroutine ummdp_utility_minv
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     LU DECOMPOSITION
 c
-      subroutine jancae_ludcmp ( a,n,indx,d,eps )
+      subroutine ummdp_utility_ludcmp ( a,n,indx,d,eps )
 c
 c-----------------------------------------------------------------------
       implicit none
@@ -398,10 +393,10 @@ c
           if ( abs(a(i,j)) > aamax ) aamax = abs(a(i,j))
         end do
         if ( aamax <= eps ) then
-          write (6,*) 'singular matrix in jancae_ludcmp'
+          write (6,*) 'singular matrix in ummdp_ludcmp'
           text = 'matrix detail'
-          call jancae_print2 ( text,a,n,n )
-          call jancae_exit ( 9000 )
+          call ummdp_utility_print2 ( text,a,n,n )
+          call ummdp_exit ( 9000 )
         end if
         vtemp(i) = 1.0d0 / aamax
       end do
@@ -453,14 +448,14 @@ c                                                 ---- get the det. of A
       end do
 c
       return
-      end subroutine jancae_ludcmp
+      end subroutine ummdp_utility_ludcmp
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     LU BACKWARD SUBSTITUTION
 c
-      subroutine jancae_lubksb ( a,n,indx,b,eps )
+      subroutine ummdp_utility_lubksb ( a,n,indx,b,eps )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -497,14 +492,14 @@ c
       end do
 c
       return
-      end subroutine jancae_lubksb
+      end subroutine ummdp_utility_lubksb
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE INVERSE MATRIX 2x2 
 c
-      subroutine jancae_minv2 ( b,a,deta,eps )
+      subroutine ummdp_utility_minv2 ( b,a,deta,eps )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -518,7 +513,7 @@ c
       if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv2'
-         call jancae_exit ( 9000 )
+         call ummdp_exit ( 9000 )
       end if
 c
       detai = 1.0d0 / deta
@@ -528,14 +523,14 @@ c
       b(2,2) = a(1,1) * detai
 c
       return
-      end subroutine jancae_minv2
+      end subroutine ummdp_utility_minv2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE INVERSE MATRIX 3x3
 c
-      subroutine jancae_minv3 ( b,a,deta,eps )
+      subroutine ummdp_utility_minv3 ( b,a,deta,eps )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -546,12 +541,12 @@ c
 c-----------------------------------------------------------------------
 c
       deta = a(1,1) * (a(2,2)*a(3,3) - a(2,3)*a(3,2)) +
-     &       a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3)) +
-     &       a(1,3) * (a(2,1)*a(3,2) - a(2,2)*a(3,1))
+     1       a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3)) +
+     2       a(1,3) * (a(2,1)*a(3,2) - a(2,2)*a(3,1))
       if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv3'
-         call jancae_exit ( 9000 )
+         call ummdp_exit ( 9000 )
       end if
 c
       detai = 1.0d0 / deta
@@ -566,7 +561,7 @@ c
       b(3,3) = ( a(1,1)*a(2,2) - a(1,2)*a(2,1) ) * detai
 c
       return
-      end subroutine jancae_minv3
+      end subroutine ummdp_utility_minv3
 c
 c
 c
@@ -582,7 +577,7 @@ c     output
 c       es(i)   : i-th eigenvalue
 c       ev(i,3) : normalized eigenvector for i-th eigenvalue
 c
-      subroutine jancae_eigen_sym3 ( es,ev,a )
+      subroutine ummdp_utility_eigen_sym3 ( es,ev,a )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -609,8 +604,8 @@ c                                                       ---- preparation
       end do
       if ( er/ax > eps ) then
         write (6,*) 'a is not symmetric'
-        write (6,*) 'stop in jancae_eigen_sym3'
-        call jancae_exit ( 9000 )
+        write (6,*) 'stop in ummdp_eigen_sym3'
+        call ummdp_exit ( 9000 )
       end if
       do i = 1,3
         do j = 1,3
@@ -687,19 +682,18 @@ c                              ---- if convergence is not achieved stops
       write (6,*) 'msweep=',msweep
       write (6,*) 'eps=',eps
       write (6,*) 'sum=',sum
-      write (6,*) 'stop in jancae_eigen_sym3'
-      call jancae_exit ( 9000 )
+      write (6,*) 'stop in ummdp_eigen_sym3'
+      call ummdp_exit ( 9000 )
 c
       return
-      end subroutine jancae_eigen_sym3
+      end subroutine ummdp_utility_eigen_sym3
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CHECKING EXISTENCE OF FILE NAMES 'FLNAME'
 c
-      logical function jancae_file_exist ( flname )
-c
+      logical function ummdp_utility_file_exist ( flname )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -712,13 +706,13 @@ c
       open ( nio,file=flname,status='old',err=10 )
 c
       close ( nio,            status='keep' )
-      jancae_file_exist = .true.
+      ummdp_utility_file_exist = .true.
       return
 c
-   10 jancae_file_exist = .false.
+   10 ummdp_utility_file_exist = .false.
       return
 c
-      end function jancae_file_exist
+      end function ummdp_utility_file_exist
 c
 c
 c

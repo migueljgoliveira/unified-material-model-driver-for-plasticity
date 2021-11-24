@@ -4,31 +4,31 @@
 *
 ************************************************************************
 c
-c     jancae_print_elastic ( prela,ndela )
+c     ummdp_print_elastic ( prela,ndela )
 c       print elasticity parameters
 c
-c     jancae_print_yield ( pryld,ndyld )
+c     ummdp_print_yield ( pryld,ndyld )
 c       print yield criteria parameters
 c
-c     jancae_print_isotropci ( prihd,ndihd )
+c     ummdp_print_isotropci ( prihd,ndihd )
 c       print isotropic hardening law parameters
 c
-c     jancae_print_kinematic ( prkin,ndkin,npbs )
+c     ummdp_print_kinematic ( prkin,ndkin,npbs )
 c       print kinematic hardening law parameters
 c
-c     jancae_print_rupture ( prrup,ndrup )
+c     ummdp_print_rupture ( prrup,ndrup )
 c       print uncoupled rupture criterion parameters
 c     
-c     jancae_print_info
+c     ummdp_print_info
 c       print informations for debug (info)
 c
-c     jancae_print_inout
+c     ummdp_print_inout
 c       print informations for debug (input/output)
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT ELASTICITY PARAMETERS
 c
-      subroutine jancae_print_elastic ( prela,ndela )
+      subroutine ummdp_print_elastic ( prela,ndela )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -55,14 +55,14 @@ c
       end select
 c
       return
-      end subroutine jancae_print_elastic
+      end subroutine ummdp_print_elastic
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT YIELD FUNCTION PARAMETERS
 c
-      subroutine jancae_print_yield ( pryld,ndyld )
+      subroutine ummdp_print_yield ( pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -234,14 +234,14 @@ c
       end select
 c
       return
-      end subroutine jancae_print_yield
+      end subroutine ummdp_print_yield
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT ISOTROPIC HARDENING LAW PARAMETERS
 c
-      subroutine jancae_print_isotropic ( prihd,ndihd )
+      subroutine ummdp_print_isotropic ( prihd,ndihd )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -302,14 +302,14 @@ c
       end select
 c
       return
-      end subroutine jancae_print_isotropic
+      end subroutine ummdp_print_isotropic
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT KINEMATIC HARDENING LAW PARAMETERS
 c
-      subroutine jancae_print_kinematic ( prkin,ndkin,npbs )
+      subroutine ummdp_print_kinematic ( prkin,ndkin,npbs )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -372,14 +372,14 @@ c
       end select
 c
       return
-      end subroutine jancae_print_kinematic
+      end subroutine ummdp_print_kinematic
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT UNCOUPLED RUPTURE CRITERION PARAMETERS
 c
-      subroutine jancae_print_rupture ( prrup,ndrup )
+      subroutine ummdp_print_rupture ( prrup,ndrup )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -431,14 +431,14 @@ c
       end select
 c
       return
-      end subroutine jancae_print_rupture
+      end subroutine ummdp_print_rupture
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT INFORMATIONS FOR DEBUG (INFO)
 c
-      subroutine jancae_print_info ( inc,nnrm,nshr )
+      subroutine ummdp_print_info ( inc,nnrm,nshr )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -478,18 +478,18 @@ c
       end if
       if ( nerr /= 0 ) then
         write (6,*) 'no supported element type',nnrm,nshr
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c
       return
-      end subroutine jancae_print_info
+      end subroutine ummdp_print_info
 c
 c
 c
 ************************************************************************
 c     PRINT INFORMATIONS FOR DEBUG (INPUT/OUTPUT)
 c
-      subroutine jancae_print_inout ( io,s,de,d,nttl,stv,nstv )
+      subroutine ummdp_print_inout ( io,s,de,d,nttl,stv,nstv )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -504,25 +504,25 @@ c
       else
         text = 'updated stresses'
       end if
-      call jancae_print1 ( text,s,nttl )
+      call ummdp_utility_print1 ( text,s,nttl )
 c
       if ( io == 0 ) then
         text = 'initial internal state var.'
       else
         text = 'updated internal state var.'
       end if
-      call jancae_print1 ( text,stv,nstv )
+      call ummdp_utility_print1 ( text,stv,nstv )
 c
       if ( io == 0 ) then
         text = 'driving strain increment'
-        call jancae_print1 ( text,de,nttl )
+        call ummdp_utility_print1 ( text,de,nttl )
       else
         text = 'tangent modulus matrix'
-        call jancae_print2 ( text,d,nttl,nttl )
+        call ummdp_utility_print2 ( text,d,nttl,nttl )
       end if
 c
       return
-      end subroutine jancae_print_inout
+      end subroutine ummdp_print_inout
 c
 c
 c

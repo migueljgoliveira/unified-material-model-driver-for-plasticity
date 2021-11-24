@@ -63,12 +63,12 @@ c                        lay : layer no. of shell
 c
 c                                        ---- set debug and verbose mode
       nvbs0 = props(1)
-      call jancae_debugmode ( nvbs,nvbs0 )
+      call ummdp_debugmode ( nvbs,nvbs0 )
 c                                       ---- output detailed information
       if ( nvbs >= 4 ) then
-        call jancae_print_info  ( kinc,ndi,nshr )
-        call jancae_print_inout ( 0,stress,dstran,ddsdde,ntens,
-     &                           statev,nstatv )
+        call ummdp_print_info  ( kinc,ndi,nshr )
+        call ummdp_print_inout ( 0,stress,dstran,ddsdde,ntens,statev,
+     1                           nstatv )
       end if
 c
 c                                           ---- set material properties
@@ -76,32 +76,26 @@ c                                           ---- set material properties
         prop(i-1) = props(i)
       end do
 c
-      call jancae_prop_dim ( prop,nprop,propdim,
-     &                       ndela,ndyld,ndihd,ndkin,
-     &                       npbs,ndrup )
+      call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
+     1                      npbs,ndrup )                       
       if ( npbs > mxpbs ) then
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
         write (6,*) 'mxpbs=',mxpbs
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c                                                      ---- check nstatv
-      call jancae_check_nisv ( nstatv,ntens,npbs )
+      call ummdp_check_nisv ( nstatv,ntens,npbs )
 c                             ---- copy current internal state variables
-      call jancae_isvprof ( isvrsvd,isvsclr )
-      call jancae_isv2pex ( isvrsvd,isvsclr,
-     &                      statev,nstatv,
-     &                      p,pe,x1,ntens,mxpbs,npbs )
+      call ummdp_isvprof ( isvrsvd,isvsclr )
+      call ummdp_isv2pex ( isvrsvd,isvsclr,statev,nstatv,p,pe,x1,ntens,
+     1                     mxpbs,npbs )                    
 c
 c                             ---- update stress and set tangent modulus
       mjac = 1
-      call ummdp_plasticity ( stress,s2,dstran,
-     &                        p,dp,dpe,de33,
-     &                        x1,x2,mxpbs,
-     &                        ddsdde,
-     &                        ndi,nshr,ntens,
-     &                        nvbs,mjac,
-     &                        prop,nprop,propdim )
+      call ummdp_plasticity ( stress,s2,dstran,p,dp,dpe,de33,x1,x2,
+     1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
+     2                        prop,nprop,propdim )                      
 c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
@@ -126,25 +120,23 @@ c                                       ---- update of back stress comp.
       end if
 c                           ----  if debug mode, output return arguments
       if ( nvbs >= 4 ) then
-        call jancae_print_inout ( 1,stress,dstran,ddsdde,ntens,
-     &                           statev,nstatv )
+        call ummdp_print_inout ( 1,stress,dstran,ddsdde,ntens,statev,
+     1                           nstatv )
       end if
 c
       return
-      end
+      end subroutine umat
 c
 c
 c
 c***********************************************************************
-c
       SUBROUTINE SDVINI ( STATEV,COORDS,NSTATV,NCRDS,NOEL,NPT,
-     &                    LAYER,KSPT )
-c
+     1                    LAYER,KSPT )
+c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
       DIMENSION STATEV(NSTATV),COORDS(NCRDS)
-c
-c***********************************************************************
+c-----------------------------------------------------------------------
 c
       ne = noel
       ip = npt
@@ -160,24 +152,21 @@ c
       end do
 c
       return
-      end
+      end subroutine sdvini
 c
 c
 c
 c***********************************************************************
-c
       SUBROUTINE UVARM ( UVAR,DIRECT,T,TIME,DTIME,CMNAME,ORNAME,
-     &    NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
-     &    jmac,jmatyp,matlayo,laccfla )
-c
+     1    NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
+     2    jmac,jmatyp,matlayo,laccfla )
+c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
       CHARACTER*80 CMNAME,ORNAME
       CHARACTER*3  flgray(15)
       DIMENSION UVAR(NUVARM),DIRECT(3,3),T(3,3),TIME(2)
       DIMENSION array(15),jarray(15),jmac(*),jmatyp(*),COORD(*)
-c
-c***********************************************************************
 c-----------------------------------------------------------------------
 c     The dimensions of the variables flgray, array and jarray
 c     must be set equal to or greater than 15.
@@ -228,12 +217,12 @@ c                                            ---- get uvar before update
         uvar1(i) = uvar(i)
       end do
 c                                                        ---- get stress
-      call getvrm ( 'S',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                  matlayo,laccfla )
+      call getvrm ( 'S',array,jarray,flgray,jrcd,jmac,jmatyp,matlayo,
+     1              laccfla )
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for s'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c
       do i = 1,ndi
@@ -248,22 +237,21 @@ c                                               ---- get state variables
       if ( nsdv > maxsdv ) then
         write (6,*) 'increase dimension of ARRAY2 and JARRAY2'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       call getvrm ( 'SDV',ARRAY2,JARRAY2,FLGRAY2,jrcd,jmac,jmatyp,
-     &                    matlayo,laccfla)
+     1              matlayo,laccfla)
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sdv'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       do i = 1,nsdv
         sdv(i) = array2(i)
       end do
 c                                           ---- set material properties
-      call jancae_prop_dim ( prop,nprop,propdim,
-     &                       ndela,ndyld,ndihd,ndkin,
-     &                       npbs,ndrup )
+      call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
+     1                      npbs,ndrup )                        
       allocate( prela(ndela) )
       allocate( pryld(ndyld) )
       allocate( prihd(ndihd) )
@@ -292,10 +280,9 @@ c                                           ---- set material properties
       end do
 c
 c                                                  ---- calc back stress
-      call jancae_isvprof ( isvrsvd,isvsclr )
-      call jancae_isv2pex ( isvrsvd,isvsclr,
-     &                      sdv,maxsdv,
-     &                      p,pe,x,ntens,mxpbs,npbs )
+      call ummdp_isvprof ( isvrsvd,isvsclr )
+      call ummdp_isv2pex ( isvrsvd,isvsclr,sdv,maxsdv,p,pe,x,ntens,
+     1                     mxpbs,npbs )                      
       do i = 1,ntens
          xsum(i) = 0.0
       end do
@@ -311,14 +298,13 @@ c                                                 ---- equivalent stress
         do i = 1,ntens
           eta(i) = s(i) - xsum(i)
         end do
-        call jancae_yield ( se,dseds,d2seds2,0,
-     &                      eta,ntens,ndi,nshr,
-     &                      pryld,ndyld )
+        call ummdp_yield ( se,dseds,d2seds2,0,eta,ntens,ndi,nshr,pryld,
+     1                     ndyld )                        
         uvar(1) = se
       end if
 c                                                       ---- flow stress
       if ( nuvarm >= 2 ) then
-        call jancae_isotropic ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
+        call ummdp_isotropic ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
         uvar(2) = sy
       end if
 c                                                       ---- back stress
@@ -334,21 +320,21 @@ c                                                 ---- rupture criterion
         nt = ntens
         if ( npbs == 0 ) nt = 0
         if ( nuvarm >= (3+nt) ) then
-          call jancae_rupture ( ntens,sdv,nsdv,uvar,uvar1,nuvarm,
-     &                          jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                          nt,ndrup,prrup)
+          call ummdp_rupture ( ntens,sdv,nsdv,uvar,uvar1,nuvarm,jrcd,
+     1                         jmac,jmatyp,matlayo,laccfla,nt,ndrup,
+     2                         prrup) 
         end if
       end if
 c
       return
-      end
+      end subroutine uvarm
 c
 c
 c
-c-----------------------------------------------------------------------
+************************************************************************
 c     SET INTERNAL STATE VARIABLES PROFILE
 c
-      subroutine jancae_isvprof ( isvrsvd,isvsclr )
+      subroutine ummdp_isvprof ( isvrsvd,isvsclr )
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
@@ -357,19 +343,18 @@ c
       isvsclr = 1             ! statev(1) is for eq.plast.strain
 c
       return
-      end
+      end subroutine ummdp_isvprof
 c
 c
 c
-c-----------------------------------------------------------------------
-c     exit program by error
+************************************************************************
+c     EXIT PROGRAM BY ERROR
 c
-      subroutine jancae_exit (nexit)
-c
+      subroutine ummdp_exit (nexit)
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
       common /jancae1/ne,ip,lay
-c                                  nexit : exit code
+c-----------------------------------------------------------------------
       write (6,*) 'error code :',nexit
       write (6,*) 'element no.           :',ne
       write (6,*) 'integration point no. :',ip
@@ -378,18 +363,13 @@ c
       call xit
 c
       return
-      end
+      end subroutine ummdp_exit
 c
 c
-cc 171230 : start check process by venders' supporters
-c 180110 : nela=1 for LS-Dyna like input (bulk & shear modulus)
-c
-c
-c
-c
-c                               OVER THIS LINE DEPENDS ON CODE
-c***********************************************************************
-c                            UNDER THIS LINE INDEPENDS ON CODE
+cc
+c                               OVER THIS LINE IS CODE DEPENDENT
+c<<-->><<-->><<-->><<->><<-->><<-->><<-->><<-->><<-->><<-->><<-->><<-->>
+c                            UNDER THIS LINE IS DOCE INDEPENDENT
 c
 c     UMMDp  : Unified Material Model Driver for Plasticity
 c
@@ -399,16 +379,12 @@ c     MPWG   : Metal Plasticity Working Group
 c
 c
 c
-c-----------------------------------------------------------------------
+c***********************************************************************
 c     this is dummy routine
 c
-      subroutine ummdp_plasticity ( s1,s2,de,
-     &                               p,dp,dpe,de33,
-     &                               x1,x2,mxpbs,
-     &                               ddsdde,
-     &                               nnrm,nshr,nttl,
-     &                               nvbs,mjac,
-     &                               prop,nprop,propdim )
+      subroutine ummdp_plasticity ( s1,s2,de,p,dp,dpe,de33,x1,x2,mxpbs,
+     1                              ddsdde,nnrm,nshr,nttl,nvbs,mjac,
+     2                              prop,nprop,propdim )                               
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
@@ -420,25 +396,25 @@ c
      &          prop(nprop)
 c
       character text*32
+c-----------------------------------------------------------------------
 c
       if ( prop(1) >= 1000.0d+0 ) then
         mjac = -1
         prop(1) = prop(1) - 1000.0d+0
       end if
 c
-      call jancae_prop_dim ( prop,nprop,propdim,
-     &                       ndela,ndyld,ndihd,ndkin,
-     &                       npbs,ndrup )
+      call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
+     1                      npbs,ndrup )                       
 c
       n = ndela + ndyld + ndihd + ndkin + ndrup
       if ( n > nprop ) then
-        write (6,*) 'nprop error in jancae_plasticity'
+        write (6,*) 'nprop error in ummdp_plasticity'
         write (6,*) 'nprop=',nprop
         write (6,*) 'n    =',n
         do i = 1,5
           write (6,*) 'prop(',i,')=',prop(i)
         end do
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       if ( nvbs >= 4 ) then
         do i = 1,n
@@ -448,33 +424,24 @@ c
 c
       nnn = (npbs+1) * nttl
 c
-      call jancae_plasticity_core
-     &                  ( s1,s2,de,
-     &                    p,dp,dpe,de33,
-     &                    x1,x2,mxpbs,
-     &                    ddsdde,
-     &                    nnrm,nshr,nttl,
-     &                    nvbs,mjac,
-     &                    prop,nprop,
-     &                    npbs,ndela,ndyld,ndihd,ndkin,ndrup,nnn )
+      call ummdp_plasticity_core ( s1,s2,de,p,dp,dpe,de33,x1,x2,mxpbs,
+     1                             ddsdde,nnrm,nshr,nttl,nvbs,mjac,
+     2                             prop,nprop,npbs,ndela,ndyld,ndihd,
+     3                             ndkin,ndrup,nnn )                  
 c
       return
-      end
+      end subroutine ummdp_plasticity
 c
 c
 c
 c-----------------------------------------------------------------------
 c     core routine
 c
-      subroutine jancae_plasticity_core
-     &                  ( s1,s2,de,
-     &                    p,dp,dpe,de33,
-     &                    x1,x2,mxpbs,
-     &                    ddsdde,
-     &                    nnrm,nshr,nttl,
-     &                    nvbs,mjac,
-     &                    prop,nprop,
-     &                    npbs,ndela,ndyld,ndihd,ndkin,ndrup,nnn )
+      subroutine ummdp_plasticity_core ( s1,s2,de,p,dp,dpe,de33,x1,x2,
+     1                                   mxpbs,ddsdde,nnrm,nshr,nttl,
+     2                                   nvbs,mjac,prop,nprop,npbs,
+     3                                   ndela,ndyld,ndihd,ndkin,ndrup,
+     4                                   nnn )                    
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       common /jancae1/ne,ip,lay
@@ -624,7 +591,6 @@ c
         write (6,*) '******* START OF UMMDp *******'
         write (6,*) '******************************'
       end if
-c
 c                                          ---- copy material properties
       n = 0
       do i = 1,ndela
@@ -651,14 +617,14 @@ c
       if ( nout /= 0 ) then
         write (6,*)
         write (6,*) 'MATERIAL DATA LIST'
-        call jancae_print_elastic   ( prela,ndela )
-        call jancae_print_yield     ( pryld,ndyld )
-        call jancae_print_isotropic ( prihd,ndihd )
-        call jancae_print_kinematic ( prkin,ndkin,npbs )
-        call jancae_print_rupture   ( prrup,ndrup )
+        call ummdp_print_elastic   ( prela,ndela )
+        call ummdp_print_yield     ( pryld,ndyld )
+        call ummdp_print_isotropic ( prihd,ndihd )
+        call ummdp_print_kinematic ( prkin,ndkin,npbs )
+        call ummdp_print_rupture   ( prrup,ndrup )
       end if
 c                                                           ---- set [U]
-      call jancae_clear2( um,nttl,nnn )
+      call ummdp_utility_clear2( um,nttl,nnn )
       i1 = 1
       do i2 = 1,npbs+1
         do j = 1,nttl
@@ -691,25 +657,24 @@ c
           x2(n,i) = x1(n,i)
         end do
       end do
-      call jancae_backsum ( npbs,xt1,x1,nttl,mxpbs )
-      call jancae_backsum ( npbs,xt2,x2,nttl,mxpbs )
+      call ummdp_backsum ( npbs,xt1,x1,nttl,mxpbs )
+      call ummdp_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
 c                                                  ---- print out arrays
       if ( nvbs >= 4 ) then
         text = 'current stress (input)'
-        call jancae_print1 ( text,s1,nttl )
+        call ummdp_utility_print1 ( text,s1,nttl )
         text = 'strain inc. (input)'
-        call jancae_print1 ( text,de,nttl )
+        call ummdp_utility_print1 ( text,de,nttl )
         if ( npbs /= 0 ) then
           text = 'part. back stess (input)'
-          call jancae_backprint ( text,npbs,x1,nttl,mxpbs )
+          call ummdp_backprint ( text,npbs,x1,nttl,mxpbs )
           text = 'total  back stess (input)'
-          call jancae_print1 ( text,xt1,nttl )
+          call ummdp_utility_print1 ( text,xt1,nttl )
         end if
       end if
 c                                            ---- set elastic [D] matrix
-      call jancae_setdelast ( delast,prela,ndela,
-     &                        nttl,nnrm,nshr,d33d )
+      call ummdp_setdelast ( delast,prela,ndela,nttl,nnrm,nshr,d33d )                        
 c                                             ---- copy delast to ddsdde
       do i = 1,nttl
         do j = 1,nttl
@@ -718,36 +683,33 @@ c                                             ---- copy delast to ddsdde
       end do
       if ( nvbs >= 5 ) then
         text = 'elastic matrix'
-        call jancae_print2 ( text,ddsdde,nttl,nttl )
+        call ummdp_utility_print2 ( text,ddsdde,nttl,nttl )
       end if
 c                                                ---- elastic prediction
-      call jancae_mv ( vv,ddsdde,de,nttl,nttl )
+      call ummdp_utility_mv ( vv,ddsdde,de,nttl,nttl )
       do i = 1,nttl
         s2(i) = s1(i) + vv(i)
       end do
       if ( nvbs >= 5 ) then
         text = 'elastic predicted stress'
-        call jancae_print1 ( text,s2,nttl )
+        call ummdp_utility_print1 ( text,s2,nttl )
       end if
 c                                                       ---- back stress
       do i = 1,nttl
         eta(i) = s2(i) - xt2(i)
       end do
 c                                                       ---- check yield
-      call jancae_yield  ( se,dseds,d2seds2,0,
-     &                     eta,nttl,nnrm,nshr,
-     &                     pryld,ndyld )
-      call jancae_isotropic ( sy,dsydp,d2sydp2,
-     &                        0,p,prihd,ndihd )
+      call ummdp_yield  ( se,dseds,d2seds2,0,eta,nttl,nnrm,nshr,pryld,
+     1                    ndyld )                      
+      call ummdp_isotropic ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )                        
 c
       if ( nvbs >= 3 ) then
         write (6,*) 'plastic strain p=',p
         write (6,*) 'flow stress   sy=',sy
         write (6,*) 'equiv.stress  se=',se
         if ( npbs /= 0 ) then
-          call jancae_yield  ( xe,dseds,d2seds2,0,
-     &                         xt1,nttl,nnrm,nshr,
-     &                         pryld,ndyld )
+          call ummdp_yield  ( xe,dseds,d2seds2,0,xt1,nttl,nnrm,nshr,
+     1                        pryld,ndyld )                          
           write (6,*) 'equiv.back.s  xe=',xe
         end if
       end if
@@ -799,7 +761,7 @@ c
           x2(n,i) = x2conv(n,i)
         end do
       end do
-      call jancae_backsum ( npbs,xt2,x2,nttl,mxpbs )
+      call ummdp_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
 c                                          ---- start of multistage loop
       do m = 1,mstg
@@ -834,28 +796,26 @@ c                                        ---- calc. se and differentials
         do i = 1,nttl
           eta(i) = s2(i) - xt2(i)
         end do
-        call jancae_yield ( se,dseds,d2seds2,2,
-     &                      eta,nttl,nnrm,nshr,
-     &                      pryld,ndyld )
+        call ummdp_yield ( se,dseds,d2seds2,2,eta,nttl,nnrm,nshr,pryld,
+     1                     ndyld )                       
 c
         if ( nvbs >= 5 ) then
           text = 's2'
-          call jancae_print1 ( text,s2,nttl )
+          call ummdp_utility_print1 ( text,s2,nttl )
           if ( npbs /= 0 ) then
             text = 'xt2'
-            call jancae_print1 ( text,xt2,nttl )
+            call ummdp_utility_print1 ( text,xt2,nttl )
             text = 'eta'
-            call jancae_print1 ( text,eta,nttl )
+            call ummdp_utility_print1 ( text,eta,nttl )
           end if
           text = 'dse/ds'
-          call jancae_print1 ( text,dseds,nttl )
+          call ummdp_utility_print1 ( text,dseds,nttl )
           text = 'd2se/ds2'
-          call jancae_print2 ( text,d2seds2,nttl,nttl )
+          call ummdp_utility_print2 ( text,d2seds2,nttl,nttl )
         end if
 c                                        ---- calc. sy and differentials
-        call jancae_isotropic ( sy,dsydp,d2sydp2,
-     &                          1,pt,prihd,ndihd )
-
+        call ummdp_isotropic ( sy,dsydp,d2sydp2,1,pt,prihd,ndihd )                        
+c
         if ( nvbs >= 5 ) then
           write (6,*) 'plastic strain p=',pt
           write (6,*) 'flow stress   sy=',sy
@@ -864,21 +824,17 @@ c                                        ---- calc. sy and differentials
 c                                                          ---- calc. g1
         g1 = se - sy - sgap
 c                                                          ---- calc. g2
-        call jancae_mv ( vv,delast,dseds,nttl,nttl )
+        call ummdp_utility_mv ( vv,delast,dseds,nttl,nttl )
         do i = 1,nttl
           g2(i) = s2(i) - stry(i) + dp*vv(i)
         end do
-        call jancae_vvs ( g2n,g2,g2,nttl )
+        call ummdp_utility_vvs ( g2n,g2,g2,nttl )
         g2n = sqrt(g2n)
 c                                                          ---- calc. g3
         if ( npbs /= 0 ) then
-          call jancae_kinematic ( vk,dvkdp,
-     &                            dvkds,dvkdx,dvkdxt,
-     &                            pt,s2,x2,xt2,
-     &                            nttl,nnrm,nshr,
-     &                            mxpbs,npbs,
-     &                            prkin,ndkin,
-     &                            pryld,ndyld )
+          call ummdp_kinematic ( vk,dvkdp,dvkds,dvkdx,dvkdxt,pt,s2,x2,
+     1                           xt2,nttl,nnrm,nshr,mxpbs,npbs,prkin,
+     2                           ndkin, pryld,ndyld )                            
           do n = 1,npbs
             do i = 1,nttl
               g3(n,i) = x2(n,i) - x1(n,i) - dp*vk(n,i)
@@ -903,7 +859,7 @@ c
           write (6,*) 'g2n (normality) =',g2n
           if ( nvbs >= 5 ) then
             text = 'g2 vector'
-            call jancae_print1 ( text,g2,nttl )
+            call ummdp_utility_print1 ( text,g2,nttl )
           end if
           if ( npbs /= 0 ) then
             if ( nvbs >= 4 ) then
@@ -914,7 +870,7 @@ c
                     uv(i) = g3(n,i)
                   end do
                   text = 'g3 vector'
-                  call jancae_print1 ( text,uv,nttl )
+                  call ummdp_utility_print1 ( text,uv,nttl )
                 end if
               end do
             end if
@@ -922,8 +878,8 @@ c
         end if
 c                      ---- calc. dependencies common for NR and Dds/Dde
 c                                                              * set [A]
-        call jancae_setunitm ( am,nnn )
-        call jancae_mm ( em,delast,d2seds2,nttl,nttl,nttl )
+        call ummdp_utility_setunitm ( am,nnn )
+        call ummdp_utility_mm ( em,delast,d2seds2,nttl,nttl,nttl )
         do i1 = 1,npbs+1
           do i2 = 1,npbs+1
             do j1 = 1,nttl
@@ -943,7 +899,7 @@ c                                                              * set [A]
                     am(k1,k2) = am(k1,k2) - dp*dvkds(ip1,j1,j2)
                   else
                     am(k1,k2) = am(k1,k2) - dp*dvkdx(ip1,ip2,j1,j2)
-     &                                    - dp*dvkdxt(ip1,j1,j2)
+     1                                    - dp*dvkdxt(ip1,j1,j2)
                   end if
                 end if
               end do
@@ -951,7 +907,7 @@ c                                                              * set [A]
           end do
         end do
 c                                                           ---- set {W}
-        call jancae_clear1( wv,nnn )
+        call ummdp_utility_clear1( wv,nnn )
         do i1 = 1, npbs+1
           do j1 = 1,nttl
             k1 = (i1-1)*nttl + j1
@@ -966,15 +922,15 @@ c                                                           ---- set {W}
           end do
         end do
 c                                                      ---- calc. [A]^-1
-        call jancae_minv ( ami,am,nnn,det )
+        call ummdp_utility_minv ( ami,am,nnn,det )
 c                                                     ---- [C]=[U][A]^-1
-        call jancae_mm ( cm,um,ami,nttl,nnn,nnn )
+        call ummdp_utility_mm ( cm,um,ami,nttl,nnn,nnn )
 c
 c
 c                                                 ---- check convergence
         if ( ( abs(g1  /sy) <= tol ) .and.
-     &       ( abs(g2n /sy) <= tol ) .and.
-     &       ( abs(g3nn/sy) <= tol )      ) then
+     1       ( abs(g2n /sy) <= tol ) .and.
+     2       ( abs(g3nn/sy) <= tol )      ) then
 c
           if ( nvbs >= 2 ) then
             write (6,*) '**** Newton-Raphson converged.',knr
@@ -999,11 +955,11 @@ c                                                           ---- set {G}
           end do
         end do
 c                              ---- ddp=(g1-{m}^T[C]{G})/(H+{m}^T[C]{W})
-        call jancae_mv ( vv,cm,gv,nttl,nnn )
-        call jancae_vvs ( top0,dseds,vv,nttl )
+        call ummdp_utility_mv ( vv,cm,gv,nttl,nnn )
+        call ummdp_utility_vvs ( top0,dseds,vv,nttl )
         top = g1 - top0
-        call jancae_mv ( vv,cm,wv,nttl,nnn )
-        call jancae_vvs ( bot0,dseds,vv,nttl )
+        call ummdp_utility_mv ( vv,cm,wv,nttl,nnn )
+        call ummdp_utility_vvs ( bot0,dseds,vv,nttl )
         bot = dsydp + bot0
         ddp = top / bot
 c                                                         ---- update dp
@@ -1021,7 +977,7 @@ c                                                         ---- update dp
         end if
 c                                                  ---- update s2 and x2
         do i1 = 1,npbs+1
-          call jancae_clear1( vv,nttl )
+          call ummdp_utility_clear1( vv,nttl )
           do j1 = 1,nttl
             k1 = (i1-1)*nttl + j1
             do k2 = 1,nnn
@@ -1036,7 +992,7 @@ c                                                  ---- update s2 and x2
             end if
           end do
         end do
-        call jancae_backsum ( npbs,xt2,x2,nttl,mxpbs )
+        call ummdp_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
 c
         if ( knr <= maxnr ) goto 100
@@ -1054,9 +1010,9 @@ c
         else
           write (6,*) 'Nest of multistage is over.',nest
           text = 'current stress (input)'
-          call jancae_print1 ( text,s1,nttl )
+          call ummdp_utility_print1 ( text,s1,nttl )
           text = 'strain inc. (input)'
-          call jancae_print1 ( text,de,nttl )
+          call ummdp_utility_print1 ( text,de,nttl )
           write (6,*) 'eq.plast.strain (input)'
           write (6,*) p
           write (6,*) 'the proposals to fix this error'
@@ -1065,7 +1021,7 @@ c
           write (6,*) ' increase ndiv    in program',ndiv
           write (6,*) ' increase maxnr   in program',maxnr
           write (6,*) ' increase tol     in program',tol
-          call jancae_exit ( 9000 )
+          call ummdp_exit ( 9000 )
         end if
 c
   200   continue
@@ -1081,14 +1037,14 @@ c                                                 ---- plast.strain inc.
 c                                               ---- print out converged
       if ( nvbs >= 4 ) then
         text = 'updated stress'
-        call jancae_print1 ( text,s2,nttl )
+        call ummdp_utility_print1 ( text,s2,nttl )
         text = 'plastic strain inc'
-        call jancae_print1 ( text,dpe,nttl )
+        call ummdp_utility_print1 ( text,dpe,nttl )
         if ( npbs /= 0 ) then
           text = 'updated part. back stess'
-          call jancae_backprint ( text,npbs,x2,nttl,mxpbs )
+          call ummdp_backprint ( text,npbs,x2,nttl,mxpbs )
           text = 'updated total back stess'
-          call jancae_print1 ( text,xt2,nttl )
+          call ummdp_utility_print1 ( text,xt2,nttl )
         end if
       end if
 c                                    ---- calc. strain inc. in thickness
@@ -1134,7 +1090,7 @@ c
 c
 c                                      ---- consistent material jacobian
 c                                                           ---- set [B]
-      call jancae_clear2( bm,nnn,nttl )
+      call ummdp_utility_clear2( bm,nnn,nttl )
       i1 = 1
       i2 = 1
       do j1 = 1,nttl
@@ -1145,14 +1101,14 @@ c                                                           ---- set [B]
         end do
       end do
 c                                                       ---- [M1]=[N][C]
-      call jancae_mm ( em1,d2seds2,cm,nttl,nnn,nttl )
+      call ummdp_utility_mm ( em1,d2seds2,cm,nttl,nnn,nttl )
 c                                               ---- {V1}={m}-dp*[M1]{W}
-      call jancae_mv ( vv ,em1,wv,nttl,nnn )
+      call ummdp_utility_mv ( vv ,em1,wv,nttl,nnn )
       do i = 1,nttl
         v1(i) = dseds(i) - dp*vv(i)
       end do
 c                                                 ---- [M2]={V1}{m}^T[C]
-      call jancae_clear2 ( em2,nttl,nnn )
+      call ummdp_utility_clear2 ( em2,nttl,nnn )
       do i = 1,nttl
         do j = 1,nnn
           do k = 1,nttl
@@ -1168,7 +1124,7 @@ c                                                  ---- S1=H+{m}^T[C]{W}
         end do
       end do
 c                                     ---- [M3]=[I]-[dp*[M1]-[M2]/S1][B]
-      call jancae_setunitm ( em3,nttl )
+      call ummdp_utility_setunitm ( em3,nttl )
       do i = 1,nttl
         do j = 1,nttl
           do k = 1,nnn
@@ -1177,7 +1133,7 @@ c                                     ---- [M3]=[I]-[dp*[M1]-[M2]/S1][B]
         end do
       end do
 c                                                     ---- [Dc]=[De][M3]
-      call jancae_mm ( ddsdde,delast,em3,nttl,nttl,nttl )
+      call ummdp_utility_mm ( ddsdde,delast,em3,nttl,nttl,nttl )
 c
 c                                                    ---- check symmetry
       nsym = 0
@@ -1196,7 +1152,7 @@ c                                                    ---- check symmetry
         if ( nvbs >= 4 ) then
           write (6,*) 'ddsdde is not symmetric.',a
           text = 'material jacobian (nonsym)'
-          call jancae_print2 ( text,ddsdde,nttl,nttl )
+          call ummdp_utility_print2 ( text,ddsdde,nttl,nttl )
         end if
 c                                                    ---- symmetrization
         if ( nsym == 1 ) then
@@ -1212,18 +1168,18 @@ c                                                    ---- symmetrization
 c
       if ( nvbs >= 4 ) then
         text = 'material jacobian (output)'
-        call jancae_print2 ( text,ddsdde,nttl,nttl )
+        call ummdp_utility_print2 ( text,ddsdde,nttl,nttl )
       end if
 c
       return
-      end
+      end subroutine ummdp_plasticity_core
 c
 c
 c
 c-----------------------------------------------------------------------
 c     set debug and print mode
 c
-      subroutine jancae_debugmode ( nvbs,nvbs0 )
+      subroutine ummdp_debugmode ( nvbs,nvbs0 )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       common /jancae1/ne,ip,lay
@@ -1247,23 +1203,23 @@ c
       nvbs = 0
       nchk = nechk * ipchk * laychk
       if ( nchk > 0 ) then
-        if ( (ne == nechk ) .and.
-     &       (ip == ipchk ) .and.
-     &       (lay == laychk ) ) then
+        if ( (ne == nechk) .and.
+     1       (ip == ipchk) .and.
+     2       (lay == laychk) ) then
           nvbs = nvbs0
         end if
       end if
 c
       return
-      end
+      end subroutine ummdp_debugmode
 c
 c
 c
 c-----------------------------------------------------------------------
 c     set elastic material jacobian marix
 c
-      subroutine jancae_setdelast ( delast,prela,ndela,
-     &                              nttl,nnrm,nshr,d33d )
+      subroutine ummdp_setdelast ( delast,prela,ndela,nttl,nnrm,nshr,
+     1                             d33d )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       dimension delast(nttl,nttl),prela(ndela),d33d(nttl)
@@ -1287,7 +1243,7 @@ c
           erigid = eg
         end if
 c                                       ---- set 6*6 matrix for 3d solid
-        call jancae_clear2( delast3d,6,6 )
+        call ummdp_utility_clear2( delast3d,6,6 )
         do i = 1,3
           do j = 1,3
             if ( i == j ) then
@@ -1308,9 +1264,9 @@ c                                       ---- set 6*6 matrix for 3d solid
         end do
 c
       case default                                              ! Error
-        write (6,*) 'elasticity code error in jancae_setelast'
+        write (6,*) 'elasticity code error in ummdp_setelast'
         write (6,*) 'ntela=',ntela
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
 c
       end select
 c
@@ -1378,18 +1334,18 @@ c                                             ---- e_t=SUM(d33d(i)*e(i))
       end if
 c
       return
-      end
+      end subroutine ummdp_setdelast
 c
 c
 c
 c-----------------------------------------------------------------------
 c     check dimensions of internal state variables
 c
-      subroutine jancae_check_nisv ( nisv,nttl,npbs )
+      subroutine ummdp_check_nisv ( nisv,nttl,npbs )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 c
-      call jancae_isvprof ( isvrsvd,isvsclr )
+      call ummdp_isvprof ( isvrsvd,isvsclr )
 c
       if ( npbs == 0 ) then
         isvtnsr = nttl
@@ -1405,20 +1361,19 @@ c
         write (6,*) 'isv : system reserved',isvrsvd
         write (6,*) 'isv : for scaler     ',isvsclr
         write (6,*) 'isv : for tensor     ',isvtnsr
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c
       return
-      end
+      end subroutine ummdp_check_nisv
 c
 c
 c
 c-----------------------------------------------------------------------
 c     set variables from state variables
 c
-      subroutine jancae_isv2pex ( isvrsvd,isvsclr,
-     &                            stv,nstv,
-     &                            p,pe,x,nttl,mxpbs,npbs )
+      subroutine ummdp_isv2pex ( isvrsvd,isvsclr,stv,nstv,p,pe,x,nttl,
+     1                           mxpbs,npbs )                           
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       dimension stv(nstv),pe(nttl),x(mxpbs,nttl)
@@ -1440,14 +1395,14 @@ c                                         ---- partial back stress comp.
       end if
 c
       return
-      end
+      end subroutine ummdp_isv2pex
 c
 c
 c
 c-----------------------------------------------------------------------
 c     sum partial back stress for total back stress
 c
-      subroutine jancae_backsum ( npbs,xt,x,nttl,mxpbs )
+      subroutine ummdp_backsum ( npbs,xt,x,nttl,mxpbs )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       dimension xt(nttl),x(mxpbs,nttl)
@@ -1464,14 +1419,14 @@ c
       end do
 c
       return
-      end
+      end subroutine ummdp_backsum
 c
 c
 c
 c-----------------------------------------------------------------------
 c     print back stress
 c
-      subroutine jancae_backprint ( text,npbs,x,nttl,mxpbs )
+      subroutine ummdp_backprint ( text,npbs,x,nttl,mxpbs )
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       dimension x(mxpbs,nttl)
@@ -1485,19 +1440,18 @@ c
           xx(j,i) = x(j,i)
         end do
       end do
-      call jancae_print2 ( text,xx,npbs,nttl )
+      call ummdp_utility_print2 ( text,xx,npbs,nttl )
 c
       return
-      end
+      end subroutine ummdp_backprint
 c
 c
 c
 c-----------------------------------------------------------------------
 c     set dimensions of material properties
 c
-      subroutine jancae_prop_dim ( prop,mxprop,propdim,
-     &                             ndela,ndyld,ndihd,ndkin,
-     &                             npbs,ndrup )
+      subroutine ummdp_prop_dim ( prop,mxprop,propdim,ndela,ndyld,ndihd,
+     1                            ndkin,npbs,ndrup )             
 c-----------------------------------------------------------------------
 c
       implicit real*8 (a-h,o-z)
@@ -1515,7 +1469,7 @@ c
 c
         case default
           write (6,*) 'error elastic property id :',nela
-          call jancae_exit ( 9000 )
+          call ummdp_exit ( 9000 )
 c
       end select
       ndela = nd + 1
@@ -1544,7 +1498,7 @@ c
 c
         case default
           write (6,*) 'error yield function id :',nyld
-          call jancae_exit ( 9000 )
+          call ummdp_exit ( 9000 )
 c
       end select
       ndyld = nd + 1
@@ -1563,7 +1517,7 @@ c
 c
         case default
           write (6,*) 'error work hardening curve id :',nihd
-          call jancae_exit ( 9000 )
+          call ummdp_exit ( 9000 )
 c
       end select
       ndihd = nd + 1
@@ -1586,7 +1540,7 @@ c
 c
         case default
           write (6,*) 'error kinematic hardening id :',nkin
-          call jancae_exit ( 9000 )
+          call ummdp_exit ( 9000 )
 c
       end select
       ndkin = nd + 1
@@ -1605,13 +1559,13 @@ c
 c
         case default
           write (6,*) 'error uncoupled rupture criterion id :',nrup
-          call jancae_exit ( 9000 )
+          call ummdp_exit ( 9000 )
 c
       end select
       ndrup = nd + 1
 c
       return
-      end
+      end subroutine ummdp_prop_dim
 c
 c
 c
@@ -1632,8 +1586,7 @@ c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE ISOTROPIC HARDENING LAW 
 c
-      subroutine jancae_isotropic ( sy,dsydp,d2sydp2,
-     &                              nreq,p,prihd,ndihd )
+      subroutine ummdp_isotropic ( sy,dsydp,d2sydp2,nreq,p,prihd,ndihd )              
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1736,11 +1689,11 @@ c
 c
       case default
         write (6,*) 'hardening type error',ntihd
-        call jancae_exit (9000)
+        call ummdp_exit (9000)
       end select
 c
       return
-      end subroutine jancae_isotropic
+      end subroutine ummdp_isotropic
 c
 c
 c
@@ -1761,13 +1714,9 @@ c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kinematic ( vk,dvkdp,
-     &                              dvkds,dvkdx,dvkdxt,
-     &                              p,s,x,xt,
-     &                              nttl,nnrm,nshr,
-     &                              mxpbs,npbs,
-     &                              prkin,ndkin,
-     &                              pryld,ndyld )
+      subroutine ummdp_kinematic ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,x,xt,
+     1                             nttl,nnrm,nshr,mxpbs,npbs,prkin,
+     2                             ndkin,pryld,ndyld )
 c
 c-----------------------------------------------------------------------
       implicit none
@@ -1805,69 +1754,53 @@ c
         return
 c
       case ( 1 )                                                ! Prager
-        call jancae_kin_prager ( vk,dvkdp,
-     &                           dvkds,dvkdx,dvkdxt,
-     &                           p,s,x,xt,
-     &                           nttl,nnrm,nshr,
-     &                           mxpbs,npbs,
-     &                           prkin,ndkin,pryld,ndyld )
+        call ummdp_kinematic_prager ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,x,
+     1                                xt,nttl,nnrm,nshr,mxpbs,npbs,
+     2                                prkin,ndkin,pryld,ndyld )
 c
       case ( 2 )                                               ! Ziegler
-        call jancae_kin_ziegler ( vk,dvkdp,
-     &                            dvkds,dvkdx,dvkdxt,
-     &                            p,s,x,xt,
-     &                            nttl,nnrm,nshr,
-     &                            mxpbs,npbs,
-     &                            prkin,ndkin,pryld,ndyld )
+        call ummdp_kinematic_ziegler ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,
+     1                                 x,xt,nttl,nnrm,nshr,mxpbs,npbs,
+     2                                 prkin,ndkin,pryld,ndyld )
 c
       case ( 3 )                          ! Armstrong & Frederick (1966)
-        call jancae_kin_armstrong ( vk,dvkdp,
-     &                              dvkds,dvkdx,dvkdxt,
-     &                              p,s,x,xt,
-     &                              nttl,nnrm,nshr,
-     &                              mxpbs,npbs,
-     &                              prkin,ndkin,pryld,ndyld )
+        call ummdp_kinematic_armstrong ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,
+     1                                   s,x,xt,nttl,nnrm,nshr,mxpbs,
+     2                                   npbs,prkin,ndkin,pryld,ndyld )
 c
       case ( 4 )                                       ! Chaboche (1979)
-        call jancae_kin_chaboche ( vk,dvkdp,
-     &                             dvkds,dvkdx,dvkdxt,
-     &                             p,s,x,xt,
-     &                             nttl,nnrm,nshr,
-     &                             mxpbs,npbs,
-     &                             prkin,ndkin,pryld,ndyld )
+        call ummdp_kinematic_chaboche ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,
+     1                                  s,x,xt, nttl,nnrm,nshr,mxpbs,
+     2                                  npbs,prkin,ndkin,pryld,ndyld )
 c
       case ( 5 )                             ! Chaboche (1979) - Ziegler
-        call jancae_kin_chaboche_ziegler ( vk,dvkdp,
-     &                                     dvkds,dvkdx,dvkdxt,
-     &                                     p,s,x,xt,
-     &                                     nttl,nnrm,nshr,
-     &                                     mxpbs,npbs,
-     &                                     prkin,ndkin,pryld,ndyld )
+        call ummdp_kinematic_chaboche_ziegler ( vk,dvkdp,dvkds,dvkdx,
+     1                                          dvkdxt,p,s,x,xt,nttl,
+     2                                          nnrm,nshr,mxpbs,npbs,
+     3                                          prkin,ndkin,pryld,
+     4                                          ndyld )
 c
       case ( 6 )                                        ! Yoshida-Uemori
-        call jancae_kin_yoshida_uemori ( vk,dvkdp,
-     &                                   dvkds,dvkdx,dvkdxt,
-     &                                   p,s,x,xt,
-     &                                   nttl,nnrm,nshr,
-     &                                   mxpbs,npbs,
-     &                                   prkin,ndkin,pryld,ndyld )
+        call ummdp_kinematic_yoshida_uemori ( vk,dvkdp,dvkds,dvkdx,
+     1                                        dvkdxt,p,s,x,xt,nttl,nnrm,
+     2                                        nshr,mxpbs,npbs,prkin,
+     3                                        ndkin,pryld,ndyld )
 c
       case default
         write (6,*) 'still not be supported. ntkin=',ntkin
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end select
 c
       return
-      end subroutine jancae_kinematic
+      end subroutine ummdp_kinematic
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE 1ST AND 2ND DERIVATIVES FOR KINEMATIC HARDENING LAWS
 c
-      subroutine jancae_dseds_kin ( eta,seta,dseds,d2seds2,
-     &                              nttl,nnrm,nshr,
-     &                              pryld,ndyld )
+      subroutine ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,nttl,
+     1                                   nnrm,nshr,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1881,9 +1814,8 @@ c
 c-----------------------------------------------------------------------
 c
 c                    ---- dseds and d2seds2 for plastic strain increment
-      call jancae_yield  ( seta,dseds,d2seds2,2,
-     &                     eta,nttl,nnrm,nshr,
-     &                     pryld,ndyld )
+      call ummdp_yield ( seta,dseds,d2seds2,2,eta,nttl,nnrm,nshr,
+     1                   pryld,ndyld )
 c
 c                   ---- engineering shear strain -> tensor shear strain
       do i = nnrm+1,nttl
@@ -1913,20 +1845,16 @@ c                                          ---- for plane stress problem
       end if
 c
       return
-      end subroutine jancae_dseds_kin
+      end subroutine ummdp_kinematic_dseds
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     PRAGER KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kin_prager ( vk,dvkdp,
-     &                               dvkds,dvkdx,dvkdxt,
-     &                               p,s,x,xt,
-     &                               nttl,nnrm,nshr,
-     &                               mxpbs,npbs,
-     &                               prkin,ndkin,
-     &                               pryld,ndyld )
+      subroutine ummdp_kinematic_prager ( vk,dvkdp,dvkds,dvkdx,dvkdxt,
+     1                                    p,s,x,xt,nttl,nnrm,nshr,mxpbs,
+     2                                    npbs,prkin,ndkin,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1949,9 +1877,8 @@ c
         eta(i) = s(i) - xt(i)
       end do
 c
-      call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
-     &                        nttl,nnrm,nshr,
-     &                        pryld,ndyld )
+      call ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,nttl,nnrm,
+     1                             nshr,pryld,ndyld )
 c
       n = 1
 c
@@ -1973,20 +1900,17 @@ c
       end do
 c
       return
-      end subroutine jancae_kin_prager
+      end subroutine ummdp_kinematic_prager
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     ZIEGLER KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kin_ziegler ( vk,dvkdp,
-     &                                dvkds,dvkdx,dvkdxt,
-     &                                p,s,x,xt,
-     &                                nttl,nnrm,nshr,
-     &                                mxpbs,npbs,
-     &                                prkin,ndkin,
-     &                                pryld,ndyld )
+      subroutine ummdp_kinematic_ziegler ( vk,dvkdp,dvkds,dvkdx,dvkdxt,
+     1                                     p,s,x,xt,nttl,nnrm,nshr,
+     2                                     mxpbs,npbs,prkin,ndkin,
+     3                                     pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2020,7 +1944,7 @@ c
         dvkdp(n,i) = dcdp * eta(i)
       end do
 c
-      call jancae_setunitm ( am,nttl )
+      call ummdp_utility_setunitm ( am,nttl )
       do i = 1,nttl
         do j = 1,nttl
           dvkds(n,i,j) = c * am(i,j)
@@ -2030,21 +1954,17 @@ c
       end do
 c
       return
-      end subroutine jancae_kin_ziegler
+      end subroutine ummdp_kinematic_ziegler
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     ARMSTRONG-FREDERICK (1966) KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kin_armstrong ( vk,dvkdp,
-     &                                  dvkds,dvkdx,dvkdxt,
-     &                                  p,s,x,xt,
-     &                                  nttl,nnrm,nshr,
-     &                                  mxpbs,npbs,
-     &                                  prkin,ndkin,
-     &                                  pryld,ndyld )
-c
+      subroutine ummdp_kinematic_armstrong ( vk,dvkdp,dvkds,dvkdx,
+     1                                       dvkdxt,p,s,x,xt,nttl,nnrm,
+     2                                       nshr,mxpbs,npbs,prkin,
+     3                                       ndkin,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2069,9 +1989,8 @@ c
         eta(i) = s(i) - xt(i)
       end do
 c
-      call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
-     &                        nttl,nnrm,nshr,
-     &                        pryld,ndyld )
+      call ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,nttl,nnrm,
+     1                             nshr,pryld,ndyld )
 c
       n = 1
       do i = 1,nttl
@@ -2084,7 +2003,7 @@ c
         dvkdp(n,i) = dcdp*dseds(i) - dgdp*xt(i)
       end do
 c
-      call jancae_setunitm ( am,nttl )
+      call ummdp_utility_setunitm ( am,nttl )
       do i = 1,nttl
         do j = 1,nttl
           dvkds(n,i,j) = c * d2seds2(i,j)
@@ -2094,20 +2013,16 @@ c
       end do
 c
       return
-      end subroutine jancae_kin_armstrong
+      end subroutine ummdp_kinematic_armstrong
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CHABOCHE (1979) KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kin_chaboche ( vk,dvkdp,
-     &                                 dvkds,dvkdx,dvkdxt,
-     &                                 p,s,x,xt,
-     &                                 nttl,nnrm,nshr,
-     &                                 mxpbs,npbs,
-     &                                 prkin,ndkin,
-     &                                 pryld,ndyld )
-c
+      subroutine ummdp_kinematic_chaboche ( vk,dvkdp,dvkds,dvkdx,dvkdxt,
+     1                                      p,s,x,xt,nttl,nnrm,nshr,
+     2                                      mxpbs,npbs,prkin,ndkin,
+     3                                      pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2129,11 +2044,10 @@ c
         eta(i) = s(i) - xt(i)
       end do
 c
-      call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
-     &                        nttl,nnrm,nshr,
-     &                        pryld,ndyld )
+      call ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,nttl,nnrm,
+     1                             nshr,pryld,ndyld )
 c
-      call jancae_setunitm ( am,nttl )
+      call ummdp_utility_setunitm ( am,nttl )
       do n = 1,npbs
         n0 = 1 + (n-1)*2
         c = prkin(1+n0+1)/3.0d0*2.0d0
@@ -2156,21 +2070,18 @@ c
       end do
 c
       return
-      end subroutine jancae_kin_chaboche
+      end subroutine ummdp_kinematic_chaboche
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CHABOCHE (1979) - ZIEGLER KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kin_chaboche_ziegler ( vk,dvkdp,
-     &                                         dvkds,dvkdx,dvkdxt,
-     &                                         p,s,x,xt,
-     &                                         nttl,nnrm,nshr,
-     &                                         mxpbs,npbs,
-     &                                         prkin,ndkin,
-     &                                         pryld,ndyld )
-c
+      subroutine ummdp_kinematic_chaboche_ziegler ( vk,dvkdp,dvkds,
+     1                                              dvkdx,dvkdxt,p,s,x,
+     2                                              xt,nttl,nnrm,nshr,
+     3                                              mxpbs,npbs,prkin,
+     4                                              ndkin,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2192,11 +2103,10 @@ c
         eta(i) = s(i) - xt(i)
       end do
 c
-      call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
-     &                        nttl,nnrm,nshr,
-     &                        pryld,ndyld )
+      call ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,nttl,nnrm,
+     1                             nshr,pryld,ndyld )
 c
-      call jancae_setunitm ( am,nttl )
+      call ummdp_utility_setunitm ( am,nttl )
       do n = 1,npbs
         n0 = 1 + (n-1)*2
         c = prkin(1+n0+1)
@@ -2219,21 +2129,18 @@ c
       end do
 c
       return
-      end subroutine jancae_kin_chaboche_ziegler
+      end subroutine ummdp_kinematic_chaboche_ziegler
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     YOSHIDA-UEMORI KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kin_yoshida_uemori ( vk,dvkdp,
-     &                                       dvkds,dvkdx,dvkdxt,
-     &                                       p,s,x,xt,
-     &                                       nttl,nnrm,nshr,
-     &                                       mxpbs,npbs,
-     &                                       prkin,ndkin,
-     &                                       pryld,ndyld )
-c
+      subroutine ummdp_kinematic_yoshida_uemori ( vk,dvkdp,dvkds,dvkdx,
+     1                                            dvkdxt,p,s,x,xt,nttl,
+     2                                            nnrm,nshr,mxpbs,npbs,
+     3                                            prkin,ndkin,pryld,
+     4                                            ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2261,10 +2168,9 @@ c
         eta(i) = s(i) - xt(i)
       end do
 c
-      call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
-     &                        nttl,nnrm,nshr,
-     &                        pryld,ndyld )
-      call jancae_setunitm ( am,nttl )
+      call ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,,nnrm,nshr,
+     1                             nttl,pryld,ndyld )
+      call ummdp_utility_setunitm ( am,nttl )
 c
       n = 1
       do i = 1,nttl
@@ -2278,8 +2184,8 @@ c
           dvkds(n,i,j) = pc*pa/py*am(i,j)
           dvkdxt(n,i,j) = -pc*pa/py*am(i,j)
           dvkdx(n,n,i,j) = pc*sqrt(pa)*
-     &                    ( -am(i,j)/sqrt(seta)
-     &                       + x(n,i)*dseds(j)/(2.0d0*seta**(1.5d0)) )
+     1                    ( -am(i,j)/sqrt(seta)
+     2                       + x(n,i)*dseds(j)/(2.0d0*seta**(1.5d0)) )
         end do
       end do
 c
@@ -2299,7 +2205,7 @@ c
       end do
 c
       return
-      end subroutine jancae_kin_yoshida_uemori
+      end subroutine ummdp_kinematic_yoshida_uemori
 c
 c
 c************************************************************************
@@ -2308,31 +2214,31 @@ c************************************************************************
 *
 ************************************************************************
 c
-c     jancae_print_elastic ( prela,ndela )
+c     ummdp_print_elastic ( prela,ndela )
 c       print elasticity parameters
 c
-c     jancae_print_yield ( pryld,ndyld )
+c     ummdp_print_yield ( pryld,ndyld )
 c       print yield criteria parameters
 c
-c     jancae_print_isotropci ( prihd,ndihd )
+c     ummdp_print_isotropci ( prihd,ndihd )
 c       print isotropic hardening law parameters
 c
-c     jancae_print_kinematic ( prkin,ndkin,npbs )
+c     ummdp_print_kinematic ( prkin,ndkin,npbs )
 c       print kinematic hardening law parameters
 c
-c     jancae_print_rupture ( prrup,ndrup )
+c     ummdp_print_rupture ( prrup,ndrup )
 c       print uncoupled rupture criterion parameters
 c     
-c     jancae_print_info
+c     ummdp_print_info
 c       print informations for debug (info)
 c
-c     jancae_print_inout
+c     ummdp_print_inout
 c       print informations for debug (input/output)
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT ELASTICITY PARAMETERS
 c
-      subroutine jancae_print_elastic ( prela,ndela )
+      subroutine ummdp_print_elastic ( prela,ndela )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2359,14 +2265,14 @@ c
       end select
 c
       return
-      end subroutine jancae_print_elastic
+      end subroutine ummdp_print_elastic
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT YIELD FUNCTION PARAMETERS
 c
-      subroutine jancae_print_yield ( pryld,ndyld )
+      subroutine ummdp_print_yield ( pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2538,14 +2444,14 @@ c
       end select
 c
       return
-      end subroutine jancae_print_yield
+      end subroutine ummdp_print_yield
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT ISOTROPIC HARDENING LAW PARAMETERS
 c
-      subroutine jancae_print_isotropic ( prihd,ndihd )
+      subroutine ummdp_print_isotropic ( prihd,ndihd )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2606,14 +2512,14 @@ c
       end select
 c
       return
-      end subroutine jancae_print_isotropic
+      end subroutine ummdp_print_isotropic
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT KINEMATIC HARDENING LAW PARAMETERS
 c
-      subroutine jancae_print_kinematic ( prkin,ndkin,npbs )
+      subroutine ummdp_print_kinematic ( prkin,ndkin,npbs )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2676,14 +2582,14 @@ c
       end select
 c
       return
-      end subroutine jancae_print_kinematic
+      end subroutine ummdp_print_kinematic
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT UNCOUPLED RUPTURE CRITERION PARAMETERS
 c
-      subroutine jancae_print_rupture ( prrup,ndrup )
+      subroutine ummdp_print_rupture ( prrup,ndrup )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2735,14 +2641,14 @@ c
       end select
 c
       return
-      end subroutine jancae_print_rupture
+      end subroutine ummdp_print_rupture
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT INFORMATIONS FOR DEBUG (INFO)
 c
-      subroutine jancae_print_info ( inc,nnrm,nshr )
+      subroutine ummdp_print_info ( inc,nnrm,nshr )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2782,18 +2688,18 @@ c
       end if
       if ( nerr /= 0 ) then
         write (6,*) 'no supported element type',nnrm,nshr
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c
       return
-      end subroutine jancae_print_info
+      end subroutine ummdp_print_info
 c
 c
 c
 ************************************************************************
 c     PRINT INFORMATIONS FOR DEBUG (INPUT/OUTPUT)
 c
-      subroutine jancae_print_inout ( io,s,de,d,nttl,stv,nstv )
+      subroutine ummdp_print_inout ( io,s,de,d,nttl,stv,nstv )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -2808,25 +2714,25 @@ c
       else
         text = 'updated stresses'
       end if
-      call jancae_print1 ( text,s,nttl )
+      call ummdp_utility_print1 ( text,s,nttl )
 c
       if ( io == 0 ) then
         text = 'initial internal state var.'
       else
         text = 'updated internal state var.'
       end if
-      call jancae_print1 ( text,stv,nstv )
+      call ummdp_utility_print1 ( text,stv,nstv )
 c
       if ( io == 0 ) then
         text = 'driving strain increment'
-        call jancae_print1 ( text,de,nttl )
+        call ummdp_utility_print1 ( text,de,nttl )
       else
         text = 'tangent modulus matrix'
-        call jancae_print2 ( text,d,nttl,nttl )
+        call ummdp_utility_print2 ( text,d,nttl,nttl )
       end if
 c
       return
-      end subroutine jancae_print_inout
+      end subroutine ummdp_print_inout
 c
 c
 c************************************************************************
@@ -2845,11 +2751,11 @@ c      5 : Brozzo
 c      6 : Forming Limit Diagram (only plane-stress)
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c     calculated rupture criteria
+c     CALCULATE UNCOUPLED RUPTURE CRITERIA
 c
-      subroutine jancae_rupture ( ntens,sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                            jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                            nt,ndrup,prrup )
+      subroutine ummdp_rupture ( ntens,sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                           jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                           nt,ndrup,prrup )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -2873,38 +2779,38 @@ c
         return
 c
       case ( 1 )                             ! Equivalent Plastic Strain
-        call jancae_rup_eqstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                             nt,lim,wlimnorm )
+        call ummdp_rupture_eqvstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                 nt,lim,wlimnorm )
 c
       case ( 2 )                                   ! Cockroft and Latham
-        call jancae_rup_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                             jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                             nt,lim,wlimnorm )
+        call ummdp_rupture_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                                nt,lim,wlimnorm )
 c
       case ( 3 )                                       ! Rice and Tracey
-        call jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                         jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                         nt,lim,wlimnorm )
+        call ummdp_rupture_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                            jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                            nt,lim,wlimnorm )
 c
       case ( 4 )                                                 ! Ayada
-        call jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                          jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                          nt,lim,wlimnorm )
+        call ummdp_rupture_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                             jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                             nt,lim,wlimnorm )
 c
       case ( 5 )                                                ! Brozzo
-        call jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                           jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                           nt,lim,wlimnorm )
+        call ummdp_rupture_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                              jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                              nt,lim,wlimnorm )
 c
       case ( 6 )                                 ! Forming Limit Diagram
-        call jancae_rup_fld ( ntens,uvar2,uvar1,nuvarm,
-     &                        jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                        nt,lim,wlimnorm )
+        call ummdp_rupture_fld ( ntens,uvar2,uvar1,nuvarm,
+     1                           jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                           nt,lim,wlimnorm )
 c
       case default
-        write (6,*) 'error in jancae_rupture'
+        write (6,*) 'error in ummdp_rupture'
         write (6,*) 'ntrup error :',ntrup
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end select
 c
 c                    ---- terminate analysis if rupture limit is reached
@@ -2913,7 +2819,7 @@ c                    ---- terminate analysis if rupture limit is reached
         if ( wlimnorm >= 1.0d0 ) then 
           write (6,*) 'analysis terminated by rupture criterion'
           write (6,*) 'stop in uvrm.'
-          call jancae_exit( 10000 )
+          call ummdp_exit( 10000 )
         end if
       end if
 c
@@ -2925,8 +2831,8 @@ c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     Equivalent Plastic Strain
 c
-      subroutine jancae_rup_eqstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                                 nt,lim,wlimnorm )
+      subroutine ummdp_rupture_eqvstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                     nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -2951,16 +2857,16 @@ c                                                       ---- update uvar
       uvar2(2+nt+2) = peeq / lim
 c
       return
-      end
+      end subroutine ummdp_rupture_eqvstrain
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     Cockroft and Latham
 c
-      subroutine jancae_rup_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                                 jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                                 nt,lim,wlimnorm )
+      subroutine ummdp_rupture_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                    jrcd,jmac,jmatyp,matlayo,
+     2                                    laccfla,nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -2996,11 +2902,11 @@ c                                     ---- get sdv and uvar after update
 c
 c                                 ---- get principal stress after update
       call getvrm ('SP',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                  matlayo,laccfla )
+     1                  matlayo,laccfla )
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sp'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       maxsp2 = array(3)
 c
@@ -3019,16 +2925,16 @@ c                                                       ---- update uvar
       uvar2(2+nt+4) = wlim2/lim
 c
       return
-      end
+      end subroutine ummdp_rupture_cockroft
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     Rice and Tracey
 c
-      subroutine jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                             jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                             nt,lim,wlimnorm )
+      subroutine ummdp_rupture_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                                nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -3064,11 +2970,11 @@ c                                     ---- get sdv and uvar after update
 c
 c                               ---- get hydrostatic stress after update
       call getvrm ( 'SINV',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                     matlayo,laccfla )
+     1                     matlayo,laccfla )
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       shyd2 = -array(3)
 c
@@ -3087,16 +2993,16 @@ c                                                       ---- update uvar
       uvar2(2+nt+4) = wlim2/lim
 c
       return
-      end
+      end subroutine ummdp_rupture_rice
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     Ayada
 c
-      subroutine jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                              jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                              nt,lim,wlimnorm )
+      subroutine ummdp_rupture_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                 jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                                 nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -3132,11 +3038,11 @@ c                                     ---- get sdv and uvar after update
 c
 c                               ---- get hydrostatic stress after update
       call getvrm ( 'SINV',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                     matlayo,laccfla )
+     1                     matlayo,laccfla )
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       shyd2 = -array(3)
 c
@@ -3155,16 +3061,16 @@ c                                                       ---- update uvar
       uvar2(2+nt+4) = wlim2/lim
 c
       return
-      end
+      end subroutine ummdp_rupture_ayada
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     Brozzo
 c
-      subroutine jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                               jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                               nt,lim,wlimnorm )
+      subroutine ummdp_rupture_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                  jrcd,jmac,jmatyp,matlayo,
+     2                                  laccfla,nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -3199,21 +3105,21 @@ c                                              ---- get sdv after update
 c
 c                                 ---- get principal stress after update
       call getvrm ('SP',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                  matlayo,laccfla )
+     1                  matlayo,laccfla )
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sp'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       maxsp2 = array(3)
 c
 c                               ---- get hydrostatic stress after update
       call getvrm ('SINV',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                    matlayo,laccfla )
+     1                    matlayo,laccfla )
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       shyd2 = -array(3)
 c
@@ -3237,7 +3143,7 @@ c                                                       ---- update uvar
       uvar2(2+nt+5) = wlim2/lim
 c
       return
-      end
+      end subroutine ummdp_rupture_brozzo
 c
 c
 c
@@ -3245,9 +3151,9 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     Forming Limit Diagram (FLD)
 c       . only plane-stress formulation
 c
-      subroutine jancae_rup_fld ( ntens,uvar2,uvar1,nuvarm,
-     &                            jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                            nt,lim,wlimnorm )
+      subroutine ummdp_rupture_fld ( ntens,uvar2,uvar1,nuvarm,
+     1                               jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                               nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -3279,11 +3185,11 @@ c
 c                                 ---- get principal strain after update
       if ( ntens == 3 ) then
         call getvrm ( 'LEP',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                      matlayo,laccfla )
+     1                      matlayo,laccfla )
         if ( jrcd /= 0 ) then
           write (6,*) 'request error in uvarm for lep'
           write (6,*) 'stop in uvrm.'
-          call jancae_exit ( 9000 )
+          call ummdp_exit ( 9000 )
         end if
         e2 = array(1)
         e1 = array(2)
@@ -3291,16 +3197,16 @@ c                               ---- get logarithmic strain after update
       else
         write (6,*) 'request error in uvarm for fld, only plane-stress'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
 !         call getvrm ( 'LE',array,jarray,flgray,jrcd,jmac,jmatyp,
 !      &                     matlayo,laccfla )
 !         if ( jrcd /= 0 ) then
 !           write (6,*) 'request error in uvarm for le'
 !           write (6,*) 'stop in uvrm.'
-!           call jancae_exit ( 9000 )
+!           call ummdp_exit ( 9000 )
 !         end if
 ! c                                            ---- assemble strain tensor
-!         call jancae_clear2 ( le,3,3 )
+!         call ummdp_clear2 ( le,3,3 )
 !         le(1,1) = array(1)
 !         le(2,2) = array(2)
 !         le(3,3) = array(3)
@@ -3311,9 +3217,9 @@ c                               ---- get logarithmic strain after update
 !         le(3,1) = le(1,3)
 !         le(3,2) = le(2,3)
 ! c                           ---- strain tensor eigen- values and vectors
-!         call jancae_clear1 ( es,3 )
-!         call jancae_clear2 ( ev,3,3 )
-!         call jancae_eigen_sym3 ( es,ev,le )
+!         call ummdp_clear1 ( es,3 )
+!         call ummdp_clear2 ( ev,3,3 )
+!         call ummdp_eigen_sym3 ( es,ev,le )
 !         e2 = es(2)
 !         e1 = es(1)
       end if
@@ -3324,23 +3230,23 @@ c                                     ---- activate fld table collection
       if ( jerror /= 0 ) then
         write (6,*) 'request error in uvarm for table collection fld'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c	                     		                        ---- get fld E1 values
       call getpropertytable ( 'FLD1',dum1,dum1,dum1,nfld,fld1,dum2,0,
-     &                               jerror )
+     1                               jerror )
       if ( jerror /= 0 ) then
         write (6,*) 'request error in uvarm for property table fld1'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c                                                 ---- get fld E2 values
       call getpropertytable ( 'FLD2',dum1,dum1,dum1,nfld,fld2,dum2,0,
-     &                               jerror )
+     1                               jerror )
       if ( jerror /= 0 ) then
         write (6,*) 'request error in uvarm for property table fld2'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c
 c                         ---- linear extra/inter -polation of E1 on FLD
@@ -3348,12 +3254,12 @@ c                         ---- linear extra/inter -polation of E1 on FLD
 c                              --- linear extrapolation on the left side
       if ( e2 < fld2(1) ) then
         e1fld = fld1(2) + ( (e2-fld2(2)) / (fld2(1)-fld2(2)) )
-     &          * ( fld1(1) - fld1(2) )
+     1          * ( fld1(1) - fld1(2) )
 c
 c                             --- linear extrapolation on the right side
       else if ( e2 > fld2(n) ) then
         e1fld = fld1(n-1) + ( (e2-fld2(n-1)) / (fld2(n)-fld2(n-1)) ) 
-     &          * ( fld1(n) - fld1(n-1) )
+     1          * ( fld1(n) - fld1(n-1) )
 c
 c                                  --- linear interpolation inside range
       else
@@ -3364,7 +3270,7 @@ c                                  --- linear interpolation inside range
           end if
         end do
         e1fld = fld1(k) + ( fld1(k+1) - fld1(k) )
-     &          * ( (e2-fld2(k)) / (fld2(k+1)-fld2(k)) )
+     1          * ( (e2-fld2(k)) / (fld2(k+1)-fld2(k)) )
       end if
 c
 c                                                 ---- rupture criterion
@@ -3378,7 +3284,7 @@ c                                                       ---- update uvar
       uvar2(2+nt+5) = wlim/lim
 c
       return
-      end
+      end subroutine ummdp_rupture_fld
 c
 c
 c************************************************************************
@@ -3387,60 +3293,55 @@ c************************************************************************
 *
 ************************************************************************
 c
-c     jancae_clear1 ( a,n )
+c     ummdp_utility_clear1 ( a,n )
 c       clear 1st order vector
 c
-c     jancae_clear2 ( a,n,m )
+c     ummdp_utility_clear2 ( a,n,m )
 c       clear 2nd order matrix
 c
-c     jancae_clear3 ( a,n,m,l )
+c     ummdp_utility_clear3 ( a,n,m,l )
 c       clear 3rd order tensor
 c
-c     jancae_setunitm ( a,n )
+c     ummdp_utility_setunitm ( a,n )
 c       set unit 2nd order matrix
 c
-c     jancae_print1 ( text,a,n )
+c     ummdp_utility_print1 ( text,a,n )
 c       print vector with text
 c
-c     jancae_print2 ( text,a,n,m )
+c     ummdp_utility_print2 ( text,a,n,m )
 c       print matrix with text
 c
-c     jancae_mv (v,a,u,nv,nu)
+c     ummdp_utility_mv (v,a,u,nv,nu)
 c       mutiply matrix and vector
 c
-c     jancae_mm (a,b,c,na1,na2,nbc)
+c     ummdp_utility_mm (a,b,c,na1,na2,nbc)
 c       mutiply matrix and matrix
 c
-c     jancae_vvs ( s,u,v,n )
+c     ummdp_utility_vvs ( s,u,v,n )
 c       calculate scalar product of vectors 
 c
-c     jancae_minv ( b,a,n,d )
+c     ummdp_utility_minv ( b,a,n,d )
 c       calculate inverse matrix using lu decomposition
 c
-c         jancae_ludcmp( a,n,indx,d )
+c         ummdp_utility_ludcmp( a,n,indx,d )
 c           lu decomposition
-c         jancae_lubksb(a,n,indx,b)
+c         ummdp_utility_lubksb(a,n,indx,b)
 c           lu backward substitution
-c         jancae_minv2 ( b,a,deta )
+c         ummdp_utility_minv2 ( b,a,deta )
 c           calculate inverse matrix 2x2
-c         jancae_minv3 ( b,a,deta )
+c         ummdp_utility_minv3 ( b,a,deta )
 c           calculate inverse matrix 3x3
 c
-c     jancae_eigen_sym3 ( es,ev,a )
+c     ummdp_utility_eigen_sym3 ( es,ev,a )
 c       calculate eigenvalues and eigenvectors by jacobi method
 c
-c     jancae_printinfo
-c       print informations for debug (info)
-c
-c     jancae_printinout
-c       print informations for debug (input/output)
-c
-c
+c     ummdp_utility_file_exist ( flname )
+c       checking existence of files
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CLEAR 1st ORDER VECTOR A(N)
 c
-      subroutine jancae_clear1 ( a,n )
+      subroutine ummdp_utility_clear1 ( a,n )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3455,14 +3356,14 @@ c
       end do
 c
       return
-      end subroutine jancae_clear1
+      end subroutine ummdp_utility_clear1
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CLEAR 2ND ORDER MATRIX
 c
-      subroutine jancae_clear2 ( a,n,m )
+      subroutine ummdp_utility_clear2 ( a,n,m )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3479,14 +3380,14 @@ c
       end do
 c
       return
-      end subroutine jancae_clear2
+      end subroutine ummdp_utility_clear2
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CLEAR 3RD ORDER MATRIX
 c
-      subroutine jancae_clear3 ( a,n,m,l )
+      subroutine ummdp_utility_clear3 ( a,n,m,l )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3505,14 +3406,14 @@ c
       end do
 c
       return
-      end subroutine jancae_clear3
+      end subroutine ummdp_utility_clear3
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     SET UNIT 2ND ORDER MATRIX
 c
-      subroutine jancae_setunitm ( a,n )
+      subroutine ummdp_utility_setunitm ( a,n )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3522,20 +3423,20 @@ c
       integer i
 c-----------------------------------------------------------------------
 c
-      call jancae_clear2 ( a,n,n )
+      call ummdp_utility_clear2 ( a,n,n )
       do i = 1,n
         a(i,i) = 1.0d0
       end do
 c
       return
-      end subroutine jancae_setunitm
+      end subroutine ummdp_utility_setunitm
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT VECTOR WITH TEXT
 c
-      subroutine jancae_print1 ( text,a,n )
+      subroutine ummdp_utility_print1 ( text,a,n )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3551,14 +3452,14 @@ c
  9000 format (6e16.8)
 c
       return
-      end subroutine jancae_print1
+      end subroutine ummdp_utility_print1
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT MATRIX WITH TEXT
 c
-      subroutine jancae_print2 ( text,a,n,m )
+      subroutine ummdp_utility_print2 ( text,a,n,m )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3575,14 +3476,14 @@ c-----------------------------------------------------------------------
  9000 format (6e16.8)
 c
       return
-      end subroutine jancae_print2
+      end subroutine ummdp_utility_print2
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     MULTIPLY MATRIX AND VECTOR
 c
-      subroutine jancae_mv ( v,a,u,nv,nu )
+      subroutine ummdp_utility_mv ( v,a,u,nv,nu )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3593,7 +3494,7 @@ c
       integer i,j
 c-----------------------------------------------------------------------
 c
-      call jancae_clear1 ( v,nv )
+      call ummdp_utility_clear1 ( v,nv )
       do i = 1,nv
         do j = 1,nu
           v(i) = v(i) + a(i,j)*u(j)
@@ -3601,14 +3502,14 @@ c
       end do
 c
       return
-      end subroutine jancae_mv
+      end subroutine ummdp_utility_mv
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     MULTIPLY MATRIX AND MATRIX
 c     
-      subroutine jancae_mm ( a,b,c,na1,na2,nbc )
+      subroutine ummdp_utility_mm ( a,b,c,na1,na2,nbc )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3618,7 +3519,7 @@ c
       integer i,j,k
 c-----------------------------------------------------------------------
 c
-      call jancae_clear2 ( a,na1,na2 )
+      call ummdp_utility_clear2 ( a,na1,na2 )
       do i = 1,na1
         do j = 1,na2
           do k = 1,nbc
@@ -3628,14 +3529,14 @@ c
       end do
 c
       return
-      end subroutine jancae_mm
+      end subroutine ummdp_utility_mm
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE SCALAR PRODUCT OF VECTORS
 c
-      subroutine jancae_vvs ( s,u,v,n )
+      subroutine ummdp_utility_vvs ( s,u,v,n )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3652,7 +3553,7 @@ c
       end do
 c
       return
-      end subroutine jancae_vvs
+      end subroutine ummdp_utility_vvs
 c
 c
 c
@@ -3661,7 +3562,7 @@ c     CALCULATE INVERSE MATRIX USING LU DECOMPOSITION
 c
 c     Ref.: http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
 c
-      subroutine jancae_minv ( b,a,n,d )
+      subroutine ummdp_utility_minv ( b,a,n,d )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3698,25 +3599,25 @@ c
       end do
 c
       if ( n == 2 ) then
-        call jancae_minv2 ( b,a,d,eps )
+        call ummdp_utility_minv2 ( b,a,d,eps )
         goto 100
       else if ( n == 3 ) then
-        call jancae_minv3 ( b,a,d,eps )
+        call ummdp_utility_minv3 ( b,a,d,eps )
         goto 100
       end if
 c
-      call jancae_ludcmp ( a,n,indx,d,eps )
+      call ummdp_utility_ludcmp ( a,n,indx,d,eps )
 c                                                 ---- check determinant
       if ( abs(d) <= eps ) then
          write (6,*) 'determinant det[a] error',d
          write (6,*) 'stop in minv'
-         call jancae_exit ( 9000 ) 
+         call ummdp_exit ( 9000 ) 
       end if
 c                                                            ---- B=A^-1
       do j = 1,n
-        call jancae_clear1 ( y,n )
+        call ummdp_utility_clear1 ( y,n )
         y(j) = 1.0d0
-        call jancae_lubksb ( a,n,indx,y,eps )
+        call ummdp_utility_lubksb ( a,n,indx,y,eps )
         do i = 1,n
           b(i,j) = y(i)
         end do
@@ -3734,10 +3635,10 @@ c                                                             ---- check
       if ( check ) then
         write (6,*) 'check inverse matrix',n
         text = 'original matrix [A]'
-        call jancae_print2 ( text,a,n,n )
+        call ummdp_utility_print2 ( text,a,n,n )
         text = 'inversed matrix [A]^-1'
-        call jancae_print2 ( text,b,n,n )
-        call jancae_clear2 ( c,n,n )
+        call ummdp_utility_print2 ( text,b,n,n )
+        call ummdp_utility_clear2 ( c,n,n )
         do i = 1,n
           do j = 1,n
             do k = 1,n
@@ -3746,18 +3647,18 @@ c                                                             ---- check
           end do
         end do
         text = '[A]^-1*[A]=[I] ?'
-        call jancae_print2 ( text,c,n,n )
+        call ummdp_utility_print2 ( text,c,n,n )
       end if
 c
       return
-      end subroutine jancae_minv
+      end subroutine ummdp_utility_minv
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     LU DECOMPOSITION
 c
-      subroutine jancae_ludcmp ( a,n,indx,d,eps )
+      subroutine ummdp_utility_ludcmp ( a,n,indx,d,eps )
 c
 c-----------------------------------------------------------------------
       implicit none
@@ -3781,10 +3682,10 @@ c
           if ( abs(a(i,j)) > aamax ) aamax = abs(a(i,j))
         end do
         if ( aamax <= eps ) then
-          write (6,*) 'singular matrix in jancae_ludcmp'
+          write (6,*) 'singular matrix in ummdp_ludcmp'
           text = 'matrix detail'
-          call jancae_print2 ( text,a,n,n )
-          call jancae_exit ( 9000 )
+          call ummdp_utility_print2 ( text,a,n,n )
+          call ummdp_exit ( 9000 )
         end if
         vtemp(i) = 1.0d0 / aamax
       end do
@@ -3836,14 +3737,14 @@ c                                                 ---- get the det. of A
       end do
 c
       return
-      end subroutine jancae_ludcmp
+      end subroutine ummdp_utility_ludcmp
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     LU BACKWARD SUBSTITUTION
 c
-      subroutine jancae_lubksb ( a,n,indx,b,eps )
+      subroutine ummdp_utility_lubksb ( a,n,indx,b,eps )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3880,14 +3781,14 @@ c
       end do
 c
       return
-      end subroutine jancae_lubksb
+      end subroutine ummdp_utility_lubksb
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE INVERSE MATRIX 2x2 
 c
-      subroutine jancae_minv2 ( b,a,deta,eps )
+      subroutine ummdp_utility_minv2 ( b,a,deta,eps )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3901,7 +3802,7 @@ c
       if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv2'
-         call jancae_exit ( 9000 )
+         call ummdp_exit ( 9000 )
       end if
 c
       detai = 1.0d0 / deta
@@ -3911,14 +3812,14 @@ c
       b(2,2) = a(1,1) * detai
 c
       return
-      end subroutine jancae_minv2
+      end subroutine ummdp_utility_minv2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE INVERSE MATRIX 3x3
 c
-      subroutine jancae_minv3 ( b,a,deta,eps )
+      subroutine ummdp_utility_minv3 ( b,a,deta,eps )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3929,12 +3830,12 @@ c
 c-----------------------------------------------------------------------
 c
       deta = a(1,1) * (a(2,2)*a(3,3) - a(2,3)*a(3,2)) +
-     &       a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3)) +
-     &       a(1,3) * (a(2,1)*a(3,2) - a(2,2)*a(3,1))
+     1       a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3)) +
+     2       a(1,3) * (a(2,1)*a(3,2) - a(2,2)*a(3,1))
       if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv3'
-         call jancae_exit ( 9000 )
+         call ummdp_exit ( 9000 )
       end if
 c
       detai = 1.0d0 / deta
@@ -3949,7 +3850,7 @@ c
       b(3,3) = ( a(1,1)*a(2,2) - a(1,2)*a(2,1) ) * detai
 c
       return
-      end subroutine jancae_minv3
+      end subroutine ummdp_utility_minv3
 c
 c
 c
@@ -3965,7 +3866,7 @@ c     output
 c       es(i)   : i-th eigenvalue
 c       ev(i,3) : normalized eigenvector for i-th eigenvalue
 c
-      subroutine jancae_eigen_sym3 ( es,ev,a )
+      subroutine ummdp_utility_eigen_sym3 ( es,ev,a )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3992,8 +3893,8 @@ c                                                       ---- preparation
       end do
       if ( er/ax > eps ) then
         write (6,*) 'a is not symmetric'
-        write (6,*) 'stop in jancae_eigen_sym3'
-        call jancae_exit ( 9000 )
+        write (6,*) 'stop in ummdp_eigen_sym3'
+        call ummdp_exit ( 9000 )
       end if
       do i = 1,3
         do j = 1,3
@@ -4070,19 +3971,18 @@ c                              ---- if convergence is not achieved stops
       write (6,*) 'msweep=',msweep
       write (6,*) 'eps=',eps
       write (6,*) 'sum=',sum
-      write (6,*) 'stop in jancae_eigen_sym3'
-      call jancae_exit ( 9000 )
+      write (6,*) 'stop in ummdp_eigen_sym3'
+      call ummdp_exit ( 9000 )
 c
       return
-      end subroutine jancae_eigen_sym3
+      end subroutine ummdp_utility_eigen_sym3
 c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CHECKING EXISTENCE OF FILE NAMES 'FLNAME'
 c
-      logical function jancae_file_exist ( flname )
-c
+      logical function ummdp_utility_file_exist ( flname )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4095,13 +3995,13 @@ c
       open ( nio,file=flname,status='old',err=10 )
 c
       close ( nio,            status='keep' )
-      jancae_file_exist = .true.
+      ummdp_utility_file_exist = .true.
       return
 c
-   10 jancae_file_exist = .false.
+   10 ummdp_utility_file_exist = .false.
       return
 c
-      end function jancae_file_exist
+      end function ummdp_utility_file_exist
 c
 c
 c
@@ -4133,9 +4033,8 @@ c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE YIELD FUNCTION AND DERIVATIVES
 c
-      subroutine jancae_yield ( se,cdseds,cd2seds2,nreq,
-     &                          cs,nttl,nnrm,nshr,
-     &                          pryld,ndyld )
+      subroutine ummdp_yield ( se,cdseds,cd2seds2,nreq,cs,nttl,nnrm,
+     1                         nshr,pryld,ndyld )                 
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4156,10 +4055,10 @@ c
 c
       if ( ntyld < 0 ) then
         if ( ( nnrm /= 2 ) .or. ( nshr /= 1 ) ) then
-          write (6,*) 'error in jancae_yield'
+          write (6,*) 'error in ummdp_yield'
           write (6,*) 'ntyld<0 for plane stress'
           write (6,*) 'nnrm,nshr,ntyld:',nnrm,nshr,ntyld
-          call jancae_exit (9000)
+          call ummdp_exit (9000)
         end if
         goto 100
       end if
@@ -4168,7 +4067,7 @@ c
       do i = 1,nttl
         ss = ss + cs(i)**2
       end do
-      if ( ( ss <= 0.0 ) .and. ( nreq == 0 ) ) then
+      if ( (ss <= 0.0) .and. (nreq == 0) ) then
         se = 0.0
         return
       end if
@@ -4192,7 +4091,7 @@ c                                        ---- set index to s(i) to cs(i)
         end do
       end if
 c                                                          ---- set s(i)
-      call jancae_clear1 ( s,6 )
+      call ummdp_utility_clear1 ( s,6 )
       do i = 1,6
         if ( indx(i) /= 0 ) then
           s(i) = cs(indx(i))
@@ -4201,36 +4100,31 @@ c                                                          ---- set s(i)
 c
       select case ( ntyld )
       case ( 0 )                                             ! von Mises
-        call jancae_mises ( s,se,dseds,d2seds2,nreq )
+        call ummdp_mises ( s,se,dseds,d2seds2,nreq )
 c
       case ( 1 )                                             ! Hill 1948
-        call jancae_hill1948 ( s,se,dseds,d2seds2,nreq,
-     &                         pryld,ndyld )
+        call ummdp_hill1948 ( s,se,dseds,d2seds2,nreq,pryld,ndyld ) 
 c
       case ( 2 )                                           ! Yld2004-18p
-        call jancae_yld2004_18p ( s,se,dseds,d2seds2,nreq,
-     &                            pryld,ndyld )
+        call ummdp_yld2004_18p ( s,se,dseds,d2seds2,nreq,pryld,ndyld )                         
 c
       case ( 3 )                                              ! CPB 2006
-        call jancae_cpb2006 ( s,se,dseds,d2seds2,nreq,
-     &                        pryld,ndyld )
+        call ummdp_cpb2006 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )                      
 c
       case ( 4 )                                 ! Karafillis-Boyce 1993
-        call jancae_KarafillisBoyce ( s,se,dseds,d2seds2,nreq,
-     &                                pryld,ndyld )
+        call ummdp_karafillis_boyce ( s,se,dseds,d2seds2,nreq,
+     1                                pryld,ndyld )                         
 c
       case ( 5 )                                               ! Hu 2005
-        call jancae_hu2005 ( s,se,dseds,d2seds2,nreq,
-     &                       pryld,ndyld )
+        call ummdp_hu2005 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )        
 c
       case ( 6 )                                          ! Yoshida 2011
-        call jancae_yoshida2011 ( s,se,dseds,d2seds2,nreq,
-     &                            pryld,ndyld )
+        call ummdp_yoshida2011 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )            
 c
       case default
-        write (6,*) 'error in jancae_yield'
+        write (6,*) 'error in ummdp_yield'
         write (6,*) 'ntyld error :',ntyld
-        call jancae_exit (9000)
+        call ummdp_exit (9000)
       end select
 c
 c                                                        ---- set dse/ds
@@ -4260,41 +4154,34 @@ c                                       ---- plane stress yield criteria
 c
       select case ( ntyld )
       case ( -1 )                                    ! Gotoh Biquadratic
-        call jancae_gotoh ( cs,se,cdseds,cd2seds2,nreq,
-     &                      pryld,ndyld )
+        call ummdp_gotoh ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )
 c
       case ( -2 )                                           ! Yld2000-2d
-        call jancae_yld2000 ( cs,se,cdseds,cd2seds2,nreq,
-     &                        pryld,ndyld )
+        call ummdp_yld2000 ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )
 c
       case ( -3 )                                               ! Vegter
-        call jancae_vegter ( cs,se,cdseds,cd2seds2,nreq,
-     &                       pryld,ndyld )
+        call ummdp_vegter ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )
 c
       case ( -4 )                                             ! BBC 2005
-        call jancae_bbc2005 ( cs,se,cdseds,cd2seds2,nreq,
-     &                        pryld,ndyld )
+        call ummdp_bbc2005 ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )  
 c
       case ( -5 )                                                ! Yld89
-        call jancae_yld89 ( cs,se,cdseds,cd2seds2,nreq,
-     &                      pryld,ndyld )
+        call ummdp_yld89 ( cs,se,cdseds,cd2seds2,nreq, pryld,ndyld )                 
 c
       case ( -6 )                                             ! BBC 2008
-        call jancae_bbc2008 ( cs,se,cdseds,cd2seds2,nreq,
-     &                        pryld,ndyld )
+        call ummdp_bbc2008 ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )               
 c
       case ( -7 )                                            ! Hill 1990
-        call jancae_hill1990 ( cs,se,cdseds,cd2seds2,nreq,
-     &                         pryld,ndyld )
+        call ummdp_hill1990 ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )                 
 c
       case default
-        write (6,*) 'error in jancae_yield'
+        write (6,*) 'error in ummdp_yield'
         write (6,*) 'ntyld error :',ntyld
-        call jancae_exit (9000)
+        call ummdp_exit (9000)
       end select
 c
       return
-      end subroutine jancae_yield
+      end subroutine ummdp_yield
 c
 c
 c************************************************************************
@@ -4302,8 +4189,7 @@ c     BBC2005 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: 
 c
-      subroutine jancae_bbc2005 ( s,se,dseds,d2seds2,nreq,
-     1                            pryld,ndyld )
+      subroutine ummdp_bbc2005 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4560,7 +4446,7 @@ c
       end if
 c
       return
-      end subroutine jancae_bbc2005
+      end subroutine ummdp_bbc2005
 c
 c
 c
@@ -4592,8 +4478,7 @@ c     BBC2008 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: 
 c
-      subroutine jancae_bbc2008 (s,se,dseds,d2seds2,nreq,
-     1                           pryld,ndyld)
+      subroutine ummdp_bbc2008 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4610,17 +4495,17 @@ c
       nds = nint(pryld(2))
       ndk = nint(pryld(3))
 c
-      call jancae_bbc2008_core ( s,se,dseds,d2seds2,nreq,
-     1                           pryld,ndyld,nds,ndk )
+      call ummdp_bbc2008_core ( s,se,dseds,d2seds2,nreq,
+     1                          pryld,ndyld,nds,ndk )
 c
       return
-      end subroutine jancae_bbc2008
+      end subroutine ummdp_bbc2008
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      subroutine jancae_bbc2008_core ( s,se,dseds,d2seds2,nreq,
-     1                                 pryld,ndyld,sp,kp )
+      subroutine ummdp_bbc2008_core ( s,se,dseds,d2seds2,nreq,
+     1                                pryld,ndyld,sp,kp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4633,7 +4518,7 @@ c
 c
       integer csp,m,eta
       real*8 se1,wp,phiL,phiM,phiN,phiL_m,phiM_kp_m,phiN_m,se2k,
-     1       jancae_bbc2008_get_se 
+     1       ummdp_bbc2008_get_se 
       real*8 wpi(2),dFds(3),dphiLds(3),dphiMds(3),dphiNds(3)
       real*8 d2Fds2(3,3),d2phiLds2(3,3),d2phiMds2(3,3),d2phiNds2(3,3)
       real*8 Lp(sp,3,3),Mp(sp,3,3),Np(sp,3,3)
@@ -4691,16 +4576,13 @@ c-----------------------------------------------------------------------
 c     ----------------
 c        parameters
 c     ----------------
-c
-      call jancae_bbc2008_setup ( pryld,ndyld,sp,kp,wp,
-     1                            Lp,Mp,Np,kCm,se1)
-c
+      call ummdp_bbc2008_setup ( pryld,ndyld,sp,kp,wp,Lp,Mp,Np,kCm,se1 )
 c ----------------
 c  se section
 c ----------------
 c
 c                             ---- The unit of this se is (stress)^(2kp)
-      se = jancae_bbc2008_get_se ( sp,kp,wp,s,Lp,Mp,Np,kCm)
+      se = ummdp_bbc2008_get_se ( sp,kp,wp,s,Lp,Mp,Np,kCm )
 c
 c      ---- see eq.(x.y.2b) and eq.(x.y.2) for se2k and se, respectively
       se2k = se / se1
@@ -4715,14 +4597,14 @@ c
 c --------------------------
 c  dseds & d2seds2 section
 c --------------------------
-      call jancae_clear1 ( dFds,3 )
-      call jancae_clear2 ( d2Fds2,3,3 )
+      call ummdp_utility_clear1 ( dFds,3 )
+      call ummdp_utility_clear2 ( d2Fds2,3,3 )
 
 c                              ---- long-long-long do loops starts here.
       do csp = 1,sp
 c
-        call jancae_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,
-     1                                  csp,sp,wp,Lp,Mp,Np,s )
+        call ummdp_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,
+     1                                 csp,sp,wp,Lp,Mp,Np,s )
 c
         do m = 0,kp
 c
@@ -4743,9 +4625,9 @@ c
           end if
 c
 c
-          call jancae_bbc2008_get_dphiXds ( dphiLds,Lp,s,csp,m,sp )
-          call jancae_bbc2008_get_dphiXds ( dphiMds,Mp,s,csp,(kp-m),sp )
-          call jancae_bbc2008_get_dphiXds ( dphiNds,Np,s,csp,m,sp )
+          call ummdp_bbc2008_get_dphiXds ( dphiLds,Lp,s,csp,m,sp )
+          call ummdp_bbc2008_get_dphiXds ( dphiMds,Mp,s,csp,(kp-m),sp )
+          call ummdp_bbc2008_get_dphiXds ( dphiNds,Np,s,csp,m,sp )
 c
 c                                             ---- <dseds>, see (x.y.2f)
           dFds(1:3) = dFds(1:3) + kCm(m) * 
@@ -4758,10 +4640,10 @@ c
 c                     ---- <d2seds2>, see (x.y.2g), d2F/ds(eta)ds(gamma)
           if ( nreq ==2 ) then
 c
-            call jancae_bbc2008_get_d2phiXds2 (d2phiLds2,Lp,s,csp,m,sp)
-            call jancae_bbc2008_get_d2phiXds2 (d2phiMds2,Mp,s,csp,
+            call ummdp_bbc2008_get_d2phiXds2 (d2phiLds2,Lp,s,csp,m,sp)
+            call ummdp_bbc2008_get_d2phiXds2 (d2phiMds2,Mp,s,csp,
      1                                                       (kp-m),sp)
-            call jancae_bbc2008_get_d2phiXds2 (d2phiNds2,Np,s,csp,m,sp)
+            call ummdp_bbc2008_get_d2phiXds2 (d2phiNds2,Np,s,csp,m,sp)
 c
             do eta = 1,3
               d2Fds2(eta,1:3) = d2Fds2(eta,1:3) + kCm(m)
@@ -4797,16 +4679,16 @@ c                  ---- < d2seds2 >, see (x.y.2g), d2se/ds(eta)ds(gamma)
       end if
 c
       return
-      end subroutine jancae_bbc2008_core
+      end subroutine ummdp_bbc2008_core
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     jancae_bbc2008_get_w_phi ()
+c     ummdp_bbc2008_get_w_phi ()
 c     A subroutine to get w^(i-1), w^(s-i) and phiX variables
 c
-      subroutine jancae_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,
-     1                                      wp,Lp,Mp,Np,s )
+      subroutine ummdp_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,
+     1                                     wp,Lp,Mp,Np,s )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4818,24 +4700,24 @@ c
       real*8,intent(out) :: phiM, phiL, phiN
       real*8,intent(out) :: wpi(2)
 c
-      real*8 jancae_bbc2008_get_phiX
+      real*8 ummdp_bbc2008_get_phiX
 c-----------------------------------------------------------------------
 c
       wpi(1) = wp**(csp-1)
       wpi(2) = wp**(sp-csp)
-      phiL = jancae_bbc2008_get_phiX (Lp, s, csp , sp)
-      phiM = jancae_bbc2008_get_phiX (Mp, s, csp , sp)
-      phiN = jancae_bbc2008_get_phiX (Np, s, csp , sp)
+      phiL = ummdp_bbc2008_get_phiX (Lp, s, csp , sp)
+      phiM = ummdp_bbc2008_get_phiX (Mp, s, csp , sp)
+      phiN = ummdp_bbc2008_get_phiX (Np, s, csp , sp)
 c
       return
-      end subroutine jancae_bbc2008_get_w_phi
+      end subroutine ummdp_bbc2008_get_w_phi
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE EQUIVALENT STRESS
 c
-      real*8 function jancae_bbc2008_get_se ( sp,kp,wp,s,Lp,Mp,Np,kCm )
+      real*8 function ummdp_bbc2008_get_se ( sp,kp,wp,s,Lp,Mp,Np,kCm )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4850,11 +4732,11 @@ c
       real*8 wpi(2)
 c-----------------------------------------------------------------------
 c
-      jancae_bbc2008_get_se = 0.0d0
+      ummdp_bbc2008_get_se = 0.0d0
 c
       do csp = 1,sp
 c
-        call jancae_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,wp,
+        call ummdp_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,wp,
      1                                  Lp,Mp,Np,s )
 c
         do m = 0,kp
@@ -4871,8 +4753,8 @@ c
             phiM_kp_m = phiM**(kp-m)
           end if
 c
-          jancae_bbc2008_get_se = 
-     1    jancae_bbc2008_get_se 
+          ummdp_bbc2008_get_se = 
+     1    ummdp_bbc2008_get_se 
      2     + kCm(m) * phiM_kp_m * ( wpi(1) * phiL_m + wpi(2) * phiN_m )
 c
         end do
@@ -4880,15 +4762,15 @@ c
       end do
 c
       return
-      end function jancae_bbc2008_get_se
+      end function ummdp_bbc2008_get_se
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     jancae_bbc2008_get_phiX (Xp, s, csp , sp)
+c     ummdp_bbc2008_get_phiX (Xp, s, csp , sp)
 c     A function to calculate s(a)*X(a,b)*s(b) (summation convention)
 c
-      real*8 function jancae_bbc2008_get_phiX ( Xp,s,csp,sp )
+      real*8 function ummdp_bbc2008_get_phiX ( Xp,s,csp,sp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4916,20 +4798,20 @@ c                                  ---- convert 3rd tensor to 2nd tensor
         XXp(i,1:nc) = Xp(csp,i,1:nc)
       end do
 c
-      call jancae_mv ( v,XXp,s,nc,nc)
-      call jancae_vvs (jancae_bbc2008_get_phiX,v,s,nc)
+      call ummdp_utility_mv ( v,XXp,s,nc,nc)
+      call ummdp_utility_vvs (ummdp_bbc2008_get_phiX,v,s,nc)
 c
       return
-      end function jancae_bbc2008_get_phiX
+      end function ummdp_bbc2008_get_phiX
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     jancae_bbc2008_get_dphiXds (dphiXds, Xp, s, csp, lambda,sp)
+c     ummdp_bbc2008_get_dphiXds (dphiXds, Xp, s, csp, lambda,sp)
 c     A subroutine to calculate d(phiX^(lambda))/ds.
 c     It returns dphiXds(nc).
 c
-      subroutine jancae_bbc2008_get_dphiXds (dphiXds,Xp,s,csp,lambda,sp)
+      subroutine ummdp_bbc2008_get_dphiXds ( dphiXds,Xp,s,csp,lambda,sp)
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4957,7 +4839,8 @@ c     local variables
 c     nc: the number of components.
 c     XXp: = Xp(csp, nc, nc)
 c-----------------------------------------------------------------------
-      call jancae_clear1(dphiXds,nc)
+c
+      call ummdp_utility_clear1(dphiXds,nc)
 c
 c                              ---- If lambda is 0, return dphiXds = {0}
       if ( lambda == 0) then
@@ -4973,29 +4856,29 @@ c     In the bbc2008 section of the document "User subroutines for
 c       Metalic Plasticity model?", expression (x.y.2d) has 
 c       "chi(gamma, beta)*s(beta)" (summation convention). 
 c     In this routine, corresponding term is v(nc) obtained 
-c       from jancae_mv().
+c       from ummdp_mv().
 c
-      call jancae_mv (v, XXp, s, nc, nc)
+      call ummdp_utility_mv (v, XXp, s, nc, nc)
 c
       if ( lambda == 1 ) then
         dphiXds(1:nc) = 2.0d0 * v(1:nc)
       else
-        call jancae_vvs (phi, v, s, nc)
+        call ummdp_utility_vvs (phi, v, s, nc)
         dphiXds(1:nc) = 2.0d0 * lambda * phi**(lambda-1) * v(1:nc)
       end if
 c
       return
-      end subroutine jancae_bbc2008_get_dphiXds
+      end subroutine ummdp_bbc2008_get_dphiXds
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     jancae_bbc2008_get_d2phiXds2 (d2phiXds2, Xp, s, csp, lambda,sp)
+c     ummdp_bbc2008_get_d2phiXds2 (d2phiXds2, Xp, s, csp, lambda,sp)
 c     A subroutine to calculate d2(phiX^(lambda))/(dsds').
 c     It returns d2phiXdsds(nc,nc).
 c
-      subroutine jancae_bbc2008_get_d2phiXds2 ( d2phiXds2,Xp,s,csp,
-     1                                          lambda,sp )
+      subroutine ummdp_bbc2008_get_d2phiXds2 ( d2phiXds2,Xp,s,csp,
+     1                                         lambda,sp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -5037,15 +4920,15 @@ c
         XXp(i,1:nc) = Xp(csp, i, 1:nc)
       end do
 c
-      call jancae_mv (v, XXp, s, nc, nc)
-      call jancae_vvs (phi, v, s, nc)
+      call ummdp_utility_mv (v, XXp, s, nc, nc)
+      call ummdp_utility_vvs (phi, v, s, nc)
 c
       phi_lambda2 = 1.0d0
       if ( lambda /= 2 ) then
         phi_lambda2 = phi**(lambda-2)
       end if
 c
-      call jancae_clear2 ( d2phiXds2,nc,nc )
+      call ummdp_utility_clear2 ( d2phiXds2,nc,nc )
 c
 c                                            ---- d2phiX/(ds(i)ds(1:nc))
       do i = 1,nc
@@ -5055,7 +4938,7 @@ c                                            ---- d2phiX/(ds(i)ds(1:nc))
       end do
 c
       return
-      end subroutine jancae_bbc2008_get_d2phiXds2
+      end subroutine ummdp_bbc2008_get_d2phiXds2
 c
 c
 c
@@ -5063,8 +4946,8 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     setup_bbc2008_parameters()
 c     A routine to setup local variables.
 c
-      subroutine jancae_bbc2008_setup ( pryld,ndyld,sp,kp,wp,
-     1                                  Lp,Mp,Np,kCm,se1 )
+      subroutine ummdp_bbc2008_setup ( pryld,ndyld,sp,kp,wp,
+     1                                 Lp,Mp,Np,kCm,se1 )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -5076,7 +4959,7 @@ c
       real*8,intent(inout) :: kCm(0:kp)
 c
       integer csp,k,l,m,n
-      real*8 jancae_bbc2008_get_se
+      real*8 ummdp_bbc2008_get_se
       real*8 dummy_s(3)
       real*8 Comb(kp*2,0:kp*2)
 c-----------------------------------------------------------------------
@@ -5130,10 +5013,10 @@ c                                                      ---- L^(i) tensor
         Lp(csp,3,2) = Lp(csp,2,3)
 c                                                      ---- M^(i) tensor
         m = l + 2
-        call jancae_bbc2008_setup_MN_tensors (m,csp,pryld,ndyld,Mp,sp)
+        call ummdp_bbc2008_setup_MN_tensors (m,csp,pryld,ndyld,Mp,sp)
 c                                                      ---- N^(i) tensor
         n = m + 3
-        call jancae_bbc2008_setup_MN_tensors (n,csp,pryld,ndyld,Np,sp)
+        call ummdp_bbc2008_setup_MN_tensors (n,csp,pryld,ndyld,Np,sp)
       end do
 c
 c
@@ -5141,12 +5024,12 @@ c     equiv. stress in uniaxial stress state.
 c     dummy_s = (1.0d0, 0.0d0, 0.0d0)
 c     ** The unit of this se1 is (stress)^(2kp)
 c
-      call jancae_clear1 (dummy_s, 3)
+      call ummdp_utility_clear1 (dummy_s, 3)
       dummy_s(1) = 1.0d0
-      se1 = jancae_bbc2008_get_se (sp, kp, wp, dummy_s, Lp, Mp, Np, kCm)
+      se1 = ummdp_bbc2008_get_se (sp, kp, wp, dummy_s, Lp, Mp, Np, kCm)
 c
       return
-      end subroutine jancae_bbc2008_setup
+      end subroutine ummdp_bbc2008_setup
 c
 c
 c
@@ -5158,8 +5041,8 @@ c       This routine returns Mp or Np tensor.
 c       Mp and Np tensors are the same style,
 c       thus this subroutine has been created.
 c
-      subroutine jancae_bbc2008_setup_MN_tensors ( ic,csp,
-     1                                             pryld,ndyld,Xp,sp )
+      subroutine ummdp_bbc2008_setup_MN_tensors ( ic,csp,
+     1                                            pryld,ndyld,Xp,sp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -5180,7 +5063,7 @@ c
       Xp(csp,3,2) = Xp(csp,2,3)
 c
       return
-      end subroutine jancae_bbc2008_setup_MN_tensors
+      end subroutine ummdp_bbc2008_setup_MN_tensors
 c
 c
 c************************************************************************
@@ -5191,8 +5074,7 @@ c
 c     !!! CAUTION !!!
 c     Plane stress condition is NOT implemented in this code.
 c
-      subroutine jancae_cpb2006 ( s,se,dseds,d2seds2,nreq,
-     1                            pryld,ndyld )
+      subroutine ummdp_cpb2006 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -5205,7 +5087,8 @@ c
 c
       integer i,j,k,m,n,l,iq,ip,ir
       real*8 pi,eps,a,ck,ai,H1,H2,H3,p,q,theta,F,D,DseDF,denom,D2seDF2,
-     1       del,sea,seb,abc1,abc2,seaa,seba,seab,sebb,cpb2006_seND
+     1       del,sea,seb,abc1,abc2,seaa,seba,seab,sebb,
+     2       ummdp_cpb2006_seND
       real*8 s0(6),sigma(6),psigma(3),phi(3),psi(3),omega(3),DFDH(3),
      1       DFDpsigma(3),DFDs(6)
       real*8 c(6,6),ct(6,6),DpsigmaDH(3,3),DHdsigma(3,6),DsigmaDs(6,6),
@@ -5242,7 +5125,7 @@ c
       eps = 1.0d-5
 c                                        ---- set anisotropic parameters
 c
-      call jancae_clear2 ( c,6,6 )
+      call ummdp_utility_clear2 ( c,6,6 )
 c
       c(1,1) = pryld(1+1)            ! C11
       c(1,2) = pryld(1+2)            ! C12
@@ -5275,7 +5158,7 @@ c
       omega(3) = (c(1,3) + c(2,3) - 2.0d0*c(3,3)) / 3.0d0
 c
 c      ---- Calculate 4th order orthotropic tensor "L" ( named ct here )
-      call jancae_clear2 ( ct,6,6 )
+      call ummdp_utility_clear2 ( ct,6,6 )
 c
       ct(1,1) = phi(1)
       ct(1,2) = psi(1)
@@ -5291,7 +5174,7 @@ c
       ct(6,6) = c(6,6)
 c
 c                               ---- Calculate linear transformed stress
-      call jancae_mv ( sigma,ct,s,6,6 )
+      call ummdp_utility_mv ( sigma,ct,s,6,6 )
 c
 c            ---- Calculate principal values of transformed stress sigma
 c                                                     by Cardan's method
@@ -5348,8 +5231,8 @@ c
 c                                 ---- D(F)/D(H) by using D(psigma)/D(H)
 c                                         D(F)/D(H)      -> 1 x 3 Vector
 c                                         D(psigma)/D(H) -> 3 x 3 Matrix
-        call jancae_clear1 ( DFDH,3 )
-        call jancae_clear2 ( DpsigmaDH,3,3 )
+        call ummdp_utility_clear1 ( DFDH,3 )
+        call ummdp_utility_clear2 ( DpsigmaDH,3,3 )
 c
         if ( abs(psigma(2)-psigma(3)) / se > eps .and.
      1       abs(psigma(2)-psigma(1)) / se > eps ) then
@@ -5395,7 +5278,7 @@ c
         end if
 c
 c                                     ---- D(H)/D(sigma) -> 3 x 6 Matrix
-        call jancae_clear2 ( DHDsigma,3,6 )
+        call ummdp_utility_clear2 ( DHDsigma,3,6 )
 c
         DHDsigma(1,1) = 1.0d0 / 3.0d0
         DHDsigma(1,2) = 1.0d0 / 3.0d0
@@ -5425,8 +5308,8 @@ c                                     ---- D(sigma)/D(s) -> 6 x 6 Matrix
         end do
 c
 c                                        ---- D(se)/D(s) -> 1 x 3 Vector
-        call jancae_clear1 ( DFDs,6 )
-        call jancae_clear2 ( dummat,3,6 )
+        call ummdp_utility_clear1 ( DFDs,6 )
+        call ummdp_utility_clear2 ( dummat,3,6 )
 c
         do i = 1,6
           do j = 1,3
@@ -5448,7 +5331,7 @@ c                                              ---- D(se)/D(F) -> Scalar
         D2seDF2 = (1.0d0/D)**ai * ai * (ai-1.0d0) * F**(ai-2.0d0)
 c
 c                                  ---- D2(F)/D(psigma)2 -> 3 x 3 Matrix
-        call jancae_clear2 ( D2FDpsigma2,3,3 )
+        call ummdp_utility_clear2 ( D2FDpsigma2,3,3 )
 c
         do i = 1,3
           D2FDpsigma2(i,i) = a*(psigma(i)/abs(psigma(i))-ck)**2.0d0 *
@@ -5456,7 +5339,7 @@ c
         end do
 c
 c                              ---- D2(psigma)/D(H)2 -> 3 x 3 x 3 Matrix
-        call jancae_clear3 ( D2psigmaDH2,3,3,3 )
+        call ummdp_utility_clear3 ( D2psigmaDH2,3,3,3 )
 c
         if ( abs(psigma(2)-psigma(3)) / se > eps .and.
      1       abs(psigma(2)-psigma(1)) / se > eps ) then
@@ -5483,7 +5366,7 @@ c
           end do
 c
 c                                       ---- D2(F)/D(H)2 -> 3 x 3 Matrix
-          call jancae_clear2 ( D2FDH2,3,3 )
+          call ummdp_utility_clear2 ( D2FDH2,3,3 )
 c
           do iq = 1,3
             do m = 1,3
@@ -5499,7 +5382,7 @@ c
           end do
 c
 c                               ---- D2(H)/D(sigma)2 -> 3 x 6 x 6 Matrix
-          call jancae_clear3 ( D2HDsigma2,3,6,6 )
+          call ummdp_utility_clear3 ( D2HDsigma2,3,6,6 )
 c
           D2HDsigma2(2,1,2) = -1.0d0 / 3.0d0
           D2HDsigma2(2,2,3) = -1.0d0 / 3.0d0
@@ -5543,8 +5426,8 @@ c
           D2HDsigma2(3,4,3) = D2HDsigma2(3,3,4)
 c
 c                                       ---- D2(F)/D(s)2 -> 6 x 6 Matrix
-          call jancae_clear2 ( D2FDs2,6,6 )
-          call jancae_clear2 ( dummat,3,6 )
+          call ummdp_utility_clear2 ( D2FDs2,6,6 )
+          call ummdp_utility_clear2 ( dummat,3,6 )
 c
           do i = 1,3
             do j = 1,6
@@ -5590,9 +5473,9 @@ c
             do j = 1,6
               if ( i == j ) then
                 s0(i) = s(i) - del
-                sea = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                sea = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
                 s0(i) = s(i) + del
-                seb = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                seb = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i)
                 abc1 = (se-sea) / del
@@ -5601,19 +5484,19 @@ c
               else
                 s0(i) = s(i) - del
                 s0(j) = s(j) - del
-                seaa = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                seaa = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i) + del
                 s0(j) = s(j) - del
-                seba = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                seba = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i) - del
                 s0(j) = s(j) + del
-                seab = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                seab = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i) + del
                 s0(j) = s(j) + del
-                sebb = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                sebb = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i)
                 s0(j) = s(j)
@@ -5627,14 +5510,14 @@ c
       end if
 c
       return
-      end subroutine jancae_cpb2006
+      end subroutine ummdp_cpb2006
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     NUMERICAL DIFFERENTIATION FOR EQUIVALENT STRESS
 c
-      real*8 function cpb2006_seND ( s,ct,phi,ck,a,ai )
+      real*8 function ummdp_cpb2006_seND ( s,ct,phi,ck,a,ai )
 c-----------------------------------------------------------------------
       implicit none
 c 
@@ -5648,7 +5531,7 @@ c-----------------------------------------------------------------------
 c
       pi = acos(-1.0d0)
 c                               ---- calculate linear transformed stress
-      call jancae_mv ( sigma,ct,s,6,6 )
+      call ummdp_utility_mv ( sigma,ct,s,6,6 )
 c                                       ---- 1st, 2nd and 3rd invariants
       H1 = (sigma(1)+sigma(2)+sigma(3)) / 3.0d0
       H2 = (sigma(5)**2.0d0+sigma(6)**2.0d0+sigma(4)**2.0d0 - 
@@ -5680,10 +5563,10 @@ c                                           ---- denominator coefficient
      &    (abs(phi(2))-ck*phi(2))**a +
      &    (abs(phi(3))-ck*phi(3))**a
 c
-      cpb2006_seND = (F/D) ** ai
+      ummdp_cpb2006_seND = (F/D) ** ai
 c
       return
-      end function cpb2006_seND
+      end function ummdp_cpb2006_seND
 c
 c
 c
@@ -5692,8 +5575,7 @@ c     GOTOH BIQUADRATIC YIELD FUNCTION AND DERIVATIVES
 c
 c       doi:
 c
-      subroutine jancae_gotoh ( s,se,dseds,d2seds2,nreq,
-     1                          pryld,ndyld )
+      subroutine ummdp_gotoh ( s,se,dseds,d2seds2,nreq,pryld,ndyld )          
 c------------------------------------------------------------- variables
       implicit none
 c
@@ -5747,20 +5629,20 @@ c                                                    ---- t-vector (s^2)
       t(3) = s(2) * s(2)
       t(4) = s(3) * s(3)
 c                                                 ---- equivalent stress
-      call jancae_mv  ( v,c,t,4,4 )
-      call jancae_vvs ( phi,t,v,4 )
+      call ummdp_utility_mv  ( v,c,t,4,4 )
+      call ummdp_utility_vvs ( phi,t,v,4 )
 c
       if ( phi <= 0.0d0 ) phi = 0.0d0
       se = sqrt(sqrt(phi))
 c                                            ---- 1st order differential
       if ( nreq >= 1 ) then
-        call jancae_clear2 ( dtds,4,3 )
+        call ummdp_utility_clear2 ( dtds,4,3 )
         dtds(1,1) = s(1) * 2.0d0
         dtds(2,1) = s(2)
         dtds(2,2) = s(1)
         dtds(3,2) = s(2) * 2.0d0
         dtds(4,3) = s(3) * 2.0d0
-        call jancae_clear1 ( v,4 )
+        call ummdp_utility_clear1 ( v,4 )
         do i = 1,3
           do j = 1,4
             do k = 1,4
@@ -5775,13 +5657,13 @@ c                                            ---- 1st order differential
       end if
 c                                            ---- 2nd order differential
       if ( nreq >= 2 ) then
-        call jancae_clear3 ( d2tds2,4,3,3 )
+        call ummdp_utility_clear3 ( d2tds2,4,3,3 )
         d2tds2(1,1,1) = 2.0d0
         d2tds2(2,1,2) = 1.0d0
         d2tds2(2,2,1) = 1.0d0
         d2tds2(3,2,2) = 2.0d0
         d2tds2(4,3,3) = 2.0d0
-        call jancae_clear2 ( d2seds2,3,3 )
+        call ummdp_utility_clear2 ( d2seds2,3,3 )
         do i = 1,3
           do j = 1,3
             do m = 1,4
@@ -5803,7 +5685,7 @@ c                                            ---- 2nd order differential
       end if
 c
       return
-      end subroutine jancae_gotoh
+      end subroutine ummdp_gotoh
 c
 c
 c
@@ -5812,8 +5694,7 @@ c     Hill 1948 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi:
 c
-      subroutine jancae_hill1948 ( s,se,dseds,d2seds2,nreq,
-     1                             pryld,ndyld )
+      subroutine ummdp_hill1948 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -5838,7 +5719,7 @@ c                                            ---- anisotropic parameters
       pm = pryld(1+5)
       pn = pryld(1+6)
 c                                               ---- coefficients matrix
-      call jancae_clear2 ( c,6,6 )
+      call ummdp_utility_clear2 ( c,6,6 )
       c(1,1) = pg + ph
       c(1,2) = -ph
       c(1,3) = -pg
@@ -5857,8 +5738,8 @@ c                                               ---- coefficients matrix
         end do
       end do
 c
-      call jancae_mv  ( v,c,s,6,6 )
-      call jancae_vvs ( phi,s,v,6 )
+      call ummdp_utility_mv  ( v,c,s,6,6 )
+      call ummdp_utility_vvs ( phi,s,v,6 )
 c                                                 ---- equivalent stress
       if ( phi <= 0.0 ) phi = 0.0
       se = sqrt(phi)
@@ -5878,7 +5759,7 @@ c                                              ---- 2nd order derivative
       end if
 c
       return
-      end subroutine jancae_hill1948
+      end subroutine ummdp_hill1948
 c
 c
 c
@@ -5887,8 +5768,7 @@ c     HILL 1990 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/0022-5096(90)90006-P
 c
-      subroutine jancae_hill1990 ( s,se,dseds,d2seds2,nreq,
-     1                             pryld,ndyld )
+      subroutine ummdp_hill1990 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )                    
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -5968,7 +5848,7 @@ c
 c
 c                               ---- coef. matrix of material parameters
 c                                ---- define a4-matrix consists of a & b
-      call jancae_clear2( a4,3,3 )
+      call ummdp_utility_clear2( a4,3,3 )
       a4(1,1) = -2.0d0*a + b
       a4(2,2) = 2.0d0*a + b
       a4(1,2) = - b
@@ -5977,16 +5857,16 @@ c                                                              ---- fai1
       x1 = s(1) + s(2)
       fai1 = abs(x1)**am
 c                                                              ---- fai2
-      call jancae_mv  ( v,a2,s,3,3 )
-      call jancae_vvs ( x2,s,v,3 )
+      call ummdp_utility_mv  ( v,a2,s,3,3 )
+      call ummdp_utility_vvs ( x2,s,v,3 )
       fai2 = sigbtm * (x2)**(am/2.0d0)
 c                                                              ---- fai3
-      call jancae_mv  ( v,a3,s,3,3 )
-      call jancae_vvs ( x3,s,v,3 )
+      call ummdp_utility_mv  ( v,a3,s,3,3 )
+      call ummdp_utility_vvs ( x3,s,v,3 )
       fai3 = (x3)**(am/2.0d0-1.0d0)
 c                                                              ---- fai4
-      call jancae_mv  ( v,a4,s,3,3 )
-      call jancae_vvs ( x4,s,v,3 )
+      call ummdp_utility_mv  ( v,a4,s,3,3 )
+      call ummdp_utility_vvs ( x4,s,v,3 )
       fai4 = x4
 c                                             ---- yield fuction : fyild
       fyild = fai1 + fai2 + fai3*fai4
@@ -6012,20 +5892,20 @@ c
       end do
 c                                                          ---- dfai2/ds
       wrk = sigbtm * (am/2.0) * (x2)**(am/2.0-1.0)
-      call jancae_mv( dxds2,a2,s,3,3 )
+      call ummdp_utility_mv( dxds2,a2,s,3,3 )
       do i = 1,3
         dxds2(i) = 2.0 * dxds2(i)
         dfds2(i) = wrk * dxds2(i)
       end do
 c                                                          ---- dfai3/ds
       wrk = (am/2.0-1.0) * (x3)**(am/2.0-2.0)
-      call jancae_mv( dxds3,a3,s,3,3 )
+      call ummdp_utility_mv( dxds3,a3,s,3,3 )
       do i = 1,3
         dxds3(i) = 2.0 * dxds3(i)
         dfds3(i) = wrk * dxds3(i)
       end do
 c                                                          ---- dfai4/ds
-      call jancae_mv( dxds4,a4,s,3,3 )
+      call ummdp_utility_mv( dxds4,a4,s,3,3 )
       do i = 1,3
         dxds4(i) = 2.0 * dxds4(i)
         dfds4(i) = dxds4(i)
@@ -6081,16 +5961,16 @@ c                                   ---- d2fai3/ds2   make   d2fds3(i,j)
       wrk2 = wrk1 * wrk2
       wrk3 = wrk1 * wrk3
 c                                   ---- [d2x3/ds2] &  make [d2fai3/ds2]
-        do i = 1,3
-          do j = 1,3
-            dx3dx3(i,j) = dxds3(i) * dxds3(j)
-            d2xds3(i,j) = 2.0 * a3(j,i)
-            d2fds3(i,j) = wrk2 * dx3dx3(i,j) + wrk3 * d2xds3(i,j)
-          end do
+      do i = 1,3
+        do j = 1,3
+          dx3dx3(i,j) = dxds3(i) * dxds3(j)
+          d2xds3(i,j) = 2.0 * a3(j,i)
+          d2fds3(i,j) = wrk2 * dx3dx3(i,j) + wrk3 * d2xds3(i,j)
         end do
+      end do
 c                                                 ---- [d2fai3/ds2]*fai4
-        do i = 1,3
-          do j = 1,3
+      do i = 1,3
+        do j = 1,3
             d2fds3(i,j) = d2fds3(i,j) * fai4
           end do
         end do
@@ -6136,7 +6016,7 @@ c
         end do
 c
       return
-      end subroutine jancae_hill1990
+      end subroutine ummdp_hill1990
 c
 c
 c
@@ -6145,8 +6025,7 @@ c     HU2005 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2004.11.004
 c
-      subroutine jancae_hu2005 ( s,se,dseds,d2seds2,nreq,
-     1                           pryld,ndyld )
+      subroutine ummdp_hu2005 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -6173,7 +6052,7 @@ c
       nterms = n
       if ( maxa < nterms ) then
         write (6,*) 'increase maxa :',maxa,nterms
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c
       n = 0
@@ -6200,19 +6079,19 @@ c
       a(8) =  pryld(1+8)    ! C2 <-
       a(9) =  pryld(1+6)    ! X7
 c
-      call jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
+      call ummdp_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
      1                          a,ipow,maxa,nterms )
 c
       return
-      end subroutine jancae_hu2005
+      end subroutine ummdp_hu2005
 c
 c
 c************************************************************************
-c     KARAFILLIS-BOYCE YIELD FUNCTION AND DERIVATIVES
+c     KARAFILLIS-BOYCE 1993 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi:
 c
-      subroutine jancae_KarafillisBoyce ( s,se,dseds,d2seds2,nreq,
+      subroutine ummdp_karafillis_boyce ( s,se,dseds,d2seds2,nreq,
      1                                    pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
@@ -6279,6 +6158,7 @@ c                                                        ---- parameters
           L(i,j) = 0.0d0
         end do
       end do
+c
       alpha(1) = pryld(1+2)
       alpha(2) = pryld(1+3)
       beta(1)  = (alpha(2)-1.0d0   -alpha(1)) * 0.5d0
@@ -6299,8 +6179,9 @@ c                                                        ---- parameters
       k_p      = pryld(1+7)
       c_p      = pryld(1+8)
 c                                                 ---- equivalent stress
-      call jancae_mv ( smallS,L,s,6,6 )
-      call jancae_KarafillisBoyce_principalStress( smallS,Jinvar,largeS)
+      call ummdp_utility_mv ( smallS,L,s,6,6 )
+      call ummdp_karafillis_boyce_principal_stress( smallS,Jinvar,
+     1                                              largeS )
 c
       phiN(1) = (largeS(1)-largeS(2))**(2*k_p)
      1        + (largeS(2)-largeS(3))**(2*k_p)
@@ -6667,15 +6548,15 @@ c
       end if
 c
       return
-      end subroutine jancae_KarafillisBoyce
+      end subroutine ummdp_karafillis_boyce
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     PRINCIPAL STRESSES AND INVARIANTS BY FRANÇOIS VIETE METHOD
 c
-      subroutine jancae_KarafillisBoyce_principalStress ( stress,invar,
-     1                                                    pStress )
+      subroutine ummdp_karafillis_boyce_principal_stress ( stress,invar,
+     1                                                     pStress )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -6708,7 +6589,7 @@ c
           if ( abs(abs(dum)-1.0d0) <= tol ) then
             dum = dum / abs(dum)
           else
-            call jancae_exit ( 1000 )
+            call ummdp_exit ( 1000 )
           end if
         end if
         alpha = acos(dum) / 3.0d0
@@ -6719,16 +6600,15 @@ c
       end if
 c
       return
-      end subroutine jancae_KarafillisBoyce_principalStress
+      end subroutine ummdp_karafillis_boyce_principal_stress
 c
 c
 c************************************************************************
 c     VON MISES YIELD FUNCTION AND DERIVATIVES
 c
-      subroutine jancae_mises ( s,se,dseds,d2seds2,nreq )
+      subroutine ummdp_mises ( s,se,dseds,d2seds2,nreq )
 c-----------------------------------------------------------------------
       implicit none
-c
 c
       integer,intent(in) :: nreq
       real*8 ,intent(in) :: s(6)
@@ -6744,7 +6624,7 @@ c
 c-----------------------------------------------------------------------
 c	
 c                                               ---- coefficients matrix
-      call jancae_clear2 ( c,6,6 )
+      call ummdp_utility_clear2 ( c,6,6 )
       do i = 1,3
         do j = 1,3
           c(i,j) = -0.5d0
@@ -6755,8 +6635,8 @@ c                                               ---- coefficients matrix
         c(i,i) = 3.0d0
       end do
 c
-      call jancae_mv  ( v,c,s,6,6 )
-      call jancae_vvs ( phi,s,v,6 )
+      call ummdp_utility_mv  ( v,c,s,6,6 )
+      call ummdp_utility_vvs ( phi,s,v,6 )
 c                                                 ---- equivalent stress
       se = sqrt(phi)
 c                                              ---- 1st order derivative
@@ -6775,7 +6655,7 @@ c                                              ---- 2nd order derivative
       end if
 c
       return
-      end subroutine jancae_mises
+      end subroutine ummdp_mises
 c
 c
 c
@@ -6784,8 +6664,7 @@ c     YEGTER YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2005.04.009
 c
-      subroutine jancae_vegter ( s,se,dseds,d2seds2,nreq,
-     1                           pryld,ndyld )
+      subroutine ummdp_vegter ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -6800,19 +6679,18 @@ c
 c-----------------------------------------------------------------------
 c
       nf = nint(pryld(2)) - 1
-      call jancae_vegter_core ( s,se,dseds,d2seds2,nreq,
-     1                          pryld,ndyld,nf )
+      call ummdp_vegter_core ( s,se,dseds,d2seds2,nreq,pryld,ndyld,nf )           
 c
       return
-      end subroutine jancae_vegter
+      end subroutine ummdp_vegter
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     VEGTER CORE SUBROUTINE
 c
-      subroutine jancae_vegter_core ( s,se,dseds,d2seds2,nreq,
-     1                                pryld,ndyld,nf )
+      subroutine ummdp_vegter_core ( s,se,dseds,d2seds2,nreq,
+     1                               pryld,ndyld,nf )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -6888,12 +6766,12 @@ c
       if(abs(s(1))<=TOL0.and.abs(s(2))<=TOL0.and.
      1                                         abs(s(3))<=TOL0)then
       isflag=0
-      call jancae_clear1 ( x,4 )
+      call ummdp_utility_clear1 ( x,4 )
       goto 100
 c
       else
       isflag=1
-      call jancae_clear1 ( x,4 )
+      call ummdp_utility_clear1 ( x,4 )
 c
 c                           ---- exception treatment if s(1)=s(2),s(3)=0
 c
@@ -7008,7 +6886,7 @@ c
          nn(2)=rsh
          mm(1)=1.0d0
          mm(2)=run
-         call jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                            
       case ( 2 )                                           ! iareaflag=2
          a(1)=fun1
@@ -7019,7 +6897,7 @@ c
          nn(2)=run
          mm(1)=1.0d0
          mm(2)=rps
-         call jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                   
       case ( 3 )                                           ! iareaflag=3
          a(1)=fps1
@@ -7030,7 +6908,7 @@ c
          nn(2)=rps
          mm(1)=1.0d0
          mm(2)=rbi
-         call jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                            
       case ( 4 )                                           ! iareaflag=4
          a(1)=-fbi1
@@ -7041,7 +6919,7 @@ c
          nn(2)=-rbi
          mm(1)=-rpsr
          mm(2)=-1.0d0
-         call jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                            
       case ( 5 )                                           ! iareaflag=5
          a(1)=-fps2r
@@ -7052,7 +6930,7 @@ c
          nn(2)=-1.0d0
          mm(1)=-runr
          mm(2)=-1.0d0
-         call jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                    
       case ( 6 )                                           ! iareaflag=6
          a(1)=-fun2r
@@ -7063,19 +6941,19 @@ c
          nn(2)=-1.0d0
          mm(1)=1.0d0
          mm(2)=rsh
-         call jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c
       case default
          write (6,*) 'iareaflag error :',iareaflag
-         call jancae_exit (9000)
+         call ummdp_exit (9000)
       end select
 
 c                            ---- calc. fourier coefficient mu(0<=mu<=1)
-      call jancae_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta
+      call ummdp_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta
      1                                            ,aa,bb,cc,dd )
 c
 c                            ---- calc. normalized yield locus f(i)i=1~2
-      call jancae_vegter_calc_fi ( x,a,b,c,mu,f )
+      call ummdp_vegter_calc_fi ( x,a,b,c,mu,f )
       go to 200
 c
 c                                                 ---- equivalent stress
@@ -7098,11 +6976,11 @@ c
       if ( nreq>=1 ) then
 c                        ---- set dadc,dcdc,dndc,dmdc for eq.(A.7)^(A.9)
 c
-      call jancae_clear1 ( dadc,2 )
-      call jancae_clear1 ( dbdc,2 )
-      call jancae_clear1 ( dcdc,2 )
-      call jancae_clear1 ( dndc,2 )
-      call jancae_clear1 ( dmdc,2 )
+      call ummdp_utility_clear1 ( dadc,2 )
+      call ummdp_utility_clear1 ( dbdc,2 )
+      call ummdp_utility_clear1 ( dcdc,2 )
+      call ummdp_utility_clear1 ( dndc,2 )
+      call ummdp_utility_clear1 ( dmdc,2 )
 c
       select case ( iareaflag )
 c                                            
@@ -7151,7 +7029,7 @@ c
               dmdc(2)=dmdc(2)+omg(m)*dble(m)**2
           end do
         end if
-      call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
@@ -7197,7 +7075,7 @@ c
 c
           dmdc(1)=0.0d0
           dmdc(2)=0.0d0
-      call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                           
@@ -7224,7 +7102,7 @@ c
           dmdc(1)=0.0d0
           dmdctmp=r_bi0+1.0d0-(r_bi0-1.0d0)*vcos2t
           dmdc(2)=2.0d0*(r_bi0*r_bi0-1.0d0)/(dmdctmp*dmdctmp)
-      call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
@@ -7251,7 +7129,7 @@ c
 c
           dmdc(1)=0.0d0
           dmdc(2)=0.0d0
-      call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
@@ -7297,7 +7175,7 @@ c
          end do
        end if
           dmdc(2)=0.0d0
-      call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
@@ -7346,22 +7224,22 @@ c
 c
           dmdc(1)=0.0d0
           dmdc(2)=0.0d0
-      call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
       case default
         write (6,*) 'iareaflag error(dseds) :',iareaflag
-        call jancae_exit (9000)
+        call ummdp_exit (9000)
       end select
 c
 c
 c                             ---- calc. dphidx(i) (i=1~3)  eq.(21)~(23)
-      call jancae_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,dcdc,
+      call ummdp_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,dcdc,
      1                      mm,nn,dndc,dmdc,f,iareaflag,mu,x,dfdmu,dfdc)
 c
 c
 c                                   ---- calc. dseds(i) (i=1~3)  eq.(20)
-      call jancae_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,vsin2t,
+      call ummdp_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,vsin2t,
      1                                iareaflag,isflag,dxds)
 c
       end if
@@ -7371,11 +7249,11 @@ c                                            ---- 2nd order differential
       if ( nreq>=2 ) then
 c                     ---- set d2adc2,d2cdc2,d2ndc2,d2mdc2 for d2bdc2(2)
 c
-      call jancae_clear1 ( d2adc2,2 )
-      call jancae_clear1 ( d2bdc2,2 )
-      call jancae_clear1 ( d2cdc2,2 )
-      call jancae_clear1 ( d2ndc2,2 )
-      call jancae_clear1 ( d2mdc2,2 )
+      call ummdp_utility_clear1 ( d2adc2,2 )
+      call ummdp_utility_clear1 ( d2bdc2,2 )
+      call ummdp_utility_clear1 ( d2cdc2,2 )
+      call ummdp_utility_clear1 ( d2ndc2,2 )
+      call ummdp_utility_clear1 ( d2mdc2,2 )
 c
 c                     ---- define exception treatment condition of theta
 c                        ---- if theta<=0.002865deg then apply exception
@@ -7435,7 +7313,7 @@ c
          do m=0,nf
           d2mdc2(2)=d2mdc2(2)+omg(m)*dble(m)*vvtmp(m)
          end do
-      call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -7457,7 +7335,7 @@ c
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
-      call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -7477,7 +7355,7 @@ c
              d2mdc2tmp=r_bi0+1.0d0-(r_bi0-1.0d0)*vcos2t
           d2mdc2(2)=4.0d0*(r_bi0**2-1.0d0)*(r_bi0-1.0d0)/
      1                                              (d2mdc2tmp**3)
-      call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -7497,7 +7375,7 @@ c
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
-      call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                           
@@ -7519,7 +7397,7 @@ c
           d2mdc2(1)=d2mdc2(1)+omg(m)*dble(m)*vvtmp_rv(m)
          end do
           d2mdc2(2)=0.0d0
-      call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -7541,37 +7419,37 @@ cn
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
-      call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
       case default
         write (6,*) 'iareaflag error(d2seds2) :',iareaflag
-        call jancae_exit (9000)
+        call ummdp_exit (9000)
       end select
 c
 c
 c                                     ---- calc. d2phidx2(k,l) (k,l=1~3)
-      call jancae_vegter_calc_d2phidx2 (d2phidx2,se,a,b,c,dadc,dbdc,
+      call ummdp_vegter_calc_d2phidx2 (d2phidx2,se,a,b,c,dadc,dbdc,
      1             dcdc,mm,nn,dndc,dmdc,f,iareaflag,mu,x,d2adc2,d2bdc2,
      2            d2cdc2,d2ndc2,d2mdc2,dfdmu,dfdc,s,aa,bb,cc,dd,dphidx)
 c
 c
 c                                      ---- calc. d2seds2(i,j) (i,j=1~3)
-      call jancae_vegter_calc_d2seds2 (d2seds2,d2phidx2,se,a,b,c,mu,x,
+      call ummdp_vegter_calc_d2seds2 (d2seds2,d2phidx2,se,a,b,c,mu,x,
      1         vcos2t,vsin2t,iareaflag,dxds,dphidx,isflag,s,dseds,
      2                                 pryld,ndyld)
 c
       end if
 c
       return
-      end subroutine jancae_vegter_core
+      end subroutine ummdp_vegter_core
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE HINGEPOINT b(i,i=1~2)
 c
-      subroutine jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+      subroutine ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7591,22 +7469,22 @@ c
       bb = nn(1)*mm(2)-mm(1)*nn(2)
       if ( abs(bb) <= TOL ) then
          write (6,*) 'hingepoint singular error! '
-         call jancae_exit (9000)
+         call ummdp_exit (9000)
       end if
 c
       b(1) = b1u / bb
       b(2) = b2u / bb
 c
       return
-      end subroutine jancae_vegter_hingepoint
+      end subroutine ummdp_vegter_hingepoint
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE FOURIER COEFFICIENT mu(0<=mu<=1)
 c
-      subroutine jancae_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta,
-     1                                   aa,bb,cc,dd)
+      subroutine ummdp_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta,
+     1                                  aa,bb,cc,dd)
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7630,7 +7508,7 @@ c
 c
       if ( abs(aa) <= tol1 ) then
          write (6,*) 'calc. mu singular error! ',abs(aa),iareaflag
-         call jancae_exit (9000)
+         call ummdp_exit (9000)
       end if
 c
       dd = bb*bb - 4.0d0*aa*cc
@@ -7640,7 +7518,7 @@ c
 c
       else
          write (6,*) 'negative dd ! ',dd,iareaflag
-         call jancae_exit (9000)
+         call ummdp_exit (9000)
       end if
 c
       if ( xx(1) >= 0.0d0 .and. xx(1) <= 1.0000005d0 ) then
@@ -7654,18 +7532,18 @@ c
       else
         write (6,*) 'can not find mu ! solve error ',iareaflag,xx(1)
      1              ,xx(2)
-         call jancae_exit (9000)
+         call ummdp_exit (9000)
       end if
 c
       return
-      end subroutine jancae_vegter_calc_mu
+      end subroutine ummdp_vegter_calc_mu
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE NORMALIZED YIELD LOCUS
 c
-      subroutine jancae_vegter_calc_fi ( x,a,b,c,mu,f )
+      subroutine ummdp_vegter_calc_fi ( x,a,b,c,mu,f )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7682,15 +7560,15 @@ c
       end do
 c
       return
-      end subroutine jancae_vegter_calc_fi
+      end subroutine ummdp_vegter_calc_fi
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CAKCULATE dbdc(i) (i=1~2) eq.(A.7)
 c
-      subroutine jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                                     dndc,dmdc,iareaflag,P,nnmm)
+      subroutine ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+     1                                    dndc,dmdc,iareaflag,P,nnmm )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7716,7 +7594,7 @@ c
       nnmm = nn(1)*mm(2) - mm(1)*nn(2)
          if ( abs(nnmm) < tol ) then
             write (6,*) 'nnmm too small! ',nnmm
-            call jancae_exit (9000)
+            call ummdp_exit (9000)
          end if
       nminv = 1.0d0 / nnmm
 c
@@ -7724,16 +7602,16 @@ c
       dbdc(2) = nminv * (P(2)*nn(1)-P(1)*mm(1))
 c
       return
-      end subroutine jancae_vegter_calc_dbdc
+      end subroutine ummdp_vegter_calc_dbdc
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. dphidx(i) (i=1~3)  eq.(21)~(23)
 c
-      subroutine jancae_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,
-     1                                       dcdc,mm,nn,dndc,dmdc,f,  
-     2                                       iareaflag,mu,x,dfdmu,dfdc )
+      subroutine ummdp_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,
+     1                                      dcdc,mm,nn,dndc,dmdc,f,  
+     2                                      iareaflag,mu,x,dfdmu,dfdc )
 c-----------------------------------------------------------------------   
       implicit none
 c
@@ -7767,7 +7645,7 @@ c                            ---- calc. dphidx(i) (i=1~3)  eq.(21),(C.1)
       dphidxcinv = f(1)*dfdmu(2) - f(2)*dfdmu(1)
       if ( abs(dphidxcinv) < tol3 ) then
         write (6,*) 'eq.(21) too small! ',dphidxcinv
-        call jancae_exit (9000)
+        call ummdp_exit (9000)
       end if
       dphidxcoe = 1.0d0 / dphidxcinv
 c
@@ -7813,16 +7691,16 @@ c
       end do
 c
       return
-      end subroutine jancae_vegter_calc_dphidx
+      end subroutine ummdp_vegter_calc_dphidx
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE FIRST ORDER DERIVATIVE
 c
-      subroutine jancae_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,
-     1                                      vsin2t,iareaflag,isflag,
-     2                                      dxds )
+      subroutine ummdp_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,
+     1                                     vsin2t,iareaflag,isflag,
+     2                                     dxds )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7888,7 +7766,7 @@ c
       end if
 c
 c                                   ---- calc. dseds(i) (1=1~3)  eq.(20)
-      call jancae_clear1 ( dseds,3 )
+      call ummdp_utility_clear1 ( dseds,3 )
 c
       do i = 1,3
         do j = 1,3
@@ -7897,17 +7775,17 @@ c
       end do
 c
       return
-      end subroutine jancae_vegter_calc_dseds
+      end subroutine ummdp_vegter_calc_dseds
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2bdc2(i) (i=1~2)
 c
-      subroutine jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                                       dndc,dmdc,iareaflag,d2adc2,
-     2                                       d2bdc2,d2cdc2,d2ndc2,
-     3                                       d2mdc2,P,nnmm,s )      
+      subroutine ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+     1                                      dndc,dmdc,iareaflag,d2adc2,
+     2                                      d2bdc2,d2cdc2,d2ndc2,
+     3                                      d2mdc2,P,nnmm,s )      
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7948,19 +7826,19 @@ c
      2            + dp2n1p1m1/nnmm
 c
       return
-      end subroutine jancae_vegter_calc_d2bdc2
+      end subroutine ummdp_vegter_calc_d2bdc2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2phidx2(k,l) (k,l=1~3)
 c
-      subroutine jancae_vegter_calc_d2phidx2 ( d2phidx2,se,a,b,c,dadc,
-     1                                         dbdc,dcdc,mm,nn,dndc,
-     2                                         dmdc,f,iareaflag,mu,x,
-     3                                         d2adc2,d2bdc2,d2cdc2,
-     4                                         d2ndc2,d2mdc2,dfdmu,dfdc,
-     5                                         s,aa,bb,cc,dd,dphidx )
+      subroutine ummdp_vegter_calc_d2phidx2 ( d2phidx2,se,a,b,c,dadc,
+     1                                        dbdc,dcdc,mm,nn,dndc,
+     2                                        dmdc,f,iareaflag,mu,x,
+     3                                        d2adc2,d2bdc2,d2cdc2,
+     4                                        d2ndc2,d2mdc2,dfdmu,dfdc,
+     5                                        s,aa,bb,cc,dd,dphidx )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8076,18 +7954,18 @@ c
       end do
 c
       return
-      end subroutine jancae_vegter_calc_d2phidx2
+      end subroutine ummdp_vegter_calc_d2phidx2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2seds2(i,j) (i,j=1~3)
 c
-      subroutine jancae_vegter_calc_d2seds2 ( d2seds2,d2phidx2,se,a,b,c,
-     1                                        mu,x,vcos2t,vsin2t,
-     2                                        iareaflag,dxds,dphidx,
-     3                                        isflag,s,dseds,pryld,
-     4                                        ndyld )      
+      subroutine ummdp_vegter_calc_d2seds2 ( d2seds2,d2phidx2,se,a,b,c,
+     1                                       mu,x,vcos2t,vsin2t,
+     2                                       iareaflag,dxds,dphidx,
+     3                                       isflag,s,dseds,pryld,
+     4                                       ndyld )      
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8182,10 +8060,10 @@ c
 c
 c                                      ---- calc. d2seds2(i,j) (i,j=1~3)
 c
-      call jancae_clear2 ( d2seds2,3,3 )
+      call ummdp_utility_clear2 ( d2seds2,3,3 )
 c
       if (iflag/=0) then
-      call jancae_vegter_d2seds2n(d2seds2,s,dseds,pryld,ndyld,se)
+      call ummdp_vegter_d2seds2n(d2seds2,s,dseds,pryld,ndyld,se)
 c
       else
       do i=1,3
@@ -8203,15 +8081,15 @@ c
       end if
 c
       return
-      end subroutine jancae_vegter_calc_d2seds2
+      end subroutine ummdp_vegter_calc_d2seds2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     numerical differential for 2nd order differentials
 c
-      subroutine jancae_vegter_d2seds2n ( d2seds2,s,dseds,
-     1                                    pryld,ndyld,se )
+      subroutine ummdp_vegter_d2seds2n ( d2seds2,s,dseds,
+     1                                   pryld,ndyld,se )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8235,10 +8113,10 @@ c
           if ( j==k ) then
             se0=se
             ss(j)=s0(j)-delta
-            call jancae_vegter_yieldfunc(3,ss,sea,dseds,d2seds2,0,
+            call ummdp_vegter_yieldfunc(3,ss,sea,dseds,d2seds2,0,
      1                                   pryld,ndyld)
             ss(j)=s0(j)+delta
-            call jancae_vegter_yieldfunc(3,ss,seb,dseds,d2seds2,0,
+            call ummdp_vegter_yieldfunc(3,ss,seb,dseds,d2seds2,0,
      1                                    pryld,ndyld)
             ss(j)=s0(j)
             a=(se0-sea)/delta
@@ -8247,19 +8125,19 @@ c
           else
             ss(j)=s0(j)-delta
             ss(k)=s0(k)-delta
-            call jancae_vegter_yieldfunc(3,ss,seaa,dseds,d2seds2,0,
+            call ummdp_vegter_yieldfunc(3,ss,seaa,dseds,d2seds2,0,
      1                                    pryld,ndyld)
             ss(j)=s0(j)+delta
             ss(k)=s0(k)-delta
-            call jancae_vegter_yieldfunc(3,ss,seba,dseds,d2seds2,0,
+            call ummdp_vegter_yieldfunc(3,ss,seba,dseds,d2seds2,0,
      1                                    pryld,ndyld)
             ss(j)=s0(j)-delta
             ss(k)=s0(k)+delta
-            call jancae_vegter_yieldfunc(3,ss,seab,dseds,d2seds2,0,
+            call ummdp_vegter_yieldfunc(3,ss,seab,dseds,d2seds2,0,
      1                                    pryld,ndyld)
             ss(j)=s0(j)+delta
             ss(k)=s0(k)+delta
-            call jancae_vegter_yieldfunc(3,ss,sebb,dseds,d2seds2,0,
+            call ummdp_vegter_yieldfunc(3,ss,sebb,dseds,d2seds2,0,
      1                                    pryld,ndyld)
             ss(j)=s0(j)
             ss(k)=s0(k)
@@ -8271,15 +8149,15 @@ c
       end do
 c
       return
-      end subroutine jancae_vegter_d2seds2n
+      end subroutine ummdp_vegter_d2seds2n
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. equivalent stress for d2seds2n
 c
-      subroutine jancae_vegter_yieldfunc ( nttl,s,se,dseds,d2seds2,
-     1                                     nreq,pryld,ndyld )
+      subroutine ummdp_vegter_yieldfunc ( nttl,s,se,dseds,d2seds2,
+     1                                    nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8291,10 +8169,10 @@ c
       real*8,intent(out) :: d2seds2(3,3)
 c-----------------------------------------------------------------------
 c
-      call jancae_vegter ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      call ummdp_vegter ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c
       return
-      end subroutine jancae_vegter_yieldfunc
+      end subroutine ummdp_vegter_yieldfunc
 c
 c
 c************************************************************************
@@ -8302,8 +8180,7 @@ c     YLD2000-2D YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/S0749-6419(02)00019-0
 c
-      subroutine jancae_yld2000 ( s,se,dseds,d2seds2,nreq,
-     &                            pryld,ndyld )
+      subroutine ummdp_yld2000 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )     
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8345,18 +8222,18 @@ c                                            ---- anisotropic parameters
       end do
       em = pryld(9+1)
 c                                  ---- set linear transformation matrix
-      call jancae_yld2000_2d_am ( a,am )
+      call ummdp_yld2000_2d_am ( a,am )
 c                                                 ---- equivalent stress
-      call jancae_yld2000_2d_xyphi ( s,em,am,x,y,phi )
+      call ummdp_yld2000_2d_xyphi ( s,em,am,x,y,phi )
       q = phi(1) + phi(2)
       if ( q <= 0.0 ) q = 0.0
       se = (0.5d0*q) ** (1.0d0/em)
 c                                              ---- 1st order derivative
       if ( nreq >= 1 ) then
-        call jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
+        call ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,
      1                               dsedphi,dphidx,
      2                               dxdy,dyds,se )
-        call jancae_clear1 ( dseds,3 )
+        call ummdp_utility_clear1 ( dseds,3 )
         do nd = 1,2
           do m = 1,2
             do k = 1,3
@@ -8370,10 +8247,10 @@ c                                              ---- 1st order derivative
       end if
 c                                              ---- 2nd order derivative
       if ( nreq >= 2 ) then
-        call jancae_yld2000_2d_ds2 ( phi,x,y,em,
+        call ummdp_yld2000_2d_ds2 ( phi,x,y,em,
      1                               d2sedphi2,d2phidx2,
      2                               d2xdy2,se )
-        call jancae_clear2 ( d2seds2,3,3 )
+        call ummdp_utility_clear2 ( d2seds2,3,3 )
         do i = 1,3
         do j = 1,3
           do nd1 = 1,2
@@ -8423,14 +8300,14 @@ c                                              ---- 2nd order derivative
       end if
 c
       return
-      end subroutine jancae_yld2000
+      end subroutine ummdp_yld2000
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     SET LINEAR TRANSFORMATION MATRIX
 c
-      subroutine jancae_yld2000_2d_am ( a,am )
+      subroutine ummdp_yld2000_2d_am ( a,am )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8470,14 +8347,14 @@ c
       end do
 c
       return
-      end subroutine jancae_yld2000_2d_am
+      end subroutine ummdp_yld2000_2d_am
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. barlat-yld2k function x,y,phi
 c
-      subroutine jancae_yld2000_2d_xyphi ( s,em,am,x,y,phi )
+      subroutine ummdp_yld2000_2d_xyphi ( s,em,am,x,y,phi )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8497,7 +8374,7 @@ c
       p(1) =  1.0d0
       p(2) = -1.0d0
 c                                                       ---- {y}=[am]{s}
-      call jancae_clear2 ( y,2,3 )
+      call ummdp_utility_clear2 ( y,2,3 )
       do nd = 1,2
         do i = 1,3
           do j = 1,3
@@ -8521,16 +8398,15 @@ c                                                 ---- phi(1) and phi(2)
      &          abs(2.0d0*x(nd,1)+x(nd,2))**em
 c
       return
-      end subroutine jancae_yld2000_2d_xyphi
+      end subroutine ummdp_yld2000_2d_xyphi
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     SET 1ST ORDER DERIVATIVE OF PARAMETERS
 c
-      subroutine jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
-     1                                   dsedphi,dphidx,
-     2                                   dxdy,dyds,se )
+      subroutine ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,dsedphi,dphidx,
+     1                                  dxdy,dyds,se )       
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8605,16 +8481,15 @@ c
       end do
 c
       return
-      end subroutine jancae_yld2000_2d_ds1
+      end subroutine ummdp_yld2000_2d_ds1
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     SET 2ND ORDER DERIVATIVE OF PARAMETERS
 c
-      subroutine jancae_yld2000_2d_ds2 ( phi,x,y,em,
-     1                                   d2sedphi2,d2phidx2,
-     2                                   d2xdy2,se )
+      subroutine ummdp_yld2000_2d_ds2 ( phi,x,y,em,d2sedphi2,d2phidx2,
+     1                                  d2xdy2,se )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8710,7 +8585,7 @@ c                                                           ---- d2x/dy2
       end do
 c
       return
-      end subroutine jancae_yld2000_2d_ds2
+      end subroutine ummdp_yld2000_2d_ds2
 c
 c
 c
@@ -8719,7 +8594,7 @@ c     YLD2004-18p YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: 
 c
-      subroutine jancae_yld2004_18p ( s,se,dseds,d2seds2,nreq,
+      subroutine ummdp_yld2004_18p ( s,se,dseds,d2seds2,nreq,
      1                                pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
@@ -8784,13 +8659,13 @@ c
       eps3 = 1.0d-8
       del = 1.0d-4
 c                                                   ---- Kronecker Delta
-      call jancae_clear2 ( delta,3,3 )
+      call ummdp_utility_clear2 ( delta,3,3 )
       do i = 1,3
         delta(i,i) = 1.0d0
       end do
 c                                        ---- set anisotropic parameters
-      call jancae_clear2 ( cp1,6,6 )
-      call jancae_clear2 ( cp2,6,6 )
+      call ummdp_utility_clear2 ( cp1,6,6 )
+      call ummdp_utility_clear2 ( cp2,6,6 )
       cp1(1,2) = -pryld(1+1)
       cp1(1,3) = -pryld(1+2)
       cp1(2,1) = -pryld(1+3)
@@ -8814,7 +8689,7 @@ c                                        ---- set anisotropic parameters
       ami = 1.0d0 / am
 c
 c             ---- set matrix for transforming Cauchy stress to deviator
-      call jancae_clear2 ( cl,6,6 )
+      call ummdp_utility_clear2 ( cl,6,6 )
       do i = 1,3
         do j = 1,3
           if ( i == j ) then
@@ -8834,12 +8709,12 @@ c             ---- set matrix for transforming Cauchy stress to deviator
       end do
 c
 c                  ---- matrix for transforming Cauchy stress to sp1,sp2
-      call jancae_mm ( ctp1,cp1,cl,6,6,6 )
-      call jancae_mm ( ctp2,cp2,cl,6,6,6 )
+      call ummdp_utility_mm ( ctp1,cp1,cl,6,6,6 )
+      call ummdp_utility_mm ( ctp2,cp2,cl,6,6,6 )
 c                               ---- coefficient of equivalent stress dc
-c      call jancae_yld2004_18p_coef ( cp1,cp2,pi,am,dc )
+c      call ummdp_yld2004_18p_coef ( cp1,cp2,pi,am,dc )
 c                                  ---- calculation of equivalent stress
-      call jancae_yld2004_18p_yf ( ctp1,ctp2,s,am,ami,dc,pi,
+      call ummdp_yld2004_18p_yf ( ctp1,ctp2,s,am,ami,dc,pi,
      &                             sp1,sp2,psp1,psp2,hp1,hp2,
      &                             cetpq1,cetpq2,fai,se )
 c
@@ -8859,20 +8734,20 @@ c                                                     ---- d(fai)/d(psp)
           dfadpsp2(i) = dfadpsp2(i) * (-am)
         end do
 c                                         ---- d(psp)/d(hp)&d(fai)/d(hp)
-        call jancae_clear2 ( dpsdhp1,3,3 )
-        call jancae_clear2 ( dpsdhp2,3,3 )
-        call jancae_clear1 ( dfadhp1,3 )
-        call jancae_clear1 ( dfadhp2,3 )
+        call ummdp_utility_clear2 ( dpsdhp1,3,3 )
+        call ummdp_utility_clear2 ( dpsdhp2,3,3 )
+        call ummdp_utility_clear1 ( dfadhp1,3 )
+        call ummdp_utility_clear1 ( dfadhp2,3 )
 c                                                  ---- theta'<>0 & <>pi
         if ( abs(cetpq1-1.0d0) >= eps2 .and. 
      &       abs(cetpq1+1.0d0) >= eps2 ) then
           do i = 1,3
-            call jancae_yld2004_18p_dpsdhp ( i,psp1,hp1,dpsdhp1 )
+            call ummdp_yld2004_18p_dpsdhp ( i,psp1,hp1,dpsdhp1 )
           end do
 c                                                          ---- theta'=0
         else if ( abs(cetpq1-1.0d0) < eps2 ) then
           i = 1
-          call jancae_yld2004_18p_dpsdhp ( i,psp1,hp1,dpsdhp1 )
+          call ummdp_yld2004_18p_dpsdhp ( i,psp1,hp1,dpsdhp1 )
           do i = 2,3
             do j = 1,3
               dpsdhp1(i,j) = -0.5d0 * (dpsdhp1(1,j)-3.0d0*delta(1,j))
@@ -8881,7 +8756,7 @@ c                                                          ---- theta'=0
 c                                                         ---- theta'=pi
         else
           i = 3
-          call jancae_yld2004_18p_dpsdhp ( i,psp1,hp1,dpsdhp1 )
+          call ummdp_yld2004_18p_dpsdhp ( i,psp1,hp1,dpsdhp1 )
           do i = 1,2
             do j = 1,3
               dpsdhp1(i,j) = -0.5d0 * (dpsdhp1(3,j)-3.0d0*delta(1,j))
@@ -8892,12 +8767,12 @@ c                                                 ---- theta''<>0 & <>pi
         if ( abs(cetpq2-1.0d0) >= eps2 .and. 
      &       abs(cetpq2+1.0d0) >= eps2 ) then
           do i = 1,3
-            call jancae_yld2004_18p_dpsdhp ( i,psp2,hp2,dpsdhp2 ) 
+            call ummdp_yld2004_18p_dpsdhp ( i,psp2,hp2,dpsdhp2 ) 
           end do
 c                                                         ---- theta''=0
         else if ( abs(cetpq2-1.0d0) < eps2 ) then
           i = 1
-          call jancae_yld2004_18p_dpsdhp ( i,psp2,hp2,dpsdhp2 )
+          call ummdp_yld2004_18p_dpsdhp ( i,psp2,hp2,dpsdhp2 )
           do i = 2,3
             do j = 1,3
               dpsdhp2(i,j) = -0.5d0 * (dpsdhp2(1,j)-3.0d0*delta(1,j))
@@ -8906,7 +8781,7 @@ c                                                         ---- theta''=0
 c                                                        ---- theta''=pi
         else
           i = 3
-          call jancae_yld2004_18p_dpsdhp ( i,psp2,hp2,dpsdhp2 )
+          call ummdp_yld2004_18p_dpsdhp ( i,psp2,hp2,dpsdhp2 )
           do i = 1,2
             do j = 1,3
               dpsdhp2(i,j) = -0.5d0 * (dpsdhp2(3,j)-3.0d0*delta(1,j))
@@ -8921,8 +8796,8 @@ c
           end do
         end do
 c                                                       ---- d(hp)/d(sp)
-        call jancae_clear2 ( dhdsp1,3,6 )
-        call jancae_clear2 ( dhdsp2,3,6 )
+        call ummdp_utility_clear2 ( dhdsp1,3,6 )
+        call ummdp_utility_clear2 ( dhdsp2,3,6 )
         do i = 1,3
           j = mod(i,  3) + 1
           k = mod(i+1,3) + 1
@@ -8955,9 +8830,9 @@ c                                                        ---- d(sp)/d(s)
           end do
         end do
 c                                                       ---- d(fai)/d(s)
-        call jancae_clear1 ( dfads,6 )
-        call jancae_clear2 ( xx1,3,6 )
-        call jancae_clear2 ( xx2,3,6 )
+        call ummdp_utility_clear1 ( dfads,6 )
+        call ummdp_utility_clear2 ( xx1,3,6 )
+        call ummdp_utility_clear2 ( xx2,3,6 )
         do l = 1,6
           do j = 1,3
             do k = 1,6
@@ -8979,10 +8854,10 @@ c
 c                                            ---- 2nd order differential
       if ( nreq >= 2 ) then
 c                                                   ---- d2(fai)/d(psp)2
-        call jancae_clear2 ( d2fadpsp11,3,3 )
-        call jancae_clear2 ( d2fadpsp22,3,3 )
-        call jancae_clear2 ( d2fadpsp12,3,3 )
-        call jancae_clear2 ( d2fadpsp21,3,3 )
+        call ummdp_utility_clear2 ( d2fadpsp11,3,3 )
+        call ummdp_utility_clear2 ( d2fadpsp22,3,3 )
+        call ummdp_utility_clear2 ( d2fadpsp12,3,3 )
+        call ummdp_utility_clear2 ( d2fadpsp21,3,3 )
         do i = 1,3
           d2fadpsp11(i,i) = am*(am-1.0d0) *
      1                      ( abs(psp1(i)-psp2(1))**(am-2.0d0) +
@@ -9000,8 +8875,8 @@ c                                                   ---- d2(fai)/d(psp)2
           end do
         end do
 c                                                    ---- d2(psp)/d(hp)2
-        call jancae_clear3 ( d2psdhp11,3,3,3 )
-        call jancae_clear3 ( d2psdhp22,3,3,3 )
+        call ummdp_utility_clear3 ( d2psdhp11,3,3,3 )
+        call ummdp_utility_clear3 ( d2psdhp22,3,3,3 )
 c
         if ( abs(cetpq1-1.0d0) >= eps3 .and. 
      1       abs(cetpq2-1.0d0) >= eps3 .and.
@@ -9009,14 +8884,14 @@ c
      3       abs(cetpq2+1.0d0) >= eps3 ) then
 c
           do i = 1,3
-            call jancae_yld2004_18p_d2psdhp ( i,psp1,hp1,d2psdhp11 )
-            call jancae_yld2004_18p_d2psdhp ( i,psp2,hp2,d2psdhp22 )
+            call ummdp_yld2004_18p_d2psdhp ( i,psp1,hp1,d2psdhp11 )
+            call ummdp_yld2004_18p_d2psdhp ( i,psp2,hp2,d2psdhp22 )
           end do
 c                                                    ---- d2(fai)/d(hp)2
-          call jancae_clear2 ( d2fadhp11,3,3 )
-          call jancae_clear2 ( d2fadhp12,3,3 )
-          call jancae_clear2 ( d2fadhp21,3,3 )
-          call jancae_clear2 ( d2fadhp22,3,3 )
+          call ummdp_utility_clear2 ( d2fadhp11,3,3 )
+          call ummdp_utility_clear2 ( d2fadhp12,3,3 )
+          call ummdp_utility_clear2 ( d2fadhp21,3,3 )
+          call ummdp_utility_clear2 ( d2fadhp22,3,3 )
 c                                                  -- d2(fai)/d(hd)d(hd)
           do iq = 1,3
             do m = 1,3
@@ -9060,8 +8935,8 @@ c                         ---- d2(fai)/d(hdd)d(hd) & d2(fai)/d(hd)d(hdd)
             end do
           end do
 c                                                     ---- d2(hp)/d(sp)2
-          call jancae_clear3 ( d2hdsp11,3,6,6 )
-          call jancae_clear3 ( d2hdsp22,3,6,6 )
+          call ummdp_utility_clear3 ( d2hdsp11,3,6,6 )
+          call ummdp_utility_clear3 ( d2hdsp22,3,6,6 )
           do i = 1,3
             j = mod(i,  3) + 1
             k = mod(i+1,3) + 1
@@ -9101,9 +8976,9 @@ c                                                     ---- d2(hp)/d(sp)2
             d2hdsp22(3,j,i) = -sp2(j)
           end do
 c                                                     ---- d2(fai)/d(s)2
-          call jancae_clear2 ( d2fads2,6,6 )
-          call jancae_clear2 ( xx1,3,6 )
-          call jancae_clear2 ( xx2,3,6 )
+          call ummdp_utility_clear2 ( d2fads2,6,6 )
+          call ummdp_utility_clear2 ( xx1,3,6 )
+          call ummdp_utility_clear2 ( xx2,3,6 )
           do i = 1,3
             do j = 1,6
               do ip = 1,6
@@ -9144,7 +9019,7 @@ c                                                      ---- d2(se)/d(s)2
           end do
         else
 c                                            ---- numerical differential
-          call jancae_yld2004_18p_nu2 ( ctp1,ctp2,s,se,am,ami,
+          call ummdp_yld2004_18p_nu2 ( ctp1,ctp2,s,se,am,ami,
      1                                  dc,pi,del,d2seds2 )
         end if
       end if
@@ -9157,7 +9032,7 @@ c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE COEFFICIENT OF EQUIVALENT STRESS 1
 c
-      subroutine jancae_yld2004_18p_coef ( cp1,cp2,pi,am,dc )
+      subroutine ummdp_yld2004_18p_coef ( cp1,cp2,pi,am,dc )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -9167,8 +9042,9 @@ c
       integer i,j
       real*8 bbp1(3),bbp2(3)
 c-----------------------------------------------------------------------
-      call jancae_yld2004_18p_coef_sub ( cp1,pi,bbp1 )
-      call jancae_yld2004_18p_coef_sub ( cp2,pi,bbp2 )
+c
+      call ummdp_yld2004_18p_coef_sub ( cp1,pi,bbp1 )
+      call ummdp_yld2004_18p_coef_sub ( cp2,pi,bbp2 )
       dc = 0.0d0
       do i = 1,3
         do j = 1,3
@@ -9177,14 +9053,14 @@ c-----------------------------------------------------------------------
       end do
 c
       return
-      end subroutine jancae_yld2004_18p_coef
+      end subroutine ummdp_yld2004_18p_coef
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE COEFFICIENT OF EQUIVALENT STRESS 2
 c
-      subroutine jancae_yld2004_18p_coef_sub ( cp,pi,bbp )
+      subroutine ummdp_yld2004_18p_coef_sub ( cp,pi,bbp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -9212,14 +9088,14 @@ c                                                  ---- coefficients bbp
       bbp(3) = 2.0d0*sqrt(ppp)*cos((ttp+2.0d0*pi)/3.0d0) + aap(1)
 c
       return
-      end subroutine jancae_yld2004_18p_coef_sub
+      end subroutine ummdp_yld2004_18p_coef_sub
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE YIELD FUNCTION 1
 c
-      subroutine jancae_yld2004_18p_yf ( ctp1,ctp2,s,am,ami,dc,pi,
+      subroutine ummdp_yld2004_18p_yf ( ctp1,ctp2,s,am,ami,dc,pi,
      1                                   sp1,sp2,psp1,psp2,hp1,hp2,
      2                                   cetpq1,cetpq2,fai,se )
 c-----------------------------------------------------------------------
@@ -9231,8 +9107,8 @@ c
 c
       integer i,j
 c-----------------------------------------------------------------------
-      call jancae_yld2004_18p_yfsub ( ctp1,s,pi,sp1,psp1,hp1,cetpq1 )
-      call jancae_yld2004_18p_yfsub ( ctp2,s,pi,sp2,psp2,hp2,cetpq2 )
+      call ummdp_yld2004_18p_yfsub ( ctp1,s,pi,sp1,psp1,hp1,cetpq1 )
+      call ummdp_yld2004_18p_yfsub ( ctp2,s,pi,sp2,psp2,hp2,cetpq2 )
 c                                                    ---- yield function
       fai = 0.0d0
       do i = 1,3
@@ -9244,14 +9120,14 @@ c                                                 ---- equivalent stress
       se = (fai/dc) ** ami
 c
       return
-      end subroutine jancae_yld2004_18p_yf
+      end subroutine ummdp_yld2004_18p_yf
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE YIELD FUNCTION 2
 c
-      subroutine jancae_yld2004_18p_yfsub ( ctp,s,pi,sp,psp,hp,cetpq )
+      subroutine ummdp_yld2004_18p_yfsub ( ctp,s,pi,sp,psp,hp,cetpq )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -9264,7 +9140,7 @@ c
 c-----------------------------------------------------------------------
 c
 c                                         ---- linear-transformed stress
-      call jancae_mv ( sp,ctp,s,6,6 )
+      call ummdp_utility_mv ( sp,ctp,s,6,6 )
 c
 c                                                  ---- invariants of sp
       hp(1) = (sp(1)+sp(2)+sp(3)) / 3.0d0
@@ -9295,14 +9171,14 @@ c                                           ---- principal values of sp1
       end if
 c
       return
-      end subroutine jancae_yld2004_18p_yfsub
+      end subroutine ummdp_yld2004_18p_yfsub
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     NUMERICAL DIFFERENTIATION FOR 2ND ORDER DERIVATIVES
 c
-      subroutine jancae_yld2004_18p_nu2 ( ctp1,ctp2,s,se,am,ami,
+      subroutine ummdp_yld2004_18p_nu2 ( ctp1,ctp2,s,se,am,ami,
      1                                    dc,pi,del,d2seds2 )
 c-----------------------------------------------------------------------
       implicit none
@@ -9321,11 +9197,11 @@ c
         do j = 1, 6
           if ( i == j ) then
             s0(i) = s(i) - del
-            call jancae_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
+            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
      1                                   sp1,sp2,psp1,psp2,hp1,hp2,
      2                                   cetpq1,cetpq2,fai,sea )
             s0(i) = s(i) + del
-            call jancae_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
+            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
      1                                   sp1,sp2,psp1,psp2,hp1,hp2,
      2                                   cetpq1,cetpq2,fai,seb )
             s0(i) = s(i)
@@ -9335,22 +9211,22 @@ c
           else
             s0(i) = s(i) - del
             s0(j) = s(j) - del
-            call jancae_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
+            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
      1                                   sp1,sp2,psp1,psp2,hp1,hp2,
      2                                   cetpq1,cetpq2,fai,seaa )
             s0(i) = s(i) + del
             s0(j) = s(j) - del
-            call jancae_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
+            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
      1                                   sp1,sp2,psp1,psp2,hp1,hp2,
      2                                   cetpq1,cetpq2,fai,seba )
             s0(i) = s(i) - del
             s0(j) = s(j) + del
-            call jancae_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
+            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
      1                                   sp1,sp2,psp1,psp2,hp1,hp2,
      2                                   cetpq1,cetpq2,fai,seab )
             s0(i) = s(i) + del
             s0(j) = s(j) + del
-            call jancae_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
+            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
      1                                   sp1,sp2,psp1,psp2,hp1,hp2,
      2                                   cetpq1,cetpq2,fai,sebb )
             s0(i) = s(i)
@@ -9363,14 +9239,14 @@ c
       end do
 c
       return
-      end subroutine jancae_yld2004_18p_nu2
+      end subroutine ummdp_yld2004_18p_nu2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d(psp)/d(hp)
 c
-      subroutine jancae_yld2004_18p_dpsdhp ( i,psp,hp,dpsdhp )
+      subroutine ummdp_yld2004_18p_dpsdhp ( i,psp,hp,dpsdhp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -9387,14 +9263,14 @@ c
       dpsdhp(i,3) = 2.0d0/3.0d0/dummy
 c
       return
-      end subroutine jancae_yld2004_18p_dpsdhp
+      end subroutine ummdp_yld2004_18p_dpsdhp
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2(psp)/d(hp)2
 c
-      subroutine jancae_yld2004_18p_d2psdhp ( i,psp,hp,d2psdhp )
+      subroutine ummdp_yld2004_18p_d2psdhp ( i,psp,hp,d2psdhp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -9419,7 +9295,7 @@ c-----------------------------------------------------------------------
       d2psdhp(i,1,3) = d2psdhp(i,3,1)
 c
       return
-      end subroutine jancae_yld2004_18p_d2psdhp
+      end subroutine ummdp_yld2004_18p_d2psdhp
 c
 c
 c
@@ -9428,8 +9304,7 @@ c     YLD89 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: 
 c
-      subroutine jancae_yld89 ( s,se,dseds,d2seds2,nreq,
-     1                          pryld,ndyld )
+      subroutine ummdp_yld89 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -9446,7 +9321,7 @@ c
       real*8 d2seds2z(3,3)
 c-----------------------------------------------------------------------
 c
-      call jancae_yld89_branch ( s,se,dseds,d2seds2,nreq,
+      call ummdp_yld89_branch ( s,se,dseds,d2seds2,nreq,
      1                           pryld,ndyld )
 c
       if ( nreq <= 1 ) return
@@ -9460,14 +9335,14 @@ c
 c
       do i = 1,3
         s0(i) = s(i) + delta
-        call jancae_yld89_branch ( s0,se0,dsedsz,d2seds2z,1,
+        call ummdp_yld89_branch ( s0,se0,dsedsz,d2seds2z,1,
      1                             pryld,ndyld )
         ta1 = dsedsz(1)
         ta2 = dsedsz(2)
         ta3 = dsedsz(3)
 c
         s0(i) = s(i) - delta
-        call jancae_yld89_branch ( s0,se0,dsedsz,d2seds2z,1,
+        call ummdp_yld89_branch ( s0,se0,dsedsz,d2seds2z,1,
      2                             pryld,ndyld )
         tb1 = dsedsz(1)
         tb2 = dsedsz(2)
@@ -9490,14 +9365,14 @@ c                                         ---- d2seds2 must be symmetric
       end do
 c
       return
-      end subroutine jancae_yld89
+      end subroutine ummdp_yld89
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     BRANCH OF YLD89
 c
-      subroutine jancae_yld89_branch ( s,se,dseds,d2seds2,nreq,
-     1                                 pryld,ndyld )
+      subroutine ummdp_yld89_branch ( s,se,dseds,d2seds2,nreq,
+     1                                pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -9522,21 +9397,21 @@ c                                                        ---- parameters
       h  = pryld(1+3)
       p  = pryld(1+4)                                   
 c                                                       ---- clear start
-      call jancae_clear1 ( dfdK,2 )
-      call jancae_clear2 ( dKds,2,3 )
+      call ummdp_utility_clear1 ( dfdK,2 )
+      call ummdp_utility_clear2 ( dKds,2,3 )
 c
-      call jancae_clear2 ( d2fdK2,2,2 )
-      call jancae_clear2 ( dfdKdfdK,2,2 )
-      call jancae_clear2 ( d2K1ds2,3,3 )
-      call jancae_clear2 ( d2K2ds2,3,3 )
+      call ummdp_utility_clear2 ( d2fdK2,2,2 )
+      call ummdp_utility_clear2 ( dfdKdfdK,2,2 )
+      call ummdp_utility_clear2 ( d2K1ds2,3,3 )
+      call ummdp_utility_clear2 ( d2K2ds2,3,3 )
 c
-      call jancae_clear1 ( df1dK,2 )
-      call jancae_clear1 ( df2dK,2 )
-      call jancae_clear1 ( df3dK,2 )
+      call ummdp_utility_clear1 ( df1dK,2 )
+      call ummdp_utility_clear1 ( df2dK,2 )
+      call ummdp_utility_clear1 ( df3dK,2 )
 c
-      call jancae_clear2 ( d2f1dK2,2,2 )
-      call jancae_clear2 ( d2f2dK2,2,2 )
-      call jancae_clear2 ( d2f3dK2,2,2 )
+      call ummdp_utility_clear2 ( d2f1dK2,2,2 )
+      call ummdp_utility_clear2 ( d2f2dK2,2,2 )
+      call ummdp_utility_clear2 ( d2f3dK2,2,2 )
 c                                                         ---- clear end
 c
 c     K1
@@ -9575,7 +9450,7 @@ c
           dKds(2,3) = p*p*s(3) / pK2
         end if
 c                                                  ---- d2K1ds2(3,3)=0.0
-        call jancae_clear2 ( d2K1ds2,3,3 )
+        call ummdp_utility_clear2 ( d2K1ds2,3,3 )
 c                                                      ---- d2K2ds2(3,3)
         if ( pK2 == 0.0d0 ) then
           DpK22 = 1.0d-32
@@ -9687,8 +9562,8 @@ c
         do i = 1,3
           do j = 1,3
 c
-            call jancae_clear1 (w,2)
-            call jancae_clear1 (x,2)
+            call ummdp_utility_clear1 (w,2)
+            call ummdp_utility_clear1 (x,2)
 c
             do k = 1,2
               do l = 1,2
@@ -9714,7 +9589,7 @@ c
       end if
 c
       return
-      end subroutine jancae_yld89_branch
+      end subroutine ummdp_yld89_branch
 c
 c
 c
@@ -9723,8 +9598,8 @@ c     YOSHIDA2011 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2013.01.010
 c
-      subroutine jancae_yoshida2011 ( s,se,dseds,d2seds2,nreq,
-     1                                pryld,ndyld )
+      subroutine ummdp_yoshida2011 ( s,se,dseds,d2seds2,nreq,
+     1                               pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -9751,7 +9626,7 @@ c
       nterms = n
       if ( maxa < nterms ) then
         write (6,*) 'increase maxa :',maxa,nterms
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c
       n = 0
@@ -9785,18 +9660,18 @@ c
       a(15) = 1.0d0 * 27.0d0 * pryld(1+15)          ! 27   *c15
       a(16) = 1.0d0 * 27.0d0 * pryld(1+16)          ! 27   *c16
 c
-      call jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
+      call ummdp_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
      1                          a,ipow,maxa,nterms )
 c
       return
-      end subroutine jancae_yoshida2011
+      end subroutine ummdp_yoshida2011
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     HU2005 & YOSHIDA2011 STYLE POLYNOMIAL TYPE YIELD FUNCTION
 c
-      subroutine jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
+      subroutine ummdp_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
      1                                a,ipow,maxa,nterms )
 c-----------------------------------------------------------------------
       implicit none
@@ -9939,7 +9814,7 @@ c
       end do
 c
       return
-      end subroutine jancae_hy_polytype
+      end subroutine ummdp_hy_polytype
 c
 c
 c

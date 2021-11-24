@@ -3,8 +3,7 @@ c     HILL 1990 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/0022-5096(90)90006-P
 c
-      subroutine jancae_hill1990 ( s,se,dseds,d2seds2,nreq,
-     1                             pryld,ndyld )
+      subroutine ummdp_hill1990 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )                    
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -84,7 +83,7 @@ c
 c
 c                               ---- coef. matrix of material parameters
 c                                ---- define a4-matrix consists of a & b
-      call jancae_clear2( a4,3,3 )
+      call ummdp_utility_clear2( a4,3,3 )
       a4(1,1) = -2.0d0*a + b
       a4(2,2) = 2.0d0*a + b
       a4(1,2) = - b
@@ -93,16 +92,16 @@ c                                                              ---- fai1
       x1 = s(1) + s(2)
       fai1 = abs(x1)**am
 c                                                              ---- fai2
-      call jancae_mv  ( v,a2,s,3,3 )
-      call jancae_vvs ( x2,s,v,3 )
+      call ummdp_utility_mv  ( v,a2,s,3,3 )
+      call ummdp_utility_vvs ( x2,s,v,3 )
       fai2 = sigbtm * (x2)**(am/2.0d0)
 c                                                              ---- fai3
-      call jancae_mv  ( v,a3,s,3,3 )
-      call jancae_vvs ( x3,s,v,3 )
+      call ummdp_utility_mv  ( v,a3,s,3,3 )
+      call ummdp_utility_vvs ( x3,s,v,3 )
       fai3 = (x3)**(am/2.0d0-1.0d0)
 c                                                              ---- fai4
-      call jancae_mv  ( v,a4,s,3,3 )
-      call jancae_vvs ( x4,s,v,3 )
+      call ummdp_utility_mv  ( v,a4,s,3,3 )
+      call ummdp_utility_vvs ( x4,s,v,3 )
       fai4 = x4
 c                                             ---- yield fuction : fyild
       fyild = fai1 + fai2 + fai3*fai4
@@ -128,20 +127,20 @@ c
       end do
 c                                                          ---- dfai2/ds
       wrk = sigbtm * (am/2.0) * (x2)**(am/2.0-1.0)
-      call jancae_mv( dxds2,a2,s,3,3 )
+      call ummdp_utility_mv( dxds2,a2,s,3,3 )
       do i = 1,3
         dxds2(i) = 2.0 * dxds2(i)
         dfds2(i) = wrk * dxds2(i)
       end do
 c                                                          ---- dfai3/ds
       wrk = (am/2.0-1.0) * (x3)**(am/2.0-2.0)
-      call jancae_mv( dxds3,a3,s,3,3 )
+      call ummdp_utility_mv( dxds3,a3,s,3,3 )
       do i = 1,3
         dxds3(i) = 2.0 * dxds3(i)
         dfds3(i) = wrk * dxds3(i)
       end do
 c                                                          ---- dfai4/ds
-      call jancae_mv( dxds4,a4,s,3,3 )
+      call ummdp_utility_mv( dxds4,a4,s,3,3 )
       do i = 1,3
         dxds4(i) = 2.0 * dxds4(i)
         dfds4(i) = dxds4(i)
@@ -197,16 +196,16 @@ c                                   ---- d2fai3/ds2   make   d2fds3(i,j)
       wrk2 = wrk1 * wrk2
       wrk3 = wrk1 * wrk3
 c                                   ---- [d2x3/ds2] &  make [d2fai3/ds2]
-        do i = 1,3
-          do j = 1,3
-            dx3dx3(i,j) = dxds3(i) * dxds3(j)
-            d2xds3(i,j) = 2.0 * a3(j,i)
-            d2fds3(i,j) = wrk2 * dx3dx3(i,j) + wrk3 * d2xds3(i,j)
-          end do
+      do i = 1,3
+        do j = 1,3
+          dx3dx3(i,j) = dxds3(i) * dxds3(j)
+          d2xds3(i,j) = 2.0 * a3(j,i)
+          d2fds3(i,j) = wrk2 * dx3dx3(i,j) + wrk3 * d2xds3(i,j)
         end do
+      end do
 c                                                 ---- [d2fai3/ds2]*fai4
-        do i = 1,3
-          do j = 1,3
+      do i = 1,3
+        do j = 1,3
             d2fds3(i,j) = d2fds3(i,j) * fai4
           end do
         end do
@@ -252,7 +251,7 @@ c
         end do
 c
       return
-      end subroutine jancae_hill1990
+      end subroutine ummdp_hill1990
 c
 c
 c

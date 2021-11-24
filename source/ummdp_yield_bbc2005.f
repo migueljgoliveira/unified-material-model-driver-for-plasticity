@@ -3,8 +3,7 @@ c     BBC2005 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: 
 c
-      subroutine jancae_bbc2005 ( s,se,dseds,d2seds2,nreq,
-     1                            pryld,ndyld )
+      subroutine ummdp_bbc2005 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -261,7 +260,7 @@ c
       end if
 c
       return
-      end subroutine jancae_bbc2005
+      end subroutine ummdp_bbc2005
 c
 c
 c

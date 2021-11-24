@@ -26,9 +26,8 @@ c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE YIELD FUNCTION AND DERIVATIVES
 c
-      subroutine jancae_yield ( se,cdseds,cd2seds2,nreq,
-     &                          cs,nttl,nnrm,nshr,
-     &                          pryld,ndyld )
+      subroutine ummdp_yield ( se,cdseds,cd2seds2,nreq,cs,nttl,nnrm,
+     1                         nshr,pryld,ndyld )                 
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -49,10 +48,10 @@ c
 c
       if ( ntyld < 0 ) then
         if ( ( nnrm /= 2 ) .or. ( nshr /= 1 ) ) then
-          write (6,*) 'error in jancae_yield'
+          write (6,*) 'error in ummdp_yield'
           write (6,*) 'ntyld<0 for plane stress'
           write (6,*) 'nnrm,nshr,ntyld:',nnrm,nshr,ntyld
-          call jancae_exit (9000)
+          call ummdp_exit (9000)
         end if
         goto 100
       end if
@@ -61,7 +60,7 @@ c
       do i = 1,nttl
         ss = ss + cs(i)**2
       end do
-      if ( ( ss <= 0.0 ) .and. ( nreq == 0 ) ) then
+      if ( (ss <= 0.0) .and. (nreq == 0) ) then
         se = 0.0
         return
       end if
@@ -85,7 +84,7 @@ c                                        ---- set index to s(i) to cs(i)
         end do
       end if
 c                                                          ---- set s(i)
-      call jancae_clear1 ( s,6 )
+      call ummdp_utility_clear1 ( s,6 )
       do i = 1,6
         if ( indx(i) /= 0 ) then
           s(i) = cs(indx(i))
@@ -94,36 +93,31 @@ c                                                          ---- set s(i)
 c
       select case ( ntyld )
       case ( 0 )                                             ! von Mises
-        call jancae_mises ( s,se,dseds,d2seds2,nreq )
+        call ummdp_mises ( s,se,dseds,d2seds2,nreq )
 c
       case ( 1 )                                             ! Hill 1948
-        call jancae_hill1948 ( s,se,dseds,d2seds2,nreq,
-     &                         pryld,ndyld )
+        call ummdp_hill1948 ( s,se,dseds,d2seds2,nreq,pryld,ndyld ) 
 c
       case ( 2 )                                           ! Yld2004-18p
-        call jancae_yld2004_18p ( s,se,dseds,d2seds2,nreq,
-     &                            pryld,ndyld )
+        call ummdp_yld2004_18p ( s,se,dseds,d2seds2,nreq,pryld,ndyld )                         
 c
       case ( 3 )                                              ! CPB 2006
-        call jancae_cpb2006 ( s,se,dseds,d2seds2,nreq,
-     &                        pryld,ndyld )
+        call ummdp_cpb2006 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )                      
 c
       case ( 4 )                                 ! Karafillis-Boyce 1993
-        call jancae_KarafillisBoyce ( s,se,dseds,d2seds2,nreq,
-     &                                pryld,ndyld )
+        call ummdp_karafillis_boyce ( s,se,dseds,d2seds2,nreq,
+     1                                pryld,ndyld )                         
 c
       case ( 5 )                                               ! Hu 2005
-        call jancae_hu2005 ( s,se,dseds,d2seds2,nreq,
-     &                       pryld,ndyld )
+        call ummdp_hu2005 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )        
 c
       case ( 6 )                                          ! Yoshida 2011
-        call jancae_yoshida2011 ( s,se,dseds,d2seds2,nreq,
-     &                            pryld,ndyld )
+        call ummdp_yoshida2011 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )            
 c
       case default
-        write (6,*) 'error in jancae_yield'
+        write (6,*) 'error in ummdp_yield'
         write (6,*) 'ntyld error :',ntyld
-        call jancae_exit (9000)
+        call ummdp_exit (9000)
       end select
 c
 c                                                        ---- set dse/ds
@@ -153,41 +147,34 @@ c                                       ---- plane stress yield criteria
 c
       select case ( ntyld )
       case ( -1 )                                    ! Gotoh Biquadratic
-        call jancae_gotoh ( cs,se,cdseds,cd2seds2,nreq,
-     &                      pryld,ndyld )
+        call ummdp_gotoh ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )
 c
       case ( -2 )                                           ! Yld2000-2d
-        call jancae_yld2000 ( cs,se,cdseds,cd2seds2,nreq,
-     &                        pryld,ndyld )
+        call ummdp_yld2000 ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )
 c
       case ( -3 )                                               ! Vegter
-        call jancae_vegter ( cs,se,cdseds,cd2seds2,nreq,
-     &                       pryld,ndyld )
+        call ummdp_vegter ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )
 c
       case ( -4 )                                             ! BBC 2005
-        call jancae_bbc2005 ( cs,se,cdseds,cd2seds2,nreq,
-     &                        pryld,ndyld )
+        call ummdp_bbc2005 ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )  
 c
       case ( -5 )                                                ! Yld89
-        call jancae_yld89 ( cs,se,cdseds,cd2seds2,nreq,
-     &                      pryld,ndyld )
+        call ummdp_yld89 ( cs,se,cdseds,cd2seds2,nreq, pryld,ndyld )                 
 c
       case ( -6 )                                             ! BBC 2008
-        call jancae_bbc2008 ( cs,se,cdseds,cd2seds2,nreq,
-     &                        pryld,ndyld )
+        call ummdp_bbc2008 ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )               
 c
       case ( -7 )                                            ! Hill 1990
-        call jancae_hill1990 ( cs,se,cdseds,cd2seds2,nreq,
-     &                         pryld,ndyld )
+        call ummdp_hill1990 ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )                 
 c
       case default
-        write (6,*) 'error in jancae_yield'
+        write (6,*) 'error in ummdp_yield'
         write (6,*) 'ntyld error :',ntyld
-        call jancae_exit (9000)
+        call ummdp_exit (9000)
       end select
 c
       return
-      end subroutine jancae_yield
+      end subroutine ummdp_yield
 c
 c
 c

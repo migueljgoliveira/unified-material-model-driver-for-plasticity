@@ -3,8 +3,7 @@ c     HU2005 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2004.11.004
 c
-      subroutine jancae_hu2005 ( s,se,dseds,d2seds2,nreq,
-     1                           pryld,ndyld )
+      subroutine ummdp_hu2005 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -31,7 +30,7 @@ c
       nterms = n
       if ( maxa < nterms ) then
         write (6,*) 'increase maxa :',maxa,nterms
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c
       n = 0
@@ -58,11 +57,11 @@ c
       a(8) =  pryld(1+8)    ! C2 <-
       a(9) =  pryld(1+6)    ! X7
 c
-      call jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
+      call ummdp_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
      1                          a,ipow,maxa,nterms )
 c
       return
-      end subroutine jancae_hu2005
+      end subroutine ummdp_hu2005
 c
 c
 c

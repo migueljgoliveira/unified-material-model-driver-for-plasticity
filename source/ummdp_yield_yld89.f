@@ -3,8 +3,7 @@ c     YLD89 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: 
 c
-      subroutine jancae_yld89 ( s,se,dseds,d2seds2,nreq,
-     1                          pryld,ndyld )
+      subroutine ummdp_yld89 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -21,7 +20,7 @@ c
       real*8 d2seds2z(3,3)
 c-----------------------------------------------------------------------
 c
-      call jancae_yld89_branch ( s,se,dseds,d2seds2,nreq,
+      call ummdp_yld89_branch ( s,se,dseds,d2seds2,nreq,
      1                           pryld,ndyld )
 c
       if ( nreq <= 1 ) return
@@ -35,14 +34,14 @@ c
 c
       do i = 1,3
         s0(i) = s(i) + delta
-        call jancae_yld89_branch ( s0,se0,dsedsz,d2seds2z,1,
+        call ummdp_yld89_branch ( s0,se0,dsedsz,d2seds2z,1,
      1                             pryld,ndyld )
         ta1 = dsedsz(1)
         ta2 = dsedsz(2)
         ta3 = dsedsz(3)
 c
         s0(i) = s(i) - delta
-        call jancae_yld89_branch ( s0,se0,dsedsz,d2seds2z,1,
+        call ummdp_yld89_branch ( s0,se0,dsedsz,d2seds2z,1,
      2                             pryld,ndyld )
         tb1 = dsedsz(1)
         tb2 = dsedsz(2)
@@ -65,14 +64,14 @@ c                                         ---- d2seds2 must be symmetric
       end do
 c
       return
-      end subroutine jancae_yld89
+      end subroutine ummdp_yld89
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     BRANCH OF YLD89
 c
-      subroutine jancae_yld89_branch ( s,se,dseds,d2seds2,nreq,
-     1                                 pryld,ndyld )
+      subroutine ummdp_yld89_branch ( s,se,dseds,d2seds2,nreq,
+     1                                pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -97,21 +96,21 @@ c                                                        ---- parameters
       h  = pryld(1+3)
       p  = pryld(1+4)                                   
 c                                                       ---- clear start
-      call jancae_clear1 ( dfdK,2 )
-      call jancae_clear2 ( dKds,2,3 )
+      call ummdp_utility_clear1 ( dfdK,2 )
+      call ummdp_utility_clear2 ( dKds,2,3 )
 c
-      call jancae_clear2 ( d2fdK2,2,2 )
-      call jancae_clear2 ( dfdKdfdK,2,2 )
-      call jancae_clear2 ( d2K1ds2,3,3 )
-      call jancae_clear2 ( d2K2ds2,3,3 )
+      call ummdp_utility_clear2 ( d2fdK2,2,2 )
+      call ummdp_utility_clear2 ( dfdKdfdK,2,2 )
+      call ummdp_utility_clear2 ( d2K1ds2,3,3 )
+      call ummdp_utility_clear2 ( d2K2ds2,3,3 )
 c
-      call jancae_clear1 ( df1dK,2 )
-      call jancae_clear1 ( df2dK,2 )
-      call jancae_clear1 ( df3dK,2 )
+      call ummdp_utility_clear1 ( df1dK,2 )
+      call ummdp_utility_clear1 ( df2dK,2 )
+      call ummdp_utility_clear1 ( df3dK,2 )
 c
-      call jancae_clear2 ( d2f1dK2,2,2 )
-      call jancae_clear2 ( d2f2dK2,2,2 )
-      call jancae_clear2 ( d2f3dK2,2,2 )
+      call ummdp_utility_clear2 ( d2f1dK2,2,2 )
+      call ummdp_utility_clear2 ( d2f2dK2,2,2 )
+      call ummdp_utility_clear2 ( d2f3dK2,2,2 )
 c                                                         ---- clear end
 c
 c     K1
@@ -150,7 +149,7 @@ c
           dKds(2,3) = p*p*s(3) / pK2
         end if
 c                                                  ---- d2K1ds2(3,3)=0.0
-        call jancae_clear2 ( d2K1ds2,3,3 )
+        call ummdp_utility_clear2 ( d2K1ds2,3,3 )
 c                                                      ---- d2K2ds2(3,3)
         if ( pK2 == 0.0d0 ) then
           DpK22 = 1.0d-32
@@ -262,8 +261,8 @@ c
         do i = 1,3
           do j = 1,3
 c
-            call jancae_clear1 (w,2)
-            call jancae_clear1 (x,2)
+            call ummdp_utility_clear1 (w,2)
+            call ummdp_utility_clear1 (x,2)
 c
             do k = 1,2
               do l = 1,2
@@ -289,7 +288,7 @@ c
       end if
 c
       return
-      end subroutine jancae_yld89_branch
+      end subroutine ummdp_yld89_branch
 c
 c
 c

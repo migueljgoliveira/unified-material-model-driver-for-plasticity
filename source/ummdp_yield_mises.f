@@ -1,10 +1,9 @@
 ************************************************************************
 c     VON MISES YIELD FUNCTION AND DERIVATIVES
 c
-      subroutine jancae_mises ( s,se,dseds,d2seds2,nreq )
+      subroutine ummdp_mises ( s,se,dseds,d2seds2,nreq )
 c-----------------------------------------------------------------------
       implicit none
-c
 c
       integer,intent(in) :: nreq
       real*8 ,intent(in) :: s(6)
@@ -20,7 +19,7 @@ c
 c-----------------------------------------------------------------------
 c	
 c                                               ---- coefficients matrix
-      call jancae_clear2 ( c,6,6 )
+      call ummdp_utility_clear2 ( c,6,6 )
       do i = 1,3
         do j = 1,3
           c(i,j) = -0.5d0
@@ -31,8 +30,8 @@ c                                               ---- coefficients matrix
         c(i,i) = 3.0d0
       end do
 c
-      call jancae_mv  ( v,c,s,6,6 )
-      call jancae_vvs ( phi,s,v,6 )
+      call ummdp_utility_mv  ( v,c,s,6,6 )
+      call ummdp_utility_vvs ( phi,s,v,6 )
 c                                                 ---- equivalent stress
       se = sqrt(phi)
 c                                              ---- 1st order derivative
@@ -51,7 +50,7 @@ c                                              ---- 2nd order derivative
       end if
 c
       return
-      end subroutine jancae_mises
+      end subroutine ummdp_mises
 c
 c
 c

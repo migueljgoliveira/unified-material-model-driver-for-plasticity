@@ -63,12 +63,12 @@ c                        lay : layer no. of shell
 c
 c                                        ---- set debug and verbose mode
       nvbs0 = props(1)
-      call jancae_debugmode ( nvbs,nvbs0 )
+      call ummdp_debugmode ( nvbs,nvbs0 )
 c                                       ---- output detailed information
       if ( nvbs >= 4 ) then
-        call jancae_print_info  ( kinc,ndi,nshr )
-        call jancae_print_inout ( 0,stress,dstran,ddsdde,ntens,
-     &                           statev,nstatv )
+        call ummdp_print_info  ( kinc,ndi,nshr )
+        call ummdp_print_inout ( 0,stress,dstran,ddsdde,ntens,statev,
+     1                           nstatv )
       end if
 c
 c                                           ---- set material properties
@@ -76,32 +76,26 @@ c                                           ---- set material properties
         prop(i-1) = props(i)
       end do
 c
-      call jancae_prop_dim ( prop,nprop,propdim,
-     &                       ndela,ndyld,ndihd,ndkin,
-     &                       npbs,ndrup )
+      call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
+     1                      npbs,ndrup )                       
       if ( npbs > mxpbs ) then
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
         write (6,*) 'mxpbs=',mxpbs
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c                                                      ---- check nstatv
-      call jancae_check_nisv ( nstatv,ntens,npbs )
+      call ummdp_check_nisv ( nstatv,ntens,npbs )
 c                             ---- copy current internal state variables
-      call jancae_isvprof ( isvrsvd,isvsclr )
-      call jancae_isv2pex ( isvrsvd,isvsclr,
-     &                      statev,nstatv,
-     &                      p,pe,x1,ntens,mxpbs,npbs )
+      call ummdp_isvprof ( isvrsvd,isvsclr )
+      call ummdp_isv2pex ( isvrsvd,isvsclr,statev,nstatv,p,pe,x1,ntens,
+     1                     mxpbs,npbs )                    
 c
 c                             ---- update stress and set tangent modulus
       mjac = 1
-      call ummdp_plasticity ( stress,s2,dstran,
-     &                        p,dp,dpe,de33,
-     &                        x1,x2,mxpbs,
-     &                        ddsdde,
-     &                        ndi,nshr,ntens,
-     &                        nvbs,mjac,
-     &                        prop,nprop,propdim )
+      call ummdp_plasticity ( stress,s2,dstran,p,dp,dpe,de33,x1,x2,
+     1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
+     2                        prop,nprop,propdim )                      
 c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
@@ -126,25 +120,23 @@ c                                       ---- update of back stress comp.
       end if
 c                           ----  if debug mode, output return arguments
       if ( nvbs >= 4 ) then
-        call jancae_print_inout ( 1,stress,dstran,ddsdde,ntens,
-     &                           statev,nstatv )
+        call ummdp_print_inout ( 1,stress,dstran,ddsdde,ntens,statev,
+     1                           nstatv )
       end if
 c
       return
-      end
+      end subroutine umat
 c
 c
 c
 c***********************************************************************
-c
       SUBROUTINE SDVINI ( STATEV,COORDS,NSTATV,NCRDS,NOEL,NPT,
-     &                    LAYER,KSPT )
-c
+     1                    LAYER,KSPT )
+c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
       DIMENSION STATEV(NSTATV),COORDS(NCRDS)
-c
-c***********************************************************************
+c-----------------------------------------------------------------------
 c
       ne = noel
       ip = npt
@@ -160,24 +152,21 @@ c
       end do
 c
       return
-      end
+      end subroutine sdvini
 c
 c
 c
 c***********************************************************************
-c
       SUBROUTINE UVARM ( UVAR,DIRECT,T,TIME,DTIME,CMNAME,ORNAME,
-     &    NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
-     &    jmac,jmatyp,matlayo,laccfla )
-c
+     1    NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
+     2    jmac,jmatyp,matlayo,laccfla )
+c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
       CHARACTER*80 CMNAME,ORNAME
       CHARACTER*3  flgray(15)
       DIMENSION UVAR(NUVARM),DIRECT(3,3),T(3,3),TIME(2)
       DIMENSION array(15),jarray(15),jmac(*),jmatyp(*),COORD(*)
-c
-c***********************************************************************
 c-----------------------------------------------------------------------
 c     The dimensions of the variables flgray, array and jarray
 c     must be set equal to or greater than 15.
@@ -228,12 +217,12 @@ c                                            ---- get uvar before update
         uvar1(i) = uvar(i)
       end do
 c                                                        ---- get stress
-      call getvrm ( 'S',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                  matlayo,laccfla )
+      call getvrm ( 'S',array,jarray,flgray,jrcd,jmac,jmatyp,matlayo,
+     1              laccfla )
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for s'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c
       do i = 1,ndi
@@ -248,22 +237,21 @@ c                                               ---- get state variables
       if ( nsdv > maxsdv ) then
         write (6,*) 'increase dimension of ARRAY2 and JARRAY2'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       call getvrm ( 'SDV',ARRAY2,JARRAY2,FLGRAY2,jrcd,jmac,jmatyp,
-     &                    matlayo,laccfla)
+     1              matlayo,laccfla)
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sdv'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       do i = 1,nsdv
         sdv(i) = array2(i)
       end do
 c                                           ---- set material properties
-      call jancae_prop_dim ( prop,nprop,propdim,
-     &                       ndela,ndyld,ndihd,ndkin,
-     &                       npbs,ndrup )
+      call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
+     1                      npbs,ndrup )                        
       allocate( prela(ndela) )
       allocate( pryld(ndyld) )
       allocate( prihd(ndihd) )
@@ -292,10 +280,9 @@ c                                           ---- set material properties
       end do
 c
 c                                                  ---- calc back stress
-      call jancae_isvprof ( isvrsvd,isvsclr )
-      call jancae_isv2pex ( isvrsvd,isvsclr,
-     &                      sdv,maxsdv,
-     &                      p,pe,x,ntens,mxpbs,npbs )
+      call ummdp_isvprof ( isvrsvd,isvsclr )
+      call ummdp_isv2pex ( isvrsvd,isvsclr,sdv,maxsdv,p,pe,x,ntens,
+     1                     mxpbs,npbs )                      
       do i = 1,ntens
          xsum(i) = 0.0
       end do
@@ -311,14 +298,13 @@ c                                                 ---- equivalent stress
         do i = 1,ntens
           eta(i) = s(i) - xsum(i)
         end do
-        call jancae_yield ( se,dseds,d2seds2,0,
-     &                      eta,ntens,ndi,nshr,
-     &                      pryld,ndyld )
+        call ummdp_yield ( se,dseds,d2seds2,0,eta,ntens,ndi,nshr,pryld,
+     1                     ndyld )                        
         uvar(1) = se
       end if
 c                                                       ---- flow stress
       if ( nuvarm >= 2 ) then
-        call jancae_isotropic ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
+        call ummdp_isotropic ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
         uvar(2) = sy
       end if
 c                                                       ---- back stress
@@ -334,21 +320,21 @@ c                                                 ---- rupture criterion
         nt = ntens
         if ( npbs == 0 ) nt = 0
         if ( nuvarm >= (3+nt) ) then
-          call jancae_rupture ( ntens,sdv,nsdv,uvar,uvar1,nuvarm,
-     &                          jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                          nt,ndrup,prrup)
+          call ummdp_rupture ( ntens,sdv,nsdv,uvar,uvar1,nuvarm,jrcd,
+     1                         jmac,jmatyp,matlayo,laccfla,nt,ndrup,
+     2                         prrup) 
         end if
       end if
 c
       return
-      end
+      end subroutine uvarm
 c
 c
 c
-c-----------------------------------------------------------------------
+************************************************************************
 c     SET INTERNAL STATE VARIABLES PROFILE
 c
-      subroutine jancae_isvprof ( isvrsvd,isvsclr )
+      subroutine ummdp_isvprof ( isvrsvd,isvsclr )
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
@@ -357,19 +343,18 @@ c
       isvsclr = 1             ! statev(1) is for eq.plast.strain
 c
       return
-      end
+      end subroutine ummdp_isvprof
 c
 c
 c
-c-----------------------------------------------------------------------
-c     exit program by error
+************************************************************************
+c     EXIT PROGRAM BY ERROR
 c
-      subroutine jancae_exit (nexit)
-c
+      subroutine ummdp_exit (nexit)
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
       common /jancae1/ne,ip,lay
-c                                  nexit : exit code
+c-----------------------------------------------------------------------
       write (6,*) 'error code :',nexit
       write (6,*) 'element no.           :',ne
       write (6,*) 'integration point no. :',ip
@@ -378,7 +363,7 @@ c
       call xit
 c
       return
-      end
+      end subroutine ummdp_exit
 c
 c
 c

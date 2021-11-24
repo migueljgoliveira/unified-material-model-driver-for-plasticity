@@ -3,8 +3,7 @@ c     Hill 1948 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi:
 c
-      subroutine jancae_hill1948 ( s,se,dseds,d2seds2,nreq,
-     1                             pryld,ndyld )
+      subroutine ummdp_hill1948 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -29,7 +28,7 @@ c                                            ---- anisotropic parameters
       pm = pryld(1+5)
       pn = pryld(1+6)
 c                                               ---- coefficients matrix
-      call jancae_clear2 ( c,6,6 )
+      call ummdp_utility_clear2 ( c,6,6 )
       c(1,1) = pg + ph
       c(1,2) = -ph
       c(1,3) = -pg
@@ -48,8 +47,8 @@ c                                               ---- coefficients matrix
         end do
       end do
 c
-      call jancae_mv  ( v,c,s,6,6 )
-      call jancae_vvs ( phi,s,v,6 )
+      call ummdp_utility_mv  ( v,c,s,6,6 )
+      call ummdp_utility_vvs ( phi,s,v,6 )
 c                                                 ---- equivalent stress
       if ( phi <= 0.0 ) phi = 0.0
       se = sqrt(phi)
@@ -69,7 +68,7 @@ c                                              ---- 2nd order derivative
       end if
 c
       return
-      end subroutine jancae_hill1948
+      end subroutine ummdp_hill1948
 c
 c
 c

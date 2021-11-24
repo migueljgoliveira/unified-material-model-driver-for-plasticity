@@ -6,8 +6,7 @@ c
 c     !!! CAUTION !!!
 c     Plane stress condition is NOT implemented in this code.
 c
-      subroutine jancae_cpb2006 ( s,se,dseds,d2seds2,nreq,
-     1                            pryld,ndyld )
+      subroutine ummdp_cpb2006 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -20,7 +19,8 @@ c
 c
       integer i,j,k,m,n,l,iq,ip,ir
       real*8 pi,eps,a,ck,ai,H1,H2,H3,p,q,theta,F,D,DseDF,denom,D2seDF2,
-     1       del,sea,seb,abc1,abc2,seaa,seba,seab,sebb,cpb2006_seND
+     1       del,sea,seb,abc1,abc2,seaa,seba,seab,sebb,
+     2       ummdp_cpb2006_seND
       real*8 s0(6),sigma(6),psigma(3),phi(3),psi(3),omega(3),DFDH(3),
      1       DFDpsigma(3),DFDs(6)
       real*8 c(6,6),ct(6,6),DpsigmaDH(3,3),DHdsigma(3,6),DsigmaDs(6,6),
@@ -57,7 +57,7 @@ c
       eps = 1.0d-5
 c                                        ---- set anisotropic parameters
 c
-      call jancae_clear2 ( c,6,6 )
+      call ummdp_utility_clear2 ( c,6,6 )
 c
       c(1,1) = pryld(1+1)            ! C11
       c(1,2) = pryld(1+2)            ! C12
@@ -90,7 +90,7 @@ c
       omega(3) = (c(1,3) + c(2,3) - 2.0d0*c(3,3)) / 3.0d0
 c
 c      ---- Calculate 4th order orthotropic tensor "L" ( named ct here )
-      call jancae_clear2 ( ct,6,6 )
+      call ummdp_utility_clear2 ( ct,6,6 )
 c
       ct(1,1) = phi(1)
       ct(1,2) = psi(1)
@@ -106,7 +106,7 @@ c
       ct(6,6) = c(6,6)
 c
 c                               ---- Calculate linear transformed stress
-      call jancae_mv ( sigma,ct,s,6,6 )
+      call ummdp_utility_mv ( sigma,ct,s,6,6 )
 c
 c            ---- Calculate principal values of transformed stress sigma
 c                                                     by Cardan's method
@@ -163,8 +163,8 @@ c
 c                                 ---- D(F)/D(H) by using D(psigma)/D(H)
 c                                         D(F)/D(H)      -> 1 x 3 Vector
 c                                         D(psigma)/D(H) -> 3 x 3 Matrix
-        call jancae_clear1 ( DFDH,3 )
-        call jancae_clear2 ( DpsigmaDH,3,3 )
+        call ummdp_utility_clear1 ( DFDH,3 )
+        call ummdp_utility_clear2 ( DpsigmaDH,3,3 )
 c
         if ( abs(psigma(2)-psigma(3)) / se > eps .and.
      1       abs(psigma(2)-psigma(1)) / se > eps ) then
@@ -210,7 +210,7 @@ c
         end if
 c
 c                                     ---- D(H)/D(sigma) -> 3 x 6 Matrix
-        call jancae_clear2 ( DHDsigma,3,6 )
+        call ummdp_utility_clear2 ( DHDsigma,3,6 )
 c
         DHDsigma(1,1) = 1.0d0 / 3.0d0
         DHDsigma(1,2) = 1.0d0 / 3.0d0
@@ -240,8 +240,8 @@ c                                     ---- D(sigma)/D(s) -> 6 x 6 Matrix
         end do
 c
 c                                        ---- D(se)/D(s) -> 1 x 3 Vector
-        call jancae_clear1 ( DFDs,6 )
-        call jancae_clear2 ( dummat,3,6 )
+        call ummdp_utility_clear1 ( DFDs,6 )
+        call ummdp_utility_clear2 ( dummat,3,6 )
 c
         do i = 1,6
           do j = 1,3
@@ -263,7 +263,7 @@ c                                              ---- D(se)/D(F) -> Scalar
         D2seDF2 = (1.0d0/D)**ai * ai * (ai-1.0d0) * F**(ai-2.0d0)
 c
 c                                  ---- D2(F)/D(psigma)2 -> 3 x 3 Matrix
-        call jancae_clear2 ( D2FDpsigma2,3,3 )
+        call ummdp_utility_clear2 ( D2FDpsigma2,3,3 )
 c
         do i = 1,3
           D2FDpsigma2(i,i) = a*(psigma(i)/abs(psigma(i))-ck)**2.0d0 *
@@ -271,7 +271,7 @@ c
         end do
 c
 c                              ---- D2(psigma)/D(H)2 -> 3 x 3 x 3 Matrix
-        call jancae_clear3 ( D2psigmaDH2,3,3,3 )
+        call ummdp_utility_clear3 ( D2psigmaDH2,3,3,3 )
 c
         if ( abs(psigma(2)-psigma(3)) / se > eps .and.
      1       abs(psigma(2)-psigma(1)) / se > eps ) then
@@ -298,7 +298,7 @@ c
           end do
 c
 c                                       ---- D2(F)/D(H)2 -> 3 x 3 Matrix
-          call jancae_clear2 ( D2FDH2,3,3 )
+          call ummdp_utility_clear2 ( D2FDH2,3,3 )
 c
           do iq = 1,3
             do m = 1,3
@@ -314,7 +314,7 @@ c
           end do
 c
 c                               ---- D2(H)/D(sigma)2 -> 3 x 6 x 6 Matrix
-          call jancae_clear3 ( D2HDsigma2,3,6,6 )
+          call ummdp_utility_clear3 ( D2HDsigma2,3,6,6 )
 c
           D2HDsigma2(2,1,2) = -1.0d0 / 3.0d0
           D2HDsigma2(2,2,3) = -1.0d0 / 3.0d0
@@ -358,8 +358,8 @@ c
           D2HDsigma2(3,4,3) = D2HDsigma2(3,3,4)
 c
 c                                       ---- D2(F)/D(s)2 -> 6 x 6 Matrix
-          call jancae_clear2 ( D2FDs2,6,6 )
-          call jancae_clear2 ( dummat,3,6 )
+          call ummdp_utility_clear2 ( D2FDs2,6,6 )
+          call ummdp_utility_clear2 ( dummat,3,6 )
 c
           do i = 1,3
             do j = 1,6
@@ -405,9 +405,9 @@ c
             do j = 1,6
               if ( i == j ) then
                 s0(i) = s(i) - del
-                sea = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                sea = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
                 s0(i) = s(i) + del
-                seb = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                seb = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i)
                 abc1 = (se-sea) / del
@@ -416,19 +416,19 @@ c
               else
                 s0(i) = s(i) - del
                 s0(j) = s(j) - del
-                seaa = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                seaa = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i) + del
                 s0(j) = s(j) - del
-                seba = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                seba = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i) - del
                 s0(j) = s(j) + del
-                seab = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                seab = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i) + del
                 s0(j) = s(j) + del
-                sebb = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                sebb = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i)
                 s0(j) = s(j)
@@ -442,14 +442,14 @@ c
       end if
 c
       return
-      end subroutine jancae_cpb2006
+      end subroutine ummdp_cpb2006
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     NUMERICAL DIFFERENTIATION FOR EQUIVALENT STRESS
 c
-      real*8 function cpb2006_seND ( s,ct,phi,ck,a,ai )
+      real*8 function ummdp_cpb2006_seND ( s,ct,phi,ck,a,ai )
 c-----------------------------------------------------------------------
       implicit none
 c 
@@ -463,7 +463,7 @@ c-----------------------------------------------------------------------
 c
       pi = acos(-1.0d0)
 c                               ---- calculate linear transformed stress
-      call jancae_mv ( sigma,ct,s,6,6 )
+      call ummdp_utility_mv ( sigma,ct,s,6,6 )
 c                                       ---- 1st, 2nd and 3rd invariants
       H1 = (sigma(1)+sigma(2)+sigma(3)) / 3.0d0
       H2 = (sigma(5)**2.0d0+sigma(6)**2.0d0+sigma(4)**2.0d0 - 
@@ -495,10 +495,10 @@ c                                           ---- denominator coefficient
      &    (abs(phi(2))-ck*phi(2))**a +
      &    (abs(phi(3))-ck*phi(3))**a
 c
-      cpb2006_seND = (F/D) ** ai
+      ummdp_cpb2006_seND = (F/D) ** ai
 c
       return
-      end function cpb2006_seND
+      end function ummdp_cpb2006_seND
 c
 c
 c

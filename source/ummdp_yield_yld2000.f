@@ -3,8 +3,7 @@ c     YLD2000-2D YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/S0749-6419(02)00019-0
 c
-      subroutine jancae_yld2000 ( s,se,dseds,d2seds2,nreq,
-     &                            pryld,ndyld )
+      subroutine ummdp_yld2000 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )     
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -46,18 +45,18 @@ c                                            ---- anisotropic parameters
       end do
       em = pryld(9+1)
 c                                  ---- set linear transformation matrix
-      call jancae_yld2000_2d_am ( a,am )
+      call ummdp_yld2000_2d_am ( a,am )
 c                                                 ---- equivalent stress
-      call jancae_yld2000_2d_xyphi ( s,em,am,x,y,phi )
+      call ummdp_yld2000_2d_xyphi ( s,em,am,x,y,phi )
       q = phi(1) + phi(2)
       if ( q <= 0.0 ) q = 0.0
       se = (0.5d0*q) ** (1.0d0/em)
 c                                              ---- 1st order derivative
       if ( nreq >= 1 ) then
-        call jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
+        call ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,
      1                               dsedphi,dphidx,
      2                               dxdy,dyds,se )
-        call jancae_clear1 ( dseds,3 )
+        call ummdp_utility_clear1 ( dseds,3 )
         do nd = 1,2
           do m = 1,2
             do k = 1,3
@@ -71,10 +70,10 @@ c                                              ---- 1st order derivative
       end if
 c                                              ---- 2nd order derivative
       if ( nreq >= 2 ) then
-        call jancae_yld2000_2d_ds2 ( phi,x,y,em,
+        call ummdp_yld2000_2d_ds2 ( phi,x,y,em,
      1                               d2sedphi2,d2phidx2,
      2                               d2xdy2,se )
-        call jancae_clear2 ( d2seds2,3,3 )
+        call ummdp_utility_clear2 ( d2seds2,3,3 )
         do i = 1,3
         do j = 1,3
           do nd1 = 1,2
@@ -124,14 +123,14 @@ c                                              ---- 2nd order derivative
       end if
 c
       return
-      end subroutine jancae_yld2000
+      end subroutine ummdp_yld2000
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     SET LINEAR TRANSFORMATION MATRIX
 c
-      subroutine jancae_yld2000_2d_am ( a,am )
+      subroutine ummdp_yld2000_2d_am ( a,am )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -171,14 +170,14 @@ c
       end do
 c
       return
-      end subroutine jancae_yld2000_2d_am
+      end subroutine ummdp_yld2000_2d_am
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. barlat-yld2k function x,y,phi
 c
-      subroutine jancae_yld2000_2d_xyphi ( s,em,am,x,y,phi )
+      subroutine ummdp_yld2000_2d_xyphi ( s,em,am,x,y,phi )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -198,7 +197,7 @@ c
       p(1) =  1.0d0
       p(2) = -1.0d0
 c                                                       ---- {y}=[am]{s}
-      call jancae_clear2 ( y,2,3 )
+      call ummdp_utility_clear2 ( y,2,3 )
       do nd = 1,2
         do i = 1,3
           do j = 1,3
@@ -222,16 +221,15 @@ c                                                 ---- phi(1) and phi(2)
      &          abs(2.0d0*x(nd,1)+x(nd,2))**em
 c
       return
-      end subroutine jancae_yld2000_2d_xyphi
+      end subroutine ummdp_yld2000_2d_xyphi
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     SET 1ST ORDER DERIVATIVE OF PARAMETERS
 c
-      subroutine jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
-     1                                   dsedphi,dphidx,
-     2                                   dxdy,dyds,se )
+      subroutine ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,dsedphi,dphidx,
+     1                                  dxdy,dyds,se )       
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -306,16 +304,15 @@ c
       end do
 c
       return
-      end subroutine jancae_yld2000_2d_ds1
+      end subroutine ummdp_yld2000_2d_ds1
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     SET 2ND ORDER DERIVATIVE OF PARAMETERS
 c
-      subroutine jancae_yld2000_2d_ds2 ( phi,x,y,em,
-     1                                   d2sedphi2,d2phidx2,
-     2                                   d2xdy2,se )
+      subroutine ummdp_yld2000_2d_ds2 ( phi,x,y,em,d2sedphi2,d2phidx2,
+     1                                  d2xdy2,se )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -411,7 +408,7 @@ c                                                           ---- d2x/dy2
       end do
 c
       return
-      end subroutine jancae_yld2000_2d_ds2
+      end subroutine ummdp_yld2000_2d_ds2
 c
 c
 c

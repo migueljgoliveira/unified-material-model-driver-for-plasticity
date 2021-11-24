@@ -15,13 +15,9 @@ c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kinematic ( vk,dvkdp,
-     &                              dvkds,dvkdx,dvkdxt,
-     &                              p,s,x,xt,
-     &                              nttl,nnrm,nshr,
-     &                              mxpbs,npbs,
-     &                              prkin,ndkin,
-     &                              pryld,ndyld )
+      subroutine ummdp_kinematic ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,x,xt,
+     1                             nttl,nnrm,nshr,mxpbs,npbs,prkin,
+     2                             ndkin,pryld,ndyld )
 c
 c-----------------------------------------------------------------------
       implicit none
@@ -59,69 +55,53 @@ c
         return
 c
       case ( 1 )                                                ! Prager
-        call jancae_kin_prager ( vk,dvkdp,
-     &                           dvkds,dvkdx,dvkdxt,
-     &                           p,s,x,xt,
-     &                           nttl,nnrm,nshr,
-     &                           mxpbs,npbs,
-     &                           prkin,ndkin,pryld,ndyld )
+        call ummdp_kinematic_prager ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,x,
+     1                                xt,nttl,nnrm,nshr,mxpbs,npbs,
+     2                                prkin,ndkin,pryld,ndyld )
 c
       case ( 2 )                                               ! Ziegler
-        call jancae_kin_ziegler ( vk,dvkdp,
-     &                            dvkds,dvkdx,dvkdxt,
-     &                            p,s,x,xt,
-     &                            nttl,nnrm,nshr,
-     &                            mxpbs,npbs,
-     &                            prkin,ndkin,pryld,ndyld )
+        call ummdp_kinematic_ziegler ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,
+     1                                 x,xt,nttl,nnrm,nshr,mxpbs,npbs,
+     2                                 prkin,ndkin,pryld,ndyld )
 c
       case ( 3 )                          ! Armstrong & Frederick (1966)
-        call jancae_kin_armstrong ( vk,dvkdp,
-     &                              dvkds,dvkdx,dvkdxt,
-     &                              p,s,x,xt,
-     &                              nttl,nnrm,nshr,
-     &                              mxpbs,npbs,
-     &                              prkin,ndkin,pryld,ndyld )
+        call ummdp_kinematic_armstrong ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,
+     1                                   s,x,xt,nttl,nnrm,nshr,mxpbs,
+     2                                   npbs,prkin,ndkin,pryld,ndyld )
 c
       case ( 4 )                                       ! Chaboche (1979)
-        call jancae_kin_chaboche ( vk,dvkdp,
-     &                             dvkds,dvkdx,dvkdxt,
-     &                             p,s,x,xt,
-     &                             nttl,nnrm,nshr,
-     &                             mxpbs,npbs,
-     &                             prkin,ndkin,pryld,ndyld )
+        call ummdp_kinematic_chaboche ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,
+     1                                  s,x,xt, nttl,nnrm,nshr,mxpbs,
+     2                                  npbs,prkin,ndkin,pryld,ndyld )
 c
       case ( 5 )                             ! Chaboche (1979) - Ziegler
-        call jancae_kin_chaboche_ziegler ( vk,dvkdp,
-     &                                     dvkds,dvkdx,dvkdxt,
-     &                                     p,s,x,xt,
-     &                                     nttl,nnrm,nshr,
-     &                                     mxpbs,npbs,
-     &                                     prkin,ndkin,pryld,ndyld )
+        call ummdp_kinematic_chaboche_ziegler ( vk,dvkdp,dvkds,dvkdx,
+     1                                          dvkdxt,p,s,x,xt,nttl,
+     2                                          nnrm,nshr,mxpbs,npbs,
+     3                                          prkin,ndkin,pryld,
+     4                                          ndyld )
 c
       case ( 6 )                                        ! Yoshida-Uemori
-        call jancae_kin_yoshida_uemori ( vk,dvkdp,
-     &                                   dvkds,dvkdx,dvkdxt,
-     &                                   p,s,x,xt,
-     &                                   nttl,nnrm,nshr,
-     &                                   mxpbs,npbs,
-     &                                   prkin,ndkin,pryld,ndyld )
+        call ummdp_kinematic_yoshida_uemori ( vk,dvkdp,dvkds,dvkdx,
+     1                                        dvkdxt,p,s,x,xt,nttl,nnrm,
+     2                                        nshr,mxpbs,npbs,prkin,
+     3                                        ndkin,pryld,ndyld )
 c
       case default
         write (6,*) 'still not be supported. ntkin=',ntkin
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end select
 c
       return
-      end subroutine jancae_kinematic
+      end subroutine ummdp_kinematic
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE 1ST AND 2ND DERIVATIVES FOR KINEMATIC HARDENING LAWS
 c
-      subroutine jancae_dseds_kin ( eta,seta,dseds,d2seds2,
-     &                              nttl,nnrm,nshr,
-     &                              pryld,ndyld )
+      subroutine ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,nttl,
+     1                                   nnrm,nshr,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -135,9 +115,8 @@ c
 c-----------------------------------------------------------------------
 c
 c                    ---- dseds and d2seds2 for plastic strain increment
-      call jancae_yield  ( seta,dseds,d2seds2,2,
-     &                     eta,nttl,nnrm,nshr,
-     &                     pryld,ndyld )
+      call ummdp_yield ( seta,dseds,d2seds2,2,eta,nttl,nnrm,nshr,
+     1                   pryld,ndyld )
 c
 c                   ---- engineering shear strain -> tensor shear strain
       do i = nnrm+1,nttl
@@ -167,20 +146,16 @@ c                                          ---- for plane stress problem
       end if
 c
       return
-      end subroutine jancae_dseds_kin
+      end subroutine ummdp_kinematic_dseds
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     PRAGER KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kin_prager ( vk,dvkdp,
-     &                               dvkds,dvkdx,dvkdxt,
-     &                               p,s,x,xt,
-     &                               nttl,nnrm,nshr,
-     &                               mxpbs,npbs,
-     &                               prkin,ndkin,
-     &                               pryld,ndyld )
+      subroutine ummdp_kinematic_prager ( vk,dvkdp,dvkds,dvkdx,dvkdxt,
+     1                                    p,s,x,xt,nttl,nnrm,nshr,mxpbs,
+     2                                    npbs,prkin,ndkin,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -203,9 +178,8 @@ c
         eta(i) = s(i) - xt(i)
       end do
 c
-      call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
-     &                        nttl,nnrm,nshr,
-     &                        pryld,ndyld )
+      call ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,nttl,nnrm,
+     1                             nshr,pryld,ndyld )
 c
       n = 1
 c
@@ -227,20 +201,17 @@ c
       end do
 c
       return
-      end subroutine jancae_kin_prager
+      end subroutine ummdp_kinematic_prager
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     ZIEGLER KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kin_ziegler ( vk,dvkdp,
-     &                                dvkds,dvkdx,dvkdxt,
-     &                                p,s,x,xt,
-     &                                nttl,nnrm,nshr,
-     &                                mxpbs,npbs,
-     &                                prkin,ndkin,
-     &                                pryld,ndyld )
+      subroutine ummdp_kinematic_ziegler ( vk,dvkdp,dvkds,dvkdx,dvkdxt,
+     1                                     p,s,x,xt,nttl,nnrm,nshr,
+     2                                     mxpbs,npbs,prkin,ndkin,
+     3                                     pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -274,7 +245,7 @@ c
         dvkdp(n,i) = dcdp * eta(i)
       end do
 c
-      call jancae_setunitm ( am,nttl )
+      call ummdp_utility_setunitm ( am,nttl )
       do i = 1,nttl
         do j = 1,nttl
           dvkds(n,i,j) = c * am(i,j)
@@ -284,21 +255,17 @@ c
       end do
 c
       return
-      end subroutine jancae_kin_ziegler
+      end subroutine ummdp_kinematic_ziegler
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     ARMSTRONG-FREDERICK (1966) KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kin_armstrong ( vk,dvkdp,
-     &                                  dvkds,dvkdx,dvkdxt,
-     &                                  p,s,x,xt,
-     &                                  nttl,nnrm,nshr,
-     &                                  mxpbs,npbs,
-     &                                  prkin,ndkin,
-     &                                  pryld,ndyld )
-c
+      subroutine ummdp_kinematic_armstrong ( vk,dvkdp,dvkds,dvkdx,
+     1                                       dvkdxt,p,s,x,xt,nttl,nnrm,
+     2                                       nshr,mxpbs,npbs,prkin,
+     3                                       ndkin,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -323,9 +290,8 @@ c
         eta(i) = s(i) - xt(i)
       end do
 c
-      call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
-     &                        nttl,nnrm,nshr,
-     &                        pryld,ndyld )
+      call ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,nttl,nnrm,
+     1                             nshr,pryld,ndyld )
 c
       n = 1
       do i = 1,nttl
@@ -338,7 +304,7 @@ c
         dvkdp(n,i) = dcdp*dseds(i) - dgdp*xt(i)
       end do
 c
-      call jancae_setunitm ( am,nttl )
+      call ummdp_utility_setunitm ( am,nttl )
       do i = 1,nttl
         do j = 1,nttl
           dvkds(n,i,j) = c * d2seds2(i,j)
@@ -348,20 +314,16 @@ c
       end do
 c
       return
-      end subroutine jancae_kin_armstrong
+      end subroutine ummdp_kinematic_armstrong
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CHABOCHE (1979) KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kin_chaboche ( vk,dvkdp,
-     &                                 dvkds,dvkdx,dvkdxt,
-     &                                 p,s,x,xt,
-     &                                 nttl,nnrm,nshr,
-     &                                 mxpbs,npbs,
-     &                                 prkin,ndkin,
-     &                                 pryld,ndyld )
-c
+      subroutine ummdp_kinematic_chaboche ( vk,dvkdp,dvkds,dvkdx,dvkdxt,
+     1                                      p,s,x,xt,nttl,nnrm,nshr,
+     2                                      mxpbs,npbs,prkin,ndkin,
+     3                                      pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -383,11 +345,10 @@ c
         eta(i) = s(i) - xt(i)
       end do
 c
-      call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
-     &                        nttl,nnrm,nshr,
-     &                        pryld,ndyld )
+      call ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,nttl,nnrm,
+     1                             nshr,pryld,ndyld )
 c
-      call jancae_setunitm ( am,nttl )
+      call ummdp_utility_setunitm ( am,nttl )
       do n = 1,npbs
         n0 = 1 + (n-1)*2
         c = prkin(1+n0+1)/3.0d0*2.0d0
@@ -410,21 +371,18 @@ c
       end do
 c
       return
-      end subroutine jancae_kin_chaboche
+      end subroutine ummdp_kinematic_chaboche
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CHABOCHE (1979) - ZIEGLER KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kin_chaboche_ziegler ( vk,dvkdp,
-     &                                         dvkds,dvkdx,dvkdxt,
-     &                                         p,s,x,xt,
-     &                                         nttl,nnrm,nshr,
-     &                                         mxpbs,npbs,
-     &                                         prkin,ndkin,
-     &                                         pryld,ndyld )
-c
+      subroutine ummdp_kinematic_chaboche_ziegler ( vk,dvkdp,dvkds,
+     1                                              dvkdx,dvkdxt,p,s,x,
+     2                                              xt,nttl,nnrm,nshr,
+     3                                              mxpbs,npbs,prkin,
+     4                                              ndkin,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -446,11 +404,10 @@ c
         eta(i) = s(i) - xt(i)
       end do
 c
-      call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
-     &                        nttl,nnrm,nshr,
-     &                        pryld,ndyld )
+      call ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,nttl,nnrm,
+     1                             nshr,pryld,ndyld )
 c
-      call jancae_setunitm ( am,nttl )
+      call ummdp_utility_setunitm ( am,nttl )
       do n = 1,npbs
         n0 = 1 + (n-1)*2
         c = prkin(1+n0+1)
@@ -473,21 +430,18 @@ c
       end do
 c
       return
-      end subroutine jancae_kin_chaboche_ziegler
+      end subroutine ummdp_kinematic_chaboche_ziegler
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     YOSHIDA-UEMORI KINEMATIC HARDENING LAW
 c
-      subroutine jancae_kin_yoshida_uemori ( vk,dvkdp,
-     &                                       dvkds,dvkdx,dvkdxt,
-     &                                       p,s,x,xt,
-     &                                       nttl,nnrm,nshr,
-     &                                       mxpbs,npbs,
-     &                                       prkin,ndkin,
-     &                                       pryld,ndyld )
-c
+      subroutine ummdp_kinematic_yoshida_uemori ( vk,dvkdp,dvkds,dvkdx,
+     1                                            dvkdxt,p,s,x,xt,nttl,
+     2                                            nnrm,nshr,mxpbs,npbs,
+     3                                            prkin,ndkin,pryld,
+     4                                            ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -515,10 +469,9 @@ c
         eta(i) = s(i) - xt(i)
       end do
 c
-      call jancae_dseds_kin ( eta,seta,dseds,d2seds2,
-     &                        nttl,nnrm,nshr,
-     &                        pryld,ndyld )
-      call jancae_setunitm ( am,nttl )
+      call ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,,nnrm,nshr,
+     1                             nttl,pryld,ndyld )
+      call ummdp_utility_setunitm ( am,nttl )
 c
       n = 1
       do i = 1,nttl
@@ -532,8 +485,8 @@ c
           dvkds(n,i,j) = pc*pa/py*am(i,j)
           dvkdxt(n,i,j) = -pc*pa/py*am(i,j)
           dvkdx(n,n,i,j) = pc*sqrt(pa)*
-     &                    ( -am(i,j)/sqrt(seta)
-     &                       + x(n,i)*dseds(j)/(2.0d0*seta**(1.5d0)) )
+     1                    ( -am(i,j)/sqrt(seta)
+     2                       + x(n,i)*dseds(j)/(2.0d0*seta**(1.5d0)) )
         end do
       end do
 c
@@ -553,7 +506,7 @@ c
       end do
 c
       return
-      end subroutine jancae_kin_yoshida_uemori
+      end subroutine ummdp_kinematic_yoshida_uemori
 c
 c
 c

@@ -1,9 +1,9 @@
 ************************************************************************
-c     KARAFILLIS-BOYCE YIELD FUNCTION AND DERIVATIVES
+c     KARAFILLIS-BOYCE 1993 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi:
 c
-      subroutine jancae_KarafillisBoyce ( s,se,dseds,d2seds2,nreq,
+      subroutine ummdp_karafillis_boyce ( s,se,dseds,d2seds2,nreq,
      1                                    pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
@@ -70,6 +70,7 @@ c                                                        ---- parameters
           L(i,j) = 0.0d0
         end do
       end do
+c
       alpha(1) = pryld(1+2)
       alpha(2) = pryld(1+3)
       beta(1)  = (alpha(2)-1.0d0   -alpha(1)) * 0.5d0
@@ -90,8 +91,9 @@ c                                                        ---- parameters
       k_p      = pryld(1+7)
       c_p      = pryld(1+8)
 c                                                 ---- equivalent stress
-      call jancae_mv ( smallS,L,s,6,6 )
-      call jancae_KarafillisBoyce_principalStress( smallS,Jinvar,largeS)
+      call ummdp_utility_mv ( smallS,L,s,6,6 )
+      call ummdp_karafillis_boyce_principal_stress( smallS,Jinvar,
+     1                                              largeS )
 c
       phiN(1) = (largeS(1)-largeS(2))**(2*k_p)
      1        + (largeS(2)-largeS(3))**(2*k_p)
@@ -458,15 +460,15 @@ c
       end if
 c
       return
-      end subroutine jancae_KarafillisBoyce
+      end subroutine ummdp_karafillis_boyce
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     PRINCIPAL STRESSES AND INVARIANTS BY FRANÇOIS VIETE METHOD
 c
-      subroutine jancae_KarafillisBoyce_principalStress ( stress,invar,
-     1                                                    pStress )
+      subroutine ummdp_karafillis_boyce_principal_stress ( stress,invar,
+     1                                                     pStress )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -499,7 +501,7 @@ c
           if ( abs(abs(dum)-1.0d0) <= tol ) then
             dum = dum / abs(dum)
           else
-            call jancae_exit ( 1000 )
+            call ummdp_exit ( 1000 )
           end if
         end if
         alpha = acos(dum) / 3.0d0
@@ -510,7 +512,7 @@ c
       end if
 c
       return
-      end subroutine jancae_KarafillisBoyce_principalStress
+      end subroutine ummdp_karafillis_boyce_principal_stress
 c
 c
 c

@@ -15,8 +15,7 @@ c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     CALCULATE ISOTROPIC HARDENING LAW 
 c
-      subroutine jancae_isotropic ( sy,dsydp,d2sydp2,
-     &                              nreq,p,prihd,ndihd )
+      subroutine ummdp_isotropic ( sy,dsydp,d2sydp2,nreq,p,prihd,ndihd )              
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -119,11 +118,11 @@ c
 c
       case default
         write (6,*) 'hardening type error',ntihd
-        call jancae_exit (9000)
+        call ummdp_exit (9000)
       end select
 c
       return
-      end subroutine jancae_isotropic
+      end subroutine ummdp_isotropic
 c
 c
 c

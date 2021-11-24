@@ -3,8 +3,7 @@ c     BBC2008 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: 
 c
-      subroutine jancae_bbc2008 (s,se,dseds,d2seds2,nreq,
-     1                           pryld,ndyld)
+      subroutine ummdp_bbc2008 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -21,17 +20,17 @@ c
       nds = nint(pryld(2))
       ndk = nint(pryld(3))
 c
-      call jancae_bbc2008_core ( s,se,dseds,d2seds2,nreq,
-     1                           pryld,ndyld,nds,ndk )
+      call ummdp_bbc2008_core ( s,se,dseds,d2seds2,nreq,
+     1                          pryld,ndyld,nds,ndk )
 c
       return
-      end subroutine jancae_bbc2008
+      end subroutine ummdp_bbc2008
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      subroutine jancae_bbc2008_core ( s,se,dseds,d2seds2,nreq,
-     1                                 pryld,ndyld,sp,kp )
+      subroutine ummdp_bbc2008_core ( s,se,dseds,d2seds2,nreq,
+     1                                pryld,ndyld,sp,kp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -44,7 +43,7 @@ c
 c
       integer csp,m,eta
       real*8 se1,wp,phiL,phiM,phiN,phiL_m,phiM_kp_m,phiN_m,se2k,
-     1       jancae_bbc2008_get_se 
+     1       ummdp_bbc2008_get_se 
       real*8 wpi(2),dFds(3),dphiLds(3),dphiMds(3),dphiNds(3)
       real*8 d2Fds2(3,3),d2phiLds2(3,3),d2phiMds2(3,3),d2phiNds2(3,3)
       real*8 Lp(sp,3,3),Mp(sp,3,3),Np(sp,3,3)
@@ -102,16 +101,13 @@ c-----------------------------------------------------------------------
 c     ----------------
 c        parameters
 c     ----------------
-c
-      call jancae_bbc2008_setup ( pryld,ndyld,sp,kp,wp,
-     1                            Lp,Mp,Np,kCm,se1)
-c
+      call ummdp_bbc2008_setup ( pryld,ndyld,sp,kp,wp,Lp,Mp,Np,kCm,se1 )
 c ----------------
 c  se section
 c ----------------
 c
 c                             ---- The unit of this se is (stress)^(2kp)
-      se = jancae_bbc2008_get_se ( sp,kp,wp,s,Lp,Mp,Np,kCm)
+      se = ummdp_bbc2008_get_se ( sp,kp,wp,s,Lp,Mp,Np,kCm )
 c
 c      ---- see eq.(x.y.2b) and eq.(x.y.2) for se2k and se, respectively
       se2k = se / se1
@@ -126,14 +122,14 @@ c
 c --------------------------
 c  dseds & d2seds2 section
 c --------------------------
-      call jancae_clear1 ( dFds,3 )
-      call jancae_clear2 ( d2Fds2,3,3 )
+      call ummdp_utility_clear1 ( dFds,3 )
+      call ummdp_utility_clear2 ( d2Fds2,3,3 )
 
 c                              ---- long-long-long do loops starts here.
       do csp = 1,sp
 c
-        call jancae_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,
-     1                                  csp,sp,wp,Lp,Mp,Np,s )
+        call ummdp_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,
+     1                                 csp,sp,wp,Lp,Mp,Np,s )
 c
         do m = 0,kp
 c
@@ -154,9 +150,9 @@ c
           end if
 c
 c
-          call jancae_bbc2008_get_dphiXds ( dphiLds,Lp,s,csp,m,sp )
-          call jancae_bbc2008_get_dphiXds ( dphiMds,Mp,s,csp,(kp-m),sp )
-          call jancae_bbc2008_get_dphiXds ( dphiNds,Np,s,csp,m,sp )
+          call ummdp_bbc2008_get_dphiXds ( dphiLds,Lp,s,csp,m,sp )
+          call ummdp_bbc2008_get_dphiXds ( dphiMds,Mp,s,csp,(kp-m),sp )
+          call ummdp_bbc2008_get_dphiXds ( dphiNds,Np,s,csp,m,sp )
 c
 c                                             ---- <dseds>, see (x.y.2f)
           dFds(1:3) = dFds(1:3) + kCm(m) * 
@@ -169,10 +165,10 @@ c
 c                     ---- <d2seds2>, see (x.y.2g), d2F/ds(eta)ds(gamma)
           if ( nreq ==2 ) then
 c
-            call jancae_bbc2008_get_d2phiXds2 (d2phiLds2,Lp,s,csp,m,sp)
-            call jancae_bbc2008_get_d2phiXds2 (d2phiMds2,Mp,s,csp,
+            call ummdp_bbc2008_get_d2phiXds2 (d2phiLds2,Lp,s,csp,m,sp)
+            call ummdp_bbc2008_get_d2phiXds2 (d2phiMds2,Mp,s,csp,
      1                                                       (kp-m),sp)
-            call jancae_bbc2008_get_d2phiXds2 (d2phiNds2,Np,s,csp,m,sp)
+            call ummdp_bbc2008_get_d2phiXds2 (d2phiNds2,Np,s,csp,m,sp)
 c
             do eta = 1,3
               d2Fds2(eta,1:3) = d2Fds2(eta,1:3) + kCm(m)
@@ -208,16 +204,16 @@ c                  ---- < d2seds2 >, see (x.y.2g), d2se/ds(eta)ds(gamma)
       end if
 c
       return
-      end subroutine jancae_bbc2008_core
+      end subroutine ummdp_bbc2008_core
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     jancae_bbc2008_get_w_phi ()
+c     ummdp_bbc2008_get_w_phi ()
 c     A subroutine to get w^(i-1), w^(s-i) and phiX variables
 c
-      subroutine jancae_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,
-     1                                      wp,Lp,Mp,Np,s )
+      subroutine ummdp_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,
+     1                                     wp,Lp,Mp,Np,s )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -229,24 +225,24 @@ c
       real*8,intent(out) :: phiM, phiL, phiN
       real*8,intent(out) :: wpi(2)
 c
-      real*8 jancae_bbc2008_get_phiX
+      real*8 ummdp_bbc2008_get_phiX
 c-----------------------------------------------------------------------
 c
       wpi(1) = wp**(csp-1)
       wpi(2) = wp**(sp-csp)
-      phiL = jancae_bbc2008_get_phiX (Lp, s, csp , sp)
-      phiM = jancae_bbc2008_get_phiX (Mp, s, csp , sp)
-      phiN = jancae_bbc2008_get_phiX (Np, s, csp , sp)
+      phiL = ummdp_bbc2008_get_phiX (Lp, s, csp , sp)
+      phiM = ummdp_bbc2008_get_phiX (Mp, s, csp , sp)
+      phiN = ummdp_bbc2008_get_phiX (Np, s, csp , sp)
 c
       return
-      end subroutine jancae_bbc2008_get_w_phi
+      end subroutine ummdp_bbc2008_get_w_phi
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE EQUIVALENT STRESS
 c
-      real*8 function jancae_bbc2008_get_se ( sp,kp,wp,s,Lp,Mp,Np,kCm )
+      real*8 function ummdp_bbc2008_get_se ( sp,kp,wp,s,Lp,Mp,Np,kCm )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -261,11 +257,11 @@ c
       real*8 wpi(2)
 c-----------------------------------------------------------------------
 c
-      jancae_bbc2008_get_se = 0.0d0
+      ummdp_bbc2008_get_se = 0.0d0
 c
       do csp = 1,sp
 c
-        call jancae_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,wp,
+        call ummdp_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,wp,
      1                                  Lp,Mp,Np,s )
 c
         do m = 0,kp
@@ -282,8 +278,8 @@ c
             phiM_kp_m = phiM**(kp-m)
           end if
 c
-          jancae_bbc2008_get_se = 
-     1    jancae_bbc2008_get_se 
+          ummdp_bbc2008_get_se = 
+     1    ummdp_bbc2008_get_se 
      2     + kCm(m) * phiM_kp_m * ( wpi(1) * phiL_m + wpi(2) * phiN_m )
 c
         end do
@@ -291,15 +287,15 @@ c
       end do
 c
       return
-      end function jancae_bbc2008_get_se
+      end function ummdp_bbc2008_get_se
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     jancae_bbc2008_get_phiX (Xp, s, csp , sp)
+c     ummdp_bbc2008_get_phiX (Xp, s, csp , sp)
 c     A function to calculate s(a)*X(a,b)*s(b) (summation convention)
 c
-      real*8 function jancae_bbc2008_get_phiX ( Xp,s,csp,sp )
+      real*8 function ummdp_bbc2008_get_phiX ( Xp,s,csp,sp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -327,20 +323,20 @@ c                                  ---- convert 3rd tensor to 2nd tensor
         XXp(i,1:nc) = Xp(csp,i,1:nc)
       end do
 c
-      call jancae_mv ( v,XXp,s,nc,nc)
-      call jancae_vvs (jancae_bbc2008_get_phiX,v,s,nc)
+      call ummdp_utility_mv ( v,XXp,s,nc,nc)
+      call ummdp_utility_vvs (ummdp_bbc2008_get_phiX,v,s,nc)
 c
       return
-      end function jancae_bbc2008_get_phiX
+      end function ummdp_bbc2008_get_phiX
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     jancae_bbc2008_get_dphiXds (dphiXds, Xp, s, csp, lambda,sp)
+c     ummdp_bbc2008_get_dphiXds (dphiXds, Xp, s, csp, lambda,sp)
 c     A subroutine to calculate d(phiX^(lambda))/ds.
 c     It returns dphiXds(nc).
 c
-      subroutine jancae_bbc2008_get_dphiXds (dphiXds,Xp,s,csp,lambda,sp)
+      subroutine ummdp_bbc2008_get_dphiXds ( dphiXds,Xp,s,csp,lambda,sp)
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -368,7 +364,8 @@ c     local variables
 c     nc: the number of components.
 c     XXp: = Xp(csp, nc, nc)
 c-----------------------------------------------------------------------
-      call jancae_clear1(dphiXds,nc)
+c
+      call ummdp_utility_clear1(dphiXds,nc)
 c
 c                              ---- If lambda is 0, return dphiXds = {0}
       if ( lambda == 0) then
@@ -384,29 +381,29 @@ c     In the bbc2008 section of the document "User subroutines for
 c       Metalic Plasticity model?", expression (x.y.2d) has 
 c       "chi(gamma, beta)*s(beta)" (summation convention). 
 c     In this routine, corresponding term is v(nc) obtained 
-c       from jancae_mv().
+c       from ummdp_mv().
 c
-      call jancae_mv (v, XXp, s, nc, nc)
+      call ummdp_utility_mv (v, XXp, s, nc, nc)
 c
       if ( lambda == 1 ) then
         dphiXds(1:nc) = 2.0d0 * v(1:nc)
       else
-        call jancae_vvs (phi, v, s, nc)
+        call ummdp_utility_vvs (phi, v, s, nc)
         dphiXds(1:nc) = 2.0d0 * lambda * phi**(lambda-1) * v(1:nc)
       end if
 c
       return
-      end subroutine jancae_bbc2008_get_dphiXds
+      end subroutine ummdp_bbc2008_get_dphiXds
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     jancae_bbc2008_get_d2phiXds2 (d2phiXds2, Xp, s, csp, lambda,sp)
+c     ummdp_bbc2008_get_d2phiXds2 (d2phiXds2, Xp, s, csp, lambda,sp)
 c     A subroutine to calculate d2(phiX^(lambda))/(dsds').
 c     It returns d2phiXdsds(nc,nc).
 c
-      subroutine jancae_bbc2008_get_d2phiXds2 ( d2phiXds2,Xp,s,csp,
-     1                                          lambda,sp )
+      subroutine ummdp_bbc2008_get_d2phiXds2 ( d2phiXds2,Xp,s,csp,
+     1                                         lambda,sp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -448,15 +445,15 @@ c
         XXp(i,1:nc) = Xp(csp, i, 1:nc)
       end do
 c
-      call jancae_mv (v, XXp, s, nc, nc)
-      call jancae_vvs (phi, v, s, nc)
+      call ummdp_utility_mv (v, XXp, s, nc, nc)
+      call ummdp_utility_vvs (phi, v, s, nc)
 c
       phi_lambda2 = 1.0d0
       if ( lambda /= 2 ) then
         phi_lambda2 = phi**(lambda-2)
       end if
 c
-      call jancae_clear2 ( d2phiXds2,nc,nc )
+      call ummdp_utility_clear2 ( d2phiXds2,nc,nc )
 c
 c                                            ---- d2phiX/(ds(i)ds(1:nc))
       do i = 1,nc
@@ -466,7 +463,7 @@ c                                            ---- d2phiX/(ds(i)ds(1:nc))
       end do
 c
       return
-      end subroutine jancae_bbc2008_get_d2phiXds2
+      end subroutine ummdp_bbc2008_get_d2phiXds2
 c
 c
 c
@@ -474,8 +471,8 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     setup_bbc2008_parameters()
 c     A routine to setup local variables.
 c
-      subroutine jancae_bbc2008_setup ( pryld,ndyld,sp,kp,wp,
-     1                                  Lp,Mp,Np,kCm,se1 )
+      subroutine ummdp_bbc2008_setup ( pryld,ndyld,sp,kp,wp,
+     1                                 Lp,Mp,Np,kCm,se1 )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -487,7 +484,7 @@ c
       real*8,intent(inout) :: kCm(0:kp)
 c
       integer csp,k,l,m,n
-      real*8 jancae_bbc2008_get_se
+      real*8 ummdp_bbc2008_get_se
       real*8 dummy_s(3)
       real*8 Comb(kp*2,0:kp*2)
 c-----------------------------------------------------------------------
@@ -541,10 +538,10 @@ c                                                      ---- L^(i) tensor
         Lp(csp,3,2) = Lp(csp,2,3)
 c                                                      ---- M^(i) tensor
         m = l + 2
-        call jancae_bbc2008_setup_MN_tensors (m,csp,pryld,ndyld,Mp,sp)
+        call ummdp_bbc2008_setup_MN_tensors (m,csp,pryld,ndyld,Mp,sp)
 c                                                      ---- N^(i) tensor
         n = m + 3
-        call jancae_bbc2008_setup_MN_tensors (n,csp,pryld,ndyld,Np,sp)
+        call ummdp_bbc2008_setup_MN_tensors (n,csp,pryld,ndyld,Np,sp)
       end do
 c
 c
@@ -552,12 +549,12 @@ c     equiv. stress in uniaxial stress state.
 c     dummy_s = (1.0d0, 0.0d0, 0.0d0)
 c     ** The unit of this se1 is (stress)^(2kp)
 c
-      call jancae_clear1 (dummy_s, 3)
+      call ummdp_utility_clear1 (dummy_s, 3)
       dummy_s(1) = 1.0d0
-      se1 = jancae_bbc2008_get_se (sp, kp, wp, dummy_s, Lp, Mp, Np, kCm)
+      se1 = ummdp_bbc2008_get_se (sp, kp, wp, dummy_s, Lp, Mp, Np, kCm)
 c
       return
-      end subroutine jancae_bbc2008_setup
+      end subroutine ummdp_bbc2008_setup
 c
 c
 c
@@ -569,8 +566,8 @@ c       This routine returns Mp or Np tensor.
 c       Mp and Np tensors are the same style,
 c       thus this subroutine has been created.
 c
-      subroutine jancae_bbc2008_setup_MN_tensors ( ic,csp,
-     1                                             pryld,ndyld,Xp,sp )
+      subroutine ummdp_bbc2008_setup_MN_tensors ( ic,csp,
+     1                                            pryld,ndyld,Xp,sp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -591,7 +588,7 @@ c
       Xp(csp,3,2) = Xp(csp,2,3)
 c
       return
-      end subroutine jancae_bbc2008_setup_MN_tensors
+      end subroutine ummdp_bbc2008_setup_MN_tensors
 c
 c
 c
