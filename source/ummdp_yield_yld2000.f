@@ -55,15 +55,15 @@ c                                                 ---- equivalent stress
 c                                              ---- 1st order derivative
       if ( nreq >= 1 ) then
         call jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
-     &                               dsedphi,dphidx,
-     &                               dxdy,dyds,se )
+     1                               dsedphi,dphidx,
+     2                               dxdy,dyds,se )
         call jancae_clear1 ( dseds,3 )
         do nd = 1,2
           do m = 1,2
             do k = 1,3
               do i = 1,3
                 dseds(i) = dseds(i) + dsedphi(nd)*dphidx(nd,m)*
-     &                                dxdy(nd,m,k)*dyds(nd,k,i)
+     1                                dxdy(nd,m,k)*dyds(nd,k,i)
               end do
             end do
           end do
@@ -72,8 +72,8 @@ c                                              ---- 1st order derivative
 c                                              ---- 2nd order derivative
       if ( nreq >= 2 ) then
         call jancae_yld2000_2d_ds2 ( phi,x,y,em,
-     &                               d2sedphi2,d2phidx2,
-     &                               d2xdy2,se )
+     1                               d2sedphi2,d2phidx2,
+     2                               d2xdy2,se )
         call jancae_clear2 ( d2seds2,3,3 )
         do i = 1,3
         do j = 1,3
@@ -84,10 +84,10 @@ c                                              ---- 2nd order derivative
               do m = 1,3
               do n = 1,3
                 d2seds2(i,j) = d2seds2(i,j) + d2sedphi2(nd1,nd2)*
-     &                          dphidx(nd1,k)*
-     &                          dxdy(nd1,k,m)*dyds(nd1,m,i)*
-     &                          dphidx(nd2,l)*
-     &                          dxdy(nd2,l,n)*dyds(nd2,n,j)
+     1                          dphidx(nd1,k)*
+     2                          dxdy(nd1,k,m)*dyds(nd1,m,i)*
+     3                          dphidx(nd2,l)*
+     4                          dxdy(nd2,l,n)*dyds(nd2,n,j)
               end do
               end do
             end do
@@ -100,9 +100,9 @@ c                                              ---- 2nd order derivative
               do m = 1,3
               do n = 1,3
                 d2seds2(i,j) = d2seds2(i,j) + dsedphi(nd)*
-     &                          d2phidx2(nd,k,l)*
-     &                          dxdy(nd,k,m)*dyds(nd,m,i)*
-     &                          dxdy(nd,l,n)*dyds(nd,n,j)
+     1                          d2phidx2(nd,k,l)*
+     2                          dxdy(nd,k,m)*dyds(nd,m,i)*
+     3                          dxdy(nd,l,n)*dyds(nd,n,j)
               end do
               end do
             end do
@@ -113,8 +113,8 @@ c                                              ---- 2nd order derivative
               do m = 1,3
               do n = 1,3
                 d2seds2(i,j) = d2seds2(i,j) + dsedphi(nd)*
-     &                          dphidx(nd,k)*d2xdy2(nd,k,m,n)*
-     &                          dyds(nd,m,i)*dyds(nd,n,j)
+     1                          dphidx(nd,k)*d2xdy2(nd,k,m,n)*
+     2                          dyds(nd,m,i)*dyds(nd,n,j)
               end do
               end do
             end do
@@ -230,8 +230,8 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     SET 1ST ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
-     &                                   dsedphi,dphidx,
-     &                                   dxdy,dyds,se )
+     1                                   dsedphi,dphidx,
+     2                                   dxdy,dyds,se )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -275,9 +275,9 @@ c
       if ( b1 >= eps*se ) sgn1 = a1 / b1
       if ( b2 >= eps*se ) sgn2 = a2 / b2
       dphidx(nd,1) = em*(2.0d0*b1**(em-1.0d0)*sgn1 +
-     &                         b2**(em-1.0d0)*sgn2 )
+     1                         b2**(em-1.0d0)*sgn2 )
       dphidx(nd,2) = em*(      b1**(em-1.0d0)*sgn1 +
-     &                   2.0d0*b2**(em-1.0d0)*sgn2 )
+     1                   2.0d0*b2**(em-1.0d0)*sgn2 )
 c
       do nd = 1,2
         a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) + 4.0d0*y(nd,3)*y(nd,3)
@@ -314,8 +314,8 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     SET 2ND ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine jancae_yld2000_2d_ds2 ( phi,x,y,em,
-     &                                   d2sedphi2,d2phidx2,
-     &                                   d2xdy2,se )
+     1                                   d2sedphi2,d2phidx2,
+     2                                   d2xdy2,se )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -359,17 +359,17 @@ c                                                         ---- d2phi/dx2
           if ( i == j ) then
             if ( i == 1 ) then
               a = (em-1.0d0) * em*
-     &            (4.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     &                   (abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
+     1            (4.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
+     2                   (abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
             else
               a = (em-1.0d0)*em*
-     &            (      (abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     &            4.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
+     1            (      (abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
+     2            4.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
             end if
           else
             a = (em-1.0d0) * em * 
-     &          (2.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     &           2.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0) )
+     1          (2.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
+     2           2.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0) )
           end if
           d2phidx2(nd,i,j) = a
         end do
@@ -377,7 +377,7 @@ c                                                         ---- d2phi/dx2
 c                                                           ---- d2x/dy2
       do nd = 1,2
         a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) +
-     &      4.0d0*   y(nd,3) *         y(nd,3)
+     1      4.0d0*   y(nd,3) *         y(nd,3)
         if ( a > eps*se ) then
           a = 1.0d0 / sqrt(a**3)
           do m = 1,2

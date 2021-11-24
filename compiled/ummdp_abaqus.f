@@ -6200,8 +6200,8 @@ c
       a(8) =  pryld(1+8)    ! C2 <-
       a(9) =  pryld(1+6)    ! X7
 c
-      call jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,
-     1                          nd0,a,ipow,maxa,nterms )
+      call jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
+     1                          a,ipow,maxa,nterms )
 c
       return
       end subroutine jancae_hu2005
@@ -8354,15 +8354,15 @@ c                                                 ---- equivalent stress
 c                                              ---- 1st order derivative
       if ( nreq >= 1 ) then
         call jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
-     &                               dsedphi,dphidx,
-     &                               dxdy,dyds,se )
+     1                               dsedphi,dphidx,
+     2                               dxdy,dyds,se )
         call jancae_clear1 ( dseds,3 )
         do nd = 1,2
           do m = 1,2
             do k = 1,3
               do i = 1,3
                 dseds(i) = dseds(i) + dsedphi(nd)*dphidx(nd,m)*
-     &                                dxdy(nd,m,k)*dyds(nd,k,i)
+     1                                dxdy(nd,m,k)*dyds(nd,k,i)
               end do
             end do
           end do
@@ -8371,8 +8371,8 @@ c                                              ---- 1st order derivative
 c                                              ---- 2nd order derivative
       if ( nreq >= 2 ) then
         call jancae_yld2000_2d_ds2 ( phi,x,y,em,
-     &                               d2sedphi2,d2phidx2,
-     &                               d2xdy2,se )
+     1                               d2sedphi2,d2phidx2,
+     2                               d2xdy2,se )
         call jancae_clear2 ( d2seds2,3,3 )
         do i = 1,3
         do j = 1,3
@@ -8383,10 +8383,10 @@ c                                              ---- 2nd order derivative
               do m = 1,3
               do n = 1,3
                 d2seds2(i,j) = d2seds2(i,j) + d2sedphi2(nd1,nd2)*
-     &                          dphidx(nd1,k)*
-     &                          dxdy(nd1,k,m)*dyds(nd1,m,i)*
-     &                          dphidx(nd2,l)*
-     &                          dxdy(nd2,l,n)*dyds(nd2,n,j)
+     1                          dphidx(nd1,k)*
+     2                          dxdy(nd1,k,m)*dyds(nd1,m,i)*
+     3                          dphidx(nd2,l)*
+     4                          dxdy(nd2,l,n)*dyds(nd2,n,j)
               end do
               end do
             end do
@@ -8399,9 +8399,9 @@ c                                              ---- 2nd order derivative
               do m = 1,3
               do n = 1,3
                 d2seds2(i,j) = d2seds2(i,j) + dsedphi(nd)*
-     &                          d2phidx2(nd,k,l)*
-     &                          dxdy(nd,k,m)*dyds(nd,m,i)*
-     &                          dxdy(nd,l,n)*dyds(nd,n,j)
+     1                          d2phidx2(nd,k,l)*
+     2                          dxdy(nd,k,m)*dyds(nd,m,i)*
+     3                          dxdy(nd,l,n)*dyds(nd,n,j)
               end do
               end do
             end do
@@ -8412,8 +8412,8 @@ c                                              ---- 2nd order derivative
               do m = 1,3
               do n = 1,3
                 d2seds2(i,j) = d2seds2(i,j) + dsedphi(nd)*
-     &                          dphidx(nd,k)*d2xdy2(nd,k,m,n)*
-     &                          dyds(nd,m,i)*dyds(nd,n,j)
+     1                          dphidx(nd,k)*d2xdy2(nd,k,m,n)*
+     2                          dyds(nd,m,i)*dyds(nd,n,j)
               end do
               end do
             end do
@@ -8529,8 +8529,8 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     SET 1ST ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine jancae_yld2000_2d_ds1 ( em,am,x,y,phi,
-     &                                   dsedphi,dphidx,
-     &                                   dxdy,dyds,se )
+     1                                   dsedphi,dphidx,
+     2                                   dxdy,dyds,se )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8574,9 +8574,9 @@ c
       if ( b1 >= eps*se ) sgn1 = a1 / b1
       if ( b2 >= eps*se ) sgn2 = a2 / b2
       dphidx(nd,1) = em*(2.0d0*b1**(em-1.0d0)*sgn1 +
-     &                         b2**(em-1.0d0)*sgn2 )
+     1                         b2**(em-1.0d0)*sgn2 )
       dphidx(nd,2) = em*(      b1**(em-1.0d0)*sgn1 +
-     &                   2.0d0*b2**(em-1.0d0)*sgn2 )
+     1                   2.0d0*b2**(em-1.0d0)*sgn2 )
 c
       do nd = 1,2
         a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) + 4.0d0*y(nd,3)*y(nd,3)
@@ -8613,8 +8613,8 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     SET 2ND ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine jancae_yld2000_2d_ds2 ( phi,x,y,em,
-     &                                   d2sedphi2,d2phidx2,
-     &                                   d2xdy2,se )
+     1                                   d2sedphi2,d2phidx2,
+     2                                   d2xdy2,se )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8658,17 +8658,17 @@ c                                                         ---- d2phi/dx2
           if ( i == j ) then
             if ( i == 1 ) then
               a = (em-1.0d0) * em*
-     &            (4.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     &                   (abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
+     1            (4.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
+     2                   (abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
             else
               a = (em-1.0d0)*em*
-     &            (      (abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     &            4.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
+     1            (      (abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
+     2            4.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
             end if
           else
             a = (em-1.0d0) * em * 
-     &          (2.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     &           2.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0) )
+     1          (2.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
+     2           2.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0) )
           end if
           d2phidx2(nd,i,j) = a
         end do
@@ -8676,7 +8676,7 @@ c                                                         ---- d2phi/dx2
 c                                                           ---- d2x/dy2
       do nd = 1,2
         a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) +
-     &      4.0d0*   y(nd,3) *         y(nd,3)
+     1      4.0d0*   y(nd,3) *         y(nd,3)
         if ( a > eps*se ) then
           a = 1.0d0 / sqrt(a**3)
           do m = 1,2
@@ -9744,22 +9744,29 @@ c
 c
 c
 c
-c----------------------------------------------------------(yoshida2011)
-c     F.Yoshida (2011,2013) yield function and its dfferentials
+************************************************************************
+c     YOSHIDA2011 YIELD FUNCTION AND DERIVATIVES
 c
-c     NUMISHEET 2011 Proceedings, AIP Conf. Proc.1383 (2011), pp.807-814
-c
-c     "A user-friendly 3D yield function to describe anisotropy of 
-c       steel sheets ",IJP,v.45(2013), pp.1119-139. )
+c       doi: https://doi.org/10.1016/j.ijplas.2013.01.010
 c
       subroutine jancae_yoshida2011 ( s,se,dseds,d2seds2,nreq,
-     &                                 pryld,ndyld )
+     1                                pryld,ndyld )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      parameter (maxa=100)
-      dimension s(6),dseds(6),d2seds2(6,6),pryld(ndyld)
-      dimension a(maxa),ipow(maxa,3)
+      implicit none
 c
+      integer,parameter :: maxa = 100
+c
+      integer,intent(in) :: nreq,ndyld
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
+c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+      real*8,intent(out) :: d2seds2(3,3)
+c
+      integer nd0,n,it,nterms,ndmax,jy,jx
+      integer ipow(maxa,3)
+      real*8 a(maxa)
+c-----------------------------------------------------------------------
 c
       nd0 = 3
 c
@@ -9786,7 +9793,7 @@ c
         end do
       end do
 c
-      a = 0.0
+      a = 0.0d0
       a(1) =  1.0d0 *          pryld(1+1)           !       c1
       a(2) = -3.0d0 *          pryld(1+2)           !    -3*c2
       a(3) =  6.0d0 *          pryld(1+3)           !     6*c3
@@ -9804,29 +9811,39 @@ c
       a(15) = 1.0d0 * 27.0d0 * pryld(1+15)          ! 27   *c15
       a(16) = 1.0d0 * 27.0d0 * pryld(1+16)          ! 27   *c16
 c
-      call jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,
-     &                          nd0,a,ipow,maxa,nterms )
+      call jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
+     1                          a,ipow,maxa,nterms )
 c
       return
-      end
+      end subroutine jancae_yoshida2011
 c
 c
 c
-c----------------------------------------------------------(yoshida2011)
-c     Weilong Hu & F.Yoshida style polynominal type yield function
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     HU2005 & YOSHIDA2011 STYLE POLYNOMIAL TYPE YIELD FUNCTION
 c
-      subroutine jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,
-     &                                nd0,a,ipow,maxa,nterms )
+      subroutine jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
+     1                                a,ipow,maxa,nterms )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension s(6),dseds(6),d2seds2(6,6)
-      dimension a(maxa),ipow(maxa,3)
-      dimension sterm(3),ii(3),v(6)
+      integer,intent(in) :: nreq,nd0,maxa,nterms
+      integer,intent(in) :: ipow(maxa,3)
+      real*8 ,intent(in) :: s(6),a(maxa)
 c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(6)
+      real*8,intent(out) :: d2seds2(6,6)
+c    
+      integer i,j,k,n,id,idmax,jdmax,jd,nd
+      integer ii(3)
+      real*8 dinv,fai,q,dd,ff,fff,ddi,ddj
+      real*8 sterm(3),v(6)
+c-----------------------------------------------------------------------
 c     nd        : order of polynominal nd=2*nd0
 c     a(n)      : constants of function
 c     ipow(n,i) : power of terms
+c-----------------------------------------------------------------------
 c
       nd = nd0 * 2
       dinv = 1.0d0 / float(nd)
@@ -9835,7 +9852,7 @@ c
       sterm(2) = s(2) - s(3)                  ! sy-sz
       sterm(3) = s(4)**2 + s(5)**2 + s(6)**2  ! txy^2+tyz^2+tzx^2
 c
-      fai = 0.0
+      fai = 0.0d0
       do n = 1,nterms
         q = a(n)
         do k = 1,3
@@ -9848,7 +9865,7 @@ c
       se = fai ** dinv
       if ( nreq == 0 ) return
 c
-      v = 0.0
+      v = 0.0d0
       do i = 1,6
         idmax = 1
         if ( i == 3 ) idmax = 2
@@ -9948,7 +9965,7 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_hy_polytype
 c
 c
 c

@@ -58,8 +58,8 @@ c
       a(8) =  pryld(1+8)    ! C2 <-
       a(9) =  pryld(1+6)    ! X7
 c
-      call jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,
-     1                          nd0,a,ipow,maxa,nterms )
+      call jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
+     1                          a,ipow,maxa,nterms )
 c
       return
       end subroutine jancae_hu2005
