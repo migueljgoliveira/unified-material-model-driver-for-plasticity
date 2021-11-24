@@ -1,27 +1,27 @@
-c------------------------------------------------------(karafillisboyce)
-c     Karafillis-Boyce Yield Function
+************************************************************************
+c     KARAFILLIS-BOYCE YIELD FUNCTION AND DERIVATIVES
 c
       subroutine jancae_KarafillisBoyce ( s,se,dseds,d2seds2,nreq,
-     &                                    pryld,ndyld )
+     1                                    pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8, parameter :: TOL=1e-7
-c                                                    ---- input & output
-      integer, intent(in) :: nreq, ndyld
-      real*8, intent(in) :: s(6), pryld(ndyld)
-      real*8, intent(out) :: se, dseds(6), d2seds2(6,6)
-c                                                   ---- local variables
-      real*8 c_p, L(6,6), smallS(6), largeS(3), Jinvar(3), phi, phiN(2),
-     &   DseDphi, DjDss(3,6), DphiDs(2,6), DphiDj(2,3),
-     &   DphiDls(2,3), DlsDj(3,3),
-     &   DDphiDDs(2,6,6), DDjDDss(3,6,6), DDphiDDj(2,3,3),
-     &   DDphiDDls(2,3,3), X12, X13, X23, DDlsDDj(3,3,3),
-     &   dum, workmat(3,6), coef(2), workmat1(2,6,6)
-      integer k_p
-      integer i, j, k, m, n, eqFlag
-      real*8  beta(3),alpha(2)
+      integer,intent(in) :: nreq,ndyld
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
 c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+			real*8,intent(out) :: d2seds2(3,3)
+c
+      integer k_p,i,j,k,m,n,eqFlag
+      real*8 c_p,phi,DseDphi,X12,X13,X23,dum,tol
+      real*8 smallS(6),largeS(3),Jinvar(3),phiN(2),coef(2),beta(3),
+     1       alpha(2)
+      real*8 L(6,6),DjDss(3,6),DphiDs(2,6),DphiDj(2,3),DphiDls(2,3),
+     1       DlsDj(3,3),workmat(3,6)
+      real*8 DDphiDDs(2,6,6),DDjDDss(3,6,6),DDphiDDj(2,3,3),
+     1       DDphiDDls(2,3,3),DDlsDDj(3,3,3),workmat1(2,6,6)
+c-----------------------------------------------------------------------
 c     local variables  : symbols in Karafillis-Boyce Yield Function's 
 c                        document
 c
@@ -59,7 +59,9 @@ c     X12      : X12
 c     X13      : X13
 c     X23      : X23
 c     coef(2)  : coefficient at "Phi = coef(1) * Phi1 + coef(2) * Phi2"
-c      
+c-----------------------------------------------------------------------
+c
+      tol = 1.0e-7
 c                                                        ---- parameters
       do i = 1,6
         do j = 1,6
@@ -90,11 +92,11 @@ c                                                 ---- equivalent stress
       call jancae_KarafillisBoyce_principalStress( smallS,Jinvar,largeS)
 c
       phiN(1) = (largeS(1)-largeS(2))**(2*k_p)
-     &        + (largeS(2)-largeS(3))**(2*k_p)
-     &        + (largeS(3)-largeS(1))**(2*k_p)
+     1        + (largeS(2)-largeS(3))**(2*k_p)
+     2        + (largeS(3)-largeS(1))**(2*k_p)
       phiN(2) = largeS(1)**(2*k_p) 
-     &        + largeS(2)**(2*k_p)
-     &        + largeS(3)**(2*k_p)
+     1        + largeS(2)**(2*k_p)
+     2        + largeS(3)**(2*k_p)
       coef(1) = (1d0-c_p)
       coef(2) = c_p * 3d0**(2*k_p)/(2d0**(2*k_p-1)+1d0)
       phi = coef(1)*phiN(1) + coef(2)*phiN(2)
@@ -106,14 +108,14 @@ c                 ---- check if there are two components of largeS equal
 c                                                          to each other
 c               ---- if so, rearrange largeS so that largeS(1)=largeS(2)
         eqFlag = 0
-        if ( abs(largeS(1)-largeS(2)) <= TOL ) then
+        if ( abs(largeS(1)-largeS(2)) <= tol ) then
           eqFlag = 1
-        else if ( abs(largeS(2)-largeS(3)) <= TOL ) then
+        else if ( abs(largeS(2)-largeS(3)) <= tol ) then
           eqFlag = 2
           dum = largeS(3)
           largeS(3) = largeS(1)
           largeS(1) = dum
-        else if ( abs(largeS(1)-largeS(3)) <= TOL ) then
+        else if ( abs(largeS(1)-largeS(3)) <= tol ) then
           eqFlag = 3
           dum = largeS(3)
           largeS(3) = largeS(2)
@@ -122,18 +124,18 @@ c               ---- if so, rearrange largeS so that largeS(1)=largeS(2)
 
         if ( eqFlag == 0 ) then
           DphiDls(1,1) = 2d0 * k_p * ((largeS(1)-largeS(2))**(2*k_p-1)
-     &       + (largeS(1)-largeS(3))**(2*k_p-1))
+     1       + (largeS(1)-largeS(3))**(2*k_p-1))
           DphiDls(1,2) = 2d0 * k_p * ((largeS(2)-largeS(1))**(2*k_p-1)
-     &       + (largeS(2)-largeS(3))**(2*k_p-1))
+     1       + (largeS(2)-largeS(3))**(2*k_p-1))
           DphiDls(1,3) = 2d0 * k_p * ((largeS(3)-largeS(1))**(2*k_p-1)
-     &       + (largeS(3)-largeS(2))**(2*k_p-1))
+     1       + (largeS(3)-largeS(2))**(2*k_p-1))
           do i = 1,3
             DphiDls(2,i) = 2d0 * k_p * largeS(i)**(2*k_p-1)
           end do
 c 
           do i = 1,3
             dum = 1d0 /(3d0*largeS(i)**2 - 2d0*Jinvar(1)*largeS(i)
-     &         + Jinvar(2))
+     1         + Jinvar(2))
             DlsDj(i,1) = largeS(i)**2 * dum
             DlsDj(i,2) = -largeS(i) * dum
             DlsDj(i,3) = dum
@@ -155,9 +157,9 @@ c
           else
             dum = (largeS(1)-largeS(3))**(2*k_p-3)
             DphiDj(1,1) = 4d0*k_p*dum
-     &         *(k_p*largeS(1)**2-largeS(1)*largeS(3)-largeS(3)**2)
+     1         *(k_p*largeS(1)**2-largeS(1)*largeS(3)-largeS(3)**2)
             DphiDj(1,2) = -2d0*k_p*dum
-     &         *((2*k_p-1)*largeS(1)-3d0*largeS(3))
+     1         *((2*k_p-1)*largeS(1)-3d0*largeS(3))
             DphiDj(1,3) = 4d0*k_p*(k_p-2)*dum
           end if
 c
@@ -165,18 +167,18 @@ c
             DphiDj(2,1) = 2d0*k_p**2*(2*k_p+1)*largeS(1)**(2*k_p-1)
             DphiDj(2,2) = -2d0*k_p**2*(2*k_p-1)*largeS(1)**(2*k_p-2)
             DphiDj(2,3) = 2d0*k_p*(2*k_p-1)*(k_p-1)
-     &         *largeS(1)**(2*k_p-3)
+     1         *largeS(1)**(2*k_p-3)
           else
             dum = 2d0*k_p/(largeS(1)-largeS(3))**2
             DphiDj(2,1) = dum * ((2*k_p+1)*largeS(1)**(2*k_p)*
-     &         (largeS(1)-largeS(3))
-     &         - largeS(1)**(2*k_p+1) + largeS(3)**(2*k_p+1))
+     1         (largeS(1)-largeS(3))
+     2         - largeS(1)**(2*k_p+1) + largeS(3)**(2*k_p+1))
             DphiDj(2,2) = -dum * (2*k_p*largeS(1)**(2*k_p-1)*
-     &         (largeS(1)-largeS(3))
-     &         - largeS(1)**(2*k_p) + largeS(3)**(2*k_p))
+     1         (largeS(1)-largeS(3))
+     2         - largeS(1)**(2*k_p) + largeS(3)**(2*k_p))
             DphiDj(2,3) = dum * ((2*k_p-1)*largeS(1)**(2*k_p-2)*
-     &         (largeS(1)-largeS(3))
-     &         - largeS(1)**(2*k_p-1) + largeS(3)**(2*k_p-1))
+     1         (largeS(1)-largeS(3))
+     2         - largeS(1)**(2*k_p-1) + largeS(3)**(2*k_p-1))
           end if
         end if
 c
@@ -251,13 +253,13 @@ c
 c
           do i = 1,3
             dum = 1d0 /(3d0*largeS(i)**2 - 2d0*Jinvar(1)*largeS(i)
-     &         + Jinvar(2))**3
+     1         + Jinvar(2))**3
             DDlsDDj(i,1,1) = dum*largeS(i)**3*
-     &         (6d0*largeS(i)**2-6d0*Jinvar(1)*largeS(i)+4d0*Jinvar(2))
+     1         (6d0*largeS(i)**2-6d0*Jinvar(1)*largeS(i)+4d0*Jinvar(2))
             DDlsDDj(i,1,2) = dum*largeS(i)**2*
-     &         (-3d0*largeS(i)**2+4d0*Jinvar(1)*largeS(i)-3d0*Jinvar(2))
+     1         (-3d0*largeS(i)**2+4d0*Jinvar(1)*largeS(i)-3d0*Jinvar(2))
             DDlsDDj(i,1,3) = 2d0*dum*(-Jinvar(1)*largeS(i)**2
-     &         +Jinvar(2)*largeS(i))
+     1         +Jinvar(2)*largeS(i))
             DDlsDDj(i,2,2) = DDlsDDj(i,1,3)
             DDlsDDj(i,2,3) = dum*(3d0*largeS(i)**2-Jinvar(2))
             DDlsDDj(i,3,3) = -dum*(6d0*largeS(i)-2d0*Jinvar(1))
@@ -273,10 +275,10 @@ c
                 do m = 1,3
                   do n = 1,3
                     DDphiDDj(i,j,k) = DDphiDDj(i,j,k)
-     &                 + DDphiDDls(i,m,n)*DlsDj(m,j)*DlsDj(n,k)
+     1                 + DDphiDDls(i,m,n)*DlsDj(m,j)*DlsDj(n,k)
                   end do
                   DDphiDDj(i,j,k) = DDphiDDj(i,j,k)
-     &               + DphiDls(i,m)*DDlsDDj(m,j,k)
+     1               + DphiDls(i,m)*DDlsDDj(m,j,k)
                 end do
               end do
             end do
@@ -307,24 +309,24 @@ c
           else
             dum = 2d0 * k_p * (largeS(1)-largeS(3))**(2*(k_p-3))
             DDphiDDj(1,1,1) = (k_p*(2*k_p-1)*(2*k_p+1)*largeS(1)**4/3d0
-     &         -4*k_p*(2*k_p-1)*largeS(1)**3*largeS(3)
-     &         -4*(2*k_p-1)*(k_p-2)*largeS(1)**2*largeS(3)**2
-     &         +8*(k_p-2)*largeS(1)*largeS(3)**3
-     &         +2*(2*k_p-1)*largeS(3)**4) * dum
+     1         -4*k_p*(2*k_p-1)*largeS(1)**3*largeS(3)
+     2         -4*(2*k_p-1)*(k_p-2)*largeS(1)**2*largeS(3)**2
+     3         +8*(k_p-2)*largeS(1)*largeS(3)**3
+     4         +2*(2*k_p-1)*largeS(3)**4) * dum
             DDphiDDj(1,1,2) = (-2*k_p*(2*k_p-1)*(k_p-1)*largeS(1)**3/3d0
-     &         +(2*k_p-1)*(5*k_p-4)*largeS(1)**2*largeS(3)
-     &         +4*(k_p-2)**2*largeS(1)**1*largeS(3)**2
-     &         -6*(k_p-1)*largeS(3)**3) * dum
+     1         +(2*k_p-1)*(5*k_p-4)*largeS(1)**2*largeS(3)
+     2         +4*(k_p-2)**2*largeS(1)**1*largeS(3)**2
+     3         -6*(k_p-1)*largeS(3)**3) * dum
             DDphiDDj(1,1,3) = dum *
-     &         ((2*k_p-1)*(2*k_p**2-11*k_p+6)*largeS(1)**2/3d0
-     &         -2*(k_p-2)*(2*k_p-3)*largeS(3)*(largeS(1)+largeS(3)))
+     1         ((2*k_p-1)*(2*k_p**2-11*k_p+6)*largeS(1)**2/3d0
+     2         -2*(k_p-2)*(2*k_p-3)*largeS(3)*(largeS(1)+largeS(3)))
             DDphiDDj(1,2,2) = dum *
-     &         ((k_p-1)*(2*k_p-1)*(2*k_p-3)*largeS(1)**2/3d0
-     &         -(12*k_p**2-22*k_p+14)*largeS(1)*largeS(3)
-     &         +(10*k_p-11)*largeS(3)**2)
+     1         ((k_p-1)*(2*k_p-1)*(2*k_p-3)*largeS(1)**2/3d0
+     2         -(12*k_p**2-22*k_p+14)*largeS(1)*largeS(3)
+     3         +(10*k_p-11)*largeS(3)**2)
             DDphiDDj(1,2,3) = dum *
-     &         ((-4*k_p**3+30*k_p**2-44*k_p+24)*largeS(1)/3d0
-     &         +3*(k_p-2)*(2*k_p-3)*largeS(3))
+     1         ((-4*k_p**3+30*k_p**2-44*k_p+24)*largeS(1)/3d0
+     2         +3*(k_p-2)*(2*k_p-3)*largeS(3))
             DDphiDDj(1,3,3) = dum * (4*k_p**3-48*k_p**2+107*k_p-78)/3d0
             do i = 1,3
               do j = i+1,3
@@ -340,29 +342,29 @@ c
           end do
           do i = 0,2*k_p-2
             DDphiDDj(2,1,1) = DDphiDDj(2,1,1) +
-     &         k_p*(i+1)*(i+2)*(i+3)*(2*k_p-i-1)/3*
-     &         largeS(1)**i * largeS(3)**(2*k_p-2-i)
+     1         k_p*(i+1)*(i+2)*(i+3)*(2*k_p-i-1)/3*
+     2         largeS(1)**i * largeS(3)**(2*k_p-2-i)
           end do
           do i = 0,2*k_p-3
             DDphiDDj(2,1,2) = DDphiDDj(2,1,2) -
-     &         k_p*(i+1)*(i+2)*(i+3)*(2*k_p-i-2)/3*
-     &         largeS(1)**i * largeS(3)**(2*k_p-3-i)
+     1         k_p*(i+1)*(i+2)*(i+3)*(2*k_p-i-2)/3*
+     2         largeS(1)**i * largeS(3)**(2*k_p-3-i)
           end do
           do i = 0,2*k_p-4
             DDphiDDj(2,1,3) = DDphiDDj(2,1,3) +
-     &         k_p*(i+1)*(i+2)*(i+3)*(2*k_p-i-3)/3*
-     &         largeS(1)**i * largeS(3)**(2*k_p-4-i)
+     1         k_p*(i+1)*(i+2)*(i+3)*(2*k_p-i-3)/3*
+     2         largeS(1)**i * largeS(3)**(2*k_p-4-i)
           end do
           DDphiDDj(2,2,2) = DDphiDDj(2,1,3)
           do i = 0,2*k_p-5
             DDphiDDj(2,2,3) = DDphiDDj(2,2,3) -
-     &         k_p*(i+1)*(i+2)*(i+3)*(2*k_p-i-4)/3*
-     &         largeS(1)**i * largeS(3)**(2*k_p-5-i)
+     1         k_p*(i+1)*(i+2)*(i+3)*(2*k_p-i-4)/3*
+     2         largeS(1)**i * largeS(3)**(2*k_p-5-i)
           end do
           do i = 0,2*k_p-6
             DDphiDDj(2,3,3) = DDphiDDj(2,3,3) +
-     &         k_p*(i+1)*(i+2)*(i+3)*(2*k_p-i-5)/3*
-     &         largeS(1)**i * largeS(3)**(2*k_p-6-i)
+     1         k_p*(i+1)*(i+2)*(i+3)*(2*k_p-i-5)/3*
+     2         largeS(1)**i * largeS(3)**(2*k_p-6-i)
           end do
           do i = 1,3
             do j = i+1,3
@@ -410,10 +412,10 @@ c
               do m = 1,3
                 do n = 1,3
                   workmat1(i,j,k) = workmat1(i,j,k)
-     &               + DDphiDDj(i,m,n)*DjDss(m,j)*DjDss(n,k)
+     1               + DDphiDDj(i,m,n)*DjDss(m,j)*DjDss(n,k)
                 end do
                 workmat1(i,j,k) = workmat1(i,j,k)
-     &             + DphiDj(i,m)*DDjDDss(m,j,k)
+     1             + DphiDj(i,m)*DDjDDss(m,j,k)
               end do
             end do
           end do
@@ -426,7 +428,7 @@ c
               do m = 1,6
                 do n = 1,6
                   DDphiDDs(i,j,k) = DDphiDDs(i,j,k)
-     &               + workmat1(i,m,n)*L(m,j)*L(n,k)
+     1               + workmat1(i,m,n)*L(m,j)*L(n,k)
                 end do
               end do
             end do
@@ -436,14 +438,14 @@ c
         do j = 1,6
           do k = 1,6
             DDphiDDs(1,j,k) = coef(1)*DDphiDDs(1,j,k)
-     &         + coef(2)*DDphiDDs(2,j,k)
+     1         + coef(2)*DDphiDDs(2,j,k)
           end do
         end do
 c
         do i = 1,6
           do j = i,6
             d2seds2(i,j) = (1-2*k_p)*se/(4*k_p**2*phi**2)
-     &         *DphiDs(1,i)*DphiDs(1,j) + se/(2*k_p*phi)*DDphiDDs(1,i,j)
+     1         *DphiDs(1,i)*DphiDs(1,j) + se/(2*k_p*phi)*DDphiDDs(1,i,j)
           end do
         end do
         do i = 1,6
@@ -454,39 +456,45 @@ c
       end if
 c
       return
-      end
+      end subroutine jancae_KarafillisBoyce
 c
 c
 c
-c------------------------------------------------------(karafillisboyce)
-c     Find principal stress and invariants.
-c     Solving cubic equation by Francois Viete method.
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     PRINCIPAL STRESSES AND INVARIANTS BY FRANÇOIS VIETE METHOD
 c
-      subroutine jancae_KarafillisBoyce_principalStress
-     &                                 (stress,invar, pStress)
+      subroutine jancae_KarafillisBoyce_principalStress ( stress,invar,
+     1                                                    pStress )
 c-----------------------------------------------------------------------
       implicit none
-      real*8, parameter :: PI=3.141592653589793d0, TOL=1e-5
-      real*8, intent(inout) :: stress(6)
-      real*8, intent(out) :: invar(3), pStress(3)
-      real*8 p, q, alpha, c, dum
+c
+      real*8,intent(in) :: stress(6)
+c
+      real*8,intent(out) :: invar(3),pStress(3)
+c
+      real*8 p,q,alpha,c,dum,pi,tol
+c-----------------------------------------------------------------------
+c
+      pi = acos(-1.0d0)
+      tol = 1.0e-5
+c
       invar(1) = stress(1) + stress(2) + stress(3)
       invar(2) = stress(1)*stress(2) + stress(2)*stress(3)
-     &   + stress(1)*stress(3) - stress(4)**2 - stress(5)**2
-     &   - stress(6)**2
+     1   + stress(1)*stress(3) - stress(4)**2 - stress(5)**2
+     2   - stress(6)**2
       invar(3) = stress(1)*stress(2)*stress(3)
-     &   + 2d0*stress(4)*stress(5)*stress(6) - stress(1)*stress(5)**2
-     &   - stress(2)*stress(6)**2 - stress(3)*stress(4)**2
+     1   + 2d0*stress(4)*stress(5)*stress(6) - stress(1)*stress(5)**2
+     2   - stress(2)*stress(6)**2 - stress(3)*stress(4)**2
       p = invar(1)**2/9d0 - invar(2)/3d0
       q = invar(1)**3/27d0 + 0.5d0*invar(3) - invar(1)*invar(2)/6d0
-      if ( p <= TOL*abs(q) ) then
+      if ( p <= tol*abs(q) ) then
         pStress(1) = (2d0*q)**(1d0/3d0) + invar(1)/3d0
         pStress(2) = pStress(1)
         pStress(3) = pStress(1)
       else
         dum = q  /sqrt(p)**3
         if ( abs(dum) > 1.0d0 ) then
-          if ( abs(abs(dum)-1.0d0) <= TOL ) then
+          if ( abs(abs(dum)-1.0d0) <= tol ) then
             dum = dum / abs(dum)
           else
             call jancae_exit ( 1000 )
@@ -500,7 +508,7 @@ c-----------------------------------------------------------------------
       end if
 c
       return
-      end
+      end subroutine jancae_KarafillisBoyce_principalStress
 c
 c
 c
