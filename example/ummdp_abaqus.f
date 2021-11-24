@@ -5994,7 +5994,7 @@ c
 c                                                 ---- equivalent stress
       se = (fyild/alarge)**(1.0d0/am)
 c
-      if ( nreq >= 1 ) return
+      if ( nreq <= 1 ) return
 
 c               ---- 1st order differential coefficient of yield fuction
 c     dfdsi(i) : diff. of fai-i(i) with respect to s(j)
@@ -6043,7 +6043,7 @@ c           ---- 1st order differential coefficient of equivalent stress
       end do
 c
 c
-      if ( nreq >= 2 ) return
+      if ( nreq <= 2 ) return
 c
 c            --- 2st order differential coefficient of equivalent stress
 c                                                   with respect to s(j)
@@ -6779,84 +6779,61 @@ c
 c
 c
 c
-c---------------------------------------------------------------(vegter)
-c     Vegter(2006) yield function and its differentials
-c     (International Journal of Plasticity 22(2006) P-557-580)
-c     
-c     This is plane stress yield function.
+************************************************************************
+c     YEGTER YIELD FUNCTION AND DERIVATIVES
 c
-c     Version1.5 (Build20121224)
-c        coded by Tomokage Inoue(Aisin AW Industries Co.,Ltd.)
-c     Version1.5a 20150225
-c        modified by H.Takizawa
+c       doi: https://doi.org/10.1016/j.ijplas.2005.04.009
 c
       subroutine jancae_vegter ( s,se,dseds,d2seds2,nreq,
-     &                           pryld,ndyld )
-c
+     1                           pryld,ndyld )
+c-----------------------------------------------------------------------
       implicit none
-      integer, intent(in) :: nreq , ndyld
-      real*8,  intent(in) :: s(3), pryld(ndyld)
-      real*8,  intent(out) :: se, dseds(3), d2seds2(3,3)
 c
-      integer  :: nf
+      integer,intent(in) :: nreq,ndyld
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
 c
-      nf=nint(pryld(2))-1
-      call jancae_vegter_core ( s,se,dseds,d2seds2,nreq,
-     &                          pryld,ndyld,nf )
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+			real*8,intent(out) :: d2seds2(3,3)
 c
-      return
-      end
-c
-c
-c
-c---------------------------------------------------------------(vegter)
-c
-      subroutine jancae_vegter_core ( s,se,dseds,d2seds2,nreq,
-     &                                pryld,ndyld,nf )
+      integer nf
 c-----------------------------------------------------------------------
 c
+      nf = nint(pryld(2)) - 1
+      call jancae_vegter_core ( s,se,dseds,d2seds2,nreq,
+     1                          pryld,ndyld,nf )
+c
+      return
+      end subroutine jancae_vegter
+c
+c
+c
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     VEGTER CORE SUBROUTINE
+c
+      subroutine jancae_vegter_core ( s,se,dseds,d2seds2,nreq,
+     1                                pryld,ndyld,nf )
+c-----------------------------------------------------------------------
       implicit none
-c                                                    ---- input & output  
-      integer, intent(in) :: nreq , ndyld , nf
-      real*8, intent(in) :: s(3), pryld(ndyld)
-      real*8, intent(out) :: se, dseds(3), d2seds2(3,3)
 c
-c                                                   ---- local variables
-      real*8, parameter :: pi=3.141592653589793d0
-      real*8, parameter :: TOL0=1.0d-8
-      real*8, parameter :: TOL2=1.0d-2
-      real*8, parameter :: TOL =1.0d-4
+      integer,intent(in) :: nreq,ndyld,nf
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
 c
-c        TOL0    : exception treatment tolerance of stress state 
-c        TOL2    : se tolerance change f(1) to f(2)
-c        TOL     : exception treatment tolerance of vsin2t
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+			real*8,intent(out) :: d2seds2(3,3)
 c
-c ---------------------------------
-      real*8 x(4),vsqrt,vcos2t,vsin2t,theta,theta_rv
-      integer i, j, k, m, n,isflag,iareaflag
-      real*8 phi_un(0:nf),phi_sh(0:nf),phi_ps(0:nf),f_bi0,
-     &       omg(0:nf),r_bi0
-      real*8 fun1,fun2,run,fsh1,fsh2,rsh,fps1,fps2,rps,fbi1,fbi2,rbi,
-     &       fun1r,fun2r,runr,fps1r,fps2r,rpsr
-      real*8 alfa,a(2),b(2),c(2),mm(2),nn(2),mu,f(2)
-      real*8 beta,aa,bb,cc,dd
-c
-c                            over this line for equivalent stress
-c                            ---------------------------------------
-c
-      real*8 dxds(3,3),dphidx(3),dfdmu(2),dadc(2),dcdc(2),dbdc(2)
-      real*8 dndc(2),dmdc(2),dmdctmp,dndctmp,P(2),nnmm, dfdc(2)
-c  -------------------------------------------
-c
-c                            over this line for 1st order differential
-c                            -----------------------------------------
-c
-      real*8 d2adc2(2),d2bdc2(2),d2cdc2(2),d2ndc2(2),d2mdc2(2),
-     &       vvtmp(0:6),vvtmp_rv(0:6),d2mdc2tmp,d2ndc2tmp,
-     &       d2phidx2(3,3)
-      integer ithetaflag
-c
-c                            over this line for 2nd order differential
+      integer i,j,k,m,n,isflag,iareaflag,ithetaflag
+      real*8 pi,tol0,tol2,tol,vsqrt,vcos2t,vsin2t,theta,theta_rv,f_bi0,
+     1       r_bi0,fun1,fun2,run,fsh1,fsh2,rsh,fps1,fps2,rps,fbi1,fbi2,
+     2       rbi,fun1r,fun2r,runr,fps1r,fps2r,rpsr,alfa,beta,aa,bb,cc,
+     3       dd,dmdctmp,dndctmp,nnmm,d2mdc2tmp,d2ndc2tmp
+      real*8 x(4),a(2),b(2),c(2),mm(2),nn(2),mu,f(2),dphidx(3),dfdmu(2),
+     1       dadc(2),dcdc(2),dbdc(2),dndc(2),dmdc(2),P(2),dfdc(2),
+     2       d2adc2(2),d2bdc2(2),d2cdc2(2),d2ndc2(2),d2mdc2(2)
+      real*8 dxds(3,3),d2phidx2(3,3)
+      real*8 phi_un(0:nf),phi_sh(0:nf),phi_ps(0:nf),omg(0:nf),
+     1       vvtmp(0:6),vvtmp_rv(0:6)
 c-----------------------------------------------------------------------
 c                             ---- vegter's parameters from main routine
 c     pryld(2) : nf           ! fourier term
@@ -6876,10 +6853,13 @@ c                set :phi_un,phi_sh,phi_ps,omg (1 to 3)
 c                     phi_un,phi_sh,phi_ps,omg (4 to 6) =0.0
 c       type 2 : 6 tests (0,15,30,45,60,75,90 deg)
 c                set :phi_un,phi_sh,phi_ps,omg (1 to 6)
+c-----------------------------------------------------------------------
 c
+      pi = acos(-1.0d0)
+      tol = 1.0d-4       ! exception treatment tolerance of vsin2t
+      tol0 = 1.0d-8      ! exception treatment tolerance of stress state 
+      tol2 = 1.0d-2      ! se tolerance change f(1) to f(2)
 c
-c
-c     2015.2.25 new storage format : H.Takizawa
       f_bi0=     pryld(3)
       r_bi0=     pryld(4)
       do i=0,nf
@@ -6888,7 +6868,6 @@ c     2015.2.25 new storage format : H.Takizawa
         phi_ps(i)=pryld(4+i*4+3)
         omg(   i)=pryld(4+i*4+4)
       end do
-c
 c
       se=0.0
       do i=1,3
@@ -6907,7 +6886,7 @@ c             : 1 not s(i)=0
 c                                 ---- exception treatment if all s(i)=0
 c
       if(abs(s(1))<=TOL0.and.abs(s(2))<=TOL0.and.
-     &                                         abs(s(3))<=TOL0)then
+     1                                         abs(s(3))<=TOL0)then
       isflag=0
       call jancae_clear1 ( x,4 )
       goto 100
@@ -6997,20 +6976,20 @@ c
       if(x(1)>0.0d0.and.alfa<0.0d0.and.alfa>=fsh2/fsh1) then
         iareaflag=1
       else if(x(1)>0.0d0.and.alfa>=0.0d0
-     &                           .and.alfa<fps2/fps1) then
+     1                           .and.alfa<fps2/fps1) then
         iareaflag=2
       else if(x(1)>0.0d0.and.alfa>=fps2/fps1
-     &                           .and.alfa<=1.0d0) then
+     1                           .and.alfa<=1.0d0) then
         iareaflag=3
 c
       else if(x(1)<0.0d0.and.alfa>=1.0d0
-     &                           .and.alfa<fps1r/fps2r) then
+     1                           .and.alfa<fps1r/fps2r) then
         iareaflag=4
       else if(x(1)<0.0d0.and.beta<=fps2r/fps1r
-     &                                      .and.beta>0.0d0) then
+     1                                      .and.beta>0.0d0) then
         iareaflag=5
       else if(x(1)>=0.0d0.and.beta<=0.0d0
-     &                           .and.beta>fsh1/fsh2) then
+     1                           .and.beta>fsh1/fsh2) then
         iareaflag=6
 c
       else
@@ -7093,7 +7072,7 @@ c
 
 c                            ---- calc. fourier coefficient mu(0<=mu<=1)
       call jancae_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta
-     &                                            ,aa,bb,cc,dd )
+     1                                            ,aa,bb,cc,dd )
 c
 c                            ---- calc. normalized yield locus f(i)i=1~2
       call jancae_vegter_calc_fi ( x,a,b,c,mu,f )
@@ -7131,11 +7110,11 @@ c
        if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dadc(1)=dadc(1)+phi_sh(m)*dble(m)
-     &                             *sin(2.0d0*dble(m)*theta)
-     &                             /sin(2.0d0*theta)
+     1                             *sin(2.0d0*dble(m)*theta)
+     2                             /sin(2.0d0*theta)
           dadc(2)=dadc(2)+phi_sh(m)*dble(m)
-     &                             *sin(2.0d0*dble(m)*theta_rv)
-     &                             /sin(2.0d0*theta)
+     1                             *sin(2.0d0*dble(m)*theta_rv)
+     2                             /sin(2.0d0*theta)
         end do
        else
           do m=0,nf
@@ -7147,8 +7126,8 @@ c
        if(abs(vsin2t)>=TOL) then
          do m=0,nf
           dcdc(1)=dcdc(1)+phi_un(m)*dble(m)
-     &                             *sin(2.0d0*dble(m)*theta)
-     &                             /sin(2.0d0*theta)
+     1                             *sin(2.0d0*dble(m)*theta)
+     2                             /sin(2.0d0*theta)
          end do
         else
           do m=0,nf
@@ -7164,8 +7143,8 @@ c
        if(abs(vsin2t)>=TOL) then
          do m=0,nf
           dmdc(2)=dmdc(2)+omg(m)*dble(m)
-     &                          *sin(2.0d0*dble(m)*theta)
-     &                          /sin(2.0d0*theta)
+     1                          *sin(2.0d0*dble(m)*theta)
+     2                          /sin(2.0d0*theta)
          end do
         else
           do m=0,nf
@@ -7173,15 +7152,15 @@ c
           end do
         end if
       call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     &                               dndc,dmdc,iareaflag,P,nnmm)
+     1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
       case ( 2 )                                           ! iareaflag=2
        if(abs(vsin2t)>=TOL) then
          do m=0,nf
           dadc(1)=dadc(1)+phi_un(m)*dble(m)
-     &                             *sin(2.0d0*dble(m)*theta)
-     &                             /sin(2.0d0*theta)
+     1                             *sin(2.0d0*dble(m)*theta)
+     2                             /sin(2.0d0*theta)
          end do
         else
          do m=0,nf
@@ -7193,8 +7172,8 @@ c
        if(abs(vsin2t)>=TOL) then
          do m=0,nf
           dcdc(1)=dcdc(1)+phi_ps(m)*dble(m)
-     &                             *sin(2.0d0*dble(m)*theta)
-     &                             /sin(2.0d0*theta)
+     1                             *sin(2.0d0*dble(m)*theta)
+     2                             /sin(2.0d0*theta)
          end do
         else
          do m=0,nf
@@ -7207,8 +7186,8 @@ c
        if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dndc(2)=dndc(2)+omg(m)*dble(m)
-     &                           *sin(2.0d0*dble(m)*theta)
-     &                           /sin(2.0d0*theta)
+     1                           *sin(2.0d0*dble(m)*theta)
+     2                           /sin(2.0d0*theta)
          end do
         else
          do m=0,nf
@@ -7219,15 +7198,15 @@ c
           dmdc(1)=0.0d0
           dmdc(2)=0.0d0
       call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     &                               dndc,dmdc,iareaflag,P,nnmm)
+     1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                           
       case ( 3 )                                           ! iareaflag=3
        if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dadc(1)=dadc(1)+phi_ps(m)*dble(m)
-     &                             *sin(2.0d0*dble(m)*theta)
-     &                             /sin(2.0d0*theta)
+     1                             *sin(2.0d0*dble(m)*theta)
+     2                             /sin(2.0d0*theta)
          end do
         else
          do m=0,nf
@@ -7246,7 +7225,7 @@ c
           dmdctmp=r_bi0+1.0d0-(r_bi0-1.0d0)*vcos2t
           dmdc(2)=2.0d0*(r_bi0*r_bi0-1.0d0)/(dmdctmp*dmdctmp)
       call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     &                               dndc,dmdc,iareaflag,P,nnmm)
+     1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
       case ( 4 )                                           ! iareaflag=4
@@ -7256,8 +7235,8 @@ c
        if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dcdc(2)=dcdc(2)+phi_ps(m)*dble(m)
-     &                             *sin(2.0d0*dble(m)*theta_rv)
-     &                             /sin(2.0d0*theta)
+     1                             *sin(2.0d0*dble(m)*theta_rv)
+     2                             /sin(2.0d0*theta)
          end do
         else
          do m=0,nf
@@ -7273,15 +7252,15 @@ c
           dmdc(1)=0.0d0
           dmdc(2)=0.0d0
       call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     &                               dndc,dmdc,iareaflag,P,nnmm)
+     1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
       case ( 5 )                                           ! iareaflag=5
        if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dadc(2)=dadc(2)+phi_ps(m)*dble(m)
-     &                             *sin(2.0d0*dble(m)*theta_rv)
-     &                             /sin(2.0d0*theta)
+     1                             *sin(2.0d0*dble(m)*theta_rv)
+     2                             /sin(2.0d0*theta)
          end do
         else
          do m=0,nf
@@ -7294,8 +7273,8 @@ c
        if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dcdc(2)=dcdc(2)+phi_un(m)*dble(m)
-     &                             *sin(2.0d0*dble(m)*theta_rv)
-     &                             /sin(2.0d0*theta)
+     1                             *sin(2.0d0*dble(m)*theta_rv)
+     2                             /sin(2.0d0*theta)
          end do
         else
          do m=0,nf
@@ -7309,8 +7288,8 @@ c
        if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dmdc(1)=dmdc(1)+omg(m)*dble(m)
-     &                          *sin(2.0d0*dble(m)*theta_rv)
-     &                          /sin(2.0d0*theta)
+     1                          *sin(2.0d0*dble(m)*theta_rv)
+     2                          /sin(2.0d0*theta)
          end do
         else
          do m=0,nf
@@ -7319,7 +7298,7 @@ c
        end if
           dmdc(2)=0.0d0
       call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     &                               dndc,dmdc,iareaflag,P,nnmm)
+     1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
       case ( 6 )                                           ! iareaflag=6
@@ -7327,8 +7306,8 @@ c
        if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dadc(2)=dadc(2)+phi_un(m)*dble(m)
-     &                             *sin(2.0d0*dble(m)*theta_rv)
-     &                             /sin(2.0d0*theta)
+     1                             *sin(2.0d0*dble(m)*theta_rv)
+     2                             /sin(2.0d0*theta)
          end do
         else
          do m=0,nf
@@ -7339,11 +7318,11 @@ c
        if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dcdc(1)=dcdc(1)+phi_sh(m)*dble(m)
-     &                             *sin(2.0d0*dble(m)*theta)
-     &                             /sin(2.0d0*theta)
+     1                             *sin(2.0d0*dble(m)*theta)
+     2                             /sin(2.0d0*theta)
           dcdc(2)=dcdc(2)+phi_sh(m)*dble(m)
-     &                             *sin(2.0d0*dble(m)*theta_rv)
-     &                             /sin(2.0d0*theta)
+     1                             *sin(2.0d0*dble(m)*theta_rv)
+     2                             /sin(2.0d0*theta)
          end do
         else
          do m=0,nf
@@ -7355,8 +7334,8 @@ c
        if(abs(vsin2t)>=TOL) then
         do m=0,nf
           dndc(1)=dndc(1)+omg(m)*dble(m)
-     &                          *sin(2.0d0*dble(m)*theta_rv)
-     &                          /sin(2.0d0*theta)
+     1                          *sin(2.0d0*dble(m)*theta_rv)
+     2                          /sin(2.0d0*theta)
          end do
         else
          do m=0,nf
@@ -7368,7 +7347,7 @@ c
           dmdc(1)=0.0d0
           dmdc(2)=0.0d0
       call jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     &                               dndc,dmdc,iareaflag,P,nnmm)
+     1                               dndc,dmdc,iareaflag,P,nnmm)
 c
       case default
         write (6,*) 'iareaflag error(dseds) :',iareaflag
@@ -7378,12 +7357,12 @@ c
 c
 c                             ---- calc. dphidx(i) (i=1~3)  eq.(21)~(23)
       call jancae_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,dcdc,
-     &                      mm,nn,dndc,dmdc,f,iareaflag,mu,x,dfdmu,dfdc)
+     1                      mm,nn,dndc,dmdc,f,iareaflag,mu,x,dfdmu,dfdc)
 c
 c
 c                                   ---- calc. dseds(i) (i=1~3)  eq.(20)
       call jancae_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,vsin2t,
-     &                                iareaflag,isflag,dxds)
+     1                                iareaflag,isflag,dxds)
 c
       end if
 c
@@ -7427,11 +7406,11 @@ c
       else
        do m=0,nf
         vvtmp(m)=cos(2.0d0*theta)*sin(2.0d0*dble(m)*theta)/
-     &          (sin(2.0d0*theta)**3)-dble(m)*cos(2.0d0*dble(m)*theta)/
-     &                                           (sin(2.0d0*theta)**2)
+     1          (sin(2.0d0*theta)**3)-dble(m)*cos(2.0d0*dble(m)*theta)/
+     2                                           (sin(2.0d0*theta)**2)
         vvtmp_rv(m)=cos(2.0d0*theta)*sin(2.0d0*dble(m)*theta_rv)/
-     &       (sin(2.0d0*theta)**3)+dble(m)*cos(2.0d0*dble(m)*theta_rv)/
-     &                                           (sin(2.0d0*theta)**2)
+     1       (sin(2.0d0*theta)**3)+dble(m)*cos(2.0d0*dble(m)*theta_rv)/
+     2                                           (sin(2.0d0*theta)**2)
        end do
 c
       end if
@@ -7457,7 +7436,7 @@ c
           d2mdc2(2)=d2mdc2(2)+omg(m)*dble(m)*vvtmp(m)
          end do
       call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
-     &     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
+     1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
       case ( 2 )                                           ! iareaflag=2
@@ -7479,7 +7458,7 @@ c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
       call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
-     &     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
+     1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
       case ( 3 )                                           ! iareaflag=3
@@ -7497,9 +7476,9 @@ c
           d2mdc2(1)=0.0d0
              d2mdc2tmp=r_bi0+1.0d0-(r_bi0-1.0d0)*vcos2t
           d2mdc2(2)=4.0d0*(r_bi0**2-1.0d0)*(r_bi0-1.0d0)/
-     &                                              (d2mdc2tmp**3)
+     1                                              (d2mdc2tmp**3)
       call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
-     &     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
+     1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
       case ( 4 )                                          !  iareaflag=4
@@ -7514,12 +7493,12 @@ c
           d2ndc2(1)=0.0d0
              d2ndc2tmp=r_bi0+1.0d0-(r_bi0-1.0d0)*vcos2t
           d2ndc2(2)=-4.0d0*(r_bi0**2-1.0d0)*(r_bi0-1.0d0)/
-     &                                              (d2ndc2tmp**3)
+     1                                              (d2ndc2tmp**3)
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
       call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
-     &     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
+     1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                           
       case ( 5 )                                           ! iareaflag=5
@@ -7541,7 +7520,7 @@ c
          end do
           d2mdc2(2)=0.0d0
       call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
-     &     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
+     1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
       case ( 6 )                                           ! iareaflag=6
@@ -7563,7 +7542,7 @@ c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
       call jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
-     &     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
+     1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
       case default
         write (6,*) 'iareaflag error(d2seds2) :',iareaflag
@@ -7573,446 +7552,488 @@ c
 c
 c                                     ---- calc. d2phidx2(k,l) (k,l=1~3)
       call jancae_vegter_calc_d2phidx2 (d2phidx2,se,a,b,c,dadc,dbdc,
-     &             dcdc,mm,nn,dndc,dmdc,f,iareaflag,mu,x,d2adc2,d2bdc2,
-     &            d2cdc2,d2ndc2,d2mdc2,dfdmu,dfdc,s,aa,bb,cc,dd,dphidx)
+     1             dcdc,mm,nn,dndc,dmdc,f,iareaflag,mu,x,d2adc2,d2bdc2,
+     2            d2cdc2,d2ndc2,d2mdc2,dfdmu,dfdc,s,aa,bb,cc,dd,dphidx)
 c
 c
 c                                      ---- calc. d2seds2(i,j) (i,j=1~3)
       call jancae_vegter_calc_d2seds2 (d2seds2,d2phidx2,se,a,b,c,mu,x,
-     &         vcos2t,vsin2t,iareaflag,dxds,dphidx,isflag,s,dseds,
-     &                                 pryld,ndyld)
+     1         vcos2t,vsin2t,iareaflag,dxds,dphidx,isflag,s,dseds,
+     2                                 pryld,ndyld)
 c
       end if
 c
       return
-      end
+      end subroutine jancae_vegter_core
 c
 c
 c
-c-----------------------------------------------------------------------
-c                                      under this line is branch_routine
-c---------------------------------------------------------------(vegter)
-c     calc. hingepoint b(i,i=1~2)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE HINGEPOINT b(i,i=1~2)
 c
       subroutine jancae_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8, intent(in) :: a(2),c(2),mm(2),nn(2),s(3)
-      real*8, intent(out) :: b(2)
-      real*8  bb, b1u,b2u
-      real*8, parameter :: TOL=1.0d-8
-      integer, intent(in) ::iareaflag
+      integer,intent(in) :: iareaflag
+      real*8 ,intent(in) :: a(2),c(2),mm(2),nn(2),s(3)
 c
-      b1u=mm(2)*(nn(1)*a(1)+nn(2)*a(2))-nn(2)*(mm(1)*c(1)+mm(2)*c(2))
-      b2u=nn(1)*(mm(1)*c(1)+mm(2)*c(2))-mm(1)*(nn(1)*a(1)+nn(2)*a(2))
+      real*8,intent(out) :: b(2)
 c
-      bb=nn(1)*mm(2)-mm(1)*nn(2)
-      if(abs(bb)<=TOL) then
+      real*8 tol,bb,b1u,b2u
+c-----------------------------------------------------------------------
+c
+      tol = 1.0d-8
+c
+      b1u = mm(2)*(nn(1)*a(1)+nn(2)*a(2))-nn(2)*(mm(1)*c(1)+mm(2)*c(2))
+      b2u = nn(1)*(mm(1)*c(1)+mm(2)*c(2))-mm(1)*(nn(1)*a(1)+nn(2)*a(2))
+c
+      bb = nn(1)*mm(2)-mm(1)*nn(2)
+      if ( abs(bb) <= TOL ) then
          write (6,*) 'hingepoint singular error! '
          call jancae_exit (9000)
       end if
 c
-      b(1)=b1u/bb
-      b(2)=b2u/bb
+      b(1) = b1u / bb
+      b(2) = b2u / bb
 c
       return
-      end
+      end subroutine jancae_vegter_hingepoint
 c
 c
 c
-c---------------------------------------------------------------(vegter)
-c     calc. fourier coefficient mu(0<=mu<=1)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE FOURIER COEFFICIENT mu(0<=mu<=1)
 c
       subroutine jancae_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta,
-     &                                                     aa,bb,cc,dd)
+     1                                   aa,bb,cc,dd)
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8, intent(in) :: x(4),a(2),b(2),c(2),s(3),theta 
-      real*8, intent(out) :: mu
-      real*8  aa,bb,cc,dd,xx(2)
-      real*8, parameter :: TOL1=1.0d-8
-      real*8, parameter :: TOL2=1.0d-8
-      integer, intent(in) ::iareaflag
+      integer,intent(in) :: iareaflag
+      real*8 ,intent(in) :: theta 
+      real*8 ,intent(in) :: x(4),a(2),b(2),c(2),s(3)
+c
+      real*8,intent(out) :: mu
+c
       integer imuflag
+      real*8 tol1,tol2,aa,bb,cc,dd
+      real*8 xx(2)
+c-----------------------------------------------------------------------
 c
-      aa=x(2)*(a(1)+c(1)-2.0d0*b(1))-x(1)*(a(2)+c(2)-2.0d0*b(2))
-      bb=2.0d0*x(2)*(b(1)-a(1))-2.0d0*x(1)*(b(2)-a(2))
-      cc=x(2)*a(1)-x(1)*a(2)
+      tol1 = 1.0d-8
+      tol2 = 1.0d-8
 c
-      if(abs(aa)<=TOL1) then
+      aa = x(2)*(a(1)+c(1)-2.0d0*b(1))-x(1)*(a(2)+c(2)-2.0d0*b(2))
+      bb = 2.0d0*x(2)*(b(1)-a(1))-2.0d0*x(1)*(b(2)-a(2))
+      cc = x(2)*a(1)-x(1)*a(2)
+c
+      if ( abs(aa) <= tol1 ) then
          write (6,*) 'calc. mu singular error! ',abs(aa),iareaflag
          call jancae_exit (9000)
       end if
 c
-      dd=bb*bb-4.0d0*aa*cc
-      if(dd>=0.0d0) then
-        xx(1)=0.5d0*(-bb+sign(sqrt(dd),-bb))/aa
-        xx(2)=cc/(aa*xx(1))
+      dd = bb*bb - 4.0d0*aa*cc
+      if ( dd >= 0.0d0 ) then
+        xx(1) = 0.5d0 * (-bb+sign(sqrt(dd),-bb))/aa
+        xx(2) = cc / (aa*xx(1))
 c
       else
          write (6,*) 'negative dd ! ',dd,iareaflag
          call jancae_exit (9000)
       end if
 c
-      if(xx(1)>=0.0d0.and.xx(1)<=1.0000005d0) then
-          mu=xx(1)
-           imuflag=1
-        else if(xx(2)>=0.0d0.and.xx(2)<=1.0000005d0) then
-          mu=xx(2)
-           imuflag=2
-        else if(abs(xx(1))<=TOL2.or.abs(xx(2))<=TOL2)then
-          mu=0.0d0
-        else
-         write (6,*) 'can not find mu ! solve error ',iareaflag,xx(1)
-     & ,xx(2)
+      if ( xx(1) >= 0.0d0 .and. xx(1) <= 1.0000005d0 ) then
+        mu = xx(1)
+        imuflag = 1
+      else if ( xx(2) >= 0.0d0 .and. xx(2) <= 1.0000005d0 ) then
+        mu = xx(2)
+        imuflag = 2
+      else if ( abs(xx(1) ) <= tol2 .or. abs(xx(2)) <= tol2 ) then
+        mu = 0.0d0
+      else
+        write (6,*) 'can not find mu ! solve error ',iareaflag,xx(1)
+     1              ,xx(2)
          call jancae_exit (9000)
       end if
 c
       return
-      end
+      end subroutine jancae_vegter_calc_mu
 c
 c
 c
-c---------------------------------------------------------------(vegter)
-c     calc. normalized yield locus f(i)i=1~2
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE NORMALIZED YIELD LOCUS
 c
       subroutine jancae_vegter_calc_fi ( x,a,b,c,mu,f )
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8, intent(in) :: x(4),a(2),b(2),c(2),mu
-      real*8, intent(out) :: f(2)
-      integer i
+      real*8,intent(in) :: mu
+      real*8,intent(in) :: x(4),a(2),b(2),c(2)
 c
-      do i=1,2
-        f(i)=a(i)+2.0d0*mu*(b(i)-a(i))+mu*mu*(a(i)+c(i)-2.0d0*b(i))
+      real*8,intent(out) :: f(2)
+c
+      integer i
+c-----------------------------------------------------------------------
+c
+      do i = 1,2
+        f(i) = a(i)+ 2.0d0*mu*(b(i)-a(i)) + mu*mu*(a(i)+c(i)-2.0d0*b(i))
       end do
 c
       return
-      end
+      end subroutine jancae_vegter_calc_fi
 c
 c
 c
-c---------------------------------------------------------------(vegter)
-c     calc. dbdc(i) (i=1~2) eq.(A.7)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CAKCULATE dbdc(i) (i=1~2) eq.(A.7)
 c
-      subroutine jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,
-     &                 dcdc, mm,nn,dndc,dmdc,iareaflag,P,nnmm)
+      subroutine jancae_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+     1                                     dndc,dmdc,iareaflag,P,nnmm)
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8, intent(in) :: a(2),b(2),c(2),dadc(2),dcdc(2),mm(2),
-     &                      nn(2),dndc(2),dmdc(2)
-      real*8, intent(out) :: dbdc(2),P(2),nnmm
-      integer, intent(in) :: iareaflag
-      real*8, parameter :: TOL=1.0d-8
-      real*8 nminv
+      integer,intent(in) :: iareaflag
+      real*8 ,intent(in) :: a(2),b(2),c(2),dadc(2),dcdc(2),mm(2),
+     1                      nn(2),dndc(2),dmdc(2)
+c
+      real*8,intent(out) :: nnmm
+      real*8,intent(out) :: dbdc(2),P(2)     
+c
       integer i
+      real*8 tol,nminv
+c-----------------------------------------------------------------------
 c
-      P(1)=nn(1)*dadc(1)+dndc(1)*(a(1)-b(1))+nn(2)*dadc(2)+
-     &                                        dndc(2)*(a(2)-b(2))
+      tol = 1.0d-8
 c
-      P(2)=mm(1)*dcdc(1)+dmdc(1)*(c(1)-b(1))+mm(2)*dcdc(2)+
-     &                                        dmdc(2)*(c(2)-b(2))
+      P(1) = nn(1)*dadc(1) + dndc(1)*(a(1)-b(1)) + nn(2)*dadc(2)
+     1       + dndc(2)*(a(2)-b(2))
 c
-      nnmm=nn(1)*mm(2)-mm(1)*nn(2)
-         if(abs(nnmm)<TOL) then
+      P(2) = mm(1)*dcdc(1) + dmdc(1)*(c(1)-b(1)) + mm(2)*dcdc(2)
+     1       + dmdc(2)*(c(2)-b(2))
+c
+      nnmm = nn(1)*mm(2) - mm(1)*nn(2)
+         if ( abs(nnmm) < tol ) then
             write (6,*) 'nnmm too small! ',nnmm
             call jancae_exit (9000)
          end if
-      nminv=1.0d0/nnmm
+      nminv = 1.0d0 / nnmm
 c
-      dbdc(1)=nminv*(P(1)*mm(2)-P(2)*nn(2))
-      dbdc(2)=nminv*(P(2)*nn(1)-P(1)*mm(1))
+      dbdc(1) = nminv * (P(1)*mm(2)-P(2)*nn(2))
+      dbdc(2) = nminv * (P(2)*nn(1)-P(1)*mm(1))
 c
       return
-      end
+      end subroutine jancae_vegter_calc_dbdc
 c
 c
 c
-c---------------------------------------------------------------(vegter)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. dphidx(i) (i=1~3)  eq.(21)~(23)
 c
-      subroutine jancae_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,
-     &            dbdc,dcdc,mm,nn,dndc,dmdc,f,iareaflag,mu,x,dfdmu,dfdc)
-c-----------------------------------------------------------------------
+      subroutine jancae_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,
+     1                                       dcdc,mm,nn,dndc,dmdc,f,  
+     2                                       iareaflag,mu,x,dfdmu,dfdc )
+c-----------------------------------------------------------------------   
       implicit none
 c
-      real*8, intent(in) :: se,a(2),b(2),c(2),dadc(2),dbdc(2),dcdc(2),
-     &                      mm(2),nn(2),dndc(2),dmdc(2),f(2),mu,x(4)
-      real*8, intent(out) :: dphidx(3),dfdmu(2),dfdc(2)
-      integer, intent(in) :: iareaflag
-      real*8, parameter :: TOL1=0.996515d0       ! =44.9deg
-      real*8, parameter :: TOL2=1.003497d0       ! =45.1deg
-      real*8, parameter :: TOL3=1.0d-8
-      real*8 dphidxtmp(3),dphidxcoe,dphidxcinv,
-     &       tmp_u,tmp_b,vtan
-      integer i
+      integer,intent(in) :: iareaflag
+      real*8 ,intent(in) :: se
+      real*8 ,intent(in) :: a(2),b(2),c(2),dadc(2),dbdc(2),dcdc(2),
+     1                      mm(2),nn(2),dndc(2),dmdc(2),f(2),mu,x(4)
 c
+      real*8,intent(out) :: dphidx(3),dfdmu(2),dfdc(2)
+c
+      integer i
+      real*8 tol1,tol2,tol3,dphidxcoe,dphidxcinv,tmp_u,tmp_b,vtan
+      real*8 dphidxtmp(3)
+c-----------------------------------------------------------------------       
+c
+      tol1 = 0.996515d0         ! =44.9deg
+      tol2 = 1.003497d0         ! =45.1deg
+      tol3 = 1.0d-8
 c                                    ---- calc. dfdc(i) (i=1~2)  eq.(23)
-      do i=1,2
-        dfdc(i)=dadc(i)+2.0d0*mu*(dbdc(i)-dadc(i))+mu*mu*(dadc(i)
-     &                                       +dcdc(i)-2.0d0*dbdc(i))
+      do i = 1,2
+        dfdc(i) = dadc(i) + 2.0d0*mu*(dbdc(i)-dadc(i)) + mu*mu*(dadc(i)
+     1            + dcdc(i)-2.0d0*dbdc(i))
       end do
 c
 c                                   ---- calc. dfdmu(i) (i=1~2)  eq.(22)
-      do i=1,2
-        dfdmu(i)=2.0d0*(b(i)-a(i))+2.0d0*mu*(a(i)+c(i)-2.0d0*b(i))
+      do i = 1,2
+        dfdmu(i) = 2.0d0*(b(i)-a(i)) + 2.0d0*mu*(a(i)+c(i)-2.0d0*b(i))
       end do
 c
 c                            ---- calc. dphidx(i) (i=1~3)  eq.(21),(C.1)
-      dphidxcinv=f(1)*dfdmu(2)-f(2)*dfdmu(1)
-         if(abs(dphidxcinv)<TOL3) then
-            write (6,*) 'eq.(21) too small! ',dphidxcinv
-            call jancae_exit (9000)
-         end if
-             dphidxcoe=1.0d0/dphidxcinv
+      dphidxcinv = f(1)*dfdmu(2) - f(2)*dfdmu(1)
+      if ( abs(dphidxcinv) < tol3 ) then
+        write (6,*) 'eq.(21) too small! ',dphidxcinv
+        call jancae_exit (9000)
+      end if
+      dphidxcoe = 1.0d0 / dphidxcinv
 c
 c                            ---- if condition to avoid singular eq.(20)
 c                                            ---- apply 44.9 to 45.1 deg
 c
-      if(iareaflag==3.or.iareaflag==4) then
-      vtan=x(2)/x(1)
+      if ( iareaflag == 3 .or. iareaflag == 4) then
+        vtan = x(2) / x(1)
       end if
 c
-      if(iareaflag==4.and.vtan>=TOL1.and.vtan<=TOL2) then
+      if ( iareaflag == 4 .and. vtan >= tol1 .and. vtan <= tol2 ) then
 c
-      tmp_u=1.0d0*(2.0d0*(1.0d0-mu)*dbdc(2)+mu*dcdc(2))*dfdmu(1)
-     &     -1.0d0*(2.0d0*(1.0d0-mu)*dbdc(1)+mu*dcdc(1))*dfdmu(2)
+        tmp_u = 1.0d0*(2.0d0*(1.0d0-mu)*dbdc(2)+mu*dcdc(2))*dfdmu(1)
+     1          - 1.0d0*(2.0d0*(1.0d0-mu)*dbdc(1)+mu*dcdc(1))*dfdmu(2)
 c
-      tmp_b=2.0d0*(1.0d0-mu)*(b(1)-b(2))+mu*(c(1)-c(2))
+        tmp_b = 2.0d0*(1.0d0-mu)*(b(1)-b(2)) + mu*(c(1)-c(2))
 
-      dphidxtmp(1)=dfdmu(2)
-      dphidxtmp(2)=-dfdmu(1)
-      dphidxtmp(3)=tmp_u/tmp_b
+        dphidxtmp(1) =  dfdmu(2)
+        dphidxtmp(2) = -dfdmu(1)
+        dphidxtmp(3) = tmp_u / tmp_b
 c
-      else if(iareaflag==3.and.vtan>=TOL1.and.vtan<=TOL2) then
+      else if ( iareaflag == 3 .and. vtan >= tol1 
+     1          .and. vtan <= tol2 ) then
 c
-      tmp_u=1.0d0*(2.0d0*mu*dbdc(2)+(1.0d0-mu)*dadc(2))*dfdmu(1)
-     &     -1.0d0*(2.0d0*mu*dbdc(1)+(1.0d0-mu)*dadc(1))*dfdmu(2)
+        tmp_u = 1.0d0*(2.0d0*mu*dbdc(2)+(1.0d0-mu)*dadc(2))*dfdmu(1)
+     1          - 1.0d0*(2.0d0*mu*dbdc(1)+(1.0d0-mu)*dadc(1))*dfdmu(2)
 c
-      tmp_b=2.0d0*mu*(b(1)-b(2))+(1.0d0-mu)*(a(1)-a(2))
+        tmp_b = 2.0d0*mu*(b(1)-b(2))+(1.0d0-mu)*(a(1)-a(2))
 
-      dphidxtmp(1)=dfdmu(2)
-      dphidxtmp(2)=-dfdmu(1)
-      dphidxtmp(3)=tmp_u/tmp_b
+        dphidxtmp(1) =  dfdmu(2)
+        dphidxtmp(2) = -dfdmu(1)
+        dphidxtmp(3) = tmp_u / tmp_b
 c
       else
 c
-      dphidxtmp(1)=dfdmu(2)
-      dphidxtmp(2)=-dfdmu(1)
-      dphidxtmp(3)=se*(dfdc(2)*dfdmu(1)-dfdc(1)*dfdmu(2))
+        dphidxtmp(1) =  dfdmu(2)
+        dphidxtmp(2) = -dfdmu(1)
+        dphidxtmp(3) = se * (dfdc(2)*dfdmu(1)-dfdc(1)*dfdmu(2))
 c
       end if
-      do i=1,3
-        dphidx(i)=dphidxcoe*dphidxtmp(i)
+      do i = 1,3
+        dphidx(i) = dphidxcoe * dphidxtmp(i)
       end do
 c
       return
-      end
+      end subroutine jancae_vegter_calc_dphidx
 c
 c
 c
-c---------------------------------------------------------------(vegter)
-c     calc. dseds(i) (i=1~3)  eq.(20)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE FIRST ORDER DERIVATIVE
 c
       subroutine jancae_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,
-     &                                     vsin2t,iareaflag,isflag,dxds)
+     1                                      vsin2t,iareaflag,isflag,
+     2                                      dxds )
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8, intent(in) :: x(4),dphidx(3),vcos2t,vsin2t
-      real*8, intent(out) :: dseds(3),dxds(3,3)
-      integer, intent(in) :: iareaflag,isflag
-      real*8, parameter :: TOL1=0.996515d0       ! =44.9deg
-      real*8, parameter :: TOL2=1.003497d0       ! =45.1deg
-      real*8 dxds_t(3,3),vtan
-      integer i,j
+      integer,intent(in) :: iareaflag,isflag
+      real*8 ,intent(in) :: vcos2t,vsin2t
+      real*8 ,intent(in) :: x(4),dphidx(3)
 c
+      real*8,intent(out) :: dseds(3)
+      real*8,intent(out) :: dxds(3,3) 
+c
+      integer i,j
+      real*8 tol1,tol2,vtan
+      real*8 dxds_t(3,3)  
+c-----------------------------------------------------------------------
+c
+      tol1 = 0.996515d0       ! =44.9deg
+      tol2 = 1.003497d0       ! =45.1deg
 c                  ---- set linear transformation matrix dxds(3,3) eq.18
 c
 c                            ---- if condition to avoid singular eq.(20)
 c                                            ---- apply 44.9 to 45.1 deg
 c
-      if(iareaflag==3.or.iareaflag==4) then
-      vtan=x(2)/x(1)
+      if ( iareaflag == 3 .or. iareaflag == 4 ) then
+        vtan = x(2) / x(1)
       end if
 c
-      if(iareaflag==3.and.vtan>=TOL1.and.vtan<=TOL2) then
-        dxds(1,1)=0.5d0*(1.0d0+vcos2t)
-        dxds(2,1)=0.5d0*(1.0d0-vcos2t)
-        dxds(3,1)=vsin2t*vsin2t
-        dxds(1,2)=0.5d0*(1.0d0-vcos2t)
-        dxds(2,2)=0.5d0*(1.0d0+vcos2t)
-        dxds(3,2)=-vsin2t*vsin2t
-        dxds(1,3)=vsin2t
-        dxds(2,3)=-vsin2t
-        dxds(3,3)=-2.0d0*vsin2t*vcos2t
-        dxds_t=transpose(dxds)
+      if ( iareaflag == 3 .and. vtan >= tol1 .and. vtan <= tol2 ) then
+        dxds(1,1) = 0.5d0 * (1.0d0+vcos2t)
+        dxds(2,1) = 0.5d0 * (1.0d0-vcos2t)
+        dxds(3,1) = vsin2t * vsin2t
+        dxds(1,2) = 0.5d0 * (1.0d0-vcos2t)
+        dxds(2,2) = 0.5d0 * (1.0d0+vcos2t)
+        dxds(3,2) = -vsin2t * vsin2t
+        dxds(1,3) =  vsin2t
+        dxds(2,3) = -vsin2t
+        dxds(3,3) = -2.0d0 * vsin2t * vcos2t
+        dxds_t = transpose(dxds)
 c
-      else if(iareaflag==4.and.vtan>=TOL1.and.vtan<=TOL2) then
-        dxds(1,1)=0.5d0*(1.0d0+vcos2t)
-        dxds(2,1)=0.5d0*(1.0d0-vcos2t)
-        dxds(3,1)=vsin2t*vsin2t
-        dxds(1,2)=0.5d0*(1.0d0-vcos2t)
-        dxds(2,2)=0.5d0*(1.0d0+vcos2t)
-        dxds(3,2)=-vsin2t*vsin2t
-        dxds(1,3)=vsin2t
-        dxds(2,3)=-vsin2t
-        dxds(3,3)=-2.0d0*vsin2t*vcos2t
-        dxds_t=transpose(dxds)
+      else if ( iareaflag == 4 .and. vtan >= tol1 
+     1          .and. vtan <= tol2) then
+        dxds(1,1) = 0.5d0 * (1.0d0+vcos2t)
+        dxds(2,1) = 0.5d0 * (1.0d0-vcos2t)
+        dxds(3,1) = vsin2t * vsin2t
+        dxds(1,2) = 0.5d0 * (1.0d0-vcos2t)
+        dxds(2,2) = 0.5d0 * (1.0d0+vcos2t)
+        dxds(3,2) = -vsin2t * vsin2t
+        dxds(1,3) =  vsin2t
+        dxds(2,3) = -vsin2t
+        dxds(3,3) = -2.0d0 * vsin2t * vcos2t
+        dxds_t = transpose(dxds)
 c
       else
-        dxds(1,1)=0.5d0*(1.0d0+vcos2t)
-        dxds(2,1)=0.5d0*(1.0d0-vcos2t)
-        dxds(3,1)=vsin2t*vsin2t/(x(1)-x(2))
-        dxds(1,2)=0.5d0*(1.0d0-vcos2t)
-        dxds(2,2)=0.5d0*(1.0d0+vcos2t)
-        dxds(3,2)=-vsin2t*vsin2t/(x(1)-x(2))
-        dxds(1,3)=vsin2t
-        dxds(2,3)=-vsin2t
-        dxds(3,3)=-2.0d0*vsin2t*vcos2t/(x(1)-x(2))
-        dxds_t=transpose(dxds)
+        dxds(1,1) = 0.5d0 * (1.0d0+vcos2t)
+        dxds(2,1) = 0.5d0 * (1.0d0-vcos2t)
+        dxds(3,1) = vsin2t * vsin2t / (x(1)-x(2))
+        dxds(1,2) = 0.5d0 * (1.0d0-vcos2t)
+        dxds(2,2) = 0.5d0 * (1.0d0+vcos2t)
+        dxds(3,2) = -vsin2t * vsin2t / (x(1)-x(2))
+        dxds(1,3) =  vsin2t
+        dxds(2,3) = -vsin2t
+        dxds(3,3) = -2.0d0 * vsin2t * vcos2t / (x(1)-x(2))
+        dxds_t = transpose(dxds)
       end if
 c
 c                                   ---- calc. dseds(i) (1=1~3)  eq.(20)
       call jancae_clear1 ( dseds,3 )
 c
-      do i=1,3
-        do j=1,3
-          dseds(i)=dseds(i)+dxds_t(i,j)*dphidx(j)
+      do i = 1,3
+        do j = 1,3
+          dseds(i) = dseds(i) + dxds_t(i,j)*dphidx(j)
         end do
       end do
 c
       return
-      end
+      end subroutine jancae_vegter_calc_dseds
 c
 c
 c
-c---------------------------------------------------------------(vegter)
-c     calc. d2bdc2(i) (i=1~2)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE d2bdc2(i) (i=1~2)
 c
-      subroutine jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,
-     $      nn,dndc,dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,
-     &      P,nnmm,s)
+      subroutine jancae_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+     1                                       dndc,dmdc,iareaflag,d2adc2,
+     2                                       d2bdc2,d2cdc2,d2ndc2,
+     3                                       d2mdc2,P,nnmm,s )      
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8, intent(in) :: a(2),b(2),c(2),dadc(2),dcdc(2),mm(2),
-     &                      nn(2),dndc(2),dmdc(2),dbdc(2),
-     &                      d2adc2(2),d2cdc2(2),d2ndc2(2),d2mdc2(2),
-     &                      P(2),nnmm,s(3)
-      real*8, intent(out) :: d2bdc2(2)
-      integer, intent(in) :: iareaflag
-      real*8  dnnmmdc,dPdc(2),dp1m2p2n2,dp2n1p1m1
+      integer,intent(in) :: iareaflag
+      real*8 ,intent(in) :: nnmm
+      real*8 ,intent(in) :: a(2),b(2),c(2),dadc(2),dcdc(2),mm(2),
+     1                      nn(2),dndc(2),dmdc(2),dbdc(2),
+     2                      d2adc2(2),d2cdc2(2),d2ndc2(2),d2mdc2(2),
+     3                      P(2),s(3)
+c
+      real*8,intent(out) :: d2bdc2(2)
+c
       integer i
+      real*8 dnnmmdc,dp1m2p2n2,dp2n1p1m1
+      real*8 dPdc(2)
+c-----------------------------------------------------------------------
 c
-      dnnmmdc=dndc(1)*mm(2)+nn(1)*dmdc(2)-dmdc(1)*nn(2)-mm(1)*dndc(2)
+      dnnmmdc = dndc(1)*mm(2)+nn(1)*dmdc(2)-dmdc(1)*nn(2)-mm(1)*dndc(2)
 c
-      dPdc(1)=dndc(1)*dadc(1)+nn(1)*d2adc2(1)+d2ndc2(1)*(a(1)-b(1))
-     &                                   +dndc(1)*(dadc(1)-dbdc(1))
-     &       +dndc(2)*dadc(2)+nn(2)*d2adc2(2)+d2ndc2(2)*(a(2)-b(2))
-     &                                   +dndc(2)*(dadc(2)-dbdc(2))
+      dPdc(1) = dndc(1)*dadc(1) + nn(1)*d2adc2(1) 
+     1          + d2ndc2(1)*(a(1)-b(1)) + dndc(1)*(dadc(1)-dbdc(1))
+     2          + dndc(2)*dadc(2) + nn(2)*d2adc2(2)                      
+     2          + d2ndc2(2)*(a(2)-b(2)) + dndc(2)*(dadc(2)-dbdc(2))              
 c
-      dPdc(2)=dmdc(1)*dcdc(1)+mm(1)*d2cdc2(1)+d2mdc2(1)*(c(1)-b(1))
-     &                                   +dmdc(1)*(dcdc(1)-dbdc(1))
-     &       +dmdc(2)*dcdc(2)+mm(2)*d2cdc2(2)+d2mdc2(2)*(c(2)-b(2))
-     &                                   +dmdc(2)*(dcdc(2)-dbdc(2))
+      dPdc(2) = dmdc(1)*dcdc(1) + mm(1)*d2cdc2(1) 
+     1          + d2mdc2(1)*(c(1)-b(1)) + dmdc(1)*(dcdc(1)-dbdc(1))
+     2          + dmdc(2)*dcdc(2) + mm(2)*d2cdc2(2)
+     3          + d2mdc2(2)*(c(2)-b(2)) + dmdc(2)*(dcdc(2)-dbdc(2))
 c
-      dp1m2p2n2=dPdc(1)*mm(2)+P(1)*dmdc(2)-dPdc(2)*nn(2)-P(2)*dndc(2)
-      dp2n1p1m1=dPdc(2)*nn(1)+P(2)*dndc(1)-dPdc(1)*mm(1)-P(1)*dmdc(1)
+      dp1m2p2n2 = dPdc(1)*mm(2) + P(1)*dmdc(2) - dPdc(2)*nn(2)
+     1            - P(2)*dndc(2)
+      dp2n1p1m1 = dPdc(2)*nn(1) + P(2)*dndc(1) - dPdc(1)*mm(1)
+     1            - P(1)*dmdc(1)
 c
-      d2bdc2(1)=-1.0d0*dnnmmdc*(P(1)*mm(2)-P(2)*nn(2))/(nnmm*nnmm)
-     &         +dp1m2p2n2/nnmm
-      d2bdc2(2)=-1.0d0*dnnmmdc*(P(2)*nn(1)-P(1)*mm(1))/(nnmm*nnmm)
-     &         +dp2n1p1m1/nnmm
+      d2bdc2(1) = -1.0d0*dnnmmdc*(P(1)*mm(2)-P(2)*nn(2))/(nnmm*nnmm)
+     1            + dp1m2p2n2/nnmm
+      d2bdc2(2) = -1.0d0*dnnmmdc*(P(2)*nn(1)-P(1)*mm(1))/(nnmm*nnmm)
+     2            + dp2n1p1m1/nnmm
 c
       return
-      end
+      end subroutine jancae_vegter_calc_d2bdc2
 c
 c
 c
-c---------------------------------------------------------------(vegter)
-c     calc. d2phidx2(k,l) (k,l=1~3)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE d2phidx2(k,l) (k,l=1~3)
 c
-      subroutine jancae_vegter_calc_d2phidx2 (d2phidx2,se,a,b,c,dadc,
-     &              dbdc,dcdc,mm,nn,dndc,dmdc,f,iareaflag,mu,x,d2adc2,
-     &      d2bdc2,d2cdc2,d2ndc2,d2mdc2,dfdmu,dfdc,s,aa,bb,cc,dd,dphidx)
+      subroutine jancae_vegter_calc_d2phidx2 ( d2phidx2,se,a,b,c,dadc,
+     1                                         dbdc,dcdc,mm,nn,dndc,
+     2                                         dmdc,f,iareaflag,mu,x,
+     3                                         d2adc2,d2bdc2,d2cdc2,
+     4                                         d2ndc2,d2mdc2,dfdmu,dfdc,
+     5                                         s,aa,bb,cc,dd,dphidx )
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8, intent(in) :: se,a(2),b(2),c(2),dadc(2),dbdc(2),dcdc(2),
-     &                      mm(2),nn(2),dndc(2),dmdc(2),f(2),mu,x(4),
-     &                      d2adc2(2),d2cdc2(2),d2ndc2(2),d2mdc2(2),
-     &                              d2bdc2(2),dfdmu(2),dfdc(2),s(3),
-     &                              aa,bb,cc,dd,dphidx(3)
-      real*8, intent(out) :: d2phidx2(3,3)
-      integer, intent(in) :: iareaflag
-c     real*8, parameter :: TOL1=0.996515d0       ! =44.9deg
-c     real*8, parameter :: TOL2=1.003497d0       ! =45.1deg
+      integer,intent(in) :: iareaflag
+      real*8 ,intent(in) :: se,mu,aa,bb,cc,dd
+      real*8 ,intent(in) :: a(2),b(2),c(2),dadc(2),dbdc(2),dcdc(2),
+     1                      mm(2),nn(2),dndc(2),dmdc(2),f(2),x(4),
+     2                      d2adc2(2),d2cdc2(2),d2ndc2(2),d2mdc2(2),
+     3                      d2bdc2(2),dfdmu(2),dfdc(2),s(3),dphidx(3)
+c
+      real*8,intent(out) :: d2phidx2(3,3)
 c
       integer i,j
-      real*8 daadx(3),dbbdx(3),dccdx(3),ddddx(3),dmudx(3),
-     &       d2fdmu2(2),d2fdmudc(2),d2fdcdmu(2),d2fdc2(2)
-      real*8 vcommon,vtmp1,vtmp2,vtmp3,vtmp4
-      real*8 va,vc,dvadx(3),dsedx(3),dvcdx(3)
+      real*8 vcommon,vtmp1,vtmp2,vtmp3,vtmp4,va,vc
+      real*8 daadx(3),dbbdx(3),dccdx(3),ddddx(3),dmudx(3),d2fdmu2(2),
+     1       d2fdmudc(2),d2fdcdmu(2),d2fdc2(2),dvadx(3),dsedx(3),
+     2       dvcdx(3)
+c-----------------------------------------------------------------------
 c
 c                                           ---- calc.  dmudx(i) (i=1~3)
-      daadx(1)=-a(2)-c(2)+2.0d0*b(2)
-      dbbdx(1)=-2.0d0*(b(2)-a(2))
-      dccdx(1)=-a(2)
+      daadx(1) = -a(2) - c(2) + 2.0d0*b(2)
+      dbbdx(1) = -2.0d0 * (b(2)-a(2))
+      dccdx(1) = -a(2)
 c
-      daadx(2)=a(1)+c(1)-2.0d0*b(1)
-      dbbdx(2)=2.0d0*(b(1)-a(1))
-      dccdx(2)=a(1)
+      daadx(2) = a(1) + c(1) - 2.0d0*b(1)
+      dbbdx(2) = 2.0d0 * (b(1)-a(1))
+      dccdx(2) = a(1)
 c
-      daadx(3)=x(2)*(dadc(1)+dcdc(1)-2.0d0*dbdc(1))
-     &        -x(1)*(dadc(2)+dcdc(2)-2.0d0*dbdc(2))
-      dbbdx(3)=2.0d0*x(2)*
-     &        (dbdc(1)-dadc(1))-2.0d0*x(1)*(dbdc(2)-dadc(2))
-      dccdx(3)=x(2)*dadc(1)-x(1)*dadc(2)
+      daadx(3) = x(2)*(dadc(1)+dcdc(1)-2.0d0*dbdc(1))
+     1           - x(1)*(dadc(2)+dcdc(2)-2.0d0*dbdc(2))
+      dbbdx(3) = 2.0d0*x(2)*(dbdc(1)-dadc(1)) 
+     1           - 2.0d0*x(1)*(dbdc(2)-dadc(2))
+      dccdx(3) = x(2)*dadc(1) - x(1)*dadc(2)
 c
-      do i=1,3
-       dmudx(i)=0.5d0*daadx(i)*(bb+sqrt(dd))/(aa*aa)
-     &         +0.5d0*(-dbbdx(i)-0.5d0/(sqrt(dd))*(2.0d0*bb*dbbdx(i)
-     &           -4.0d0*daadx(i)*cc-4.0d0*aa*dccdx(i)))/aa
+      do i = 1,3
+        dmudx(i) = 0.5d0*daadx(i)*(bb+sqrt(dd))/(aa*aa)
+     1          + 0.5d0*(-dbbdx(i)-0.5d0/(sqrt(dd))*(2.0d0*bb*dbbdx(i)
+     2             - 4.0d0*daadx(i)*cc-4.0d0*aa*dccdx(i)))/aa
       end do
 c
 c                                         ---- calc.  d2fdmu2(i) (i=1~2)
-      do i=1,2
-         d2fdmu2(i)=2.0d0*(a(i)+c(i)-2.0d0*b(i))
+      do i = 1,2
+        d2fdmu2(i) = 2.0d0 * (a(i)+c(i)-2.0d0*b(i))
       end do
 c
 c                                        ---- calc.  d2fdmudc(i) (i=1~2)
-      do i=1,2
-        d2fdmudc(i)=2.0d0*(dbdc(i)-dadc(i))+2.0d0*mu*(dadc(i)+dcdc(i)
-     &                                             -2.0d0*dbdc(i))
+      do i = 1,2
+        d2fdmudc(i) = 2.0d0*(dbdc(i)-dadc(i))
+     1                 + 2.0d0*mu*(dadc(i)+dcdc(i)- 2.0d0*dbdc(i))
       end do
 c
 c                                        ---- calc.  d2fdcdmu(i) (i=1~2)
-      do i=1,2
+      do i = 1,2
         d2fdcdmu(i)=2.0d0*(dbdc(i)-dadc(i))+2.0d0*mu*(dadc(i)+dcdc(i)
-     &                                             -2.0d0*dbdc(i))
+     1                                             -2.0d0*dbdc(i))
       end do
 c
 c                                          ---- calc.  d2fdc2(i) (i=1~2)
-      do i=1,2
+      do i = 1,2
         d2fdc2(i)=d2adc2(i)+2.0d0*mu*(d2bdc2(i)-d2adc2(i))
      &            +mu*mu*(d2adc2(i)+d2cdc2(i)-2.0d0*d2bdc2(i))
       end do
 c
 c                                                 ---- for d2phidx2(k,l)
 c
-      vcommon=1.0d0/(f(1)*dfdmu(2)-f(2)*dfdmu(1))
-      vtmp1=dfdc(1)*dfdmu(2)+f(1)*d2fdmudc(2)
+      vcommon = 1.0d0/(f(1)*dfdmu(2)-f(2)*dfdmu(1))
+      vtmp1 = dfdc(1)*dfdmu(2)+f(1)*d2fdmudc(2)
      &                           -dfdc(2)*dfdmu(1)-f(2)*d2fdmudc(1)
-      vtmp2=dfdmu(1)*dfdmu(2)+f(1)*d2fdmu2(2)
+      vtmp2 = dfdmu(1)*dfdmu(2)+f(1)*d2fdmu2(2)
      &                           -dfdmu(2)*dfdmu(1)-f(2)*d2fdmu2(1)
-      vtmp3=d2fdcdmu(2)*dfdmu(1)+dfdc(2)*d2fdmu2(1)
+      vtmp3 = d2fdcdmu(2)*dfdmu(1)+dfdc(2)*d2fdmu2(1)
      &                     -d2fdcdmu(1)*dfdmu(2)-dfdc(1)*d2fdmu2(2)
-      vtmp4=d2fdc2(2)*dfdmu(1)+dfdc(2)*d2fdmudc(1)
+      vtmp4 = d2fdc2(2)*dfdmu(1)+dfdc(2)*d2fdmudc(1)
      &                      -d2fdc2(1)*dfdmu(2)-dfdc(1)*d2fdmudc(2)
 c
       va=vcommon
@@ -8055,34 +8076,41 @@ c
       end do
 c
       return
-      end
+      end subroutine jancae_vegter_calc_d2phidx2
 c
 c
 c
-c---------------------------------------------------------------(vegter)
-c     calc. d2seds2(i,j) (i,j=1~3)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     CALCULATE d2seds2(i,j) (i,j=1~3)
 c
-      subroutine jancae_vegter_calc_d2seds2 (d2seds2,d2phidx2,se,a,b,c,
-     &      mu,x,vcos2t,vsin2t,iareaflag,dxds,dphidx,isflag,s,dseds,
-     &      pryld,ndyld)
+      subroutine jancae_vegter_calc_d2seds2 ( d2seds2,d2phidx2,se,a,b,c,
+     1                                        mu,x,vcos2t,vsin2t,
+     2                                        iareaflag,dxds,dphidx,
+     3                                        isflag,s,dseds,pryld,
+     4                                        ndyld )      
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer, intent(in) :: iareaflag,isflag,ndyld
-      real*8, intent(in) :: d2phidx2(3,3),se,a(2),b(2),c(2),mu,x(4),
-     &            vcos2t,vsin2t,dxds(3,3),dphidx(3),s(3),dseds(3),
-     &            pryld(ndyld)
-      real*8, intent(out) :: d2seds2(3,3)
-      real*8, parameter :: TOL1 = 0.996515d0       ! =44.9deg
-      real*8, parameter :: TOL2 = 1.003497d0       ! =45.1deg
-      real*8, parameter :: TOL3a= 1.0d-6
-      real*8, parameter :: TOL3b= 1.0d0-TOL3a
-      real*8, parameter :: TOL4 = 1.0d-7
-      real*8, parameter :: TOL4a= 1.0d0-TOL4       !thera<0.012812deg
-      real*8, parameter :: TOL4b=-1.0d0+TOL4       !thera>89.98719deg
-      real*8 vtan,d2xds2(3,3,3),vx1x2
-      integer i,j,k,l,iflag
+      integer,intent(in) :: iareaflag,isflag,ndyld
+      real*8 ,intent(in) :: se,mu,vcos2t,vsin2t
+      real*8 ,intent(in) :: a(2),b(2),c(2),x(4),dphidx(3),s(3),
+     1                       dseds(3),pryld(ndyld)
+      real*8 ,intent(in) :: d2phidx2(3,3),dxds(3,3)
+c            
+      real*8,intent(out) :: d2seds2(3,3)
 c
+      integer i,j,k,l,iflag 
+      real*8 tol1,tol2,tol3a,tol3b,tol4,tol4a,tol4b,vtan,vx1x2
+      real*8 d2xds2(3,3,3)
+c-----------------------------------------------------------------------
+c
+      tol1 = 0.996515d0          ! =44.9deg
+      tol2 = 1.003497d0          ! =45.1deg
+      tol3a = 1.0d-6
+      tol3b = 1.0d0 - tol3a
+      tol4 = 1.0d-7
+      tol4a = 1.0d0 - tol4       !thera<0.012812deg
+      tol4b = - 1.0d0 + tol4     !thera>89.98719deg
 c                             ---- if condition to apply numerical diff.
 c
       if(iareaflag==3.or.iareaflag==4) then
@@ -8137,19 +8165,19 @@ c
       d2xds2(3,1,1)=-3.0d0*vcos2t*vsin2t*vsin2t/(vx1x2*vx1x2)
       d2xds2(3,1,2)=3.0d0*vcos2t*vsin2t*vsin2t/(vx1x2*vx1x2)
       d2xds2(3,1,3)=2.0d0*vsin2t*(2.0d0-3.0d0*vsin2t*vsin2t)/
-     &                                           (vx1x2*vx1x2)
+     1                                           (vx1x2*vx1x2)
 c
       d2xds2(3,2,1)=3.0d0*vcos2t*vsin2t*vsin2t/(vx1x2*vx1x2)
       d2xds2(3,2,2)=-3.0d0*vcos2t*vsin2t*vsin2t/(vx1x2*vx1x2)
       d2xds2(3,2,3)=-2.0d0*vsin2t*(2.0d0-3.0d0*vsin2t*vsin2t)/
-     &                                           (vx1x2*vx1x2)
+     1                                           (vx1x2*vx1x2)
 c
       d2xds2(3,3,1)=2.0d0*vsin2t*(3.0d0*vcos2t*vcos2t-1.0d0)/
-     &                                           (vx1x2*vx1x2)
+     1                                           (vx1x2*vx1x2)
       d2xds2(3,3,2)=-2.0d0*vsin2t*(3.0d0*vcos2t*vcos2t-1.0d0)/
-     &                                           (vx1x2*vx1x2)
+     1                                           (vx1x2*vx1x2)
       d2xds2(3,3,3)=4.0d0*vcos2t*(3.0d0*vsin2t*vsin2t-1.0d0)/
-     &                                           (vx1x2*vx1x2)
+     1                                           (vx1x2*vx1x2)
       end if
 c
 c                                      ---- calc. d2seds2(i,j) (i,j=1~3)
@@ -8165,98 +8193,108 @@ c
           do k=1,3
             do l=1,3
               d2seds2(i,j)=d2seds2(i,j)
-     &                    +d2phidx2(k,l)*dxds(l,j)*dxds(k,i)
+     1                    +d2phidx2(k,l)*dxds(l,j)*dxds(k,i)
             end do
               d2seds2(i,j)=d2seds2(i,j)
-     &                    +dphidx(k)*d2xds2(k,i,j)
+     1                    +dphidx(k)*d2xds2(k,i,j)
           end do
         end do
       end do
       end if
 c
       return
-      end
+      end subroutine jancae_vegter_calc_d2seds2
 c
 c
 c
-c---------------------------------------------------------------(vegter)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     numerical differential for 2nd order differentials
 c
-      subroutine jancae_vegter_d2seds2n (d2seds2,s,dseds,
-     &                                   pryld,ndyld,se)
+      subroutine jancae_vegter_d2seds2n ( d2seds2,s,dseds,
+     1                                    pryld,ndyld,se )
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer, intent(in)  :: ndyld
-      real*8, intent(out) :: d2seds2(3,3)
-      real*8, intent(in)  :: dseds(3),pryld(ndyld),se,s(3)
-      real*8, parameter :: delta=1.0d-3
-      real*8 s0(3),sea,seb,a,b,seba,seaa,sebb,seab,se0,ss(3)
+      integer,intent(in) :: ndyld
+      real*8 ,intent(in) :: se
+      real*8 ,intent(in) :: dseds(3),pryld(ndyld),s(3)
+c
+      real*8,intent(out) :: d2seds2(3,3)
+c
       integer j,k
+      real*8 delta,sea,seb,a,b,seba,seaa,sebb,seab,se0
+      real*8 s0(3),ss(3)     
+c-----------------------------------------------------------------------
+c
+      delta = 1.0d-3
 c
       s0(:) = s(:)
       ss(:) = s(:)
-        do j=1,3
-          do k=1,3
-           if ( j==k ) then
-             se0=se
-             ss(j)=s0(j)-delta
-             call jancae_vegter_yieldfunc(3,ss,sea,dseds,d2seds2,0,
-     &                                    pryld,ndyld)
-             ss(j)=s0(j)+delta
-             call jancae_vegter_yieldfunc(3,ss,seb,dseds,d2seds2,0,
-     &                                    pryld,ndyld)
-             ss(j)=s0(j)
-             a=(se0-sea)/delta
-             b=(seb-se0)/delta
-             d2seds2(j,k)=(b-a)/delta
-           else
-             ss(j)=s0(j)-delta
-             ss(k)=s0(k)-delta
-             call jancae_vegter_yieldfunc(3,ss,seaa,dseds,d2seds2,0,
-     &                                    pryld,ndyld)
-             ss(j)=s0(j)+delta
-             ss(k)=s0(k)-delta
-             call jancae_vegter_yieldfunc(3,ss,seba,dseds,d2seds2,0,
-     &                                    pryld,ndyld)
-             ss(j)=s0(j)-delta
-             ss(k)=s0(k)+delta
-             call jancae_vegter_yieldfunc(3,ss,seab,dseds,d2seds2,0,
-     &                                    pryld,ndyld)
-             ss(j)=s0(j)+delta
-             ss(k)=s0(k)+delta
-             call jancae_vegter_yieldfunc(3,ss,sebb,dseds,d2seds2,0,
-     &                                    pryld,ndyld)
-             ss(j)=s0(j)
-             ss(k)=s0(k)
-             a=(seba-seaa)/(2.0d0*delta)
-             b=(sebb-seab)/(2.0d0*delta)
-             d2seds2(j,k)=(b-a)/(2.0d0*delta)
-           end if
-          end do
-         end do
+      do j=1,3
+        do k=1,3
+          if ( j==k ) then
+            se0=se
+            ss(j)=s0(j)-delta
+            call jancae_vegter_yieldfunc(3,ss,sea,dseds,d2seds2,0,
+     1                                   pryld,ndyld)
+            ss(j)=s0(j)+delta
+            call jancae_vegter_yieldfunc(3,ss,seb,dseds,d2seds2,0,
+     1                                    pryld,ndyld)
+            ss(j)=s0(j)
+            a=(se0-sea)/delta
+            b=(seb-se0)/delta
+            d2seds2(j,k)=(b-a)/delta
+          else
+            ss(j)=s0(j)-delta
+            ss(k)=s0(k)-delta
+            call jancae_vegter_yieldfunc(3,ss,seaa,dseds,d2seds2,0,
+     1                                    pryld,ndyld)
+            ss(j)=s0(j)+delta
+            ss(k)=s0(k)-delta
+            call jancae_vegter_yieldfunc(3,ss,seba,dseds,d2seds2,0,
+     1                                    pryld,ndyld)
+            ss(j)=s0(j)-delta
+            ss(k)=s0(k)+delta
+            call jancae_vegter_yieldfunc(3,ss,seab,dseds,d2seds2,0,
+     1                                    pryld,ndyld)
+            ss(j)=s0(j)+delta
+            ss(k)=s0(k)+delta
+            call jancae_vegter_yieldfunc(3,ss,sebb,dseds,d2seds2,0,
+     1                                    pryld,ndyld)
+            ss(j)=s0(j)
+            ss(k)=s0(k)
+            a=(seba-seaa)/(2.0d0*delta)
+            b=(sebb-seab)/(2.0d0*delta)
+            d2seds2(j,k)=(b-a)/(2.0d0*delta)
+          end if
+        end do
+      end do
 c
       return
-      end
+      end subroutine jancae_vegter_d2seds2n
 c
 c
 c
-c---------------------------------------------------------------(vegter)
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. equivalent stress for d2seds2n
 c
-      subroutine jancae_vegter_yieldfunc (nttl,s,se,dseds,d2seds2,
-     &                                    nreq,pryld,ndyld)
+      subroutine jancae_vegter_yieldfunc ( nttl,s,se,dseds,d2seds2,
+     1                                     nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
       integer,intent(in) :: nttl,nreq,ndyld
-      real*8, intent(in) :: pryld(ndyld),s(3)
-      real*8, intent(out)  :: se,d2seds2(3,3),dseds(3)
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
+c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+      real*8,intent(out) :: d2seds2(3,3)
+c-----------------------------------------------------------------------
 c
       call jancae_vegter ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c
       return
-      end
+      end subroutine jancae_vegter_yieldfunc
 c
 c
 c************************************************************************
@@ -8274,14 +8312,14 @@ c
 c
       real*8,intent(out) :: se
       real*8,intent(out) :: dseds(3)
-			real*8,intent(out) :: d2seds2(3,3)
+      real*8,intent(out) :: d2seds2(3,3)
 c
       integer i,j,k,l,m,n,nd,nd1,nd2
-			real*8 em,q
+      real*8 em,q
       real*8 a(8),phi(2),dsedphi(2),dphidx(2,2)
-			real*8 x(2,2),y(2,3),d2sedphi2(2,2)
-			real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3),d2phidx2(2,2,2)
-			real*8 d2xdy2(2,2,3,3)
+      real*8 x(2,2),y(2,3),d2sedphi2(2,2)
+      real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3),d2phidx2(2,2,2)
+      real*8 d2xdy2(2,2,3,3)
 c-----------------------------------------------------------------------         
 c
 c     variables  : symbols in Barlat's paper
@@ -8398,7 +8436,7 @@ c-----------------------------------------------------------------------
 c
       real*8,intent(in) :: a(8)
 c
-			real*8,intent(out) :: am(2,3,3)
+      real*8,intent(out) :: am(2,3,3)
 c
       integer i,j
 c-----------------------------------------------------------------------
@@ -8449,10 +8487,10 @@ c
 c
       real*8,intent(out) :: phi(2)
       real*8,intent(out) :: x(2,2),y(2,3)
-			
+      
 c
       integer i,j,nd
-			real*8 a
+      real*8 a
       real*8 p(2)
 c-----------------------------------------------------------------------
 c
@@ -8498,8 +8536,8 @@ c-----------------------------------------------------------------------
 c
       real*8 se,em
       real*8 phi(2),dsedphi(2)
-			real*8 x(2,2),y(2,3),dphidx(2,2)
-			real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3)
+      real*8 x(2,2),y(2,3),dphidx(2,2)
+      real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3)
 c
       integer i,j,nd
       real*8 eps,emi,q,a,a0,a1,a2,b0,b1,b2,sgn0,sgn1,sgn2
@@ -8582,9 +8620,9 @@ c-----------------------------------------------------------------------
 c
       real*8 em,se
       real*8 phi(2)
-			real*8 x(2,2),y(2,3),d2sedphi2(2,2)
-			real*8 d2phidx2(2,2,2)
-			real*8 d2xdy2(2,2,3,3)
+      real*8 x(2,2),y(2,3),d2sedphi2(2,2)
+      real*8 d2phidx2(2,2,2)
+      real*8 d2xdy2(2,2,3,3)
 c
       integer i,j,m,nd,nd1,nd2,ij
       real*8 eps,emi,q,a

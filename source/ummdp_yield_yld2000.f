@@ -13,14 +13,14 @@ c
 c
       real*8,intent(out) :: se
       real*8,intent(out) :: dseds(3)
-			real*8,intent(out) :: d2seds2(3,3)
+      real*8,intent(out) :: d2seds2(3,3)
 c
       integer i,j,k,l,m,n,nd,nd1,nd2
-			real*8 em,q
+      real*8 em,q
       real*8 a(8),phi(2),dsedphi(2),dphidx(2,2)
-			real*8 x(2,2),y(2,3),d2sedphi2(2,2)
-			real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3),d2phidx2(2,2,2)
-			real*8 d2xdy2(2,2,3,3)
+      real*8 x(2,2),y(2,3),d2sedphi2(2,2)
+      real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3),d2phidx2(2,2,2)
+      real*8 d2xdy2(2,2,3,3)
 c-----------------------------------------------------------------------         
 c
 c     variables  : symbols in Barlat's paper
@@ -137,7 +137,7 @@ c-----------------------------------------------------------------------
 c
       real*8,intent(in) :: a(8)
 c
-			real*8,intent(out) :: am(2,3,3)
+      real*8,intent(out) :: am(2,3,3)
 c
       integer i,j
 c-----------------------------------------------------------------------
@@ -188,10 +188,10 @@ c
 c
       real*8,intent(out) :: phi(2)
       real*8,intent(out) :: x(2,2),y(2,3)
-			
+      
 c
       integer i,j,nd
-			real*8 a
+      real*8 a
       real*8 p(2)
 c-----------------------------------------------------------------------
 c
@@ -237,8 +237,8 @@ c-----------------------------------------------------------------------
 c
       real*8 se,em
       real*8 phi(2),dsedphi(2)
-			real*8 x(2,2),y(2,3),dphidx(2,2)
-			real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3)
+      real*8 x(2,2),y(2,3),dphidx(2,2)
+      real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3)
 c
       integer i,j,nd
       real*8 eps,emi,q,a,a0,a1,a2,b0,b1,b2,sgn0,sgn1,sgn2
@@ -321,9 +321,9 @@ c-----------------------------------------------------------------------
 c
       real*8 em,se
       real*8 phi(2)
-			real*8 x(2,2),y(2,3),d2sedphi2(2,2)
-			real*8 d2phidx2(2,2,2)
-			real*8 d2xdy2(2,2,3,3)
+      real*8 x(2,2),y(2,3),d2sedphi2(2,2)
+      real*8 d2phidx2(2,2,2)
+      real*8 d2xdy2(2,2,3,3)
 c
       integer i,j,m,nd,nd1,nd2,ij
       real*8 eps,emi,q,a
