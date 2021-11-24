@@ -469,7 +469,7 @@ c
         eta(i) = s(i) - xt(i)
       end do
 c
-      call ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,,nnrm,nshr,
+      call ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,nnrm,nshr,
      1                             nttl,pryld,ndyld )
       call ummdp_utility_setunitm ( am,nttl )
 c

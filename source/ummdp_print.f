@@ -43,7 +43,7 @@ c
       write (6,'(4XA)') '>>> Elasticity'
       select case ( ntela )
       case ( 0 )
-        write (6,'(8xA,I2)') '>> Young’s Modulus and Poisson’s Ratio'
+        write (6,'(8xA,I2)') '>> Young Modulus and Poisson Ratio'
         ! write (6,'(12xA,I2)') ' > ID:',ntela
         write (6,'(12xA,I2)') '. prela(1) =',prela(1)
         write (6,'(12xA,F10.1)') '. prela(2) =',prela(1+1)

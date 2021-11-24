@@ -269,11 +269,11 @@ c     SOLVE FACTORIAL
 c
       integer function fact(n) result(m)
 c-----------------------------------------------------------------------
-      implicit none
+      ! implicit none
 c
       integer,intent(in) :: n
 c
-      integer i
+      ! integer i
 c-----------------------------------------------------------------------
 c
       m = 1

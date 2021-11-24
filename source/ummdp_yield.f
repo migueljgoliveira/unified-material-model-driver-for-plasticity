@@ -24,10 +24,12 @@ c      -6 : BBC 2008
 c      -7 : Hill 1990
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CALCULATE YIELD FUNCTION AND DERIVATIVES
 c
       subroutine ummdp_yield ( se,cdseds,cd2seds2,nreq,cs,nttl,nnrm,
      1                         nshr,pryld,ndyld )                 
+c
 c-----------------------------------------------------------------------
       implicit none
 c

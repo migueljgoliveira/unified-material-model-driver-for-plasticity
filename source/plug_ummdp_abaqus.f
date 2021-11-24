@@ -1,21 +1,28 @@
-c***********************************************************************
-c
-c     UMMDp - Unified Material Model Driver for Plasticity
-c
-c***********************************************************************
-c
-c     > Copyright (c) 2018 JANCAE
-c       . This software includes code originally developed by the  
-c       Material Modeling Working group of JANCAE.
-c
-c     > Extended by M.G. Oliveira from University of Aveiro, Portugal
-c       . Added additional isotropic hardening laws
-c       . Corrected order of Voigt notation for Yld2004-18p with Abaqus
-c       . Linked kinematic hardening laws to the core of UMMDp
-c       . Added Chaboche kinematic hardening law as used by Abaqus
-c     	. Implemented uncouple rupture criteria
-c
-c***********************************************************************
+************************************************************************
+*                                                                      *
+*                                  UMMDp                               *
+*                                                                      *           
+*                             <><><><><><><>                           *
+*                                                                      *
+*              UNIFIED MATERIAL MODEL DRIVER FOR PLASTICITY            *
+*                                                                      *
+*                         < PLUG-IN FOR ABAQUS >                       *
+*                                                                      *
+************************************************************************
+*                                                                      *
+*     > Copyright (c) 2018 JANCAE                                      *
+*       . This software includes code originally developed by the      *
+*       Material Modeling Working group of JANCAE.                     *
+*
+*     > Extended by M.G. Oliveira from University of Aveiro, Portugal  *
+*       . Added additional isotropic hardening laws                    *
+*       . Corrected Voigt notation for Yld2004-18p with Abaqus         *
+*       . Linked kinematic hardening laws to the core of UMMDp         *
+*       . Added Chaboche kinematic hardening law as used by Abaqus     *
+*     	. Implemented uncoupled rupture criteria                       *
+*       . Modified code to use only explicit variables                 *
+*                                                                      *
+************************************************************************
 c
       SUBROUTINE UMAT ( STRESS,STATEV,DDSDDE,SSE,SPD,SCD,
      &    RPL,DDSDDT,DRPLDE,DRPLDT,STRAN,DSTRAN,
@@ -159,14 +166,14 @@ c
 c***********************************************************************
       SUBROUTINE UVARM ( UVAR,DIRECT,T,TIME,DTIME,CMNAME,ORNAME,
      1    NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
-     2    jmac,jmatyp,matlayo,laccfla )
+     2    JMAC,JMATYP,MATLAYO,LACCFLA )
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
       CHARACTER*80 CMNAME,ORNAME
       CHARACTER*3  flgray(15)
       DIMENSION UVAR(NUVARM),DIRECT(3,3),T(3,3),TIME(2)
-      DIMENSION array(15),jarray(15),jmac(*),jmatyp(*),COORD(*)
+      DIMENSION array(15),jarray(15),JMAC(*),JMATYP(*),COORD(*)
 c-----------------------------------------------------------------------
 c     The dimensions of the variables flgray, array and jarray
 c     must be set equal to or greater than 15.
