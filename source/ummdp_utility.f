@@ -50,14 +50,17 @@ c     ummdp_utility_file_exist ( flname )
 c       checking existence of files
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CLEAR 1st ORDER VECTOR A(N)
 c
       subroutine ummdp_utility_clear1 ( a,n )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
-      real*8 a(n)
+      integer,intent(in) :: n
+c
+      real*8,intent(inout) :: a(n)
 c
       integer i
 c-----------------------------------------------------------------------
@@ -72,14 +75,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CLEAR 2ND ORDER MATRIX
 c
       subroutine ummdp_utility_clear2 ( a,n,m )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n,m
-      real*8 a(n,m)
+      integer,intent(in) :: n,m
+c
+      real*8,intent(inout) :: a(n,m)
 c
       integer i,j
 c-----------------------------------------------------------------------
@@ -96,14 +102,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CLEAR 3RD ORDER MATRIX
 c
       subroutine ummdp_utility_clear3 ( a,n,m,l )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n,m,l
-      real*8 a(n,m,l)
+      integer,intent(in) :: n,m,l
+c
+      real*8,intent(inout) ::  a(n,m,l)
 c
       integer i,j,k
 c-----------------------------------------------------------------------
@@ -122,14 +131,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     SET UNIT 2ND ORDER MATRIX
 c
       subroutine ummdp_utility_setunitm ( a,n )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
-      real*8 a(n,n)
+      integer,intent(in) :: n
+c
+      real*8,intent(out) :: a(n,n)
 c
       integer i
 c-----------------------------------------------------------------------
@@ -145,15 +157,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     PRINT VECTOR WITH TEXT
 c
       subroutine ummdp_utility_print1 ( text,a,n )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
-      real*8 a(n)
-      character*32 text
+      integer     ,intent(in) :: n
+      real*8      ,intent(in) :: a(n)
+      character*32,intent(in) :: text
 c
       integer i
 c-----------------------------------------------------------------------
@@ -168,15 +182,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     PRINT MATRIX WITH TEXT
 c
       subroutine ummdp_utility_print2 ( text,a,n,m )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n,m
-      real*8 a(n,m)
-      character*32 text
+      integer     ,intent(in) :: n,m
+      real*8      ,intent(in) :: a(n,m)
+      character*32,intent(in) :: text
 c
       integer i,j
 c-----------------------------------------------------------------------
@@ -192,15 +208,19 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     MULTIPLY MATRIX AND VECTOR
 c
       subroutine ummdp_utility_mv ( v,a,u,nv,nu )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer nv,nu
-      real*8 v(nv),u(nu)
-      real*8 a(nv,nu)
+      integer,intent(in) :: nv,nu
+      real*8 ,intent(in) :: u(nu)
+      real*8 ,intent(in) :: a(nv,nu)
+c
+      real*8,intent(out) :: v(nv)
 c
       integer i,j
 c-----------------------------------------------------------------------
@@ -218,14 +238,18 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     MULTIPLY MATRIX AND MATRIX
 c     
       subroutine ummdp_utility_mm ( a,b,c,na1,na2,nbc )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer na1,na2,nbc
-      real*8 a(na1,na2),b(na1,nbc),c(nbc,na2)
+      integer,intent(in) :: na1,na2,nbc
+      real*8 ,intent(in) :: b(na1,nbc),c(nbc,na2)
+c
+      real*8,intent(out) :: a(na1,na2)
 c
       integer i,j,k
 c-----------------------------------------------------------------------
@@ -245,20 +269,23 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CALCULATE SCALAR PRODUCT OF VECTORS
 c
       subroutine ummdp_utility_vvs ( s,u,v,n )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
-      real*8 s
-      real*8 v(n),u(n)
+      integer,intent(in) :: n
+      real*8 ,intent(in) :: v(n),u(n)
+c
+      real*8,intent(out) :: s
 c
       integer i
 c-----------------------------------------------------------------------
 c
-      s = 0.0
+      s = 0.0d0
       do i = 1,n
         s = s + u(i)*v(i)
       end do
@@ -269,11 +296,13 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CALCULATE INVERSE MATRIX USING LU DECOMPOSITION
 c
-c     Ref.: http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
+c       Ref.: http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
 c
       subroutine ummdp_utility_minv ( b,a,n,d )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -497,14 +526,19 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     CALCULATE INVERSE MATRIX 2x2 
 c
       subroutine ummdp_utility_minv2 ( b,a,deta,eps )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-			real*8 deta,eps
-			real*8 b(2,2),a(2,2)
+			real*8,intent(in) :: eps
+			real*8,intent(in) :: a(2,2)
+c
+      real*8,intent(out) :: deta
+      real*8,intent(out) :: b(2,2)
 c
 			real*8 detai
 c-----------------------------------------------------------------------
@@ -517,10 +551,10 @@ c
       end if
 c
       detai = 1.0d0 / deta
-      b(1,1) = a(2,2) * detai
+      b(1,1) =  a(2,2) * detai
       b(1,2) = -a(1,2) * detai
       b(2,1) = -a(2,1) * detai
-      b(2,2) = a(1,1) * detai
+      b(2,2) =  a(1,1) * detai
 c
       return
       end subroutine ummdp_utility_minv2
@@ -534,15 +568,18 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-			real*8 deta,eps
-			real*8 b(3,3),a(3,3)
+			real*8,intent(in) :: eps
+      real*8,intent(in) :: a(3,3)
+c
+      real*8,intent(out) :: deta 
+      real*8,intent(out) :: b(3,3)
 c
 			real*8 detai
 c-----------------------------------------------------------------------
 c
-      deta = a(1,1) * (a(2,2)*a(3,3) - a(2,3)*a(3,2)) +
-     1       a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3)) +
-     2       a(1,3) * (a(2,1)*a(3,2) - a(2,2)*a(3,1))
+      deta = a(1,1) * (a(2,2)*a(3,3) - a(2,3)*a(3,2))
+     1       + a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3))
+     2       + a(1,3) * (a(2,1)*a(3,2) - a(2,2)*a(3,1))
       if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv3'
@@ -550,15 +587,15 @@ c
       end if
 c
       detai = 1.0d0 / deta
-      b(1,1) = ( a(2,2)*a(3,3) - a(2,3)*a(3,2) ) * detai
-      b(1,2) = ( a(1,3)*a(3,2) - a(1,2)*a(3,3) ) * detai
-      b(1,3) = ( a(1,2)*a(2,3) - a(1,3)*a(2,2) ) * detai
-      b(2,1) = ( a(2,3)*a(3,1) - a(2,1)*a(3,3) ) * detai
-      b(2,2) = ( a(1,1)*a(3,3) - a(1,3)*a(3,1) ) * detai
-      b(2,3) = ( a(1,3)*a(2,1) - a(1,1)*a(2,3) ) * detai
-      b(3,1) = ( a(2,1)*a(3,2) - a(2,2)*a(3,1) ) * detai
-      b(3,2) = ( a(1,2)*a(3,1) - a(1,1)*a(3,2) ) * detai
-      b(3,3) = ( a(1,1)*a(2,2) - a(1,2)*a(2,1) ) * detai
+      b(1,1) = (a(2,2)*a(3,3) - a(2,3)*a(3,2)) * detai
+      b(1,2) = (a(1,3)*a(3,2) - a(1,2)*a(3,3)) * detai
+      b(1,3) = (a(1,2)*a(2,3) - a(1,3)*a(2,2)) * detai
+      b(2,1) = (a(2,3)*a(3,1) - a(2,1)*a(3,3)) * detai
+      b(2,2) = (a(1,1)*a(3,3) - a(1,3)*a(3,1)) * detai
+      b(2,3) = (a(1,3)*a(2,1) - a(1,1)*a(2,3)) * detai
+      b(3,1) = (a(2,1)*a(3,2) - a(2,2)*a(3,1)) * detai
+      b(3,2) = (a(1,2)*a(3,1) - a(1,1)*a(3,2)) * detai
+      b(3,3) = (a(1,1)*a(2,2) - a(1,2)*a(2,1)) * detai
 c
       return
       end subroutine ummdp_utility_minv3
@@ -691,21 +728,23 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CHECKING EXISTENCE OF FILE NAMES 'FLNAME'
 c
       logical function ummdp_utility_file_exist ( flname )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      character*16 flname
+      character*16,intent(in) :: flname
 c
 			integer nio
 c-----------------------------------------------------------------------
 c
       nio = 616
-      open ( nio,file=flname,status='old',err=10 )
+      open  ( nio,file=flname,status='old',err=10 )
 c
-      close ( nio,            status='keep' )
+      close ( nio,status='keep' )
       ummdp_utility_file_exist = .true.
       return
 c
