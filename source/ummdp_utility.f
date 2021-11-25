@@ -239,7 +239,7 @@ c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-c     MULTIPLY MATRIX AND MATRIX
+c     MATRIX PRODUCT OF TWO MATRICES
 c     
       subroutine ummdp_utility_mm ( a,b,c,na1,na2,nbc )
 c
@@ -270,7 +270,7 @@ c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-c     CALCULATE SCALAR PRODUCT OF VECTORS
+c     SCALAR PRODUCT OF VECTORS
 c
       subroutine ummdp_utility_vvs ( s,u,v,n )
 c

@@ -1,7 +1,7 @@
 ************************************************************************
 *                                                                      *
 *                                  UMMDp                               *
-*                                                                      *           
+*                                                                      *
 *                             <><><><><><><>                           *
 *                                                                      *
 *              UNIFIED MATERIAL MODEL DRIVER FOR PLASTICITY            *
@@ -23,61 +23,62 @@
 *       . Modified code to use only explicit variables                 *
 *                                                                      *
 ************************************************************************
-c     
 c
-      subroutine ummdp_vfm ( stress,statev,strain,dstrain,drot,ndi,nshr,
-     1                       ntens,nstatev,props,nprops,noel,npt,kspt,
-     2                       kinc )
-c        
+c     UMMDP-VFM MAIN SUBROUTINE
+c
+      subroutine ummdp_vfm ( stress,statev,strain,dstrain,ndi,nshr,
+     1                       ntens,nstatev,props,nprops,noel,npt,kinc,
+     2                       nexit )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      common /jancae1/ne,ip,lay
-      common /jancae3/prop
-      common /jancaea/nsdv
-      common /jancaeb/propdim
-      integer ne,ip,lay,nsdv,propdim
+      common /ummdp1/ne,ip,lay
+      common /ummdp2/prop
+      common /ummdp3/nsdv
+      common /ummdp4/propdim
+      common /ummdp5/nexito
 c
-      integer,intent(in) :: ndi,nshr,ntens,nstatev,nprops,noel,npt,kspt,
-     1                      kinc
+      integer,intent(in) :: ndi,nshr,ntens,nstatev,nprops,noel,npt,kinc                      
       real*8 ,intent(in) :: props(nprops)
-      real*8 ,intent(in) :: strain(ntens),dstrain(ntens)      
-      real*8 ,intent(in) :: drot(3,3)
+      real*8 ,intent(in) :: strain(ntens),dstrain(ntens)
 c
       real*8 ,intent(inout) :: stress(ntens),statev(nstatev)
 c
+      integer,intent(out) :: nexit
+c 
       integer mxpbs,mxprop,nrot
-      parameter (mxpbs=10,mxprop=100,nrot=3)
-      integer i,k,n,is,nprop,nvbs0,nvbs,ndela,ndyld,ndihd,ndkin,npbs,
-     1        ndrup,mjac,isvrsvd,isvsclr,maxsdv
+      parameter (mxpbs=10,mxprop=100)
+      integer ne,ip,lay,nsdv,propdim,nexito,i,k,n,is,nprop,nvbs0,nvbs,
+     1        ndela,ndyld,ndihd,ndkin,npbs,ndrup,mjac,isvrsvd,isvsclr,
+     2        maxsdv
       real*8 de33,p,dp
-      real*8 ustatev(6),s2(ntens),dpe(ntens),pe(ntens),prop(mxprop)
-      real*8 x1(mxpbs,ntens),x2(mxpbs,ntens),ddsdde(ntens,ntens)     
+      real*8 ustatev(ntens),s2(ntens),dpe(ntens),pe(ntens),prop(mxprop)
+      real*8 x1(mxpbs,ntens),x2(mxpbs,ntens),ddsdde(ntens,ntens)
 c-----------------------------------------------------------------------
 c
-cf2py intent(in) stress,statev,strain,dstrain,drot
+cf2py intent(in,out) stress,statev
+cf2py intent(in) strain,dstrain
 cf2py intent(in) ndi,nshr,ntens,nstatev
 cf2py intent(in) props,nprops
 cf2py intent(in) noel,npt,kspt,kinc
-cf2py intent(out) stress,statev
+cf2py intent(out) nexit
 cf2py depend(ntens) stress,strain,dstrain
 cf2py depend(nstatev) statev
-cf2py depend(nrot,nrot) drot
 cf2py depend(nprops) props
 c
 c-----------------------------------------------------------------------
 c
 c                                                   ---- open debug file
       if ( kinc == 1 ) then
-        open(6,file=trim('ummdp.log'),status='NEW')
+        open(6,file='ummdp_vfm.log')
       else
-        open(6,file=trim('ummdp.log'),access='APPEND',status='OLD')
+        open(6,file='ummdp_vfm.log',access='APPEND',status='OLD')
       end if
 c
       ne = noel
       ip = npt
-      lay = kspt
-      if ( lay == 0 ) lay = 1
+      lay = 1
       nsdv = nstatev
       nprop = mxprop
       propdim = nprops - 1
@@ -90,14 +91,13 @@ c                                       ---- output detailed information
         call ummdp_print_inout ( 0,stress,dstrain,ddsdde,ntens,statev,
      1                           nstatev )
       end if
-c
 c                                           ---- set material properties
       do i = 2,nprops
         prop(i-1) = props(i)
       end do
-c	
+c
       call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
-     1                      npbs,ndrup )              
+     1                      npbs,ndrup )
       if ( npbs > mxpbs ) then
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
@@ -109,13 +109,13 @@ c                                                     ---- check nstatev
 c                             ---- copy current internal state variables
       call ummdp_isvprof ( isvrsvd,isvsclr )
       call ummdp_isv2pex ( isvrsvd,isvsclr,statev,nstatev,p,pe,x1,ntens,
-     1                     mxpbs,npbs )                      
+     1                     mxpbs,npbs )
 c
 c                             ---- update stress and set tangent modulus
       mjac = 0
       call ummdp_plasticity ( stress,s2,dstrain,p,dp,dpe,de33,x1,x2,
      1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
-     2                        prop,nprop,propdim )                   
+     2                        prop,nprop,propdim )
 c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
@@ -123,13 +123,11 @@ c                                                     ---- update stress
 c                                  ---- update equivalent plastic strain
       statev(isvrsvd+1) = p + dp
 c                                  ---- update plastic strain components
-      call ummdp_rotsig ( statev(isvrsvd+2),drot,ustatev,2,ndi,nshr )
-c
       do i = 1,ntens
         is = isvrsvd + isvsclr + i
-        statev(is) = ustatev(i) + dpe(i)
+        statev(is) = statev(is) + dpe(i)
       end do
-c                                  ---- update of back stress components
+c                                     ---- update back stress components
       if ( npbs /= 0 ) then
         do n = 1,npbs
           do i = 1,ntens
@@ -145,13 +143,16 @@ c                           ----  if debug mode, output return arguments
       end if
 c                                                  ---- close debug file
       close(6)
+c                                                 ---- return error code
+      nexit = nexito
 c
       return
       end
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     SET INTERNAL STATE VARIABLES PROFILE
 c
       subroutine ummdp_isvprof ( isvrsvd,isvsclr )
@@ -159,7 +160,7 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer,intent(out) :: isvrsvd,isvsclr     
+      integer,intent(out) :: isvrsvd,isvsclr
 c-----------------------------------------------------------------------
 
       isvrsvd = 0           ! no reserved variables
@@ -171,70 +172,8 @@ c
 c
 c
 c
-************************************************************************
-c     ROTATE A TENSOR
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-      subroutine ummdp_rotsig ( statev,drot,ustatev,lstr,ndi,nshr )
-c
-c-----------------------------------------------------------------------
-      implicit none
-c
-      integer,intent(in) :: lstr,ndi,nshr
-      real*8 ,intent(in) :: statev(6)
-      real*8 ,intent(in) :: drot(3,3)
-c
-      real*8,intent(out) :: ustatev(6)
-c
-      integer i,j
-      real*8 aux1(ndi,ndi),aux2(ndi,ndi),aux3(ndi,ndi),auxrot(ndi,ndi)
-c-----------------------------------------------------------------------
-c
-c                                              ---- set statev to tensor
-      call ummdp_utility_clear2( aux1,ndi,ndi )
-      do i = 1,ndi
-        do j = 1,ndi
-          if ( i == j ) then
-            aux1(i,j) = statev(i)
-          else
-            if ( lstr == 1 ) then
-              aux1(i,j) = statev(i+j+1)
-            else if ( lstr == 2 ) then
-              aux1(i,j) = statev(i+j+1)/2.0d0
-            end if
-          end if
-        end do
-      end do
-c                                               ---- copy drot to auxrot
-      call ummdp_utility_clear2( aux1,ndi,ndi )
-      do i = 1,ndi
-        do j = 1,ndi
-          auxrot(i,j) = drot(i,j)
-        end do
-      end do
-c                                                     ---- rotate statev
-      call ummdp_utility_mm ( aux2,auxrot,aux1,ndi,ndi,ndi )
-      call ummdp_utility_mm ( aux3,aux2,transpose(auxrot),ndi,ndi,ndi )
-c                                     ---- set rotated tensor to ustatev
-      do i = 1,ndi
-        do j = 1,ndi
-          if ( i == j ) then
-            ustatev(i) = aux3(i,j)
-          else
-            if ( lstr == 1 ) then
-              ustatev(i+j) = aux3(i,j)
-            else if ( lstr == 2 ) then
-              ustatev(i+j) = aux3(i,j)*2.0d0
-            end if
-          end if
-        end do
-      end do
-c
-      return
-      end subroutine ummdp_rotsig
-c
-c
-c
-************************************************************************
 c     EXIT PROGRAM BY ERROR
 c
       subroutine ummdp_exit ( nexit )
@@ -242,18 +181,20 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      common /jancae1/ne,ip,lay
-      integer ne,ip,lay
+      common /ummdp1/ne,ip,lay
+      common /ummdp5/nexito
 c
       integer,intent(in) :: nexit
+c
+      integer ne,ip,lay,nexito
 c-----------------------------------------------------------------------
 c
       write (6,*) 'error code :',nexit
       write (6,*) 'element no.           :',ne
       write (6,*) 'integration point no. :',ip
-      write (6,*) 'layer no.             :',lay
+      write (6,*) 'layer no.             :',lay           
 c
-      ! stop
+      nexito = -1
 c
       return
       end subroutine ummdp_exit
@@ -341,9 +282,8 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      common /jancae1/ne,ip,lay
-      common /jancae2/n1234
-      integer ne,ip,lay
+      common /ummdp1/ne,ip,lay
+      common /ummdpa/n1234
 c
       integer,intent(in) :: mxpbs,nnrm,nshr,nttl,nvbs,mjac,nprop,npbs,
      1                      ndela,ndyld,ndihd,ndkin,ndrup,nnn
@@ -355,8 +295,8 @@ c
      1                      
       real*8 ,intent(inout) :: x1(mxpbs,nttl),x2(mxpbs,nttl)
 c
-      integer i,j,k,n,m,maxnr,ndiv,maxnest,nout,n1234,i1,i2,j1,j2,k1,k2,
-     1        nest,newmstg,nite,nstg,mstg,knr,ip1,ip2,nsym
+      integer ne,ip,lay,n1234,i,j,k,n,m,maxnr,ndiv,maxnest,nout,i1,i2,
+     1        j1,j2,k1,k2,nest,newmstg,nite,nstg,mstg,knr,ip1,ip2,nsym
       real*8 tol,xe,se,sy,dsydp,d2sydp2,dpconv,sgapi,sgapb,dsgap,sgap,
      1       pt,g1,g2n,g3nn,top,top0,bot,bot0,ddp,d,a,dd,aa,aaa,sc1,det
       real*8 prela(ndela),pryld(ndyld),prihd(ndihd),prkin(ndkin),
@@ -1072,14 +1012,13 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      common /jancae1/ne,ip,lay
-      integer ne,ip,lay
+      common /ummdp1/ne,ip,lay
 c
       integer,intent(in) :: nvbs0
 c
       integer,intent(out) :: nvbs
 c
-      integer nechk,ipchk,laychk,nchk
+      integer ne,ip,lay,nechk,ipchk,laychk,nchk
 c-----------------------------------------------------------------------
 c                             specify verbose level and point
 c      nvbs0 = 0   ! verbose mode
@@ -2635,7 +2574,7 @@ c
       integer nttl,nerr
 c
 			integer ne,ip,lay
-      common /jancae1/ne,ip,lay
+      common /ummdp1/ne,ip,lay
 c-----------------------------------------------------------------------
 c
       nttl = nnrm + nshr
@@ -2765,14 +2704,17 @@ c     ummdp_utility_file_exist ( flname )
 c       checking existence of files
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CLEAR 1st ORDER VECTOR A(N)
 c
       subroutine ummdp_utility_clear1 ( a,n )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
-      real*8 a(n)
+      integer,intent(in) :: n
+c
+      real*8,intent(inout) :: a(n)
 c
       integer i
 c-----------------------------------------------------------------------
@@ -2787,14 +2729,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CLEAR 2ND ORDER MATRIX
 c
       subroutine ummdp_utility_clear2 ( a,n,m )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n,m
-      real*8 a(n,m)
+      integer,intent(in) :: n,m
+c
+      real*8,intent(inout) :: a(n,m)
 c
       integer i,j
 c-----------------------------------------------------------------------
@@ -2811,14 +2756,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CLEAR 3RD ORDER MATRIX
 c
       subroutine ummdp_utility_clear3 ( a,n,m,l )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n,m,l
-      real*8 a(n,m,l)
+      integer,intent(in) :: n,m,l
+c
+      real*8,intent(inout) ::  a(n,m,l)
 c
       integer i,j,k
 c-----------------------------------------------------------------------
@@ -2837,14 +2785,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     SET UNIT 2ND ORDER MATRIX
 c
       subroutine ummdp_utility_setunitm ( a,n )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
-      real*8 a(n,n)
+      integer,intent(in) :: n
+c
+      real*8,intent(out) :: a(n,n)
 c
       integer i
 c-----------------------------------------------------------------------
@@ -2860,15 +2811,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     PRINT VECTOR WITH TEXT
 c
       subroutine ummdp_utility_print1 ( text,a,n )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
-      real*8 a(n)
-      character*32 text
+      integer     ,intent(in) :: n
+      real*8      ,intent(in) :: a(n)
+      character*32,intent(in) :: text
 c
       integer i
 c-----------------------------------------------------------------------
@@ -2883,15 +2836,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     PRINT MATRIX WITH TEXT
 c
       subroutine ummdp_utility_print2 ( text,a,n,m )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n,m
-      real*8 a(n,m)
-      character*32 text
+      integer     ,intent(in) :: n,m
+      real*8      ,intent(in) :: a(n,m)
+      character*32,intent(in) :: text
 c
       integer i,j
 c-----------------------------------------------------------------------
@@ -2907,15 +2862,19 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     MULTIPLY MATRIX AND VECTOR
 c
       subroutine ummdp_utility_mv ( v,a,u,nv,nu )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer nv,nu
-      real*8 v(nv),u(nu)
-      real*8 a(nv,nu)
+      integer,intent(in) :: nv,nu
+      real*8 ,intent(in) :: u(nu)
+      real*8 ,intent(in) :: a(nv,nu)
+c
+      real*8,intent(out) :: v(nv)
 c
       integer i,j
 c-----------------------------------------------------------------------
@@ -2933,14 +2892,18 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c     MULTIPLY MATRIX AND MATRIX
+c
+c     MATRIX PRODUCT OF TWO MATRICES
 c     
       subroutine ummdp_utility_mm ( a,b,c,na1,na2,nbc )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer na1,na2,nbc
-      real*8 a(na1,na2),b(na1,nbc),c(nbc,na2)
+      integer,intent(in) :: na1,na2,nbc
+      real*8 ,intent(in) :: b(na1,nbc),c(nbc,na2)
+c
+      real*8,intent(out) :: a(na1,na2)
 c
       integer i,j,k
 c-----------------------------------------------------------------------
@@ -2960,20 +2923,23 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c     CALCULATE SCALAR PRODUCT OF VECTORS
+c
+c     SCALAR PRODUCT OF VECTORS
 c
       subroutine ummdp_utility_vvs ( s,u,v,n )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
-      real*8 s
-      real*8 v(n),u(n)
+      integer,intent(in) :: n
+      real*8 ,intent(in) :: v(n),u(n)
+c
+      real*8,intent(out) :: s
 c
       integer i
 c-----------------------------------------------------------------------
 c
-      s = 0.0
+      s = 0.0d0
       do i = 1,n
         s = s + u(i)*v(i)
       end do
@@ -2984,11 +2950,13 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CALCULATE INVERSE MATRIX USING LU DECOMPOSITION
 c
-c     Ref.: http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
+c       Ref.: http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
 c
       subroutine ummdp_utility_minv ( b,a,n,d )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3212,14 +3180,19 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     CALCULATE INVERSE MATRIX 2x2 
 c
       subroutine ummdp_utility_minv2 ( b,a,deta,eps )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-			real*8 deta,eps
-			real*8 b(2,2),a(2,2)
+			real*8,intent(in) :: eps
+			real*8,intent(in) :: a(2,2)
+c
+      real*8,intent(out) :: deta
+      real*8,intent(out) :: b(2,2)
 c
 			real*8 detai
 c-----------------------------------------------------------------------
@@ -3232,10 +3205,10 @@ c
       end if
 c
       detai = 1.0d0 / deta
-      b(1,1) = a(2,2) * detai
+      b(1,1) =  a(2,2) * detai
       b(1,2) = -a(1,2) * detai
       b(2,1) = -a(2,1) * detai
-      b(2,2) = a(1,1) * detai
+      b(2,2) =  a(1,1) * detai
 c
       return
       end subroutine ummdp_utility_minv2
@@ -3249,15 +3222,18 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-			real*8 deta,eps
-			real*8 b(3,3),a(3,3)
+			real*8,intent(in) :: eps
+      real*8,intent(in) :: a(3,3)
+c
+      real*8,intent(out) :: deta 
+      real*8,intent(out) :: b(3,3)
 c
 			real*8 detai
 c-----------------------------------------------------------------------
 c
-      deta = a(1,1) * (a(2,2)*a(3,3) - a(2,3)*a(3,2)) +
-     1       a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3)) +
-     2       a(1,3) * (a(2,1)*a(3,2) - a(2,2)*a(3,1))
+      deta = a(1,1) * (a(2,2)*a(3,3) - a(2,3)*a(3,2))
+     1       + a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3))
+     2       + a(1,3) * (a(2,1)*a(3,2) - a(2,2)*a(3,1))
       if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv3'
@@ -3265,15 +3241,15 @@ c
       end if
 c
       detai = 1.0d0 / deta
-      b(1,1) = ( a(2,2)*a(3,3) - a(2,3)*a(3,2) ) * detai
-      b(1,2) = ( a(1,3)*a(3,2) - a(1,2)*a(3,3) ) * detai
-      b(1,3) = ( a(1,2)*a(2,3) - a(1,3)*a(2,2) ) * detai
-      b(2,1) = ( a(2,3)*a(3,1) - a(2,1)*a(3,3) ) * detai
-      b(2,2) = ( a(1,1)*a(3,3) - a(1,3)*a(3,1) ) * detai
-      b(2,3) = ( a(1,3)*a(2,1) - a(1,1)*a(2,3) ) * detai
-      b(3,1) = ( a(2,1)*a(3,2) - a(2,2)*a(3,1) ) * detai
-      b(3,2) = ( a(1,2)*a(3,1) - a(1,1)*a(3,2) ) * detai
-      b(3,3) = ( a(1,1)*a(2,2) - a(1,2)*a(2,1) ) * detai
+      b(1,1) = (a(2,2)*a(3,3) - a(2,3)*a(3,2)) * detai
+      b(1,2) = (a(1,3)*a(3,2) - a(1,2)*a(3,3)) * detai
+      b(1,3) = (a(1,2)*a(2,3) - a(1,3)*a(2,2)) * detai
+      b(2,1) = (a(2,3)*a(3,1) - a(2,1)*a(3,3)) * detai
+      b(2,2) = (a(1,1)*a(3,3) - a(1,3)*a(3,1)) * detai
+      b(2,3) = (a(1,3)*a(2,1) - a(1,1)*a(2,3)) * detai
+      b(3,1) = (a(2,1)*a(3,2) - a(2,2)*a(3,1)) * detai
+      b(3,2) = (a(1,2)*a(3,1) - a(1,1)*a(3,2)) * detai
+      b(3,3) = (a(1,1)*a(2,2) - a(1,2)*a(2,1)) * detai
 c
       return
       end subroutine ummdp_utility_minv3
@@ -3406,21 +3382,23 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CHECKING EXISTENCE OF FILE NAMES 'FLNAME'
 c
       logical function ummdp_utility_file_exist ( flname )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      character*16 flname
+      character*16,intent(in) :: flname
 c
 			integer nio
 c-----------------------------------------------------------------------
 c
       nio = 616
-      open ( nio,file=flname,status='old',err=10 )
+      open  ( nio,file=flname,status='old',err=10 )
 c
-      close ( nio,            status='keep' )
+      close ( nio,status='keep' )
       ummdp_utility_file_exist = .true.
       return
 c
@@ -7604,11 +7582,13 @@ c
 c
 c
 c************************************************************************
+c
 c     YLD2000-2D YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/S0749-6419(02)00019-0
 c
-      subroutine ummdp_yld2000 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )     
+      subroutine ummdp_yld2000 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+c     
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7627,22 +7607,30 @@ c
       real*8 d2xdy2(2,2,3,3)
 c-----------------------------------------------------------------------         
 c
-c     variables  : symbols in Barlat's paper
+c     >>> Arguments List
 c
-c     s(i)       : Sigma (i=1~2)
-c     x(1,i)     : X'i   (i=1~2)
-c     x(2,i)     : X"i   (i=1~2)
-c     y(1,i)     : X'xx,X'yy,X'xy (i=1~3)
-c     y(2,i)     : X"xx,X"yy,X"xy (i=1~3)
-c     phi(1)     : phi'
-c     phi(2)     : phi"
-c     se         : equivalent stress =(phi'+ph")^(1/M)
-c     am(1,i,j)  : liner transf. matrix for sigma to X'xx
-c     am(2,i,j)  : liner transf. matrix for sigma to X"xx
-c     a(i)       : anisotropic parameter a1~a8
+c     s        | stress tensor                                      (in)
+c     pryld    | yield function properties                          (in)
+c     ndyld    | number of yield function properties                (in)
+c     nreq     | flag for required outputs                          (in)
 c
-c       1st index means number of dash
-c       2nd index means suffix
+c     se       | equivalent stress                                 (out)
+c     dseds    | 1st order derivative of yield function wrt stress (out)
+c     d2seds2  | 2nd order derivative of yield function wrt stress (out)
+c
+c     >>> Local Variables List
+c
+c     x(1,i)     | X'i   (i=1~2)
+c     x(2,i)     | X"i   (i=1~2)
+c     y(1,i)     | X'xx,X'yy,X'xy (i=1~3)
+c     y(2,i)     | X"xx,X"yy,X"xy (i=1~3)
+c     phi(1)     | phi'
+c     phi(2)     | phi"
+c     am       | linear transformation matrix for stress tensor
+c     a        | anisotropic parameters
+c     em       | exponent parameter
+c
+c-----------------------------------------------------------------------  
 c
 c                                            ---- anisotropic parameters
       do i = 1,8
@@ -7658,16 +7646,15 @@ c                                                 ---- equivalent stress
       se = (0.5d0*q) ** (1.0d0/em)
 c                                              ---- 1st order derivative
       if ( nreq >= 1 ) then
-        call ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,
-     1                               dsedphi,dphidx,
-     2                               dxdy,dyds,se )
+        call ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,dsedphi,dphidx,dxdy,
+     1                              dyds,se )
         call ummdp_utility_clear1 ( dseds,3 )
         do nd = 1,2
           do m = 1,2
             do k = 1,3
               do i = 1,3
-                dseds(i) = dseds(i) + dsedphi(nd)*dphidx(nd,m)*
-     1                                dxdy(nd,m,k)*dyds(nd,k,i)
+                dseds(i) = dseds(i) + (dsedphi(nd)*dphidx(nd,m)
+     1                                 * dxdy(nd,m,k)*dyds(nd,k,i))
               end do
             end do
           end do
@@ -7675,9 +7662,8 @@ c                                              ---- 1st order derivative
       end if
 c                                              ---- 2nd order derivative
       if ( nreq >= 2 ) then
-        call ummdp_yld2000_2d_ds2 ( phi,x,y,em,
-     1                               d2sedphi2,d2phidx2,
-     2                               d2xdy2,se )
+        call ummdp_yld2000_2d_ds2 ( phi,x,y,em,d2sedphi2,d2phidx2,
+     1                              d2xdy2,se )                   
         call ummdp_utility_clear2 ( d2seds2,3,3 )
         do i = 1,3
         do j = 1,3
@@ -7687,11 +7673,11 @@ c                                              ---- 2nd order derivative
             do l = 1,2
               do m = 1,3
               do n = 1,3
-                d2seds2(i,j) = d2seds2(i,j) + d2sedphi2(nd1,nd2)*
-     1                          dphidx(nd1,k)*
-     2                          dxdy(nd1,k,m)*dyds(nd1,m,i)*
-     3                          dphidx(nd2,l)*
-     4                          dxdy(nd2,l,n)*dyds(nd2,n,j)
+                d2seds2(i,j) = d2seds2(i,j) 
+     1                         + (d2sedphi2(nd1,nd2)*dphidx(nd1,k)                     
+     2                            * dxdy(nd1,k,m)*dyds(nd1,m,i)
+     3                            * dphidx(nd2,l)*dxdy(nd2,l,n)
+     4                            * dyds(nd2,n,j))
               end do
               end do
             end do
@@ -7703,10 +7689,10 @@ c                                              ---- 2nd order derivative
             do l = 1,2
               do m = 1,3
               do n = 1,3
-                d2seds2(i,j) = d2seds2(i,j) + dsedphi(nd)*
-     1                          d2phidx2(nd,k,l)*
-     2                          dxdy(nd,k,m)*dyds(nd,m,i)*
-     3                          dxdy(nd,l,n)*dyds(nd,n,j)
+                d2seds2(i,j) = d2seds2(i,j) 
+     1                          + (dsedphi(nd)*d2phidx2(nd,k,l)
+     2                             * dxdy(nd,k,m)*dyds(nd,m,i)
+     3                             * dxdy(nd,l,n)*dyds(nd,n,j))
               end do
               end do
             end do
@@ -7716,9 +7702,10 @@ c                                              ---- 2nd order derivative
             do k = 1,2
               do m = 1,3
               do n = 1,3
-                d2seds2(i,j) = d2seds2(i,j) + dsedphi(nd)*
-     1                          dphidx(nd,k)*d2xdy2(nd,k,m,n)*
-     2                          dyds(nd,m,i)*dyds(nd,n,j)
+                d2seds2(i,j) = d2seds2(i,j) 
+     1                         + (dsedphi(nd)*dphidx(nd,k)
+     2                            * d2xdy2(nd,k,m,n)*dyds(nd,m,i)
+     3                            * dyds(nd,n,j))
               end do
               end do
             end do
@@ -7733,9 +7720,11 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     SET LINEAR TRANSFORMATION MATRIX
 c
       subroutine ummdp_yld2000_2d_am ( a,am )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7749,22 +7738,22 @@ c
 c                                      ---- linear transformation matrix
       am(1,1,1) =  2.0d0*a(1)
       am(1,1,2) = -1.0d0*a(1)
-      am(1,1,3) =  0.0
+      am(1,1,3) =  0.0d0
       am(1,2,1) = -1.0d0*a(2)
       am(1,2,2) =  2.0d0*a(2)
-      am(1,2,3) =  0.0
-      am(1,3,1) =  0.0
-      am(1,3,2) =  0.0
+      am(1,2,3) =  0.0d0
+      am(1,3,1) =  0.0d0
+      am(1,3,2) =  0.0d0
       am(1,3,3) =  3.0d0*a(7)
 c
       am(2,1,1) = -2.0d0*a(3) + 2.0d0*a(4) + 8.0d0*a(5) - 2.0d0*a(6)
       am(2,1,2) =        a(3) - 4.0d0*a(4) - 4.0d0*a(5) + 4.0d0*a(6)
-      am(2,1,3) =  0.0
+      am(2,1,3) =  0.0d0
       am(2,2,1) =  4.0d0*a(3) - 4.0d0*a(4) - 4.0d0*a(5) +       a(6)
       am(2,2,2) = -2.0d0*a(3) + 8.0d0*a(4) + 2.0d0*a(5) - 2.0d0*a(6)
-      am(2,2,3) =  0.0
-      am(2,3,1) =  0.0
-      am(2,3,2) =  0.0
+      am(2,2,3) =  0.0d0
+      am(2,3,1) =  0.0d0
+      am(2,3,2) =  0.0d0
       am(2,3,3) =  9.0d0*a(8)
 c
       do i = 1,3
@@ -7780,19 +7769,20 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     calc. barlat-yld2k function x,y,phi
+c
+c     CALCULATE barlat-yld2k function x,y,phi
 c
       subroutine ummdp_yld2000_2d_xyphi ( s,em,am,x,y,phi )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
       real*8,intent(in) :: em
       real*8,intent(in) :: s(3)
-      real*8,intent(in) ::  am(2,3,3)
+      real*8,intent(in) :: am(2,3,3)
 c
       real*8,intent(out) :: phi(2)
       real*8,intent(out) :: x(2,2),y(2,3)
-      
 c
       integer i,j,nd
       real*8 a
@@ -7822,8 +7812,8 @@ c                                                 ---- phi(1) and phi(2)
       nd = 1
       phi(nd) = abs(x(nd,1)-x(nd,2))**em
       nd = 2
-      phi(nd) = abs(2.0d0*x(nd,2)+x(nd,1))**em +
-     &          abs(2.0d0*x(nd,1)+x(nd,2))**em
+      phi(nd) = abs(2.0d0*x(nd,2)+x(nd,1))**em
+     1          + abs(2.0d0*x(nd,1)+x(nd,2))**em
 c
       return
       end subroutine ummdp_yld2000_2d_xyphi
@@ -7831,17 +7821,23 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     SET 1ST ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,dsedphi,dphidx,
-     1                                  dxdy,dyds,se )       
+     1                                  dxdy,dyds,se )     
+c  
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8 se,em
-      real*8 phi(2),dsedphi(2)
-      real*8 x(2,2),y(2,3),dphidx(2,2)
-      real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3)
+      real*8,intent(in) :: em,se
+      real*8,intent(in) :: phi(2)
+      real*8,intent(in) :: x(2,2),y(2,3)
+      real*8,intent(in) :: am(2,3,3)
+c
+      real*8,intent(out) :: dsedphi(2)
+      real*8,intent(out) :: dphidx(2,2)
+      real*8,intent(out) :: dxdy(2,2,3),dyds(2,3,3)
 c
       integer i,j,nd
       real*8 eps,emi,q,a,a0,a1,a2,b0,b1,b2,sgn0,sgn1,sgn2
@@ -7873,14 +7869,14 @@ c
       a2 =       x(nd,1) + 2.0d0*x(nd,2)
       b1 = abs(a1)
       b2 = abs(a2)
-      sgn1 = 0.0
-      sgn2 = 0.0
+      sgn1 = 0.0d0
+      sgn2 = 0.0d0
       if ( b1 >= eps*se ) sgn1 = a1 / b1
       if ( b2 >= eps*se ) sgn2 = a2 / b2
-      dphidx(nd,1) = em*(2.0d0*b1**(em-1.0d0)*sgn1 +
-     1                         b2**(em-1.0d0)*sgn2 )
-      dphidx(nd,2) = em*(      b1**(em-1.0d0)*sgn1 +
-     1                   2.0d0*b2**(em-1.0d0)*sgn2 )
+      dphidx(nd,1) = em*( 2.0d0*b1**(em-1.0d0)*sgn1
+     1                    + b2**(em-1.0d0)*sgn2 )
+      dphidx(nd,2) = em*( b1**(em-1.0d0)*sgn1
+     1                    + 2.0d0*b2**(em-1.0d0)*sgn2 )
 c
       do nd = 1,2
         a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) + 4.0d0*y(nd,3)*y(nd,3)
@@ -7893,9 +7889,9 @@ c
           end do
         else
           do j = 1,2
-            dxdy(nd,j,1) = 0.5d0 * (1.0d0+0.0)
-            dxdy(nd,j,2) = 0.5d0 * (1.0d0-0.0)
-            dxdy(nd,j,3) = 2.0d0 *        0.0
+            dxdy(nd,j,1) = 0.5d0 * (1.0d0+0.0d0)
+            dxdy(nd,j,2) = 0.5d0 * (1.0d0-0.0d0)
+            dxdy(nd,j,3) = 2.0d0 *        0.0d0
           end do
         end if
       end do
@@ -7914,18 +7910,22 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     SET 2ND ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine ummdp_yld2000_2d_ds2 ( phi,x,y,em,d2sedphi2,d2phidx2,
      1                                  d2xdy2,se )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8 em,se
-      real*8 phi(2)
-      real*8 x(2,2),y(2,3),d2sedphi2(2,2)
-      real*8 d2phidx2(2,2,2)
-      real*8 d2xdy2(2,2,3,3)
+      real*8,intent(in) :: em,se
+      real*8,intent(in) :: phi(2)
+      real*8,intent(in) :: x(2,2),y(2,3)
+c
+      real*8,intent(out) :: d2sedphi2(2,2)
+      real*8,intent(out) :: d2phidx2(2,2,2)
+      real*8,intent(out) :: d2xdy2(2,2,3,3)
 c
       integer i,j,m,nd,nd1,nd2,ij
       real*8 eps,emi,q,a
@@ -7939,7 +7939,7 @@ c
       emi = 1.0d0 / em
 c                                                        ---- d2se/dphi2
       q = phi(1) + phi(2)
-      if ( q <= 0.0 ) q = 0.0
+      if ( q <= 0.0d0 ) q = 0.0d0
       do nd1 = 1,2
         do nd2 = 1,2
           a = 0.5d0**emi * emi * (emi-1.0d0) * q**(emi-2.0d0)
@@ -7960,39 +7960,38 @@ c                                                         ---- d2phi/dx2
         do j = 1,2
           if ( i == j ) then
             if ( i == 1 ) then
-              a = (em-1.0d0) * em*
-     1            (4.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     2                   (abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
+              a = (em-1.0d0) * em
+     1            * (4.0d0*(abs(2.0d0*x(nd,1)+x(nd,2)))**(em-2.0d0)
+     2               + (abs(x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
             else
-              a = (em-1.0d0)*em*
-     1            (      (abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     2            4.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
+              a = (em-1.0d0) * em
+     1             * ((abs(2.0d0*x(nd,1)+x(nd,2)))**(em-2.0d0)
+     2                + 4.0d0*(abs(x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
             end if
           else
-            a = (em-1.0d0) * em * 
-     1          (2.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     2           2.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0) )
+            a = (em-1.0d0) * em
+     1           * (2.0d0*(abs(2.0d0*x(nd,1)+x(nd,2)))**(em-2.0d0)
+     2              + 2.0d0*(abs(x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
           end if
           d2phidx2(nd,i,j) = a
         end do
       end do
 c                                                           ---- d2x/dy2
       do nd = 1,2
-        a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) +
-     1      4.0d0*   y(nd,3) *         y(nd,3)
+        a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) + 4.0d0*y(nd,3)*y(nd,3)       
         if ( a > eps*se ) then
           a = 1.0d0 / sqrt(a**3)
           do m = 1,2
             do i = 1,3
               do j = 1,3
                 ij = i*10+j
-                if ( ( ij == 11 ) .or. ( ij == 22 ) ) then
+                if ( (ij == 11) .or. (ij == 22) ) then
                   q = y(nd,3) * y(nd,3)
                 else if ( ij == 33 ) then
                   q = (y(nd,1)-y(nd,2)) * (y(nd,1)-y(nd,2))
-                else if ( ( ij == 12 ) .or. ( ij == 21 ) ) then
+                else if ( (ij == 12) .or. (ij == 21) ) then
                   q = -y(nd,3) * y(nd,3)
-                else if ( ( ij == 23 ) .or. ( ij == 32 ) ) then
+                else if ( (ij == 23) .or. (ij == 32) ) then
                   q = y(nd,3) * (y(nd,1)-y(nd,2))
                 else
                   q = -y(nd,3) * (y(nd,1)-y(nd,2))
@@ -8005,7 +8004,7 @@ c                                                           ---- d2x/dy2
           do m = 1,2
             do i = 1,3
               do j = 1,3
-                d2xdy2(nd,m,i,j) = 0.0
+                d2xdy2(nd,m,i,j) = 0.0d0
               end do
             end do
           end do

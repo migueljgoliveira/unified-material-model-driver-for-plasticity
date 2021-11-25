@@ -41,10 +41,10 @@ c
 c
 c***********************************************************************
 c-----------------------------------------------------------------------
-      common /jancae1/ne,ip,lay
-      common /jancae3/prop
-      common /jancaea/nsdv
-      common /jancaeb/propdim
+      common /ummdp1/ne,ip,lay
+      common /ummdp2/prop
+      common /ummdp3/nsdv
+      common /ummdp4/propdim
 c
       parameter (mxpbs=10)
 c
@@ -107,16 +107,16 @@ c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
       end do
-c                                            ---- update eq.plast,strain
+c                                  ---- update equivalent plastic strain
       statev(isvrsvd+1) = p + dp
-c                                         ---- update plast.strain comp.
+c                                  ---- update plastic strain components
       call rotsig ( statev(isvrsvd+2),drot,ustatev,2,ndi,nshr )
 c
       do i = 1,ntens
         is = isvrsvd + isvsclr + i
         statev(is) = ustatev(i) + dpe(i)
       end do
-c                                       ---- update of back stress comp.
+c                                     ---- update back stress components
       if ( npbs /= 0 ) then
         do n = 1,npbs
           do i = 1,ntens
@@ -136,9 +136,11 @@ c
 c
 c
 c
-c***********************************************************************
+************************************************************************
+c
       SUBROUTINE SDVINI ( STATEV,COORDS,NSTATV,NCRDS,NOEL,NPT,
      1                    LAYER,KSPT )
+c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
@@ -163,10 +165,12 @@ c
 c
 c
 c
-c***********************************************************************
+************************************************************************
+c
       SUBROUTINE UVARM ( UVAR,DIRECT,T,TIME,DTIME,CMNAME,ORNAME,
      1    NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
      2    JMAC,JMATYP,MATLAYO,LACCFLA )
+c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
@@ -182,9 +186,9 @@ c
       parameter (mxpbs=10)
       parameter (mxprop=100)
 c
-      common /jancae3/prop
-      common /jancaea/nsdv
-      common /jancaeb/propdim
+      common /ummdp2/prop
+      common /ummdp3/nsdv
+      common /ummdp4/propdim
 c
       dimension s(ndi+nshr),xsum(ndi+nshr),x(mxpbs,ndi+nshr),
      &          pe(ndi+nshr),eta(ndi+nshr),
@@ -339,9 +343,11 @@ c
 c
 c
 ************************************************************************
+c
 c     SET INTERNAL STATE VARIABLES PROFILE
 c
       subroutine ummdp_isvprof ( isvrsvd,isvsclr )
+c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
@@ -355,12 +361,15 @@ c
 c
 c
 ************************************************************************
+c
 c     EXIT PROGRAM BY ERROR
 c
       subroutine ummdp_exit (nexit)
+c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
-      common /jancae1/ne,ip,lay
+c
+      common /ummdp1/ne,ip,lay
 c-----------------------------------------------------------------------
       write (6,*) 'error code :',nexit
       write (6,*) 'element no.           :',ne
@@ -455,9 +464,8 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      common /jancae1/ne,ip,lay
-      common /jancae2/n1234
-      integer ne,ip,lay
+      common /ummdp1/ne,ip,lay
+      common /ummdpa/n1234
 c
       integer,intent(in) :: mxpbs,nnrm,nshr,nttl,nvbs,mjac,nprop,npbs,
      1                      ndela,ndyld,ndihd,ndkin,ndrup,nnn
@@ -469,8 +477,8 @@ c
      1                      
       real*8 ,intent(inout) :: x1(mxpbs,nttl),x2(mxpbs,nttl)
 c
-      integer i,j,k,n,m,maxnr,ndiv,maxnest,nout,n1234,i1,i2,j1,j2,k1,k2,
-     1        nest,newmstg,nite,nstg,mstg,knr,ip1,ip2,nsym
+      integer ne,ip,lay,n1234,i,j,k,n,m,maxnr,ndiv,maxnest,nout,i1,i2,
+     1        j1,j2,k1,k2,nest,newmstg,nite,nstg,mstg,knr,ip1,ip2,nsym
       real*8 tol,xe,se,sy,dsydp,d2sydp2,dpconv,sgapi,sgapb,dsgap,sgap,
      1       pt,g1,g2n,g3nn,top,top0,bot,bot0,ddp,d,a,dd,aa,aaa,sc1,det
       real*8 prela(ndela),pryld(ndyld),prihd(ndihd),prkin(ndkin),
@@ -1186,14 +1194,13 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      common /jancae1/ne,ip,lay
-      integer ne,ip,lay
+      common /ummdp1/ne,ip,lay
 c
       integer,intent(in) :: nvbs0
 c
       integer,intent(out) :: nvbs
 c
-      integer nechk,ipchk,laychk,nchk
+      integer ne,ip,lay,nechk,ipchk,laychk,nchk
 c-----------------------------------------------------------------------
 c                             specify verbose level and point
 c      nvbs0 = 0   ! verbose mode
@@ -2749,7 +2756,7 @@ c
       integer nttl,nerr
 c
 			integer ne,ip,lay
-      common /jancae1/ne,ip,lay
+      common /ummdp1/ne,ip,lay
 c-----------------------------------------------------------------------
 c
       nttl = nnrm + nshr
@@ -3620,7 +3627,7 @@ c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-c     MULTIPLY MATRIX AND MATRIX
+c     MATRIX PRODUCT OF TWO MATRICES
 c     
       subroutine ummdp_utility_mm ( a,b,c,na1,na2,nbc )
 c
@@ -3651,7 +3658,7 @@ c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-c     CALCULATE SCALAR PRODUCT OF VECTORS
+c     SCALAR PRODUCT OF VECTORS
 c
       subroutine ummdp_utility_vvs ( s,u,v,n )
 c
@@ -8353,9 +8360,9 @@ c     y(1,i)     | X'xx,X'yy,X'xy (i=1~3)
 c     y(2,i)     | X"xx,X"yy,X"xy (i=1~3)
 c     phi(1)     | phi'
 c     phi(2)     | phi"
-c     
-c     am      | linear transformation matrix for stress tensor
-c     a       | anisotropic parameters
+c     am       | linear transformation matrix for stress tensor
+c     a        | anisotropic parameters
+c     em       | exponent parameter
 c
 c-----------------------------------------------------------------------  
 c

@@ -80,9 +80,8 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      common /jancae1/ne,ip,lay
-      common /jancae2/n1234
-      integer ne,ip,lay
+      common /ummdp1/ne,ip,lay
+      common /ummdpa/n1234
 c
       integer,intent(in) :: mxpbs,nnrm,nshr,nttl,nvbs,mjac,nprop,npbs,
      1                      ndela,ndyld,ndihd,ndkin,ndrup,nnn
@@ -94,8 +93,8 @@ c
      1                      
       real*8 ,intent(inout) :: x1(mxpbs,nttl),x2(mxpbs,nttl)
 c
-      integer i,j,k,n,m,maxnr,ndiv,maxnest,nout,n1234,i1,i2,j1,j2,k1,k2,
-     1        nest,newmstg,nite,nstg,mstg,knr,ip1,ip2,nsym
+      integer ne,ip,lay,n1234,i,j,k,n,m,maxnr,ndiv,maxnest,nout,i1,i2,
+     1        j1,j2,k1,k2,nest,newmstg,nite,nstg,mstg,knr,ip1,ip2,nsym
       real*8 tol,xe,se,sy,dsydp,d2sydp2,dpconv,sgapi,sgapb,dsgap,sgap,
      1       pt,g1,g2n,g3nn,top,top0,bot,bot0,ddp,d,a,dd,aa,aaa,sc1,det
       real*8 prela(ndela),pryld(ndyld),prihd(ndihd),prkin(ndkin),
@@ -811,14 +810,13 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      common /jancae1/ne,ip,lay
-      integer ne,ip,lay
+      common /ummdp1/ne,ip,lay
 c
       integer,intent(in) :: nvbs0
 c
       integer,intent(out) :: nvbs
 c
-      integer nechk,ipchk,laychk,nchk
+      integer ne,ip,lay,nechk,ipchk,laychk,nchk
 c-----------------------------------------------------------------------
 c                             specify verbose level and point
 c      nvbs0 = 0   ! verbose mode

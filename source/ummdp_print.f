@@ -447,7 +447,7 @@ c
       integer nttl,nerr
 c
 			integer ne,ip,lay
-      common /jancae1/ne,ip,lay
+      common /ummdp1/ne,ip,lay
 c-----------------------------------------------------------------------
 c
       nttl = nnrm + nshr

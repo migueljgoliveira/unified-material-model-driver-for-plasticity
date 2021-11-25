@@ -41,10 +41,10 @@ c
 c
 c***********************************************************************
 c-----------------------------------------------------------------------
-      common /jancae1/ne,ip,lay
-      common /jancae3/prop
-      common /jancaea/nsdv
-      common /jancaeb/propdim
+      common /ummdp1/ne,ip,lay
+      common /ummdp2/prop
+      common /ummdp3/nsdv
+      common /ummdp4/propdim
 c
       parameter (mxpbs=10)
 c
@@ -107,16 +107,16 @@ c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
       end do
-c                                            ---- update eq.plast,strain
+c                                  ---- update equivalent plastic strain
       statev(isvrsvd+1) = p + dp
-c                                         ---- update plast.strain comp.
+c                                  ---- update plastic strain components
       call rotsig ( statev(isvrsvd+2),drot,ustatev,2,ndi,nshr )
 c
       do i = 1,ntens
         is = isvrsvd + isvsclr + i
         statev(is) = ustatev(i) + dpe(i)
       end do
-c                                       ---- update of back stress comp.
+c                                     ---- update back stress components
       if ( npbs /= 0 ) then
         do n = 1,npbs
           do i = 1,ntens
@@ -136,9 +136,11 @@ c
 c
 c
 c
-c***********************************************************************
+************************************************************************
+c
       SUBROUTINE SDVINI ( STATEV,COORDS,NSTATV,NCRDS,NOEL,NPT,
      1                    LAYER,KSPT )
+c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
@@ -163,10 +165,12 @@ c
 c
 c
 c
-c***********************************************************************
+************************************************************************
+c
       SUBROUTINE UVARM ( UVAR,DIRECT,T,TIME,DTIME,CMNAME,ORNAME,
      1    NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
      2    JMAC,JMATYP,MATLAYO,LACCFLA )
+c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
@@ -182,9 +186,9 @@ c
       parameter (mxpbs=10)
       parameter (mxprop=100)
 c
-      common /jancae3/prop
-      common /jancaea/nsdv
-      common /jancaeb/propdim
+      common /ummdp2/prop
+      common /ummdp3/nsdv
+      common /ummdp4/propdim
 c
       dimension s(ndi+nshr),xsum(ndi+nshr),x(mxpbs,ndi+nshr),
      &          pe(ndi+nshr),eta(ndi+nshr),
@@ -339,9 +343,11 @@ c
 c
 c
 ************************************************************************
+c
 c     SET INTERNAL STATE VARIABLES PROFILE
 c
       subroutine ummdp_isvprof ( isvrsvd,isvsclr )
+c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
@@ -355,12 +361,15 @@ c
 c
 c
 ************************************************************************
+c
 c     EXIT PROGRAM BY ERROR
 c
       subroutine ummdp_exit (nexit)
+c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
-      common /jancae1/ne,ip,lay
+c
+      common /ummdp1/ne,ip,lay
 c-----------------------------------------------------------------------
       write (6,*) 'error code :',nexit
       write (6,*) 'element no.           :',ne

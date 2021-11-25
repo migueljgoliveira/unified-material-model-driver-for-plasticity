@@ -1,7 +1,7 @@
 ************************************************************************
 *                                                                      *
 *                                  UMMDp                               *
-*                                                                      *           
+*                                                                      *
 *                             <><><><><><><>                           *
 *                                                                      *
 *              UNIFIED MATERIAL MODEL DRIVER FOR PLASTICITY            *
@@ -23,61 +23,62 @@
 *       . Modified code to use only explicit variables                 *
 *                                                                      *
 ************************************************************************
-c     
 c
-      subroutine ummdp_vfm ( stress,statev,strain,dstrain,drot,ndi,nshr,
-     1                       ntens,nstatev,props,nprops,noel,npt,kspt,
-     2                       kinc )
-c        
+c     UMMDP-VFM MAIN SUBROUTINE
+c
+      subroutine ummdp_vfm ( stress,statev,strain,dstrain,ndi,nshr,
+     1                       ntens,nstatev,props,nprops,noel,npt,kinc,
+     2                       nexit )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      common /jancae1/ne,ip,lay
-      common /jancae3/prop
-      common /jancaea/nsdv
-      common /jancaeb/propdim
-      integer ne,ip,lay,nsdv,propdim
+      common /ummdp1/ne,ip,lay
+      common /ummdp2/prop
+      common /ummdp3/nsdv
+      common /ummdp4/propdim
+      common /ummdp5/nexito
 c
-      integer,intent(in) :: ndi,nshr,ntens,nstatev,nprops,noel,npt,kspt,
-     1                      kinc
+      integer,intent(in) :: ndi,nshr,ntens,nstatev,nprops,noel,npt,kinc                      
       real*8 ,intent(in) :: props(nprops)
-      real*8 ,intent(in) :: strain(ntens),dstrain(ntens)      
-      real*8 ,intent(in) :: drot(3,3)
+      real*8 ,intent(in) :: strain(ntens),dstrain(ntens)
 c
       real*8 ,intent(inout) :: stress(ntens),statev(nstatev)
 c
+      integer,intent(out) :: nexit
+c 
       integer mxpbs,mxprop,nrot
-      parameter (mxpbs=10,mxprop=100,nrot=3)
-      integer i,k,n,is,nprop,nvbs0,nvbs,ndela,ndyld,ndihd,ndkin,npbs,
-     1        ndrup,mjac,isvrsvd,isvsclr,maxsdv
+      parameter (mxpbs=10,mxprop=100)
+      integer ne,ip,lay,nsdv,propdim,nexito,i,k,n,is,nprop,nvbs0,nvbs,
+     1        ndela,ndyld,ndihd,ndkin,npbs,ndrup,mjac,isvrsvd,isvsclr,
+     2        maxsdv
       real*8 de33,p,dp
-      real*8 ustatev(6),s2(ntens),dpe(ntens),pe(ntens),prop(mxprop)
-      real*8 x1(mxpbs,ntens),x2(mxpbs,ntens),ddsdde(ntens,ntens)     
+      real*8 ustatev(ntens),s2(ntens),dpe(ntens),pe(ntens),prop(mxprop)
+      real*8 x1(mxpbs,ntens),x2(mxpbs,ntens),ddsdde(ntens,ntens)
 c-----------------------------------------------------------------------
 c
-cf2py intent(in) stress,statev,strain,dstrain,drot
+cf2py intent(in,out) stress,statev
+cf2py intent(in) strain,dstrain
 cf2py intent(in) ndi,nshr,ntens,nstatev
 cf2py intent(in) props,nprops
 cf2py intent(in) noel,npt,kspt,kinc
-cf2py intent(out) stress,statev
+cf2py intent(out) nexit
 cf2py depend(ntens) stress,strain,dstrain
 cf2py depend(nstatev) statev
-cf2py depend(nrot,nrot) drot
 cf2py depend(nprops) props
 c
 c-----------------------------------------------------------------------
 c
 c                                                   ---- open debug file
       if ( kinc == 1 ) then
-        open(6,file=trim('ummdp.log'),status='NEW')
+        open(6,file='ummdp_vfm.log')
       else
-        open(6,file=trim('ummdp.log'),access='APPEND',status='OLD')
+        open(6,file='ummdp_vfm.log',access='APPEND',status='OLD')
       end if
 c
       ne = noel
       ip = npt
-      lay = kspt
-      if ( lay == 0 ) lay = 1
+      lay = 1
       nsdv = nstatev
       nprop = mxprop
       propdim = nprops - 1
@@ -90,14 +91,13 @@ c                                       ---- output detailed information
         call ummdp_print_inout ( 0,stress,dstrain,ddsdde,ntens,statev,
      1                           nstatev )
       end if
-c
 c                                           ---- set material properties
       do i = 2,nprops
         prop(i-1) = props(i)
       end do
-c	
+c
       call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
-     1                      npbs,ndrup )              
+     1                      npbs,ndrup )
       if ( npbs > mxpbs ) then
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
@@ -109,13 +109,13 @@ c                                                     ---- check nstatev
 c                             ---- copy current internal state variables
       call ummdp_isvprof ( isvrsvd,isvsclr )
       call ummdp_isv2pex ( isvrsvd,isvsclr,statev,nstatev,p,pe,x1,ntens,
-     1                     mxpbs,npbs )                      
+     1                     mxpbs,npbs )
 c
 c                             ---- update stress and set tangent modulus
       mjac = 0
       call ummdp_plasticity ( stress,s2,dstrain,p,dp,dpe,de33,x1,x2,
      1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
-     2                        prop,nprop,propdim )                   
+     2                        prop,nprop,propdim )
 c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
@@ -123,13 +123,11 @@ c                                                     ---- update stress
 c                                  ---- update equivalent plastic strain
       statev(isvrsvd+1) = p + dp
 c                                  ---- update plastic strain components
-      call ummdp_rotsig ( statev(isvrsvd+2),drot,ustatev,2,ndi,nshr )
-c
       do i = 1,ntens
         is = isvrsvd + isvsclr + i
-        statev(is) = ustatev(i) + dpe(i)
+        statev(is) = statev(is) + dpe(i)
       end do
-c                                  ---- update of back stress components
+c                                     ---- update back stress components
       if ( npbs /= 0 ) then
         do n = 1,npbs
           do i = 1,ntens
@@ -145,13 +143,16 @@ c                           ----  if debug mode, output return arguments
       end if
 c                                                  ---- close debug file
       close(6)
+c                                                 ---- return error code
+      nexit = nexito
 c
       return
       end
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     SET INTERNAL STATE VARIABLES PROFILE
 c
       subroutine ummdp_isvprof ( isvrsvd,isvsclr )
@@ -159,7 +160,7 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer,intent(out) :: isvrsvd,isvsclr     
+      integer,intent(out) :: isvrsvd,isvsclr
 c-----------------------------------------------------------------------
 
       isvrsvd = 0           ! no reserved variables
@@ -171,70 +172,8 @@ c
 c
 c
 c
-************************************************************************
-c     ROTATE A TENSOR
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-      subroutine ummdp_rotsig ( statev,drot,ustatev,lstr,ndi,nshr )
-c
-c-----------------------------------------------------------------------
-      implicit none
-c
-      integer,intent(in) :: lstr,ndi,nshr
-      real*8 ,intent(in) :: statev(6)
-      real*8 ,intent(in) :: drot(3,3)
-c
-      real*8,intent(out) :: ustatev(6)
-c
-      integer i,j
-      real*8 aux1(ndi,ndi),aux2(ndi,ndi),aux3(ndi,ndi),auxrot(ndi,ndi)
-c-----------------------------------------------------------------------
-c
-c                                              ---- set statev to tensor
-      call ummdp_utility_clear2( aux1,ndi,ndi )
-      do i = 1,ndi
-        do j = 1,ndi
-          if ( i == j ) then
-            aux1(i,j) = statev(i)
-          else
-            if ( lstr == 1 ) then
-              aux1(i,j) = statev(i+j+1)
-            else if ( lstr == 2 ) then
-              aux1(i,j) = statev(i+j+1)/2.0d0
-            end if
-          end if
-        end do
-      end do
-c                                               ---- copy drot to auxrot
-      call ummdp_utility_clear2( aux1,ndi,ndi )
-      do i = 1,ndi
-        do j = 1,ndi
-          auxrot(i,j) = drot(i,j)
-        end do
-      end do
-c                                                     ---- rotate statev
-      call ummdp_utility_mm ( aux2,auxrot,aux1,ndi,ndi,ndi )
-      call ummdp_utility_mm ( aux3,aux2,transpose(auxrot),ndi,ndi,ndi )
-c                                     ---- set rotated tensor to ustatev
-      do i = 1,ndi
-        do j = 1,ndi
-          if ( i == j ) then
-            ustatev(i) = aux3(i,j)
-          else
-            if ( lstr == 1 ) then
-              ustatev(i+j) = aux3(i,j)
-            else if ( lstr == 2 ) then
-              ustatev(i+j) = aux3(i,j)*2.0d0
-            end if
-          end if
-        end do
-      end do
-c
-      return
-      end subroutine ummdp_rotsig
-c
-c
-c
-************************************************************************
 c     EXIT PROGRAM BY ERROR
 c
       subroutine ummdp_exit ( nexit )
@@ -242,18 +181,20 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      common /jancae1/ne,ip,lay
-      integer ne,ip,lay
+      common /ummdp1/ne,ip,lay
+      common /ummdp5/nexito
 c
       integer,intent(in) :: nexit
+c
+      integer ne,ip,lay,nexito
 c-----------------------------------------------------------------------
 c
       write (6,*) 'error code :',nexit
       write (6,*) 'element no.           :',ne
       write (6,*) 'integration point no. :',ip
-      write (6,*) 'layer no.             :',lay
+      write (6,*) 'layer no.             :',lay           
 c
-      ! stop
+      nexito = -1
 c
       return
       end subroutine ummdp_exit
