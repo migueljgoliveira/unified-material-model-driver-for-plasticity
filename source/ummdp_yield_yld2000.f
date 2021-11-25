@@ -82,9 +82,9 @@ c                                              ---- 2nd order derivative
               do n = 1,3
                 d2seds2(i,j) = d2seds2(i,j) 
      1                         + d2sedphi2(nd1,nd2)*dphidx(nd1,k)                     
-     2                           (* dxdy(nd1,k,m)*dyds(nd1,m,i)
-     3                            * dphidx(nd2,l)*dxdy(nd2,l,n)
-     4                            * dyds(nd2,n,j))
+     2                           * (dxdy(nd1,k,m)*dyds(nd1,m,i)
+     3                              * dphidx(nd2,l)*dxdy(nd2,l,n)
+     4                              * dyds(nd2,n,j))
               end do
               end do
             end do
@@ -97,9 +97,9 @@ c                                              ---- 2nd order derivative
               do m = 1,3
               do n = 1,3
                 d2seds2(i,j) = d2seds2(i,j) 
-                               + (dsedphi(nd)*d2phidx2(nd,k,l)*
-     1                            * dxdy(nd,k,m)*dyds(nd,m,i)
-     2                            * dxdy(nd,l,n)*dyds(nd,n,j))
+     1                          + (dsedphi(nd)*d2phidx2(nd,k,l)
+     2                             * dxdy(nd,k,m)*dyds(nd,m,i)
+     3                             * dxdy(nd,l,n)*dyds(nd,n,j))
               end do
               end do
             end do

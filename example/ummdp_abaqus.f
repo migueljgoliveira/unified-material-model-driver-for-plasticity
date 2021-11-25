@@ -1,21 +1,28 @@
-c***********************************************************************
-c
-c     UMMDp - Unified Material Model Driver for Plasticity
-c
-c***********************************************************************
-c
-c     > Copyright (c) 2018 JANCAE
-c       . This software includes code originally developed by the  
-c       Material Modeling Working group of JANCAE.
-c
-c     > Extended by M.G. Oliveira from University of Aveiro, Portugal
-c       . Added additional isotropic hardening laws
-c       . Corrected order of Voigt notation for Yld2004-18p with Abaqus
-c       . Linked kinematic hardening laws to the core of UMMDp
-c       . Added Chaboche kinematic hardening law as used by Abaqus
-c     	. Implemented uncouple rupture criteria
-c
-c***********************************************************************
+************************************************************************
+*                                                                      *
+*                                  UMMDp                               *
+*                                                                      *           
+*                             <><><><><><><>                           *
+*                                                                      *
+*              UNIFIED MATERIAL MODEL DRIVER FOR PLASTICITY            *
+*                                                                      *
+*                         < PLUG-IN FOR ABAQUS >                       *
+*                                                                      *
+************************************************************************
+*                                                                      *
+*     > Copyright (c) 2018 JANCAE                                      *
+*       . This software includes code originally developed by the      *
+*       Material Modeling Working group of JANCAE.                     *
+*
+*     > Extended by M.G. Oliveira from University of Aveiro, Portugal  *
+*       . Added additional isotropic hardening laws                    *
+*       . Corrected Voigt notation for Yld2004-18p with Abaqus         *
+*       . Linked kinematic hardening laws to the core of UMMDp         *
+*       . Added Chaboche kinematic hardening law as used by Abaqus     *
+*     	. Implemented uncoupled rupture criteria                       *
+*       . Modified code to use only explicit variables                 *
+*                                                                      *
+************************************************************************
 c
       SUBROUTINE UMAT ( STRESS,STATEV,DDSDDE,SSE,SPD,SCD,
      &    RPL,DDSDDT,DRPLDE,DRPLDT,STRAN,DSTRAN,
@@ -3424,14 +3431,17 @@ c     ummdp_utility_file_exist ( flname )
 c       checking existence of files
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CLEAR 1st ORDER VECTOR A(N)
 c
       subroutine ummdp_utility_clear1 ( a,n )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
-      real*8 a(n)
+      integer,intent(in) :: n
+c
+      real*8,intent(inout) :: a(n)
 c
       integer i
 c-----------------------------------------------------------------------
@@ -3446,14 +3456,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CLEAR 2ND ORDER MATRIX
 c
       subroutine ummdp_utility_clear2 ( a,n,m )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n,m
-      real*8 a(n,m)
+      integer,intent(in) :: n,m
+c
+      real*8,intent(inout) :: a(n,m)
 c
       integer i,j
 c-----------------------------------------------------------------------
@@ -3470,14 +3483,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CLEAR 3RD ORDER MATRIX
 c
       subroutine ummdp_utility_clear3 ( a,n,m,l )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n,m,l
-      real*8 a(n,m,l)
+      integer,intent(in) :: n,m,l
+c
+      real*8,intent(inout) ::  a(n,m,l)
 c
       integer i,j,k
 c-----------------------------------------------------------------------
@@ -3496,14 +3512,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     SET UNIT 2ND ORDER MATRIX
 c
       subroutine ummdp_utility_setunitm ( a,n )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
-      real*8 a(n,n)
+      integer,intent(in) :: n
+c
+      real*8,intent(out) :: a(n,n)
 c
       integer i
 c-----------------------------------------------------------------------
@@ -3519,15 +3538,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     PRINT VECTOR WITH TEXT
 c
       subroutine ummdp_utility_print1 ( text,a,n )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
-      real*8 a(n)
-      character*32 text
+      integer     ,intent(in) :: n
+      real*8      ,intent(in) :: a(n)
+      character*32,intent(in) :: text
 c
       integer i
 c-----------------------------------------------------------------------
@@ -3542,15 +3563,17 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     PRINT MATRIX WITH TEXT
 c
       subroutine ummdp_utility_print2 ( text,a,n,m )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n,m
-      real*8 a(n,m)
-      character*32 text
+      integer     ,intent(in) :: n,m
+      real*8      ,intent(in) :: a(n,m)
+      character*32,intent(in) :: text
 c
       integer i,j
 c-----------------------------------------------------------------------
@@ -3566,15 +3589,19 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     MULTIPLY MATRIX AND VECTOR
 c
       subroutine ummdp_utility_mv ( v,a,u,nv,nu )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer nv,nu
-      real*8 v(nv),u(nu)
-      real*8 a(nv,nu)
+      integer,intent(in) :: nv,nu
+      real*8 ,intent(in) :: u(nu)
+      real*8 ,intent(in) :: a(nv,nu)
+c
+      real*8,intent(out) :: v(nv)
 c
       integer i,j
 c-----------------------------------------------------------------------
@@ -3592,14 +3619,18 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     MULTIPLY MATRIX AND MATRIX
 c     
       subroutine ummdp_utility_mm ( a,b,c,na1,na2,nbc )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer na1,na2,nbc
-      real*8 a(na1,na2),b(na1,nbc),c(nbc,na2)
+      integer,intent(in) :: na1,na2,nbc
+      real*8 ,intent(in) :: b(na1,nbc),c(nbc,na2)
+c
+      real*8,intent(out) :: a(na1,na2)
 c
       integer i,j,k
 c-----------------------------------------------------------------------
@@ -3619,20 +3650,23 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CALCULATE SCALAR PRODUCT OF VECTORS
 c
       subroutine ummdp_utility_vvs ( s,u,v,n )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer n
-      real*8 s
-      real*8 v(n),u(n)
+      integer,intent(in) :: n
+      real*8 ,intent(in) :: v(n),u(n)
+c
+      real*8,intent(out) :: s
 c
       integer i
 c-----------------------------------------------------------------------
 c
-      s = 0.0
+      s = 0.0d0
       do i = 1,n
         s = s + u(i)*v(i)
       end do
@@ -3643,11 +3677,13 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CALCULATE INVERSE MATRIX USING LU DECOMPOSITION
 c
-c     Ref.: http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
+c       Ref.: http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
 c
       subroutine ummdp_utility_minv ( b,a,n,d )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3871,14 +3907,19 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     CALCULATE INVERSE MATRIX 2x2 
 c
       subroutine ummdp_utility_minv2 ( b,a,deta,eps )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-			real*8 deta,eps
-			real*8 b(2,2),a(2,2)
+			real*8,intent(in) :: eps
+			real*8,intent(in) :: a(2,2)
+c
+      real*8,intent(out) :: deta
+      real*8,intent(out) :: b(2,2)
 c
 			real*8 detai
 c-----------------------------------------------------------------------
@@ -3891,10 +3932,10 @@ c
       end if
 c
       detai = 1.0d0 / deta
-      b(1,1) = a(2,2) * detai
+      b(1,1) =  a(2,2) * detai
       b(1,2) = -a(1,2) * detai
       b(2,1) = -a(2,1) * detai
-      b(2,2) = a(1,1) * detai
+      b(2,2) =  a(1,1) * detai
 c
       return
       end subroutine ummdp_utility_minv2
@@ -3908,15 +3949,18 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-			real*8 deta,eps
-			real*8 b(3,3),a(3,3)
+			real*8,intent(in) :: eps
+      real*8,intent(in) :: a(3,3)
+c
+      real*8,intent(out) :: deta 
+      real*8,intent(out) :: b(3,3)
 c
 			real*8 detai
 c-----------------------------------------------------------------------
 c
-      deta = a(1,1) * (a(2,2)*a(3,3) - a(2,3)*a(3,2)) +
-     1       a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3)) +
-     2       a(1,3) * (a(2,1)*a(3,2) - a(2,2)*a(3,1))
+      deta = a(1,1) * (a(2,2)*a(3,3) - a(2,3)*a(3,2))
+     1       + a(1,2) * (a(2,3)*a(3,1) - a(2,1)*a(3,3))
+     2       + a(1,3) * (a(2,1)*a(3,2) - a(2,2)*a(3,1))
       if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv3'
@@ -3924,15 +3968,15 @@ c
       end if
 c
       detai = 1.0d0 / deta
-      b(1,1) = ( a(2,2)*a(3,3) - a(2,3)*a(3,2) ) * detai
-      b(1,2) = ( a(1,3)*a(3,2) - a(1,2)*a(3,3) ) * detai
-      b(1,3) = ( a(1,2)*a(2,3) - a(1,3)*a(2,2) ) * detai
-      b(2,1) = ( a(2,3)*a(3,1) - a(2,1)*a(3,3) ) * detai
-      b(2,2) = ( a(1,1)*a(3,3) - a(1,3)*a(3,1) ) * detai
-      b(2,3) = ( a(1,3)*a(2,1) - a(1,1)*a(2,3) ) * detai
-      b(3,1) = ( a(2,1)*a(3,2) - a(2,2)*a(3,1) ) * detai
-      b(3,2) = ( a(1,2)*a(3,1) - a(1,1)*a(3,2) ) * detai
-      b(3,3) = ( a(1,1)*a(2,2) - a(1,2)*a(2,1) ) * detai
+      b(1,1) = (a(2,2)*a(3,3) - a(2,3)*a(3,2)) * detai
+      b(1,2) = (a(1,3)*a(3,2) - a(1,2)*a(3,3)) * detai
+      b(1,3) = (a(1,2)*a(2,3) - a(1,3)*a(2,2)) * detai
+      b(2,1) = (a(2,3)*a(3,1) - a(2,1)*a(3,3)) * detai
+      b(2,2) = (a(1,1)*a(3,3) - a(1,3)*a(3,1)) * detai
+      b(2,3) = (a(1,3)*a(2,1) - a(1,1)*a(2,3)) * detai
+      b(3,1) = (a(2,1)*a(3,2) - a(2,2)*a(3,1)) * detai
+      b(3,2) = (a(1,2)*a(3,1) - a(1,1)*a(3,2)) * detai
+      b(3,3) = (a(1,1)*a(2,2) - a(1,2)*a(2,1)) * detai
 c
       return
       end subroutine ummdp_utility_minv3
@@ -4065,21 +4109,23 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     CHECKING EXISTENCE OF FILE NAMES 'FLNAME'
 c
       logical function ummdp_utility_file_exist ( flname )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      character*16 flname
+      character*16,intent(in) :: flname
 c
 			integer nio
 c-----------------------------------------------------------------------
 c
       nio = 616
-      open ( nio,file=flname,status='old',err=10 )
+      open  ( nio,file=flname,status='old',err=10 )
 c
-      close ( nio,            status='keep' )
+      close ( nio,status='keep' )
       ummdp_utility_file_exist = .true.
       return
 c
@@ -8317,16 +8363,15 @@ c                                                 ---- equivalent stress
       se = (0.5d0*q) ** (1.0d0/em)
 c                                              ---- 1st order derivative
       if ( nreq >= 1 ) then
-        call ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,
-     1                               dsedphi,dphidx,
-     2                               dxdy,dyds,se )
+        call ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,dsedphi,dphidx,dxdy,
+     1                              dyds,se )
         call ummdp_utility_clear1 ( dseds,3 )
         do nd = 1,2
           do m = 1,2
             do k = 1,3
               do i = 1,3
-                dseds(i) = dseds(i) + dsedphi(nd)*dphidx(nd,m)*
-     1                                dxdy(nd,m,k)*dyds(nd,k,i)
+                dseds(i) = dseds(i) + (dsedphi(nd)*dphidx(nd,m)
+     1                                 * dxdy(nd,m,k)*dyds(nd,k,i))
               end do
             end do
           end do
@@ -8334,9 +8379,8 @@ c                                              ---- 1st order derivative
       end if
 c                                              ---- 2nd order derivative
       if ( nreq >= 2 ) then
-        call ummdp_yld2000_2d_ds2 ( phi,x,y,em,
-     1                               d2sedphi2,d2phidx2,
-     2                               d2xdy2,se )
+        call ummdp_yld2000_2d_ds2 ( phi,x,y,em,d2sedphi2,d2phidx2,
+     1                              d2xdy2,se )                   
         call ummdp_utility_clear2 ( d2seds2,3,3 )
         do i = 1,3
         do j = 1,3
@@ -8346,11 +8390,11 @@ c                                              ---- 2nd order derivative
             do l = 1,2
               do m = 1,3
               do n = 1,3
-                d2seds2(i,j) = d2seds2(i,j) + d2sedphi2(nd1,nd2)*
-     1                          dphidx(nd1,k)*
-     2                          dxdy(nd1,k,m)*dyds(nd1,m,i)*
-     3                          dphidx(nd2,l)*
-     4                          dxdy(nd2,l,n)*dyds(nd2,n,j)
+                d2seds2(i,j) = d2seds2(i,j) 
+     1                         + d2sedphi2(nd1,nd2)*dphidx(nd1,k)                     
+     2                           * (dxdy(nd1,k,m)*dyds(nd1,m,i)
+     3                              * dphidx(nd2,l)*dxdy(nd2,l,n)
+     4                              * dyds(nd2,n,j))
               end do
               end do
             end do
@@ -8362,10 +8406,10 @@ c                                              ---- 2nd order derivative
             do l = 1,2
               do m = 1,3
               do n = 1,3
-                d2seds2(i,j) = d2seds2(i,j) + dsedphi(nd)*
-     1                          d2phidx2(nd,k,l)*
-     2                          dxdy(nd,k,m)*dyds(nd,m,i)*
-     3                          dxdy(nd,l,n)*dyds(nd,n,j)
+                d2seds2(i,j) = d2seds2(i,j) 
+     1                          + (dsedphi(nd)*d2phidx2(nd,k,l)
+     2                            * dxdy(nd,k,m)*dyds(nd,m,i)
+     3                            * dxdy(nd,l,n)*dyds(nd,n,j))
               end do
               end do
             end do
@@ -8375,9 +8419,10 @@ c                                              ---- 2nd order derivative
             do k = 1,2
               do m = 1,3
               do n = 1,3
-                d2seds2(i,j) = d2seds2(i,j) + dsedphi(nd)*
-     1                          dphidx(nd,k)*d2xdy2(nd,k,m,n)*
-     2                          dyds(nd,m,i)*dyds(nd,n,j)
+                d2seds2(i,j) = d2seds2(i,j) 
+     1                         + (dsedphi(nd)*dphidx(nd,k)
+     2                            * d2xdy2(nd,k,m,n)*dyds(nd,m,i)
+     3                            * dyds(nd,n,j))
               end do
               end do
             end do
@@ -8408,22 +8453,22 @@ c
 c                                      ---- linear transformation matrix
       am(1,1,1) =  2.0d0*a(1)
       am(1,1,2) = -1.0d0*a(1)
-      am(1,1,3) =  0.0
+      am(1,1,3) =  0.0d0
       am(1,2,1) = -1.0d0*a(2)
       am(1,2,2) =  2.0d0*a(2)
-      am(1,2,3) =  0.0
-      am(1,3,1) =  0.0
-      am(1,3,2) =  0.0
+      am(1,2,3) =  0.0d0
+      am(1,3,1) =  0.0d0
+      am(1,3,2) =  0.0d0
       am(1,3,3) =  3.0d0*a(7)
 c
       am(2,1,1) = -2.0d0*a(3) + 2.0d0*a(4) + 8.0d0*a(5) - 2.0d0*a(6)
       am(2,1,2) =        a(3) - 4.0d0*a(4) - 4.0d0*a(5) + 4.0d0*a(6)
-      am(2,1,3) =  0.0
+      am(2,1,3) =  0.0d0
       am(2,2,1) =  4.0d0*a(3) - 4.0d0*a(4) - 4.0d0*a(5) +       a(6)
       am(2,2,2) = -2.0d0*a(3) + 8.0d0*a(4) + 2.0d0*a(5) - 2.0d0*a(6)
-      am(2,2,3) =  0.0
-      am(2,3,1) =  0.0
-      am(2,3,2) =  0.0
+      am(2,2,3) =  0.0d0
+      am(2,3,1) =  0.0d0
+      am(2,3,2) =  0.0d0
       am(2,3,3) =  9.0d0*a(8)
 c
       do i = 1,3
@@ -8447,7 +8492,7 @@ c-----------------------------------------------------------------------
 c
       real*8,intent(in) :: em
       real*8,intent(in) :: s(3)
-      real*8,intent(in) ::  am(2,3,3)
+      real*8,intent(in) :: am(2,3,3)
 c
       real*8,intent(out) :: phi(2)
       real*8,intent(out) :: x(2,2),y(2,3)
@@ -8481,8 +8526,8 @@ c                                                 ---- phi(1) and phi(2)
       nd = 1
       phi(nd) = abs(x(nd,1)-x(nd,2))**em
       nd = 2
-      phi(nd) = abs(2.0d0*x(nd,2)+x(nd,1))**em +
-     &          abs(2.0d0*x(nd,1)+x(nd,2))**em
+      phi(nd) = abs(2.0d0*x(nd,2)+x(nd,1))**em
+     1          + abs(2.0d0*x(nd,1)+x(nd,2))**em
 c
       return
       end subroutine ummdp_yld2000_2d_xyphi
@@ -8532,14 +8577,14 @@ c
       a2 =       x(nd,1) + 2.0d0*x(nd,2)
       b1 = abs(a1)
       b2 = abs(a2)
-      sgn1 = 0.0
-      sgn2 = 0.0
+      sgn1 = 0.0d0
+      sgn2 = 0.0d0
       if ( b1 >= eps*se ) sgn1 = a1 / b1
       if ( b2 >= eps*se ) sgn2 = a2 / b2
-      dphidx(nd,1) = em*(2.0d0*b1**(em-1.0d0)*sgn1 +
-     1                         b2**(em-1.0d0)*sgn2 )
-      dphidx(nd,2) = em*(      b1**(em-1.0d0)*sgn1 +
-     1                   2.0d0*b2**(em-1.0d0)*sgn2 )
+      dphidx(nd,1) = em*( 2.0d0*b1**(em-1.0d0)*sgn1
+     1                    + b2**(em-1.0d0)*sgn2 )
+      dphidx(nd,2) = em*( b1**(em-1.0d0)*sgn1
+     1                    + 2.0d0*b2**(em-1.0d0)*sgn2 )
 c
       do nd = 1,2
         a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) + 4.0d0*y(nd,3)*y(nd,3)
@@ -8552,9 +8597,9 @@ c
           end do
         else
           do j = 1,2
-            dxdy(nd,j,1) = 0.5d0 * (1.0d0+0.0)
-            dxdy(nd,j,2) = 0.5d0 * (1.0d0-0.0)
-            dxdy(nd,j,3) = 2.0d0 *        0.0
+            dxdy(nd,j,1) = 0.5d0 * (1.0d0+0.0d0)
+            dxdy(nd,j,2) = 0.5d0 * (1.0d0-0.0d0)
+            dxdy(nd,j,3) = 2.0d0 *        0.0d0
           end do
         end if
       end do
@@ -8598,7 +8643,7 @@ c
       emi = 1.0d0 / em
 c                                                        ---- d2se/dphi2
       q = phi(1) + phi(2)
-      if ( q <= 0.0 ) q = 0.0
+      if ( q <= 0.0d0 ) q = 0.0d0
       do nd1 = 1,2
         do nd2 = 1,2
           a = 0.5d0**emi * emi * (emi-1.0d0) * q**(emi-2.0d0)
@@ -8619,39 +8664,38 @@ c                                                         ---- d2phi/dx2
         do j = 1,2
           if ( i == j ) then
             if ( i == 1 ) then
-              a = (em-1.0d0) * em*
-     1            (4.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     2                   (abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
+              a = (em-1.0d0) * em
+     1            * (4.0d0*(abs(2.0d0*x(nd,1)+x(nd,2)))**(em-2.0d0)
+     2               + (abs(x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
             else
-              a = (em-1.0d0)*em*
-     1            (      (abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     2            4.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
+              a = (em-1.0d0) * em
+     1             * ((abs(2.0d0*x(nd,1)+x(nd,2)))**(em-2.0d0)
+     2                + 4.0d0*(abs(x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
             end if
           else
-            a = (em-1.0d0) * em * 
-     1          (2.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     2           2.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0) )
+            a = (em-1.0d0) * em
+     1           * (2.0d0*(abs(2.0d0*x(nd,1)+x(nd,2)))**(em-2.0d0)
+     2              + 2.0d0*(abs(x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
           end if
           d2phidx2(nd,i,j) = a
         end do
       end do
 c                                                           ---- d2x/dy2
       do nd = 1,2
-        a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) +
-     1      4.0d0*   y(nd,3) *         y(nd,3)
+        a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) + 4.0d0*y(nd,3)*y(nd,3)       
         if ( a > eps*se ) then
           a = 1.0d0 / sqrt(a**3)
           do m = 1,2
             do i = 1,3
               do j = 1,3
                 ij = i*10+j
-                if ( ( ij == 11 ) .or. ( ij == 22 ) ) then
+                if ( (ij == 11) .or. (ij == 22) ) then
                   q = y(nd,3) * y(nd,3)
                 else if ( ij == 33 ) then
                   q = (y(nd,1)-y(nd,2)) * (y(nd,1)-y(nd,2))
-                else if ( ( ij == 12 ) .or. ( ij == 21 ) ) then
+                else if ( (ij == 12) .or. (ij == 21) ) then
                   q = -y(nd,3) * y(nd,3)
-                else if ( ( ij == 23 ) .or. ( ij == 32 ) ) then
+                else if ( (ij == 23) .or. (ij == 32) ) then
                   q = y(nd,3) * (y(nd,1)-y(nd,2))
                 else
                   q = -y(nd,3) * (y(nd,1)-y(nd,2))
@@ -8664,7 +8708,7 @@ c                                                           ---- d2x/dy2
           do m = 1,2
             do i = 1,3
               do j = 1,3
-                d2xdy2(nd,m,i,j) = 0.0
+                d2xdy2(nd,m,i,j) = 0.0d0
               end do
             end do
           end do
