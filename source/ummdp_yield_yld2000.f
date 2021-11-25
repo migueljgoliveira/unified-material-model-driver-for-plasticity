@@ -53,16 +53,15 @@ c                                                 ---- equivalent stress
       se = (0.5d0*q) ** (1.0d0/em)
 c                                              ---- 1st order derivative
       if ( nreq >= 1 ) then
-        call ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,
-     1                               dsedphi,dphidx,
-     2                               dxdy,dyds,se )
+        call ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,dsedphi,dphidx,dxdy,
+     1                              dyds,se )
         call ummdp_utility_clear1 ( dseds,3 )
         do nd = 1,2
           do m = 1,2
             do k = 1,3
               do i = 1,3
-                dseds(i) = dseds(i) + dsedphi(nd)*dphidx(nd,m)*
-     1                                dxdy(nd,m,k)*dyds(nd,k,i)
+                dseds(i) = dseds(i) + (dsedphi(nd)*dphidx(nd,m)
+     1                                 * dxdy(nd,m,k)*dyds(nd,k,i))
               end do
             end do
           end do
@@ -70,9 +69,8 @@ c                                              ---- 1st order derivative
       end if
 c                                              ---- 2nd order derivative
       if ( nreq >= 2 ) then
-        call ummdp_yld2000_2d_ds2 ( phi,x,y,em,
-     1                               d2sedphi2,d2phidx2,
-     2                               d2xdy2,se )
+        call ummdp_yld2000_2d_ds2 ( phi,x,y,em,d2sedphi2,d2phidx2,
+     1                              d2xdy2,se )                   
         call ummdp_utility_clear2 ( d2seds2,3,3 )
         do i = 1,3
         do j = 1,3
@@ -82,11 +80,11 @@ c                                              ---- 2nd order derivative
             do l = 1,2
               do m = 1,3
               do n = 1,3
-                d2seds2(i,j) = d2seds2(i,j) + d2sedphi2(nd1,nd2)*
-     1                          dphidx(nd1,k)*
-     2                          dxdy(nd1,k,m)*dyds(nd1,m,i)*
-     3                          dphidx(nd2,l)*
-     4                          dxdy(nd2,l,n)*dyds(nd2,n,j)
+                d2seds2(i,j) = d2seds2(i,j) 
+     1                         + d2sedphi2(nd1,nd2)*dphidx(nd1,k)                     
+     2                           (* dxdy(nd1,k,m)*dyds(nd1,m,i)
+     3                            * dphidx(nd2,l)*dxdy(nd2,l,n)
+     4                            * dyds(nd2,n,j))
               end do
               end do
             end do
@@ -98,10 +96,10 @@ c                                              ---- 2nd order derivative
             do l = 1,2
               do m = 1,3
               do n = 1,3
-                d2seds2(i,j) = d2seds2(i,j) + dsedphi(nd)*
-     1                          d2phidx2(nd,k,l)*
-     2                          dxdy(nd,k,m)*dyds(nd,m,i)*
-     3                          dxdy(nd,l,n)*dyds(nd,n,j)
+                d2seds2(i,j) = d2seds2(i,j) 
+                               + (dsedphi(nd)*d2phidx2(nd,k,l)*
+     1                            * dxdy(nd,k,m)*dyds(nd,m,i)
+     2                            * dxdy(nd,l,n)*dyds(nd,n,j))
               end do
               end do
             end do
@@ -111,9 +109,10 @@ c                                              ---- 2nd order derivative
             do k = 1,2
               do m = 1,3
               do n = 1,3
-                d2seds2(i,j) = d2seds2(i,j) + dsedphi(nd)*
-     1                          dphidx(nd,k)*d2xdy2(nd,k,m,n)*
-     2                          dyds(nd,m,i)*dyds(nd,n,j)
+                d2seds2(i,j) = d2seds2(i,j) 
+     1                         + (dsedphi(nd)*dphidx(nd,k)
+     2                            * d2xdy2(nd,k,m,n)*dyds(nd,m,i)
+     3                            * dyds(nd,n,j))
               end do
               end do
             end do
@@ -144,22 +143,22 @@ c
 c                                      ---- linear transformation matrix
       am(1,1,1) =  2.0d0*a(1)
       am(1,1,2) = -1.0d0*a(1)
-      am(1,1,3) =  0.0
+      am(1,1,3) =  0.0d0
       am(1,2,1) = -1.0d0*a(2)
       am(1,2,2) =  2.0d0*a(2)
-      am(1,2,3) =  0.0
-      am(1,3,1) =  0.0
-      am(1,3,2) =  0.0
+      am(1,2,3) =  0.0d0
+      am(1,3,1) =  0.0d0
+      am(1,3,2) =  0.0d0
       am(1,3,3) =  3.0d0*a(7)
 c
       am(2,1,1) = -2.0d0*a(3) + 2.0d0*a(4) + 8.0d0*a(5) - 2.0d0*a(6)
       am(2,1,2) =        a(3) - 4.0d0*a(4) - 4.0d0*a(5) + 4.0d0*a(6)
-      am(2,1,3) =  0.0
+      am(2,1,3) =  0.0d0
       am(2,2,1) =  4.0d0*a(3) - 4.0d0*a(4) - 4.0d0*a(5) +       a(6)
       am(2,2,2) = -2.0d0*a(3) + 8.0d0*a(4) + 2.0d0*a(5) - 2.0d0*a(6)
-      am(2,2,3) =  0.0
-      am(2,3,1) =  0.0
-      am(2,3,2) =  0.0
+      am(2,2,3) =  0.0d0
+      am(2,3,1) =  0.0d0
+      am(2,3,2) =  0.0d0
       am(2,3,3) =  9.0d0*a(8)
 c
       do i = 1,3
@@ -183,7 +182,7 @@ c-----------------------------------------------------------------------
 c
       real*8,intent(in) :: em
       real*8,intent(in) :: s(3)
-      real*8,intent(in) ::  am(2,3,3)
+      real*8,intent(in) :: am(2,3,3)
 c
       real*8,intent(out) :: phi(2)
       real*8,intent(out) :: x(2,2),y(2,3)
@@ -217,8 +216,8 @@ c                                                 ---- phi(1) and phi(2)
       nd = 1
       phi(nd) = abs(x(nd,1)-x(nd,2))**em
       nd = 2
-      phi(nd) = abs(2.0d0*x(nd,2)+x(nd,1))**em +
-     &          abs(2.0d0*x(nd,1)+x(nd,2))**em
+      phi(nd) = abs(2.0d0*x(nd,2)+x(nd,1))**em
+     1          + abs(2.0d0*x(nd,1)+x(nd,2))**em
 c
       return
       end subroutine ummdp_yld2000_2d_xyphi
@@ -268,14 +267,14 @@ c
       a2 =       x(nd,1) + 2.0d0*x(nd,2)
       b1 = abs(a1)
       b2 = abs(a2)
-      sgn1 = 0.0
-      sgn2 = 0.0
+      sgn1 = 0.0d0
+      sgn2 = 0.0d0
       if ( b1 >= eps*se ) sgn1 = a1 / b1
       if ( b2 >= eps*se ) sgn2 = a2 / b2
-      dphidx(nd,1) = em*(2.0d0*b1**(em-1.0d0)*sgn1 +
-     1                         b2**(em-1.0d0)*sgn2 )
-      dphidx(nd,2) = em*(      b1**(em-1.0d0)*sgn1 +
-     1                   2.0d0*b2**(em-1.0d0)*sgn2 )
+      dphidx(nd,1) = em*( 2.0d0*b1**(em-1.0d0)*sgn1
+     1                    + b2**(em-1.0d0)*sgn2 )
+      dphidx(nd,2) = em*( b1**(em-1.0d0)*sgn1
+     1                    + 2.0d0*b2**(em-1.0d0)*sgn2 )
 c
       do nd = 1,2
         a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) + 4.0d0*y(nd,3)*y(nd,3)
@@ -288,9 +287,9 @@ c
           end do
         else
           do j = 1,2
-            dxdy(nd,j,1) = 0.5d0 * (1.0d0+0.0)
-            dxdy(nd,j,2) = 0.5d0 * (1.0d0-0.0)
-            dxdy(nd,j,3) = 2.0d0 *        0.0
+            dxdy(nd,j,1) = 0.5d0 * (1.0d0+0.0d0)
+            dxdy(nd,j,2) = 0.5d0 * (1.0d0-0.0d0)
+            dxdy(nd,j,3) = 2.0d0 *        0.0d0
           end do
         end if
       end do
@@ -334,7 +333,7 @@ c
       emi = 1.0d0 / em
 c                                                        ---- d2se/dphi2
       q = phi(1) + phi(2)
-      if ( q <= 0.0 ) q = 0.0
+      if ( q <= 0.0d0 ) q = 0.0d0
       do nd1 = 1,2
         do nd2 = 1,2
           a = 0.5d0**emi * emi * (emi-1.0d0) * q**(emi-2.0d0)
@@ -355,39 +354,38 @@ c                                                         ---- d2phi/dx2
         do j = 1,2
           if ( i == j ) then
             if ( i == 1 ) then
-              a = (em-1.0d0) * em*
-     1            (4.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     2                   (abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
+              a = (em-1.0d0) * em
+     1            * (4.0d0*(abs(2.0d0*x(nd,1)+x(nd,2)))**(em-2.0d0)
+     2               + (abs(x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
             else
-              a = (em-1.0d0)*em*
-     1            (      (abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     2            4.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
+              a = (em-1.0d0) * em
+     1             * ((abs(2.0d0*x(nd,1)+x(nd,2)))**(em-2.0d0)
+     2                + 4.0d0*(abs(x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
             end if
           else
-            a = (em-1.0d0) * em * 
-     1          (2.0d0*(abs(2.0d0*x(nd,1)+      x(nd,2)))**(em-2.0d0)+
-     2           2.0d0*(abs(      x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0) )
+            a = (em-1.0d0) * em
+     1           * (2.0d0*(abs(2.0d0*x(nd,1)+x(nd,2)))**(em-2.0d0)
+     2              + 2.0d0*(abs(x(nd,1)+2.0d0*x(nd,2)))**(em-2.0d0))
           end if
           d2phidx2(nd,i,j) = a
         end do
       end do
 c                                                           ---- d2x/dy2
       do nd = 1,2
-        a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) +
-     1      4.0d0*   y(nd,3) *         y(nd,3)
+        a = (y(nd,1)-y(nd,2))*(y(nd,1)-y(nd,2)) + 4.0d0*y(nd,3)*y(nd,3)       
         if ( a > eps*se ) then
           a = 1.0d0 / sqrt(a**3)
           do m = 1,2
             do i = 1,3
               do j = 1,3
                 ij = i*10+j
-                if ( ( ij == 11 ) .or. ( ij == 22 ) ) then
+                if ( (ij == 11) .or. (ij == 22) ) then
                   q = y(nd,3) * y(nd,3)
                 else if ( ij == 33 ) then
                   q = (y(nd,1)-y(nd,2)) * (y(nd,1)-y(nd,2))
-                else if ( ( ij == 12 ) .or. ( ij == 21 ) ) then
+                else if ( (ij == 12) .or. (ij == 21) ) then
                   q = -y(nd,3) * y(nd,3)
-                else if ( ( ij == 23 ) .or. ( ij == 32 ) ) then
+                else if ( (ij == 23) .or. (ij == 32) ) then
                   q = y(nd,3) * (y(nd,1)-y(nd,2))
                 else
                   q = -y(nd,3) * (y(nd,1)-y(nd,2))
@@ -400,7 +398,7 @@ c                                                           ---- d2x/dy2
           do m = 1,2
             do i = 1,3
               do j = 1,3
-                d2xdy2(nd,m,i,j) = 0.0
+                d2xdy2(nd,m,i,j) = 0.0d0
               end do
             end do
           end do
