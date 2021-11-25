@@ -8309,11 +8309,13 @@ c
 c
 c
 c************************************************************************
+c
 c     YLD2000-2D YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/S0749-6419(02)00019-0
 c
-      subroutine ummdp_yld2000 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )     
+      subroutine ummdp_yld2000 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+c     
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8332,22 +8334,30 @@ c
       real*8 d2xdy2(2,2,3,3)
 c-----------------------------------------------------------------------         
 c
-c     variables  : symbols in Barlat's paper
+c     >>> Arguments List
 c
-c     s(i)       : Sigma (i=1~2)
-c     x(1,i)     : X'i   (i=1~2)
-c     x(2,i)     : X"i   (i=1~2)
-c     y(1,i)     : X'xx,X'yy,X'xy (i=1~3)
-c     y(2,i)     : X"xx,X"yy,X"xy (i=1~3)
-c     phi(1)     : phi'
-c     phi(2)     : phi"
-c     se         : equivalent stress =(phi'+ph")^(1/M)
-c     am(1,i,j)  : liner transf. matrix for sigma to X'xx
-c     am(2,i,j)  : liner transf. matrix for sigma to X"xx
-c     a(i)       : anisotropic parameter a1~a8
+c     s        | stress tensor                                      (in)
+c     pryld    | yield function properties                          (in)
+c     ndyld    | number of yield function properties                (in)
+c     nreq     | flag for required outputs                          (in)
 c
-c       1st index means number of dash
-c       2nd index means suffix
+c     se       | equivalent stress                                 (out)
+c     dseds    | 1st order derivative of yield function wrt stress (out)
+c     d2seds2  | 2nd order derivative of yield function wrt stress (out)
+c
+c     >>> Local Variables List
+c
+c     x(1,i)     | X'i   (i=1~2)
+c     x(2,i)     | X"i   (i=1~2)
+c     y(1,i)     | X'xx,X'yy,X'xy (i=1~3)
+c     y(2,i)     | X"xx,X"yy,X"xy (i=1~3)
+c     phi(1)     | phi'
+c     phi(2)     | phi"
+c     
+c     am      | linear transformation matrix for stress tensor
+c     a       | anisotropic parameters
+c
+c-----------------------------------------------------------------------  
 c
 c                                            ---- anisotropic parameters
       do i = 1,8
@@ -8391,10 +8401,10 @@ c                                              ---- 2nd order derivative
               do m = 1,3
               do n = 1,3
                 d2seds2(i,j) = d2seds2(i,j) 
-     1                         + d2sedphi2(nd1,nd2)*dphidx(nd1,k)                     
-     2                           * (dxdy(nd1,k,m)*dyds(nd1,m,i)
-     3                              * dphidx(nd2,l)*dxdy(nd2,l,n)
-     4                              * dyds(nd2,n,j))
+     1                         + (d2sedphi2(nd1,nd2)*dphidx(nd1,k)                     
+     2                            * dxdy(nd1,k,m)*dyds(nd1,m,i)
+     3                            * dphidx(nd2,l)*dxdy(nd2,l,n)
+     4                            * dyds(nd2,n,j))
               end do
               end do
             end do
@@ -8408,8 +8418,8 @@ c                                              ---- 2nd order derivative
               do n = 1,3
                 d2seds2(i,j) = d2seds2(i,j) 
      1                          + (dsedphi(nd)*d2phidx2(nd,k,l)
-     2                            * dxdy(nd,k,m)*dyds(nd,m,i)
-     3                            * dxdy(nd,l,n)*dyds(nd,n,j))
+     2                             * dxdy(nd,k,m)*dyds(nd,m,i)
+     3                             * dxdy(nd,l,n)*dyds(nd,n,j))
               end do
               end do
             end do
@@ -8437,9 +8447,11 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     SET LINEAR TRANSFORMATION MATRIX
 c
       subroutine ummdp_yld2000_2d_am ( a,am )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8484,9 +8496,11 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     calc. barlat-yld2k function x,y,phi
+c
+c     CALCULATE barlat-yld2k function x,y,phi
 c
       subroutine ummdp_yld2000_2d_xyphi ( s,em,am,x,y,phi )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8496,7 +8510,6 @@ c
 c
       real*8,intent(out) :: phi(2)
       real*8,intent(out) :: x(2,2),y(2,3)
-      
 c
       integer i,j,nd
       real*8 a
@@ -8535,17 +8548,23 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     SET 1ST ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,dsedphi,dphidx,
-     1                                  dxdy,dyds,se )       
+     1                                  dxdy,dyds,se )     
+c  
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8 se,em
-      real*8 phi(2),dsedphi(2)
-      real*8 x(2,2),y(2,3),dphidx(2,2)
-      real*8 am(2,3,3),dxdy(2,2,3),dyds(2,3,3)
+      real*8,intent(in) :: em,se
+      real*8,intent(in) :: phi(2)
+      real*8,intent(in) :: x(2,2),y(2,3)
+      real*8,intent(in) :: am(2,3,3)
+c
+      real*8,intent(out) :: dsedphi(2)
+      real*8,intent(out) :: dphidx(2,2)
+      real*8,intent(out) :: dxdy(2,2,3),dyds(2,3,3)
 c
       integer i,j,nd
       real*8 eps,emi,q,a,a0,a1,a2,b0,b1,b2,sgn0,sgn1,sgn2
@@ -8618,18 +8637,22 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     SET 2ND ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine ummdp_yld2000_2d_ds2 ( phi,x,y,em,d2sedphi2,d2phidx2,
      1                                  d2xdy2,se )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      real*8 em,se
-      real*8 phi(2)
-      real*8 x(2,2),y(2,3),d2sedphi2(2,2)
-      real*8 d2phidx2(2,2,2)
-      real*8 d2xdy2(2,2,3,3)
+      real*8,intent(in) :: em,se
+      real*8,intent(in) :: phi(2)
+      real*8,intent(in) :: x(2,2),y(2,3)
+c
+      real*8,intent(out) :: d2sedphi2(2,2)
+      real*8,intent(out) :: d2phidx2(2,2,2)
+      real*8,intent(out) :: d2xdy2(2,2,3,3)
 c
       integer i,j,m,nd,nd1,nd2,ij
       real*8 eps,emi,q,a
