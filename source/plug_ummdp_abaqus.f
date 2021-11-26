@@ -57,6 +57,11 @@ c
       dimension prop(mxprop)
 c-----------------------------------------------------------------------
 c
+      write (6,'(2/4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+      write (6,  '(4xA)') '~~~~~~~~~~~~~ ABAQUS - UMAT ~~~~~~~~~~~~~'
+      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~ START ~~~~~~~~~~~~~~~~~'
+      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c
 c                        ne  : element no.
 c                        ip  : integration point no.
 c                        lay : layer no. of shell
@@ -89,7 +94,7 @@ c
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
         write (6,*) 'mxpbs=',mxpbs
-        call ummdp_exit ( 9000 )
+        call ummdp_exit ( 301 )
       end if
 c                                                      ---- check nstatv
       call ummdp_check_nisv ( nstatv,ntens,npbs )

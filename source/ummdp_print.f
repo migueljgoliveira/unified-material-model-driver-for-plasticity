@@ -18,7 +18,7 @@ c       print kinematic hardening law parameters
 c
 c     ummdp_print_rupture ( prrup,ndrup )
 c       print uncoupled rupture criterion parameters
-c     
+c
 c     ummdp_print_info
 c       print informations for debug (info)
 c
@@ -35,24 +35,26 @@ c
       integer ndela
       real*8 prela(ndela)
 c
-      integer ntela
+      integer ntela,i
+      character*20 fmtid,fmtpr
 c-----------------------------------------------------------------------
 c
+      fmtid = '(16xA,I1)'
+      fmtpr = '(16xA10,I1,A3,E)'
+c
+      write (6,'(/12xA)') '> Elasticity'
+c
       ntela = nint(prela(1))
-      write(6,*)
-      write (6,'(4XA)') '>>> Elasticity'
       select case ( ntela )
       case ( 0 )
-        write (6,'(8xA,I2)') '>> Young Modulus and Poisson Ratio'
-        ! write (6,'(12xA,I2)') ' > ID:',ntela
-        write (6,'(12xA,I2)') '. prela(1) =',prela(1)
-        write (6,'(12xA,F10.1)') '. prela(2) =',prela(1+1)
-        write (6,'(12xA,F5.2)') '. prela(3) =',prela(1+2)
+        write (6,fmtid) '> Young Modulus & Poisson Ratio | ',ntela
       case ( 1 )
-        write (6,*) 'Bulk Modulus and Modulus of Rigidity'
-        write (6,*) 'Bulk modulus  =',prela(1+1)
-        write (6,*) 'Shear modulus =',prela(1+2)
+        write (6,fmtid) '> Bulk Modulus & Modulus of Rigidity | ',ntela
       end select
+c
+      do i = 1,ndela-1
+        write (6,fmtpr) '. prela(1+',i,') =',prela(i+1)
+      end do
 c
       return
       end subroutine ummdp_print_elastic
@@ -71,103 +73,50 @@ c
 c
       integer i,j
       integer ntyld,n0,n
+      character*20 fmtid1,fmtid2,fmtpr
 c-----------------------------------------------------------------------
 c
+      fmtid1 = '(16xA,I1)'
+      fmtid2 = '(16xA,I2)'
+      fmtpr = '(16xA10,I1,A3,E)'
+c
+      write (6,'(/12XA)') '> Yield Function'
+c
       ntyld = pryld(1)
-      write (6,*)
-      write (6,*) '>> Yield Function',ntyld
       select case ( ntyld )
+      case ( 0 )
+        write (6,fmtid1) '> von Mises | ',ntyld
+      case ( 1 )
+        write (6,fmtid1) '> Hill 1948 | ',ntyld
+      case ( 2 )
+        write (6,fmtid1) '> Yld2004-18p | ',ntyld
+      case ( 3 )
+        write (6,fmtid1) '> CPB 2006 | ',ntyld
+      case ( 4 )
+        write (6,fmtid1) '> Karafillis-Boyce 1993 | ',ntyld
+      case ( 5 )
+        write (6,fmtid1) '> Hu 2005 | ',ntyld
+      case ( 6 )
+        write (6,fmtid1) '> Yoshida 2011 | ',ntyld
 c
-      case ( 0 )                                             ! von Mises
-        write (6,*) 'von Mises'
+      case ( -1 )
+        write (6,fmtid2) '> Gotoh | ',ntyld
+      case ( -2 )
+        write (6,fmtid2) '> Yld2000-2d | ',ntyld
+      case ( -3 )
+        write (6,fmtid2) '> Vegter | ',ntyld
+      case ( -4 )
+        write (6,fmtid2) '> BBC 2005 | ',ntyld
+      case ( -5 )
+        write (6,fmtid2) '> Yld89 | ',ntyld
+      case ( -6 )
+        write (6,fmtid2) '> BBC 2008 | ',ntyld
+      case ( -7 )
+        write (6,fmtid2) '> Hill 1990 | ',ntyld
+      end select
 c
-      case ( 1 )                                             ! Hill 1948
-        write (6,*) 'Hill 1948'
-        write (6,*) 'F=',pryld(2)
-        write (6,*) 'G=',pryld(3)
-        write (6,*) 'H=',pryld(4)
-        write (6,*) 'L=',pryld(5)
-        write (6,*) 'M=',pryld(6)
-        write (6,*) 'N=',pryld(7)
-c
-      case ( 2 )                                           ! Yld2004-18p
-        write (6,*) 'Yld2004-18p'
-        n0 = 1
-        do i = 1,18
-           n0 = n0 + 1
-           write (6,*) 'a(',i,')=',pryld(n0)
-        end do
-        write (6,*) 'M=',pryld(1+18+1)
-c
-      case ( 3 )                                              ! CPB 2006
-        write (6,*) 'CPB 2006'
-        n0 = 1
-        do i = 1,3
-          do j = 1,3
-            n0 = n0 + 1
-            write (6,*) 'c(',i,',',j,')=',pryld(n0)
-          end do
-        end do
-        do i = 4,6
-          n0 = n0 + 1
-          write (6,*) 'c(',i,',',i,')=',pryld(n0)
-        end do
-        n0 = n0 + 1
-        write (6,*) 'a =',pryld(n0)
-        n0 = n0 + 1
-        write (6,*) 'ck=',pryld(n0)
-c
-      case ( 4 )                                 ! Karafillis-Boyce 1993
-        write (6,*) 'Karafillis-Boyce 1993'
-        n0 = 1
-        do i = 1,6
-          do j = i,6
-            n0 = n0 + 1
-            write (6,*) 'L(',i,',',j,') =',pryld(n0)
-          end do
-        end do
-        n0 = n0 + 1
-        write (6,*) 'k =',pryld(n0)
-        n0 = n0 + 1
-        write (6,*) 'c =',pryld(n0)
-c
-      case ( 5 )                                               ! Hu 2005
-        write (6,*) 'Hu 2005'
-        n0 = 1
-        do i = 1,5
-          n0 = n0 + 1
-          write (6,*) 'X(',i,')=',pryld(n0)
-        end do
-        n0 = n0 + 1
-        write (6,*) 'X(',7,')=',pryld(n0)
-        do i = 1,3
-          n0 = n0 + 1
-          write (6,*) 'C(',i,')=',pryld(n0)
-        end do
-c
-      case ( 6 )                                          ! Yoshida 2011
-        write (6,*) 'Yoshida 2011'
-        n0 = 1
-        do i = 1,16
-          n0 = n0+1
-          write (6,*) 'c(',i,')=',pryld(n0)
-        end do
-c
-      case ( -1 )                                    ! Gotoh Biquadratic
-        write (6,*) 'Gotoh Biquadratic'
-        do i = 1,9
-          write (6,*) 'A(',i,')=',pryld(i+1)
-        end do
-c
-      case ( -2 )                                           ! Yld2000-2d
-        write (6,*) 'Yld2000-2d'
-        do i = 1,8
-          write (6,*) 'a(',i,')=',pryld(i+1)
-        end do
-        write (6,*) 'M=',pryld(9+1)
-c
+      select case ( ntyld )
       case ( -3 )                                               ! Vegter
-        write (6,*) 'Vegter '
         write (6,*) 'nf=',nint(pryld(2))
         write (6,*) 'f_bi0=',pryld(3)
         write (6,*) 'r_bi0=',pryld(4)
@@ -187,28 +136,7 @@ c       end do
 c       write (6,*)   'f_bi0=',pryld(1+22)
 c       write (6,*)   'r_bi0=',pryld(1+23)
 c       write (6,*)   'nf   =',nint(pryld(1+31))
-c
-      case ( -4 )                                             ! BBC 2005
-        write (6,*) 'BBC 2005'
-        write (6,*) 'k of order 2k',pryld(1+1)
-        write (6,*) 'a=',pryld(1+2)
-        write (6,*) 'b=',pryld(1+3)
-        write (6,*) 'L=',pryld(1+4)
-        write (6,*) 'M=',pryld(1+5)
-        write (6,*) 'N=',pryld(1+6)
-        write (6,*) 'P=',pryld(1+7)
-        write (6,*) 'Q=',pryld(1+8)
-        write (6,*) 'R=',pryld(1+9)
-c
-      case ( -5 )                                                ! Yld89
-        write (6,*) 'Yld89'
-        write (6,*) 'order M=',pryld(1+1)
-        write (6,*) 'a      =',pryld(1+2)
-        write (6,*) 'h      =',pryld(1+3)
-        write (6,*) 'p      =',pryld(1+4)
-c
       case ( -6 )                                             ! BBC 2008
-        write (6,*) 'BBC 2008'
         write (6,*) 's      =',nint(pryld(1+1))
         write (6,*) 'k      =',nint(pryld(1+2))
         do i = 1,nint(pryld(1+1))
@@ -223,14 +151,10 @@ c
           write (6,*) 'n_2=',pryld(n+7)
           write (6,*) 'n_3=',pryld(n+8)
         end do
-c
-      case ( -7 )                                            ! Hill 1990
-        write (6,*) 'Hill 1990'
-        write (6,*) 'a   =',pryld(1+1)
-        write (6,*) 'b   =',pryld(1+2)
-        write (6,*) 'tau =',pryld(1+3)
-        write (6,*) 'sigb=',pryld(1+4)
-        write (6,*) 'M   =',pryld(1+5)
+      case default
+        do i = 1,ndyld-1
+          write (6,fmtpr) '. pryld(1+',i,') =',pryld(i+1)
+        end do
       end select
 c
       return
@@ -248,58 +172,36 @@ c
       integer ndihd
       real*8 prihd(ndihd)
 c
-      integer ntihd
+      integer ntihd,i
+      character*20 fmtid,fmtpr
 c-----------------------------------------------------------------------
 c
+      fmtid = '(16xA,I1)'
+      fmtpr = '(16xA10,I1,A3,E)'
+c
+      write (6,'(/12xA)') '> Isotropic Hardening Law'
+c
       ntihd = nint(prihd(1))
-      write (6,*)
-      write (6,*) '>> Isotropic Hardening Law',ntihd
       select case ( ntihd )
       case ( 0 )
-        write (6,*) 'Perfect Plasticity'
-        write (6,*) 'sy_const=',prihd(1+1)
+        write (6,fmtid) '> Perfect Plasticity | ',ntihd
       case ( 1 )
-        write (6,*) 'Linear'
-        write (6,*) 'sy = sy0+h*p'
-        write (6,*) 'sy0=',prihd(1+1)
-        write (6,*) 'h  =',prihd(1+2)
+        write (6,fmtid) '> Linear | ',ntihd
       case ( 2 )
-        write (6,*) 'Swift'
-        write (6,*) 'sy = c*(e0+p)^en'
-        write (6,*) 'c =',prihd(1+1)
-        write (6,*) 'e0=',prihd(1+2)
-        write (6,*) 'en=',prihd(1+3)
+        write (6,fmtid) '> Swift | ',ntihd
       case ( 3 )
-        write (6,*) 'Ludwick'
-        write (6,*) 'sy = sy0+c*p^en'
-        write (6,*) 'sy0=',prihd(1+1)
-        write (6,*) 'c  =',prihd(1+2)
-        write (6,*) 'en =',prihd(1+3)
+        write (6,fmtid) '> Ludwick | ',ntihd
       case ( 4 )
-        write (6,*) 'Voce '
-        write (6,*) 'sy = sy0+q*(1-exp(-b*p))'
-        write (6,*) 'sy0=',prihd(1+1)
-        write (6,*) 'q  =',prihd(1+2)
-        write (6,*) 'b  =',prihd(1+3)
+        write (6,fmtid) '> Voce | ',ntihd
       case ( 5 )
-        write (6,*) 'Voce + Linear'
-        write (6,*) 'sy = sy0+q*(1-exp(-b*p))+c*p'
-        write (6,*) 'sy0=',prihd(1+1)
-        write (6,*) 'q  =',prihd(1+2)
-        write (6,*) 'b  =',prihd(1+3)
-        write (6,*) 'c  =',prihd(1+4)
+        write (6,fmtid) '> Voce & Linear | ',ntihd
       case ( 6 )
-        write (6,*) 'Voce+Swift a *( sy0+q*(1-exp(-b*p)) )+'
-        write (6,*) 'sy = a *( sy0+q*(1-exp(-b*p)) )+ (1-a)*(
-     &                    c*(e0+p)^en)'
-        write (6,*) 'a  =',prihd(1+1)
-        write (6,*) 'sy0=',prihd(1+2)
-        write (6,*) 'q  =',prihd(1+3)
-        write (6,*) 'b  =',prihd(1+4)
-        write (6,*) 'c  =',prihd(1+5)
-        write (6,*) 'e0 =',prihd(1+6)
-        write (6,*) 'en =',prihd(1+7)
+        write (6,fmtid) '> Voce & Swift | ',ntihd
       end select
+c
+      do i = 1,ndihd-1
+        write (6,fmtpr) '. prihd(1+',i,') =',prihd(i+1)
+      end do
 c
       return
       end subroutine ummdp_print_isotropic
@@ -318,58 +220,35 @@ c
 c
       integer i
       integer ntkin,n0
+      character*20 fmtid,fmtpr
 c-----------------------------------------------------------------------
 c
+      fmtid = '(16xA,I1)'
+      fmtpr = '(16xA10,I1,A3,E)'
+c
+      write (6,'(/12xA)') '> Kinematic Hardening Law'
+c
       ntkin = nint(prkin(1))
-      write (6,*)
-      write (6,*) '>> Kinematic Hardening Law',ntkin
       select case ( ntkin )
-      case ( 0 )                                ! No Kinematic Hardening
-        write (6,*) 'No Kinematic Hardening'
-c
-      case ( 1 )                                                ! Prager
-        write (6,*) 'Prager dX=(2/3)*c*{dpe}'
-        write (6,*) 'c =',prkin(1+1)
-c
-      case ( 2 )                                               ! Ziegler
-        write (6,*) 'Ziegler dX=dp*c*{{s}-{X}}'
-        write (6,*) 'c =',prkin(1+1)
-c
-      case ( 3 )                          ! Armstrong & Frederick (1966)
-        write (6,*) 'Armstrong-Frederick (1966)'
-        write (6,*) 'dX=(2/3)*c*{dpe}-dp*g*{X}'
-        write (6,*) 'c =',prkin(1+1)
-        write (6,*) 'g =',prkin(1+2)
-c
-      case ( 4 )                                       ! Chaboche (1979)
-        write (6,*) 'Chaboche (1979)'
-        write (6,*) 'dx(j)=c(j)*(2/3)*{dpe}-dp*g(j)*{x(j)}'
-        write (6,*) 'no. of x(j) =',npbs
-        do i = 1,npbs
-          n0 = 1+(i-1)*2
-          write (6,*) 'c(',i,')=',prkin(1+n0+1)
-          write (6,*) 'g(',i,')=',prkin(1+n0+2)
-        end do
-c
-      case ( 5 )                       ! Chaboche (1979) - Ziegler Model
-        write (6,*) 'Chaboche (1979) - Ziegler Model'
-        write (6,*) 'dx(j)=((c(j)/se)*{{s}-{X}}-g(j)*{x(j)})*dp'
-        write (6,*) 'no. of x(j) =',npbs
-        do i = 1,npbs
-          n0 = 1+(i-1)*2
-          write (6,*) 'c(',i,')=',prkin(1+n0+1)
-          write (6,*) 'g(',i,')=',prkin(1+n0+2)
-        end do
-c
-      case ( 6 )                                        ! Yoshida-Uemori
-        write (6,*) 'Yoshida-Uemori'
-        write (6,*) 'no. of x(j) =',npbs
-        write (6,*) 'C=',prkin(1+1)
-        write (6,*) 'Y=',prkin(1+2)
-        write (6,*) 'a=',prkin(1+3)
-        write (6,*) 'k=',prkin(1+4)
-        write (6,*) 'b=',prkin(1+5)
+      case ( 0 )
+        write (6,fmtid) '> None | ',ntkin
+      case ( 1 )
+        write (6,fmtid) '> Prager | ',ntkin
+      case ( 2 )
+        write (6,fmtid) '> Ziegler | ',ntkin
+      case ( 3 )
+        write (6,fmtid) '> Armstrong-Frederick | ',ntkin
+      case ( 4 )
+        write (6,fmtid) '> Chaboche I | ',ntkin
+      case ( 5 )
+        write (6,fmtid) '> Chaboche II | ',ntkin
+      case ( 6 )
+        write (6,fmtid) '> Yoshida-Uemori | ',ntkin
       end select
+c
+      do i = 1,ndkin-1
+        write (6,fmtpr) '. prkin(1+',i,') =',prkin(i+1)
+      end do
 c
       return
       end subroutine ummdp_print_kinematic
@@ -386,49 +265,36 @@ c
       integer ndrup
       real*8 prrup(ndrup)
 c
-      integer ntrup
+      integer ntrup,i
+      character*20 fmtid,fmtpr
 c-----------------------------------------------------------------------
 c
+      fmtid = '(16xA,I1)'
+      fmtpr = '(16xA10,I1,A3,E)'
+c
+      write (6,'(/12xA)') '>> Uncoupled Rupture Criterion'
+c
       ntrup = nint(prrup(1))
-      write (6,*)
-      write (6,*) '>> Uncoupled Rupture Criterion',ntrup
-c
       select case ( ntrup )
-c
-      case ( 0 ) 										   	! No Uncoupled Rupture Criterion
-        write (6,*) 'No Uncoupled Rupture Criterion'
-c
-      case ( 1 ) 														 ! Equivalent Plastic Strain
-        write (6,*) 'Equivalent Plastic Strain'
-        write (6,*) 'W=int[dp]'
-        write (6,*) 'Wl=',prrup(3)
-c
-      case ( 2 )  																 ! Cockroft and Latham
-        write (6,*) 'Cockroft and Latham'
-        write (6,*) 'W=int[(sp1/se)*dp]'
-        write (6,*) 'Wl=',prrup(3)
-c
-      case ( 3 ) 																	     ! Rice and Tracey
-        write (6,*) 'Rice and Tracey'
-        write (6,*) 'W=int[exp(1.5*sh/se)*dp]'
-        write (6,*) 'Wl=',prrup(3)
-c
-      case ( 4 ) 																						     ! Ayada
-        write (6,*) 'Ayada'
-        write (6,*) 'W=int[(sh/se)*dp]'
-        write (6,*) 'Wl=',prrup(3)
-c
-      case ( 5 ) 																							  ! Brozzo
-        write (6,*) 'Brozzo'
-        write (6,*) 'W=int[(2/3)*(sp1/(sp1-se))*dp]'
-        write (6,*) 'Wl=',prrup(3)
-c
-      case ( 6 ) 	   														 ! Forming Limit Diagram
-        write (6,*) 'Forming Limit Diagram'
-        write (6,*) 'W=e1/e1(fld)'
-        write (6,*) 'Wl=',prrup(3)
-c
+      case ( 0 )
+        write (6,fmtid) '> None | ',ntrup
+      case ( 1 )
+        write (6,fmtid) '> Equivalent Plastic Strain | ',ntrup
+      case ( 2 )
+        write (6,fmtid) '> Cockroft and Latham | ',ntrup
+      case ( 3 )
+        write (6,fmtid) '> Rice and Tracey | ',ntrup
+      case ( 4 )
+        write (6,fmtid) '> Ayada | ',ntrup
+      case ( 5 )
+        write (6,fmtid) '> Brozzo | ',ntrup
+      case ( 6 )
+        write (6,fmtid) '> Forming Limit Diagram | ',ntrup
       end select
+c
+      do i = 1,ndrup-1
+        write (6,fmtpr) '. prrup(1+',i,') =',prrup(i+1)
+      end do
 c
       return
       end subroutine ummdp_print_rupture
@@ -442,43 +308,55 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
+      common /ummdp1/ne,ip,lay
+c
 			integer inc,nnrm,nshr
 c
-      integer nttl,nerr
-c
-			integer ne,ip,lay
-      common /ummdp1/ne,ip,lay
+			integer ne,ip,lay,nttl,nerr
+      character*50 ptype
 c-----------------------------------------------------------------------
 c
       nttl = nnrm + nshr
 c
-      write (6,*) '----- JANCAE.UMMDp Debug Info -----'
-      write (6,*) 'increment=',inc
-      write (6,*) 'elem,ip,lay=',ne,ip,lay
-      write (6,*) 'nttl,nnrm,nshr=',nttl,nnrm,nshr
+      write(6,'(/8xA)') '>> Info'
+c
+      write (6,'(/12xA,I7.1)') '        Increment : ',inc
+c
+      write (6,'(/12xA,I7.1)') '          Element : ',ne
+      write (6, '(12xA,I7.1)') 'Integration Point : ',ip
+      write (6, '(12xA,I7.1)') '            Layer : ',lay
+! c
+      write (6,'(/12xA,I7.1)') ' Total Components : ',nttl
+      write (6, '(12xA,I7.1)') 'Normal Components : ',nnrm
+      write (6, '(12xA,I7.1)') ' Shear Components : ',nshr
+! c
       nerr = 0
       if ( nnrm == 3 ) then
         if ( nshr == 3 ) then
-          write (6,*) '3d solid element'
+          ptype = '3D Solid'
         else if ( nshr == 1 ) then
-          write (6,*) 'plane strain or axi-sym solid element'
+          ptype = 'Plane Strain or Axisymmetric Solid'
         else
-          nerr = nerr + 1
+          nerr = 1
         end if
       else if ( nnrm == 2 ) then
         if ( nshr == 1 ) then
-          write (6,*) 'plane stress or thin shell element'
+          ptype = 'Plane Stress or Thin Shell'
         else if ( nshr == 3 ) then
-          write (6,*) 'thick shell element'
+          ptype = 'Thick Shell'
         else
-          nerr = nerr + 1
+          nerr = 1
         end if
       else
-        nerr = nerr + 1
+        nerr = 1
       end if
-      if ( nerr /= 0 ) then
-        write (6,*) 'no supported element type',nnrm,nshr
-        call ummdp_exit ( 9000 )
+c
+      if ( nerr == 0 ) then
+        write (6,'(/12xA,A)') '     Element Type : ',ptype
+      else
+        ptype = 'Not Supported'
+        write (6,'(/12xA,A)') '     Element Type : ',ptype
+        call ummdp_exit ( 100 )
       end if
 c
       return
@@ -496,30 +374,26 @@ c
 			integer io,nttl,nstv
 			real*8 s(nttl),stv(nstv),de(nttl),d(nttl,nttl)
 c
-      character*32 text
+      character*100 text
 c-----------------------------------------------------------------------
 c
       if ( io == 0 ) then
-        text = 'initial stresses'
+        write(6,'(//8xA)') '>> Input'
       else
-        text = 'updated stresses'
+        write(6,'(//8xA)') '>> Output'
       end if
-      call ummdp_utility_print1 ( text,s,nttl )
 c
-      if ( io == 0 ) then
-        text = 'initial internal state var.'
-      else
-        text = 'updated internal state var.'
-      end if
-      call ummdp_utility_print1 ( text,stv,nstv )
+      text = 'Stress'
+      call ummdp_utility_print1 ( text,s,nttl,0 )
 c
-      if ( io == 0 ) then
-        text = 'driving strain increment'
-        call ummdp_utility_print1 ( text,de,nttl )
-      else
-        text = 'tangent modulus matrix'
-        call ummdp_utility_print2 ( text,d,nttl,nttl )
-      end if
+      text = 'Internal State Variables'
+      call ummdp_utility_print1 ( text,stv,nstv,0 )
+c
+      text = 'Strain Increment'
+      call ummdp_utility_print1 ( text,de,nttl,0 )
+c
+      text = 'Tangent Modulus Matrix'
+      call ummdp_utility_print2 ( text,d,nttl,nttl,0 )
 c
       return
       end subroutine ummdp_print_inout

@@ -28,7 +28,7 @@ c
       real*8 ,intent(inout) :: x1(mxpbs,nttl),x2(mxpbs,nttl)
 c
       integer i,n,ndela,ndyld,ndihd,ndkin,npbs,ndrup,nnn
-      character*32 text
+      character*100 text
 c-----------------------------------------------------------------------
 c
       if ( prop(1) >= 1000.0d+0 ) then
@@ -45,13 +45,14 @@ c
         write (6,*) 'nprop=',nprop
         write (6,*) 'n    =',n
         do i = 1,5
-          write (6,*) 'prop(',i,')=',prop(i)
+          write (6,*) 'props(',i,')=',prop(i)
         end do
-        call ummdp_exit ( 9000 )
+        call ummdp_exit ( 303 )
       end if
       if ( nvbs >= 4 ) then
+        write(6,'(//8xA/)') '>> Properties'
         do i = 1,n
-          write (6,*) 'prop(',i,')=',prop(i)
+          write (6,'(12xA8,I2,A3,E)') '. props(',i,') =',prop(i)
         end do
       end if
 c
@@ -109,7 +110,7 @@ c
      2       em2(nttl,nnn),bm(nnn,nttl)
       real*8 dvkdx(npbs,npbs,nttl,nttl)
       logical debug
-      character*32 text
+      character*100 text
 c
 c-----------------------------------------------------------------------
 c     >>> Arguments List
@@ -119,8 +120,8 @@ c       ip      | index number of integration point                 (in)
 c       lay     | index number of layer (shell and membrane)        (in)
 c
 c       nnrm    | number of normal components                       (in)
-c       nshr    | number of shear  components                       (in)
-c       nttl    | total number of components                        (in)
+c       nshr    | number of shear components                        (in)
+c       nttl    | number of total components                        (in)
 c
 c             problem type  | nnrm | nshr |  stress components
 c            ---------------+----+----+---------------------------
@@ -172,16 +173,17 @@ c     >>> Local Variables List
 c
 c       delast  | elastic material Jacobian
 c       se      | equivalent stress
-c       dseds   | 1st order derivative of equivalent stress wrt stress            
-c       d2seds2 | 2nd order derivative of equivalent stress wrt stress
+c       dseds   | 1st derivative of yield function wrt stress            
+c       d2seds2 | 2nd derivative of yield function wrt stress
 c       stry    | trial stress predicted elastically
 c       sy      | flow stress (function of equivalent plastic strain)
-c       dsydp   | 1st order derivative of flow stress wrt 
+c       dsydp   | 1st derivative of flow stress wrt 
 c                  equivalent plastic strain
-c       g1      | error of stress point to yield surface
-c       g2      | error of direction of plastic strain increment to
-c                  normal of yield surface (error vector)
-c       g2n     | norm of g2 vector
+c       g1      | residual of stress point to yield surface
+c       g2      | residual of direction of plastic strain increment to
+c                  normal of yield surface (vector)
+c       g2n     | residual of direction of plastic strain increment to
+c                  normal of yield surface (norm)
 c       eta     | stress for yield function {s}-{xt}
 c       xt1     | total back stress before update
 c       xt2     | total back stress after update
@@ -190,8 +192,8 @@ c       dvkdp   | derivative of v wrt equivalent plastic strain
 c       dvkds   | derivative of v wrt stress
 c       dvkdx   | derivative of v wrt partial back stress
 c       dvkdxt  | derivative of v wrt total back stress
-c       g3      | error of evolution for back stress (error vector)
-c       g3n     | norm of g3 vectors
+c       g3      | residual of evolution for back stress (vector)
+c       g3n     | residual of evolution for back stress (norm)
 c       sgap    | stress gap to be eliminated in multistage steps
 c       tol     | covergence tolerance
 c       maxnr   | maximum iterations of Newton-Raphson
@@ -214,10 +216,10 @@ c
       end if
 c
       if ( (nvbs >= 1) .or. (nout /= 0) ) then
-        write (6,*)
-        write (6,*) '******************************'
-        write (6,*) '******* START OF UMMDp *******'
-        write (6,*) '******************************'
+        write (6,'(2/4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+        write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~ UMMDp ~~~~~~~~~~~~~~~~~'
+        write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~ START ~~~~~~~~~~~~~~~~~'
+        write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
       end if
 c                                          ---- copy material properties
       n = 0
@@ -243,8 +245,7 @@ c                                          ---- copy material properties
       enddo
 c
       if ( nout /= 0 ) then
-        write (6,*)
-        write (6,*) 'MATERIAL DATA LIST'
+        write (6,'(/8xA)') '>> Material Parameters'
         call ummdp_print_elastic   ( prela,ndela )
         call ummdp_print_yield     ( pryld,ndyld )
         call ummdp_print_isotropic ( prihd,ndihd )
@@ -290,19 +291,25 @@ c
 c
 c                                                  ---- print out arrays
       if ( nvbs >= 4 ) then
-        text = 'current stress (input)'
-        call ummdp_utility_print1 ( text,s1,nttl )
-        text = 'strain inc. (input)'
-        call ummdp_utility_print1 ( text,de,nttl )
+        write(6,'(//8xA)') '>> Input'
+        text = 'Stress'
+        call ummdp_utility_print1 ( text,s1,nttl,0 )
+        text = 'Strain Increment'
+        call ummdp_utility_print1 ( text,de,nttl,0 )
         if ( npbs /= 0 ) then
-          text = 'part. back stess (input)'
+          text = 'Partial Back Stress'
           call ummdp_backprint ( text,npbs,x1,nttl,mxpbs )
-          text = 'total  back stess (input)'
-          call ummdp_utility_print1 ( text,xt1,nttl )
+          text = 'Total Back Stress'
+          call ummdp_utility_print1 ( text,xt1,nttl,0 )
         end if
       end if
+c                                                ---- elastic prediction
+      if ( nvbs >= 5 ) then
+        write(6,'(//8xA)') '>> Elastic Prediction'
+      end if
 c                                            ---- set elastic [D] matrix
-      call ummdp_setdelast ( delast,prela,ndela,nttl,nnrm,nshr,d33d )                        
+      call ummdp_setdelast ( delast,prela,ndela,nttl,nnrm,nshr,d33d )  
+c                      
 c                                             ---- copy delast to ddsdde
       do i = 1,nttl
         do j = 1,nttl
@@ -310,17 +317,17 @@ c                                             ---- copy delast to ddsdde
         end do
       end do
       if ( nvbs >= 5 ) then
-        text = 'elastic matrix'
-        call ummdp_utility_print2 ( text,ddsdde,nttl,nttl )
+        text = 'Elastic Matrix'
+        call ummdp_utility_print2 ( text,ddsdde,nttl,nttl,0 )
       end if
-c                                                ---- elastic prediction
+c                                                
       call ummdp_utility_mv ( vv,ddsdde,de,nttl,nttl )
       do i = 1,nttl
         s2(i) = s1(i) + vv(i)
       end do
       if ( nvbs >= 5 ) then
-        text = 'elastic predicted stress'
-        call ummdp_utility_print1 ( text,s2,nttl )
+        text = 'Elastic Predicted Stress'
+        call ummdp_utility_print1 ( text,s2,nttl,0 )
       end if
 c                                                       ---- back stress
       do i = 1,nttl
@@ -332,27 +339,35 @@ c                                                       ---- check yield
       call ummdp_isotropic ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )                        
 c
       if ( nvbs >= 3 ) then
-        write (6,*) 'plastic strain p=',p
-        write (6,*) 'flow stress   sy=',sy
-        write (6,*) 'equiv.stress  se=',se
+        text = 'Plastic Strain'
+        call ummdp_utility_print3 ( text,p,0 )
+        text = 'Flow Stress'
+        call ummdp_utility_print3 ( text,sy,0 )
+        text = 'Equivalent Stress'
+        call ummdp_utility_print3 ( text,se,0 )
         if ( npbs /= 0 ) then
           call ummdp_yield  ( xe,dseds,d2seds2,0,xt1,nttl,nnrm,nshr,
      1                        pryld,ndyld )                          
-          write (6,*) 'equiv.back.s  xe=',xe
+          text = 'Equivalent Back Stress'
+          call ummdp_utility_print3 ( text,xe,0 )
         end if
       end if
       if ( se <= sy ) then
-        if ( nvbs >= 3 ) write (6,*) 'judge : elastic'
+        if ( nvbs >= 3 ) write (6,'(/12xA)') 'JUDGE : ELASTIC'
         if ( (nttl == 3) .or. (nttl == 5) ) then
           de33 = 0.0d0
           do i = 1,nttl
             de33 = de33 + d33d(i)*de(i)
           end do
-          if ( nvbs >= 4 ) write (6,*) 'de33=',de33
+          if ( nvbs >= 4 ) then
+            text = 'Thickness Strain'
+            call ummdp_utility_print3 ( text,de33,0 )
+          end if
         end if
-        return
+        goto 500
+        ! return
       else
-        if ( nvbs >= 3 ) write (6,*) 'judge : plastic'
+        if ( nvbs >= 3 ) write (6,'(/12xA)') 'JUDGE : PLASTIC'
       end if
 c
 c                                                   ---- initialize loop
@@ -407,16 +422,16 @@ c
         knr = 0
 c                                      ---- start of Newton-Raphson loop
         if ( nvbs >= 3 ) then
-          write (6,*)
-          write (6,*) '**** start of Newton-Raphson loop'
+          write (6,'(//8xA)') ' >> Newton-Raphson Loop'
         end if
 c
   100   continue
         knr = knr + 1
         nite = nite + 1
         if ( nvbs >= 3 ) then
-          write (6,*) '----- NR iteration',knr
-          write (6,*) 'inc of p : dp   =',dp
+          write (6,'(//12xA,I)') '+ Iteration : ',knr
+          text = 'Equivalent Plastic Strain Increment'
+          call ummdp_utility_print3 ( text,dp,4 )
         end if
 c
         pt = p + dp
@@ -428,26 +443,29 @@ c                                        ---- calc. se and differentials
      1                     ndyld )                       
 c
         if ( nvbs >= 5 ) then
-          text = 's2'
-          call ummdp_utility_print1 ( text,s2,nttl )
+          text = 'Updated Stress'
+          call ummdp_utility_print1 ( text,s2,nttl,4 )
           if ( npbs /= 0 ) then
-            text = 'xt2'
-            call ummdp_utility_print1 ( text,xt2,nttl )
+            text = 'Updated Total Back Stress'
+            call ummdp_utility_print1 ( text,xt2,nttl,4 )
             text = 'eta'
-            call ummdp_utility_print1 ( text,eta,nttl )
+            call ummdp_utility_print1 ( text,eta,nttl,4 )
           end if
-          text = 'dse/ds'
-          call ummdp_utility_print1 ( text,dseds,nttl )
-          text = 'd2se/ds2'
-          call ummdp_utility_print2 ( text,d2seds2,nttl,nttl )
+          text = '1st Yield Function Derivative'
+          call ummdp_utility_print1 ( text,dseds,nttl,4 )
+          text = '2nd Yield Function Derivative'
+          call ummdp_utility_print2 ( text,d2seds2,nttl,nttl,4 )
         end if
 c                                        ---- calc. sy and differentials
         call ummdp_isotropic ( sy,dsydp,d2sydp2,1,pt,prihd,ndihd )                        
 c
         if ( nvbs >= 5 ) then
-          write (6,*) 'plastic strain p=',pt
-          write (6,*) 'flow stress   sy=',sy
-          write (6,*) 'hardening dsy/dp=',dsydp
+          text = 'Plastic Strain'
+          call ummdp_utility_print3 ( text,pt,4 )
+          text = 'Flow Stress'
+          call ummdp_utility_print3 ( text,sy,4 )
+          text = 'Hardening'
+          call ummdp_utility_print3 ( text,dsydp,4 )
         end if
 c                                                          ---- calc. g1
         g1 = se - sy - sgap
@@ -483,22 +501,28 @@ c                                                          ---- calc. g3
         end if
 c
         if ( nvbs >= 3 ) then
-          write (6,*) 'g1 (yield surf) =',g1
-          write (6,*) 'g2n (normality) =',g2n
+          write(6,'(//16xA)') '> Residuals'
+          text = 'Yield Surface'
+          call ummdp_utility_print3 ( text,g1,8 )
+          text = 'Normality (Norm)'
+          call ummdp_utility_print3 ( text,g2n,8 )
           if ( nvbs >= 5 ) then
-            text = 'g2 vector'
-            call ummdp_utility_print1 ( text,g2,nttl )
+            text = 'Normality (Vector)'
+            call ummdp_utility_print1 ( text,g2,nttl,8 )
           end if
           if ( npbs /= 0 ) then
             if ( nvbs >= 4 ) then
               do n = 1,npbs
-                write (6,*) 'g3n(',n,')=',g3n(n)
+                write(text,'(A,I1)') 'Back Stress Evolution ',n
+                ! write(text,*) 'g3n(',n,')='
+                call ummdp_utility_print3 ( text,g3n(n),8 )
+                ! write (6,*) 'g3n(',n,')=',g3n(n)
                 if ( nvbs >= 5 ) then
                   do i = 1,nttl
                     uv(i) = g3(n,i)
                   end do
-                  text = 'g3 vector'
-                  call ummdp_utility_print1 ( text,uv,nttl )
+                  write(text,'(A,I1)') 'Back Stress Evolution ',n
+                  call ummdp_utility_print1 ( text,uv,nttl,8 )
                 end if
               end do
             end if
@@ -561,7 +585,7 @@ c                                                 ---- check convergence
      2       (abs(g3nn/sy) <= tol) ) then
 c
           if ( nvbs >= 2 ) then
-            write (6,*) '**** Newton-Raphson converged.',knr
+            write (6,'(//16xA)') 'JUDGE: CONVERGENCE'
           end if
           dpconv = dp
           do i = 1,nttl
@@ -571,6 +595,8 @@ c
             end do
           end do
           goto 200
+        else
+          write (6,'(//16xA)') 'JUDGE: NO CONVERGENCE'
         end if
 c                                                         ---- solve ddp
 c                                                           ---- set {G}
@@ -593,8 +619,11 @@ c                              ---- ddp=(g1-{m}^T[C]{G})/(H+{m}^T[C]{W})
 c                                                         ---- update dp
         dp = dp + ddp
         if ( nvbs >= 3 ) then
-          write (6,*) 'modification of dp:ddp=',ddp
-          write (6,*) 'updated             dp=',dp
+          write(6,'(//16xA)') '>> Update'
+          text = 'Equivalent Plastic Strain Increment'
+          call ummdp_utility_print3 ( text,ddp,8 )
+          text = 'Updated Equivalent Plastic Strain'
+          call ummdp_utility_print3 ( text,dp,8 )
         end if
         if ( dp <= 0.0 ) then
           if ( nvbs >= 3 ) then
@@ -636,11 +665,11 @@ c
           goto 300
         else
           write (6,*) 'Nest of multistage is over.',nest
-          text = 'current stress (input)'
-          call ummdp_utility_print1 ( text,s1,nttl )
-          text = 'strain inc. (input)'
-          call ummdp_utility_print1 ( text,de,nttl )
-          write (6,*) 'eq.plast.strain (input)'
+          text = 'Current stress (input)'
+          call ummdp_utility_print1 ( text,s1,nttl,0 )
+          text = 'Strain Increment (input)'
+          call ummdp_utility_print1 ( text,de,nttl,0 )
+          write (6,*) 'Equivalent Plastic Strain (input)'
           write (6,*) p
           write (6,*) 'the proposals to fix this error'
           write (6,*) ' reduce the amount of strain per inc.'
@@ -663,25 +692,27 @@ c                                                 ---- plast.strain inc.
       end do
 c                                               ---- print out converged
       if ( nvbs >= 4 ) then
-        text = 'updated stress'
-        call ummdp_utility_print1 ( text,s2,nttl )
-        text = 'plastic strain inc'
-        call ummdp_utility_print1 ( text,dpe,nttl )
+        write(6,'(//8xA)') '>> Convergence'
+        text = 'Stress'
+        call ummdp_utility_print1 ( text,s2,nttl,0 )
+        text = 'Plastic Strain Increment'
+        call ummdp_utility_print1 ( text,dpe,nttl,0 )
         if ( npbs /= 0 ) then
-          text = 'updated part. back stess'
+          text = 'Partial Back Stress'
           call ummdp_backprint ( text,npbs,x2,nttl,mxpbs )
-          text = 'updated total back stess'
-          call ummdp_utility_print1 ( text,xt2,nttl )
+          text = 'Total Back Stress'
+          call ummdp_utility_print1 ( text,xt2,nttl,0 )
         end if
       end if
-c                                    ---- calc. strain inc. in thickness
+c                                        ---- thickness strain increment
       if ( (nttl == 3) .or. (nttl == 5) ) then
         de33 = -dpe(1) - dpe(2)
         do i = 1,nttl
           de33 = de33 + d33d(i)*(de(i)-dpe(i))
         end do
         if ( nvbs >= 4 ) then
-          write (6,*) 'de33=',de33
+          text = 'Thickness Strain'
+          call ummdp_utility_print3 ( text,de33,0 )
         end if
       end if
 c
@@ -703,7 +734,8 @@ c
             ddsdde(i,j) = 0.0d0
           end do
         end do
-        return
+        goto 500
+        ! return
       end if
 c
       if ( mjac == -1 ) then
@@ -712,10 +744,12 @@ c
             ddsdde(i,j) = delast(i,j)
           end do
         end do
-        return
+        goto 500
+        ! return
       end if
 c
 c                                      ---- consistent material jacobian
+      write(6,'(//8xA)') '>> Material Jacobian'
 c                                                           ---- set [B]
       call ummdp_utility_clear2( bm,nnn,nttl )
       i1 = 1
@@ -763,7 +797,7 @@ c                                                     ---- [Dc]=[De][M3]
       call ummdp_utility_mm ( ddsdde,delast,em3,nttl,nttl,nttl )
 c
 c                                                    ---- check symmetry
-      nsym = 0
+      nsym = 1
       d = 0.0d0
       a = 0.0d0
       do i = 1,nttl
@@ -777,9 +811,9 @@ c                                                    ---- check symmetry
       a = sqrt(d/a)
       if ( a > 1.0d-8 ) then
         if ( nvbs >= 4 ) then
-          write (6,*) 'ddsdde is not symmetric.',a
-          text = 'material jacobian (nonsym)'
-          call ummdp_utility_print2 ( text,ddsdde,nttl,nttl )
+          write (6,'(/12xA,F)') 'Material Jacobian is not symmetric :',a
+          text = 'Material Jacobian | No Symmetry'
+          call ummdp_utility_print2 ( text,ddsdde,nttl,nttl,0 )
         end if
 c                                                    ---- symmetrization
         if ( nsym == 1 ) then
@@ -794,9 +828,14 @@ c                                                    ---- symmetrization
       end if
 c
       if ( nvbs >= 4 ) then
-        text = 'material jacobian (output)'
-        call ummdp_utility_print2 ( text,ddsdde,nttl,nttl )
+        text = 'Material Jacobian'
+        call ummdp_utility_print2 ( text,ddsdde,nttl,nttl,0 )
       end if
+c
+  500 write (6,'(2/4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~ UMMDp ~~~~~~~~~~~~~~~~~'
+      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~ END ~~~~~~~~~~~~~~~~~~'
+      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 c
       return
       end subroutine ummdp_plasticity_core
@@ -874,14 +913,14 @@ c
       case ( 0:1 )    !  isotropic linear elasticity (Hooke)
 c
         if ( ntela == 0 ) then
-          eyoung = prela(2)                           ! Young's modulus
-          epoas = prela(3)                            ! Poisson's ratio
+          eyoung = prela(2)                           ! Young modulus
+          epoas = prela(3)                            ! Poisson ratio
           erigid = eyoung / 2.0d0 / (1.0d0+epoas)     ! Rigidity
         else
           ek = prela(2)                               ! Bulk modulus
           eg = prela(3)                               ! Rigidity
-          eyoung = 9.0d0*ek*eg / (3.0d0*ek+eg)        ! Young's modulus
-          epoas = (eyoung-2.0d0*eg) / 2.0d0 / eg      ! Poisson's ratio
+          eyoung = 9.0d0*ek*eg / (3.0d0*ek+eg)        ! Young modulus
+          epoas = (eyoung-2.0d0*eg) / 2.0d0 / eg      ! Poisson ratio
           erigid = eg
         end if
 c                                       ---- set 6*6 matrix for 3d solid
@@ -1008,7 +1047,7 @@ c
         write (6,*) 'isv : system reserved',isvrsvd
         write (6,*) 'isv : for scaler     ',isvsclr
         write (6,*) 'isv : for tensor     ',isvtnsr
-        call ummdp_exit ( 9000 )
+        call ummdp_exit ( 302 )
       end if
 c
       return
@@ -1034,13 +1073,13 @@ c
       integer i,nb,it
 c-----------------------------------------------------------------------
 c
-c                                                 ---- eq.plastic strain
+c                                         ---- equivalent plastic strain
       p = stv(isvrsvd+1)
-c                                              ---- plastic strain comp.
+c                                         ---- plastic strain components
       do i = 1,nttl
         pe(i) = stv(isvrsvd + isvsclr + i)
       end do
-c                                         ---- partial back stress comp.
+c                                    ---- partial back stress components
       if ( npbs /= 0 ) then
         do nb = 1,npbs
           do i = 1,nttl
@@ -1095,9 +1134,9 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer,intent(in) :: npbs,nttl,mxpbs
-      real*8 ,intent(in) :: x(mxpbs,nttl)
-      character*32,intent(in) :: text
+      integer      ,intent(in) :: npbs,nttl,mxpbs
+      real*8       ,intent(in) :: x(mxpbs,nttl)
+      character*100,intent(in) :: text
 c
       integer i,j
       real*8 xx(npbs,nttl)
@@ -1110,7 +1149,7 @@ c
           xx(j,i) = x(j,i)
         end do
       end do
-      call ummdp_utility_print2 ( text,xx,npbs,nttl )
+      call ummdp_utility_print2 ( text,xx,npbs,nttl,0 )
 c
       return
       end subroutine ummdp_backprint
@@ -1142,21 +1181,19 @@ c
 c
       nela = nint(p)
       select case ( nela )
-c
-      case (0) ; nd = 2
-        case (1) ; nd = 2
-c
+        case (0)
+          nd = 2
+        case (1)
+          nd = 2
         case default
           write (6,*) 'error elastic property id :',nela
-          call ummdp_exit ( 9000 )
-c
+          call ummdp_exit ( 201 )
       end select
       ndela = nd + 1
 c
       n = ndela
       nyld = nint(prop(n+1))
       select case (nyld)
-c
         case ( 0 ) ! von Mises
           nd = 0                           
         case ( 1 ) ! Hill 1948
@@ -1186,18 +1223,15 @@ c
           nd = 2 + 8*nint(prop(n+2))      
         case ( -7 ) ! Hill1990
           nd = 0.5d0                      
-c
         case default
           write (6,*) 'error yield function id :',nyld
-          call ummdp_exit ( 9000 )
-c
+          call ummdp_exit ( 202 )
       end select
       ndyld = nd + 1
 c
       n = ndela + ndyld
       nihd = nint(prop(n+1))
       select case ( nihd )
-c
         case ( 0 ) ! Perfecty Plastic
           nd = 1
         case ( 1 ) ! Linear
@@ -1212,19 +1246,16 @@ c
           nd = 4
         case ( 6 ) ! Voce + Swift
           nd = 7
-c
         case default
           write (6,*) 'error work hardening curve id :',nihd
-          call ummdp_exit ( 9000 )
-c
+          call ummdp_exit ( 203 )
       end select
       ndihd = nd + 1
 c
       n = ndela + ndyld + ndihd
       nkin = nint(prop(n+1))
       select case ( nkin )
-c
-        case ( 0 ) ! No Kinematic Hardening
+        case ( 0 ) ! None
           nd = 0
           npbs = 0          
         case ( 1 ) ! Prager
@@ -1236,19 +1267,18 @@ c
         case ( 3 ) ! Armstrong & Frederick
           nd = 2
           npbs = 1 
-        case ( 4 ) ! Chaboche
+        case ( 4 ) ! Chaboche I
           npbs = nint(prop(n+2))
           nd = 2*npbs + 1
-        case ( 5 ) ! Chaboche - Ziegler
+        case ( 5 ) ! Chaboche II
           npbs = nint(prop(n+2))
           nd = 2*npbs + 1
         case ( 6 ) ! Yoshida-Uemori
           nd = 5
           npbs = 2      
-c
         case default
           write (6,*) 'error kinematic hardening id :',nkin
-          call ummdp_exit ( 9000 )
+          call ummdp_exit ( 204 )
 c
       end select
       ndkin = nd + 1
@@ -1256,26 +1286,23 @@ c
       n = ndela + ndyld + ndihd + ndkin
       nrup = nint(prop(n+1))
       select case (nrup)
-c
-        case ( 0 ) ! No Uncoupled Rupture Criterion
+        case ( 0 ) ! None
           nd = 0             
         case ( 1 ) ! Equivalent Plastic Strain
-          nd = 2
+          nd = 1
         case ( 2 ) ! Cockroft and Latham
-          nd = 2
+          nd = 1
         case ( 3 ) ! Rice and Tracey
-          nd = 2
+          nd = 1
         case ( 4 ) ! Ayada
-          nd = 2
+          nd = 1
         case ( 5 ) ! Brozzo
-          nd = 2
+          nd = 1
         case ( 6 ) ! Forming Limit Diagram
-          nd = 2
-c
+          nd = 1
         case default
           write (6,*) 'error uncoupled rupture criterion id :',nrup
-          call ummdp_exit ( 9000 )
-c
+          call ummdp_exit ( 205 )
       end select
       ndrup = nd + 1
 c

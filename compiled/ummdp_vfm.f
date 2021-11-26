@@ -446,7 +446,7 @@ c                                          ---- copy material properties
 c
       if ( nout /= 0 ) then
         write (6,*)
-        write (6,*) 'MATERIAL DATA LIST'
+        write (6,*) '>>> MATERIAL PARAMETERS'
         call ummdp_print_elastic   ( prela,ndela )
         call ummdp_print_yield     ( pryld,ndyld )
         call ummdp_print_isotropic ( prihd,ndihd )
@@ -2163,23 +2163,26 @@ c
       real*8 prela(ndela)
 c
       integer ntela
+      character*10 fmth,fmtid
 c-----------------------------------------------------------------------
+c
+      fmth = '(8xA,I2)'
+      fmtid = '(12xA,I2)'
 c
       ntela = nint(prela(1))
       write(6,*)
-      write (6,'(4XA)') '>>> Elasticity'
+      write (6,'(4XA)') '>> Elasticity'
+c
       select case ( ntela )
       case ( 0 )
-        write (6,'(8xA,I2)') '>> Young Modulus and Poisson Ratio'
-        ! write (6,'(12xA,I2)') ' > ID:',ntela
-        write (6,'(12xA,I2)') '. prela(1) =',prela(1)
-        write (6,'(12xA,F10.1)') '. prela(2) =',prela(1+1)
-        write (6,'(12xA,F5.2)') '. prela(3) =',prela(1+2)
+        write (6,fmth) '> Young Modulus and Poisson Ratio'
       case ( 1 )
-        write (6,*) 'Bulk Modulus and Modulus of Rigidity'
-        write (6,*) 'Bulk modulus  =',prela(1+1)
-        write (6,*) 'Shear modulus =',prela(1+2)
+        write (6,fmth) '> Bulk Modulus and Modulus of Rigidity'
       end select
+c
+      write (6,fmtid) '. prela(1) =',prela(1)
+      write (6,'(12xA,F10.3)') '. prela(2) =',prela(1+1)
+      write (6,'(12xA,F5.2)' ) '. prela(3) =',prela(1+2)
 c
       return
       end subroutine ummdp_print_elastic
@@ -2198,18 +2201,24 @@ c
 c
       integer i,j
       integer ntyld,n0,n
+      character*10 fmth,fmtid
 c-----------------------------------------------------------------------
+c
+      fmth = '(8xA,I2)'
+      fmtid = '(12xA,I2)'
 c
       ntyld = pryld(1)
       write (6,*)
-      write (6,*) '>> Yield Function',ntyld
+      write (6,'(4XA)') '>> Yield Function'
       select case ( ntyld )
 c
       case ( 0 )                                             ! von Mises
-        write (6,*) 'von Mises'
+        write (6,fmth) '.: von Mises'
+        write (6,fmtid) '. pryld(1) =',pryld(1)
 c
       case ( 1 )                                             ! Hill 1948
-        write (6,*) 'Hill 1948'
+        write (6,'(8xA,I2)') '.: Hill 1948'
+        write (6,fmtid) '. pryld(1) =',pryld(1)
         write (6,*) 'F=',pryld(2)
         write (6,*) 'G=',pryld(3)
         write (6,*) 'H=',pryld(4)
@@ -2218,7 +2227,7 @@ c
         write (6,*) 'N=',pryld(7)
 c
       case ( 2 )                                           ! Yld2004-18p
-        write (6,*) 'Yld2004-18p'
+        write (6,'(8xA,I2)') '.: Yld2004-18p'
         n0 = 1
         do i = 1,18
            n0 = n0 + 1
@@ -2227,7 +2236,7 @@ c
         write (6,*) 'M=',pryld(1+18+1)
 c
       case ( 3 )                                              ! CPB 2006
-        write (6,*) 'CPB 2006'
+        write (6,'(8xA,I2)') '.: CPB 2006'
         n0 = 1
         do i = 1,3
           do j = 1,3
@@ -2245,7 +2254,7 @@ c
         write (6,*) 'ck=',pryld(n0)
 c
       case ( 4 )                                 ! Karafillis-Boyce 1993
-        write (6,*) 'Karafillis-Boyce 1993'
+        write (6,'(8xA,I2)') '.: Karafillis-Boyce 1993'
         n0 = 1
         do i = 1,6
           do j = i,6
@@ -2259,7 +2268,7 @@ c
         write (6,*) 'c =',pryld(n0)
 c
       case ( 5 )                                               ! Hu 2005
-        write (6,*) 'Hu 2005'
+        write (6,'(8xA,I2)') '.: Hu 2005'
         n0 = 1
         do i = 1,5
           n0 = n0 + 1
@@ -2273,7 +2282,7 @@ c
         end do
 c
       case ( 6 )                                          ! Yoshida 2011
-        write (6,*) 'Yoshida 2011'
+        write (6,'(8xA,I2)') '.: Yoshida 2011'
         n0 = 1
         do i = 1,16
           n0 = n0+1
@@ -2281,20 +2290,20 @@ c
         end do
 c
       case ( -1 )                                    ! Gotoh Biquadratic
-        write (6,*) 'Gotoh Biquadratic'
+        write (6,'(8xA,I2)') '.: Gotoh'
         do i = 1,9
           write (6,*) 'A(',i,')=',pryld(i+1)
         end do
 c
       case ( -2 )                                           ! Yld2000-2d
-        write (6,*) 'Yld2000-2d'
-        do i = 1,8
-          write (6,*) 'a(',i,')=',pryld(i+1)
+        write (6,'(8xA,I2)') '> Yld2000-2d'
+        write (6,fmtid) '. pryld(1  ) =',pryld(1)
+        do i = 1,9
+          write (6,'(12xA10,I1,A3,F)') '. pryld(1+',i,') =',pryld(i+1)
         end do
-        write (6,*) 'M=',pryld(9+1)
 c
       case ( -3 )                                               ! Vegter
-        write (6,*) 'Vegter '
+        write (6,'(8xA,I2)') '.: Vegter '
         write (6,*) 'nf=',nint(pryld(2))
         write (6,*) 'f_bi0=',pryld(3)
         write (6,*) 'r_bi0=',pryld(4)
@@ -2316,7 +2325,7 @@ c       write (6,*)   'r_bi0=',pryld(1+23)
 c       write (6,*)   'nf   =',nint(pryld(1+31))
 c
       case ( -4 )                                             ! BBC 2005
-        write (6,*) 'BBC 2005'
+        write (6,'(8xA,I2)') '.: BBC 2005'
         write (6,*) 'k of order 2k',pryld(1+1)
         write (6,*) 'a=',pryld(1+2)
         write (6,*) 'b=',pryld(1+3)
@@ -2328,14 +2337,14 @@ c
         write (6,*) 'R=',pryld(1+9)
 c
       case ( -5 )                                                ! Yld89
-        write (6,*) 'Yld89'
+        write (6,'(8xA,I2)') '.: Yld89'
         write (6,*) 'order M=',pryld(1+1)
         write (6,*) 'a      =',pryld(1+2)
         write (6,*) 'h      =',pryld(1+3)
         write (6,*) 'p      =',pryld(1+4)
 c
       case ( -6 )                                             ! BBC 2008
-        write (6,*) 'BBC 2008'
+        write (6,'(8xA,I2)') '.: BBC 2008'
         write (6,*) 's      =',nint(pryld(1+1))
         write (6,*) 'k      =',nint(pryld(1+2))
         do i = 1,nint(pryld(1+1))
@@ -2352,14 +2361,14 @@ c
         end do
 c
       case ( -7 )                                            ! Hill 1990
-        write (6,*) 'Hill 1990'
+        write (6,'(8xA,I2)') '.: Hill 1990'
         write (6,*) 'a   =',pryld(1+1)
         write (6,*) 'b   =',pryld(1+2)
         write (6,*) 'tau =',pryld(1+3)
         write (6,*) 'sigb=',pryld(1+4)
         write (6,*) 'M   =',pryld(1+5)
       end select
-c
+c 
       return
       end subroutine ummdp_print_yield
 c
@@ -2376,49 +2385,51 @@ c
       real*8 prihd(ndihd)
 c
       integer ntihd
+      character*10 fmth,fmtid
 c-----------------------------------------------------------------------
+c
+      fmth = '(8xA,I2)'
+      fmtid = '(12xA,I2)'
 c
       ntihd = nint(prihd(1))
       write (6,*)
-      write (6,*) '>> Isotropic Hardening Law',ntihd
+      write (6,'(4XA)') '>> Isotropic Hardening Law'
       select case ( ntihd )
       case ( 0 )
-        write (6,*) 'Perfect Plasticity'
-        write (6,*) 'sy_const=',prihd(1+1)
+        write (6,fmth) '> Perfect Plasticity'
+        write (6,fmtid) '. prihd(1) =',prihd(1)
       case ( 1 )
-        write (6,*) 'Linear'
-        write (6,*) 'sy = sy0+h*p'
+        write (6,*) '> Linear'
         write (6,*) 'sy0=',prihd(1+1)
         write (6,*) 'h  =',prihd(1+2)
       case ( 2 )
-        write (6,*) 'Swift'
-        write (6,*) 'sy = c*(e0+p)^en'
-        write (6,*) 'c =',prihd(1+1)
-        write (6,*) 'e0=',prihd(1+2)
-        write (6,*) 'en=',prihd(1+3)
+        write (6,fmth) '> Swift'
+        write (6,fmtid) '. prihd(1)   =',prihd(1)
+        write (6,*    ) '. prihd(1+1) =',prihd(1+1)
+        write (6,*    ) '. prihd(1+2) =',prihd(1+2)
+        write (6,*    ) '. prihd(1+3) =',prihd(1+3)
       case ( 3 )
-        write (6,*) 'Ludwick'
-        write (6,*) 'sy = sy0+c*p^en'
+        write (6,fmth) '> Ludwick'
+        write (6,fmtid) '. prihd(1) =',prihd(1)
         write (6,*) 'sy0=',prihd(1+1)
         write (6,*) 'c  =',prihd(1+2)
         write (6,*) 'en =',prihd(1+3)
       case ( 4 )
-        write (6,*) 'Voce '
-        write (6,*) 'sy = sy0+q*(1-exp(-b*p))'
+        write (6,fmth) '> Voce'
+        write (6,fmtid) '. prihd(1) =',prihd(1)
         write (6,*) 'sy0=',prihd(1+1)
         write (6,*) 'q  =',prihd(1+2)
         write (6,*) 'b  =',prihd(1+3)
       case ( 5 )
-        write (6,*) 'Voce + Linear'
-        write (6,*) 'sy = sy0+q*(1-exp(-b*p))+c*p'
-        write (6,*) 'sy0=',prihd(1+1)
-        write (6,*) 'q  =',prihd(1+2)
-        write (6,*) 'b  =',prihd(1+3)
-        write (6,*) 'c  =',prihd(1+4)
+        write (6,fmth) '> Voce & Linear'
+        write (6,fmtid) '. prihd(1) =',prihd(1)
+        write (6,*) '. prihd(2) =',prihd(1+1)
+        write (6,*) '. prihd(3) =',prihd(1+2)
+        write (6,*) '. prihd(4) =',prihd(1+3)
+        write (6,*) '. prihd(5) =',prihd(1+4)
       case ( 6 )
-        write (6,*) 'Voce+Swift a *( sy0+q*(1-exp(-b*p)) )+'
-        write (6,*) 'sy = a *( sy0+q*(1-exp(-b*p)) )+ (1-a)*(
-     &                    c*(e0+p)^en)'
+        write (6,fmth) '> Voce & Swift'
+        write (6,fmtid) '. prihd(1) =',prihd(1)
         write (6,*) 'a  =',prihd(1+1)
         write (6,*) 'sy0=',prihd(1+2)
         write (6,*) 'q  =',prihd(1+3)
@@ -2455,22 +2466,20 @@ c
         write (6,*) 'No Kinematic Hardening'
 c
       case ( 1 )                                                ! Prager
-        write (6,*) 'Prager dX=(2/3)*c*{dpe}'
+        write (6,*) 'Prager'
         write (6,*) 'c =',prkin(1+1)
 c
       case ( 2 )                                               ! Ziegler
-        write (6,*) 'Ziegler dX=dp*c*{{s}-{X}}'
+        write (6,*) 'Ziegler'
         write (6,*) 'c =',prkin(1+1)
 c
       case ( 3 )                          ! Armstrong & Frederick (1966)
         write (6,*) 'Armstrong-Frederick (1966)'
-        write (6,*) 'dX=(2/3)*c*{dpe}-dp*g*{X}'
         write (6,*) 'c =',prkin(1+1)
         write (6,*) 'g =',prkin(1+2)
 c
       case ( 4 )                                       ! Chaboche (1979)
         write (6,*) 'Chaboche (1979)'
-        write (6,*) 'dx(j)=c(j)*(2/3)*{dpe}-dp*g(j)*{x(j)}'
         write (6,*) 'no. of x(j) =',npbs
         do i = 1,npbs
           n0 = 1+(i-1)*2
@@ -2480,7 +2489,6 @@ c
 c
       case ( 5 )                       ! Chaboche (1979) - Ziegler Model
         write (6,*) 'Chaboche (1979) - Ziegler Model'
-        write (6,*) 'dx(j)=((c(j)/se)*{{s}-{X}}-g(j)*{x(j)})*dp'
         write (6,*) 'no. of x(j) =',npbs
         do i = 1,npbs
           n0 = 1+(i-1)*2
@@ -2527,32 +2535,26 @@ c
 c
       case ( 1 ) 														 ! Equivalent Plastic Strain
         write (6,*) 'Equivalent Plastic Strain'
-        write (6,*) 'W=int[dp]'
         write (6,*) 'Wl=',prrup(3)
 c
       case ( 2 )  																 ! Cockroft and Latham
         write (6,*) 'Cockroft and Latham'
-        write (6,*) 'W=int[(sp1/se)*dp]'
         write (6,*) 'Wl=',prrup(3)
 c
       case ( 3 ) 																	     ! Rice and Tracey
         write (6,*) 'Rice and Tracey'
-        write (6,*) 'W=int[exp(1.5*sh/se)*dp]'
         write (6,*) 'Wl=',prrup(3)
 c
       case ( 4 ) 																						     ! Ayada
         write (6,*) 'Ayada'
-        write (6,*) 'W=int[(sh/se)*dp]'
         write (6,*) 'Wl=',prrup(3)
 c
       case ( 5 ) 																							  ! Brozzo
         write (6,*) 'Brozzo'
-        write (6,*) 'W=int[(2/3)*(sp1/(sp1-se))*dp]'
         write (6,*) 'Wl=',prrup(3)
 c
       case ( 6 ) 	   														 ! Forming Limit Diagram
         write (6,*) 'Forming Limit Diagram'
-        write (6,*) 'W=e1/e1(fld)'
         write (6,*) 'Wl=',prrup(3)
 c
       end select

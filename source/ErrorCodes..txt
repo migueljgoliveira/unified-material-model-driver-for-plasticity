@@ -1,0 +1,17 @@
+Error Codes
+
+  100 - Element type not supported
+
+  20x - Material Properties ID
+       
+     . 201 - Unrecognized elasticity
+     . 202 - Unrecognized yield function
+     . 203 - Unrecognized isotropic hardening law
+     . 204 - Unrecognized kinematic hardening law
+     . 205 - Unrecognized uncoupled rupture criterion
+
+  300x - Variables Size
+
+     . 301 - Maximum allowed number of partial back stress
+     . 302 - Required number of internal state variables
+     . 303 - Wrong number of material properties

@@ -160,21 +160,26 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
 c     PRINT VECTOR WITH TEXT
 c
-      subroutine ummdp_utility_print1 ( text,a,n )
+      subroutine ummdp_utility_print1 ( text,a,n,tab )
 c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer     ,intent(in) :: n
-      real*8      ,intent(in) :: a(n)
-      character*32,intent(in) :: text
+      integer      ,intent(in) :: n,tab
+      real*8       ,intent(in) :: a(n)
+      character*100,intent(in) :: text
 c
       integer i
+      character*20 fmt
 c-----------------------------------------------------------------------
 c
-      write (6,*) text
-      write (6,9000) (a(i),i=1,n)
- 9000 format (6e16.8)
+      write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
+      write (6,fmt) '. ',text
+c
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6F18.8)'
+      ! write (6,'(14x6E16.8)') (a(i),i=1,n)
+      write (6,fmt) (a(i),i=1,n)
+      
 c
       return
       end subroutine ummdp_utility_print1
@@ -185,25 +190,58 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
 c     PRINT MATRIX WITH TEXT
 c
-      subroutine ummdp_utility_print2 ( text,a,n,m )
+      subroutine ummdp_utility_print2 ( text,a,n,m,tab )
 c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer     ,intent(in) :: n,m
-      real*8      ,intent(in) :: a(n,m)
-      character*32,intent(in) :: text
+      integer      ,intent(in) :: n,m,tab
+      real*8       ,intent(in) :: a(n,m)
+      character*100,intent(in) :: text
 c
       integer i,j
+      character*20 fmt
 c-----------------------------------------------------------------------
-      write (6,*) text
+c
+      write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
+      write (6,fmt) '. ',text
+c
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6F18.8)'
       do i = 1,n
-        write (6,9000) (a(i,j),j=1,m)
+        ! write (6,'(14x6E16.8)') (a(i,j),j=1,m)
+        write (6,fmt) (a(i,j),j=1,m)
       end do
- 9000 format (6e16.8)
 c
       return
       end subroutine ummdp_utility_print2
+c
+c
+c
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
+c     PRINT REAL WITH TEXT
+c
+      subroutine ummdp_utility_print3 ( text,a,tab )
+c
+c-----------------------------------------------------------------------
+      implicit none
+c
+      integer      ,intent(in) :: tab
+      real*8       ,intent(in) :: a
+      character*100,intent(in) :: text
+c
+      character*20 fmt
+c-----------------------------------------------------------------------
+c
+      write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
+      write (6,fmt) '. ',text
+c
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6E18.8)'
+      ! write (6,'(14x6E16.8)') a
+      write (6,fmt) a
+c
+      return
+      end subroutine ummdp_utility_print3
 c
 c
 c
