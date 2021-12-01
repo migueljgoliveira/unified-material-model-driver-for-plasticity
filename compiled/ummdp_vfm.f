@@ -91,6 +91,7 @@ c                                       ---- print detailed information
       end if
 c                                             ---- print input arguments
       if ( nvbs >= 4 ) then
+        ddsdde = 0.0d0
         call ummdp_print_inout ( 0,stress,dstrain,ddsdde,ntens,statev,
      1                           nstatev )
       end if
@@ -115,7 +116,7 @@ c                             ---- copy current internal state variables
      1                     mxpbs,npbs )
 c
 c                             ---- update stress and set tangent modulus
-      mjac = 1
+      mjac = 0
       call ummdp_plasticity ( stress,s2,dstrain,p,dp,dpe,de33,x1,x2,
      1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
      2                        prop,nprop,propdim )
@@ -1526,9 +1527,11 @@ c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer ndihd,nreq
-      real*8 sy,dsydp,d2sydp2,p
-      real*8 prihd(ndihd)
+      integer,intent(in) :: ndihd,nreq
+      real*8 ,intent(in) :: p
+      real*8 ,intent(in) :: prihd(ndihd)
+c
+      real*8,intent(out) :: sy,dsydp,d2sydp2
 c
       integer ntihd
       real*8 sy0,hard,c,e0,en,q,b,a
@@ -1539,21 +1542,22 @@ c
 c
       case ( 0 )                                     ! Perfectly Plastic
         sy = prihd(1+1)
-        if ( nreq . ge.1 ) then
-          dsydp = 0.0
+        if ( nreq >= 1 ) then
+          dsydp = 0.0d0
           if ( nreq >= 2 ) then
-            d2sydp2 = 0.0
+            d2sydp2 = 0.0d0
           end if
         end if
 c
       case ( 1 )                                                ! Linear
         sy0  = prihd(1+1)
         hard = prihd(1+2)
+c
         sy = sy0 + hard*p
         if ( nreq >= 1 ) then
           dsydp = hard
           if ( nreq >= 2 ) then
-            d2sydp2 = 0.0
+            d2sydp2 = 0.0d0
           end if
         end if
 c
@@ -1561,9 +1565,15 @@ c
         c  = prihd(1+1)
         e0 = prihd(1+2)
         en = prihd(1+3)
-        sy = c*(e0+p)**en
+c
+        sy = c * (e0+p)**en
+        write(6,*) p
+        write(6,*) sy
+        write(6,*) c,e0,en
+        write(6,*) (e0+p)**en
         if ( nreq >= 1 ) then
           dsydp = en*c*(e0+p)**(en-1.0d0)
+          write(6,*) dsydp
           if ( nreq >= 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*(e0+p)**(en-2.0d0)
           end if
@@ -1573,7 +1583,8 @@ c
         sy0 = prihd(1+1)
         c   = prihd(1+2)
         en  = prihd(1+3)
-        sy = sy0+c*p**en
+c
+        sy = sy0 + c*p**en
         if ( nreq >= 1 ) then
           dsydp = en*c*p**(en-1.0d0)
           if ( nreq >= 2 ) then
@@ -1585,28 +1596,30 @@ c
         sy0 = prihd(1+1)
         q   = prihd(1+2)
         b   = prihd(1+3)
-        sy = sy0+q*(1.0d0-exp(-b*p))
+c
+        sy = sy0 + q*(1.0d0-exp(-b*p))
         if ( nreq >= 1 ) then
-          dsydp = q*b*exp(-b*p)
+          dsydp = q * b  *exp(-b*p)
           if ( nreq >= 2 ) then
-            d2sydp2 = -q*b*b*exp(-b*p)
+            d2sydp2 = -q * b * b * exp(-b*p)
           end if
         end if
 c
-      case ( 5 )                                         ! Voce + Linear
+      case ( 5 )                                         ! Voce & Linear
         sy0 = prihd(1+1)
         q   = prihd(1+2)
         b   = prihd(1+3)
         c   = prihd(1+4)
-        sy = sy0+q*(1.0d0-exp(-b*p))+c*p
+c
+        sy = sy0 + q*(1.0d0-exp(-b*p)) + c*p
         if ( nreq >= 1 ) then
-          dsydp = q*b*exp(-b*p)+c
+          dsydp = q*b*exp(-b*p) + c
           if ( nreq >= 2 ) then
             d2sydp2 = -q*b*b*exp(-b*p)
           end if
         end if
 c
-      case ( 6 )                                          ! Voce + Swift
+      case ( 6 )                                          ! Voce & Swift
         a   = prihd(1+1)
         sy0 = prihd(1+2)
         q   = prihd(1+3)
@@ -1614,12 +1627,13 @@ c
         c   = prihd(1+5)
         e0  = prihd(1+6)
         en  = prihd(1+7)
+c
         sy = a*(sy0+q*(1.0d0-exp(-b*p))) + (1.0d0-a)*(c*(e0+p)**en)
         if ( nreq >= 1 ) then
           dsydp = a*(q*b*exp(-b*p)) +(1.0d0-a)*(en*c*(e0+p)**(en-1.0d0))
           if ( nreq >= 2 ) then
-            d2sydp2 = a*(-q*b*b*exp(-b*p)) +
-     &                (1.0d0-a)*(en*c*(en-1.0d0)*(e0+p)**(en-2.0d0))
+            d2sydp2 = a*(-q*b*b*exp(-b*p))
+     1                + (1.0d0-a)*(en*c*(en-1.0d0)*(e0+p)**(en-2.0d0))
           end if
         end if
 c
@@ -2489,7 +2503,7 @@ c-----------------------------------------------------------------------
 c
       nttl = nnrm + nshr
 c
-      write(6,'(2/8xA)') '>> Info'
+      write(6,'(4/8xA)') '>> Info'
 c
       write (tmp,'(I)') inc
       write (6,fmt1) '        Increment : ',adjustl(tmp)

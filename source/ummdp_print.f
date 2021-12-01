@@ -343,7 +343,7 @@ c-----------------------------------------------------------------------
 c
       nttl = nnrm + nshr
 c
-      write(6,'(2/8xA)') '>> Info'
+      write(6,'(4/8xA)') '>> Info'
 c
       write (tmp,'(I)') inc
       write (6,fmt1) '        Increment : ',adjustl(tmp)

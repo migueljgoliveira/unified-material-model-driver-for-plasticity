@@ -91,6 +91,7 @@ c                                       ---- print detailed information
       end if
 c                                             ---- print input arguments
       if ( nvbs >= 4 ) then
+        ddsdde = 0.0d0
         call ummdp_print_inout ( 0,stress,dstrain,ddsdde,ntens,statev,
      1                           nstatev )
       end if
@@ -115,7 +116,7 @@ c                             ---- copy current internal state variables
      1                     mxpbs,npbs )
 c
 c                             ---- update stress and set tangent modulus
-      mjac = 1
+      mjac = 0
       call ummdp_plasticity ( stress,s2,dstrain,p,dp,dpe,de33,x1,x2,
      1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
      2                        prop,nprop,propdim )
