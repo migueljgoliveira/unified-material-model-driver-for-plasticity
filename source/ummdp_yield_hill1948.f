@@ -3,7 +3,8 @@ c     Hill 1948 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi:
 c
-      subroutine ummdp_hill1948 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      subroutine ummdp_yield_hill1948 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                  ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -28,7 +29,7 @@ c                                            ---- anisotropic parameters
       pm = pryld(1+5)
       pn = pryld(1+6)
 c                                               ---- coefficients matrix
-      call ummdp_utility_clear2 ( c,6,6 )
+      c = 0.0d0
       c(1,1) = pg + ph
       c(1,2) = -ph
       c(1,3) = -pg
@@ -68,7 +69,7 @@ c                                              ---- 2nd order derivative
       end if
 c
       return
-      end subroutine ummdp_hill1948
+      end subroutine ummdp_yield_hill1948
 c
 c
 c

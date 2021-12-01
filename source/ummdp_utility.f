@@ -49,87 +49,87 @@ c
 c     ummdp_utility_file_exist ( flname )
 c       checking existence of files
 c
-c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c
-c     CLEAR 1st ORDER VECTOR A(N)
-c
-      subroutine ummdp_utility_clear1 ( a,n )
-c
-c-----------------------------------------------------------------------
-      implicit none
-c
-      integer,intent(in) :: n
-c
-      real*8,intent(inout) :: a(n)
-c
-      integer i
-c-----------------------------------------------------------------------
-c
-      do i = 1,n
-        a(i) = 0.0d0
-      end do
-c
-      return
-      end subroutine ummdp_utility_clear1
-c
-c
-c
-c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c
-c     CLEAR 2ND ORDER MATRIX
-c
-      subroutine ummdp_utility_clear2 ( a,n,m )
-c
-c-----------------------------------------------------------------------
-      implicit none
-c
-      integer,intent(in) :: n,m
-c
-      real*8,intent(inout) :: a(n,m)
-c
-      integer i,j
-c-----------------------------------------------------------------------
-c
-      do i = 1,n
-        do j = 1,m
-          a(i,j) = 0.0d0
-        end do
-      end do
-c
-      return
-      end subroutine ummdp_utility_clear2
-c
-c
-c
-c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c
-c     CLEAR 3RD ORDER MATRIX
-c
-      subroutine ummdp_utility_clear3 ( a,n,m,l )
-c
-c-----------------------------------------------------------------------
-      implicit none
-c
-      integer,intent(in) :: n,m,l
-c
-      real*8,intent(inout) ::  a(n,m,l)
-c
-      integer i,j,k
-c-----------------------------------------------------------------------
-c
-      do i = 1,n
-        do j = 1,m
-          do k = 1,l
-            a(i,j,k) = 0.0d0
-          end do
-        end do
-      end do
-c
-      return
-      end subroutine ummdp_utility_clear3
-c
-c
-c
+! c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! c
+! c     CLEAR 1st ORDER VECTOR A(N)
+! c
+!       subroutine ummdp_utility_clear1 ( a,n )
+! c
+! c-----------------------------------------------------------------------
+!       implicit none
+! c
+!       integer,intent(in) :: n
+! c
+!       real*8,intent(inout) :: a(n)
+! c
+!       integer i
+! c-----------------------------------------------------------------------
+! c
+!       do i = 1,n
+!         a(i) = 0.0d0
+!       end do
+! c
+!       return
+!       end subroutine ummdp_utility_clear1
+! c
+! c
+! c
+! c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! c
+! c     CLEAR 2ND ORDER MATRIX
+! c
+!       subroutine ummdp_utility_clear2 ( a,n,m )
+! c
+! c-----------------------------------------------------------------------
+!       implicit none
+! c
+!       integer,intent(in) :: n,m
+! c
+!       real*8,intent(inout) :: a(n,m)
+! c
+!       integer i,j
+! c-----------------------------------------------------------------------
+! c
+!       do i = 1,n
+!         do j = 1,m
+!           a(i,j) = 0.0d0
+!         end do
+!       end do
+! c
+!       return
+!       end subroutine ummdp_utility_clear2
+! c
+! c
+! c
+! c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! c
+! c     CLEAR 3RD ORDER MATRIX
+! c
+!       subroutine ummdp_utility_clear3 ( a,n,m,l )
+! c
+! c-----------------------------------------------------------------------
+!       implicit none
+! c
+!       integer,intent(in) :: n,m,l
+! c
+!       real*8,intent(inout) ::  a(n,m,l)
+! c
+!       integer i,j,k
+! c-----------------------------------------------------------------------
+! c
+!       do i = 1,n
+!         do j = 1,m
+!           do k = 1,l
+!             a(i,j,k) = 0.0d0
+!           end do
+!         end do
+!       end do
+! c
+!       return
+!       end subroutine ummdp_utility_clear3
+! c
+! c
+! c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
 c     SET UNIT 2ND ORDER MATRIX
@@ -146,7 +146,7 @@ c
       integer i
 c-----------------------------------------------------------------------
 c
-      call ummdp_utility_clear2 ( a,n,n )
+      a = 0.0d0 
       do i = 1,n
         a(i,i) = 1.0d0
       end do
@@ -263,7 +263,7 @@ c
       integer i,j
 c-----------------------------------------------------------------------
 c
-      call ummdp_utility_clear1 ( v,nv )
+      v = 0.0d0
       do i = 1,nv
         do j = 1,nu
           v(i) = v(i) + a(i,j)*u(j)
@@ -292,7 +292,7 @@ c
       integer i,j,k
 c-----------------------------------------------------------------------
 c
-      call ummdp_utility_clear2 ( a,na1,na2 )
+      a = 0.0d0
       do i = 1,na1
         do j = 1,na2
           do k = 1,nbc
@@ -393,7 +393,7 @@ c                                                 ---- check determinant
       end if
 c                                                            ---- B=A^-1
       do j = 1,n
-        call ummdp_utility_clear1 ( y,n )
+        y = 0.0d0
         y(j) = 1.0d0
         call ummdp_utility_lubksb ( a,n,indx,y,eps )
         do i = 1,n
@@ -416,7 +416,7 @@ c                                                             ---- check
         call ummdp_utility_print2 ( text,a,n,n )
         text = 'inversed matrix [A]^-1'
         call ummdp_utility_print2 ( text,b,n,n )
-        call ummdp_utility_clear2 ( c,n,n )
+        c = 0.0d0
         do i = 1,n
           do j = 1,n
             do k = 1,n

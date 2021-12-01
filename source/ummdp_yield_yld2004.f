@@ -3,8 +3,8 @@ c     YLD2004-18p YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: 
 c
-      subroutine ummdp_yld2004_18p ( s,se,dseds,d2seds2,nreq,
-     1                                pryld,ndyld )
+      subroutine ummdp_yield_yld2004 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                 ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -68,13 +68,13 @@ c
       eps3 = 1.0d-8
       del = 1.0d-4
 c                                                   ---- Kronecker Delta
-      call ummdp_utility_clear2 ( delta,3,3 )
+      delta = 0.0d0
       do i = 1,3
         delta(i,i) = 1.0d0
       end do
 c                                        ---- set anisotropic parameters
-      call ummdp_utility_clear2 ( cp1,6,6 )
-      call ummdp_utility_clear2 ( cp2,6,6 )
+      cp1 = 0.0d0
+      cp2 = 0.0d0
       cp1(1,2) = -pryld(1+1)
       cp1(1,3) = -pryld(1+2)
       cp1(2,1) = -pryld(1+3)
@@ -98,7 +98,7 @@ c                                        ---- set anisotropic parameters
       ami = 1.0d0 / am
 c
 c             ---- set matrix for transforming Cauchy stress to deviator
-      call ummdp_utility_clear2 ( cl,6,6 )
+      cl = 0.0d0
       do i = 1,3
         do j = 1,3
           if ( i == j ) then
@@ -121,18 +121,18 @@ c                  ---- matrix for transforming Cauchy stress to sp1,sp2
       call ummdp_utility_mm ( ctp1,cp1,cl,6,6,6 )
       call ummdp_utility_mm ( ctp2,cp2,cl,6,6,6 )
 c                               ---- coefficient of equivalent stress dc
-c      call ummdp_yld2004_18p_coef ( cp1,cp2,pi,am,dc )
+c      call ummdp_yield_yld2004_coef ( cp1,cp2,pi,am,dc )
 c                                  ---- calculation of equivalent stress
-      call ummdp_yld2004_18p_yf ( ctp1,ctp2,s,am,ami,dc,pi,
-     &                             sp1,sp2,psp1,psp2,hp1,hp2,
-     &                             cetpq1,cetpq2,fai,se )
+      call ummdp_yield_yld2004_yf ( ctp1,ctp2,s,am,ami,dc,pi,sp1,sp2,
+     &                              psp1,psp2,hp1,hp2,cetpq1,cetpq2,
+     &                              fai,se )
 c
 c                                            ---- 1st order differential
       if ( nreq >= 1 ) then
 c                                                     ---- d(fai)/d(psp)
+        dfadpsp1 = 0.0d0
+        dfadpsp2 = 0.0d0
         do i = 1,3
-          dfadpsp1(i) = 0.0d0
-          dfadpsp2(i) = 0.0d0
           do j = 1,3
             dfadpsp1(i) = dfadpsp1(i) + (psp1(i)-psp2(j)) *
      &                    abs(psp1(i)-psp2(j))**(am-2.0d0)
@@ -143,20 +143,20 @@ c                                                     ---- d(fai)/d(psp)
           dfadpsp2(i) = dfadpsp2(i) * (-am)
         end do
 c                                         ---- d(psp)/d(hp)&d(fai)/d(hp)
-        call ummdp_utility_clear2 ( dpsdhp1,3,3 )
-        call ummdp_utility_clear2 ( dpsdhp2,3,3 )
-        call ummdp_utility_clear1 ( dfadhp1,3 )
-        call ummdp_utility_clear1 ( dfadhp2,3 )
+        dpsdhp1 = 0.0d0
+        dpsdhp2 = 0.0d0
+        dfadhp1 = 0.0d0
+        dfadhp2 = 0.0d0
 c                                                  ---- theta'<>0 & <>pi
         if ( abs(cetpq1-1.0d0) >= eps2 .and. 
      &       abs(cetpq1+1.0d0) >= eps2 ) then
           do i = 1,3
-            call ummdp_yld2004_18p_dpsdhp ( i,psp1,hp1,dpsdhp1 )
+            call ummdp_yield_yld2004_dpsdhp ( i,psp1,hp1,dpsdhp1 )
           end do
 c                                                          ---- theta'=0
         else if ( abs(cetpq1-1.0d0) < eps2 ) then
           i = 1
-          call ummdp_yld2004_18p_dpsdhp ( i,psp1,hp1,dpsdhp1 )
+          call ummdp_yield_yld2004_dpsdhp ( i,psp1,hp1,dpsdhp1 )
           do i = 2,3
             do j = 1,3
               dpsdhp1(i,j) = -0.5d0 * (dpsdhp1(1,j)-3.0d0*delta(1,j))
@@ -165,7 +165,7 @@ c                                                          ---- theta'=0
 c                                                         ---- theta'=pi
         else
           i = 3
-          call ummdp_yld2004_18p_dpsdhp ( i,psp1,hp1,dpsdhp1 )
+          call ummdp_yield_yld2004_dpsdhp ( i,psp1,hp1,dpsdhp1 )
           do i = 1,2
             do j = 1,3
               dpsdhp1(i,j) = -0.5d0 * (dpsdhp1(3,j)-3.0d0*delta(1,j))
@@ -176,12 +176,12 @@ c                                                 ---- theta''<>0 & <>pi
         if ( abs(cetpq2-1.0d0) >= eps2 .and. 
      &       abs(cetpq2+1.0d0) >= eps2 ) then
           do i = 1,3
-            call ummdp_yld2004_18p_dpsdhp ( i,psp2,hp2,dpsdhp2 ) 
+            call ummdp_yield_yld2004_dpsdhp ( i,psp2,hp2,dpsdhp2 ) 
           end do
 c                                                         ---- theta''=0
         else if ( abs(cetpq2-1.0d0) < eps2 ) then
           i = 1
-          call ummdp_yld2004_18p_dpsdhp ( i,psp2,hp2,dpsdhp2 )
+          call ummdp_yield_yld2004_dpsdhp ( i,psp2,hp2,dpsdhp2 )
           do i = 2,3
             do j = 1,3
               dpsdhp2(i,j) = -0.5d0 * (dpsdhp2(1,j)-3.0d0*delta(1,j))
@@ -190,7 +190,7 @@ c                                                         ---- theta''=0
 c                                                        ---- theta''=pi
         else
           i = 3
-          call ummdp_yld2004_18p_dpsdhp ( i,psp2,hp2,dpsdhp2 )
+          call ummdp_yield_yld2004_dpsdhp ( i,psp2,hp2,dpsdhp2 )
           do i = 1,2
             do j = 1,3
               dpsdhp2(i,j) = -0.5d0 * (dpsdhp2(3,j)-3.0d0*delta(1,j))
@@ -205,8 +205,8 @@ c
           end do
         end do
 c                                                       ---- d(hp)/d(sp)
-        call ummdp_utility_clear2 ( dhdsp1,3,6 )
-        call ummdp_utility_clear2 ( dhdsp2,3,6 )
+        dhdsp1 = 0.0d0
+        dhdsp2 = 0.0d0
         do i = 1,3
           j = mod(i,  3) + 1
           k = mod(i+1,3) + 1
@@ -239,9 +239,9 @@ c                                                        ---- d(sp)/d(s)
           end do
         end do
 c                                                       ---- d(fai)/d(s)
-        call ummdp_utility_clear1 ( dfads,6 )
-        call ummdp_utility_clear2 ( xx1,3,6 )
-        call ummdp_utility_clear2 ( xx2,3,6 )
+        xx1 = 0.0d0
+        xx2 = 0.0d0
+        dfads = 0.0d0
         do l = 1,6
           do j = 1,3
             do k = 1,6
@@ -263,10 +263,10 @@ c
 c                                            ---- 2nd order differential
       if ( nreq >= 2 ) then
 c                                                   ---- d2(fai)/d(psp)2
-        call ummdp_utility_clear2 ( d2fadpsp11,3,3 )
-        call ummdp_utility_clear2 ( d2fadpsp22,3,3 )
-        call ummdp_utility_clear2 ( d2fadpsp12,3,3 )
-        call ummdp_utility_clear2 ( d2fadpsp21,3,3 )
+        d2fadpsp11 = 0.0d0
+        d2fadpsp22 = 0.0d0
+        d2fadpsp12 = 0.0d0
+        d2fadpsp21 = 0.0d0
         do i = 1,3
           d2fadpsp11(i,i) = am*(am-1.0d0) *
      1                      ( abs(psp1(i)-psp2(1))**(am-2.0d0) +
@@ -284,44 +284,42 @@ c                                                   ---- d2(fai)/d(psp)2
           end do
         end do
 c                                                    ---- d2(psp)/d(hp)2
-        call ummdp_utility_clear3 ( d2psdhp11,3,3,3 )
-        call ummdp_utility_clear3 ( d2psdhp22,3,3,3 )
-c
         if ( abs(cetpq1-1.0d0) >= eps3 .and. 
      1       abs(cetpq2-1.0d0) >= eps3 .and.
      2       abs(cetpq1+1.0d0) >= eps3 .and. 
      3       abs(cetpq2+1.0d0) >= eps3 ) then
 c
+          d2psdhp11 = 0.0d0
+          d2psdhp22 = 0.0d0
           do i = 1,3
-            call ummdp_yld2004_18p_d2psdhp ( i,psp1,hp1,d2psdhp11 )
-            call ummdp_yld2004_18p_d2psdhp ( i,psp2,hp2,d2psdhp22 )
+            call ummdp_yield_yld2004_d2psdhp ( i,psp1,hp1,d2psdhp11 )                                             
+            call ummdp_yield_yld2004_d2psdhp ( i,psp2,hp2,d2psdhp22 )                                 
           end do
 c                                                    ---- d2(fai)/d(hp)2
-          call ummdp_utility_clear2 ( d2fadhp11,3,3 )
-          call ummdp_utility_clear2 ( d2fadhp12,3,3 )
-          call ummdp_utility_clear2 ( d2fadhp21,3,3 )
-          call ummdp_utility_clear2 ( d2fadhp22,3,3 )
 c                                                  -- d2(fai)/d(hd)d(hd)
+          d2fadhp11 = 0.0d0
           do iq = 1,3
             do m = 1,3
               do ip = 1,3
                 do l = 1,3
-                  d2fadhp11(iq,m) = d2fadhp11(iq,m) + d2fadpsp11(ip,l) *
-     1                              dpsdhp1(l,m) * dpsdhp1(ip,iq)
+                  d2fadhp11(iq,m) = d2fadhp11(iq,m)
+     1                              + d2fadpsp11(ip,l)
+     2                                * dpsdhp1(l,m)*dpsdhp1(ip,iq)
                 end do
-                d2fadhp11(iq,m) = d2fadhp11(iq,m) + 
-     1                            dfadpsp1(ip)*d2psdhp11(ip,iq,m)
+                d2fadhp11(iq,m) = d2fadhp11(iq,m)
+     1                            + dfadpsp1(ip)*d2psdhp11(ip,iq,m)
               end do
             end do
           end do
 c                                              ---- d2(fai)/d(hdd)d(hdd)
+          d2fadhp22 = 0.0d0
           do iq = 1,3
             do m = 1,3
               do ip = 1,3
                 do l = 1,3
-                  d2fadhp22(iq,m) = d2fadhp22(iq,m) + (
-     1                              d2fadpsp22(ip,l) * 
-     2                              dpsdhp2(l,m) * dpsdhp2(ip,iq) )
+                  d2fadhp22(iq,m) = d2fadhp22(iq,m)
+     1                              + (d2fadpsp22(ip,l)
+     2                                 * dpsdhp2(l,m)*dpsdhp2(ip,iq) )
                 end do
                 d2fadhp22(iq,m) = d2fadhp22(iq,m) + 
      1                            dfadpsp2(ip)*d2psdhp22(ip,iq,m)
@@ -329,23 +327,25 @@ c                                              ---- d2(fai)/d(hdd)d(hdd)
             end do
           end do
 c                         ---- d2(fai)/d(hdd)d(hd) & d2(fai)/d(hd)d(hdd)
+          d2fadhp12 = 0.0d0
+          d2fadhp21 = 0.0d0
           do iq = 1,3
             do m = 1,3
               do ip = 1,3
                 do l = 1,3
-                  d2fadhp12(iq,m) = d2fadhp12(iq,m) + (
-     1                              d2fadpsp12(ip,l)*
-     2                              dpsdhp2(l,m)*dpsdhp1(ip,iq) )
-                  d2fadhp21(iq,m) = d2fadhp21(iq,m) + 
-     1                              d2fadpsp21(ip,l)*
-     2                              dpsdhp1(l,m)*dpsdhp2(ip,iq)
+                  d2fadhp12(iq,m) = d2fadhp12(iq,m)
+     1                              + (d2fadpsp12(ip,l)
+     2                                 * dpsdhp2(l,m)*dpsdhp1(ip,iq))
+                  d2fadhp21(iq,m) = d2fadhp21(iq,m)
+     1                              + d2fadpsp21(ip,l)
+     2                                * dpsdhp1(l,m)*dpsdhp2(ip,iq)
                 end do
                end do
             end do
           end do
 c                                                     ---- d2(hp)/d(sp)2
-          call ummdp_utility_clear3 ( d2hdsp11,3,6,6 )
-          call ummdp_utility_clear3 ( d2hdsp22,3,6,6 )
+          d2hdsp11 = 0.0d0
+          d2hdsp22 = 0.0d0
           do i = 1,3
             j = mod(i,  3) + 1
             k = mod(i+1,3) + 1
@@ -385,9 +385,8 @@ c                                                     ---- d2(hp)/d(sp)2
             d2hdsp22(3,j,i) = -sp2(j)
           end do
 c                                                     ---- d2(fai)/d(s)2
-          call ummdp_utility_clear2 ( d2fads2,6,6 )
-          call ummdp_utility_clear2 ( xx1,3,6 )
-          call ummdp_utility_clear2 ( xx2,3,6 )
+          xx1 = 0.0d0
+          xx2 = 0.0d0
           do i = 1,3
             do j = 1,6
               do ip = 1,6
@@ -396,23 +395,25 @@ c                                                     ---- d2(fai)/d(s)2
               end do
             end do
           end do
+c
+          d2fads2 = 0.0d0
           do i = 1,6
             do j = 1,6
               do iq = 1,3
                 do m = 1,3
                   d2fads2(i,j) = d2fads2(i,j) +
-     1                           d2fadhp11(iq,m)*xx1(iq,i)*xx1(m,j) +
-     2                           d2fadhp12(iq,m)*xx1(iq,i)*xx2(m,j) +
-     3                           d2fadhp21(iq,m)*xx2(iq,i)*xx1(m,j) +
-     4                           d2fadhp22(iq,m)*xx2(iq,i)*xx2(m,j)
+     1                           + d2fadhp11(iq,m)*xx1(iq,i)*xx1(m,j)
+     2                           + d2fadhp12(iq,m)*xx1(iq,i)*xx2(m,j)
+     3                           + d2fadhp21(iq,m)*xx2(iq,i)*xx1(m,j)
+     4                           + d2fadhp22(iq,m)*xx2(iq,i)*xx2(m,j)
                 end do
                 do n = 1,6
                   do ir = 1,6
                     d2fads2(i,j) = d2fads2(i,j) +
-     1                             d2hdsp11(iq,ir,n)*dfadhp1(iq)*
-     2                             dsdsp1(ir,i)*dsdsp1(n,j) +
-     3                             d2hdsp22(iq,ir,n)*dfadhp2(iq)*
-     4                             dsdsp2(ir,i)*dsdsp2(n,j)
+     1                             + d2hdsp11(iq,ir,n)*dfadhp1(iq)
+     2                               * dsdsp1(ir,i)*dsdsp1(n,j)
+     3                             + d2hdsp22(iq,ir,n)*dfadhp2(iq)
+     4                               * dsdsp2(ir,i)*dsdsp2(n,j)
                   end do
                 end do
               end do
@@ -422,14 +423,14 @@ c                                                      ---- d2(se)/d(s)2
           d2sedfa2 = ami * (ami-1.0d0) * fai**(ami-2.0d0) / dc**ami
           do i = 1,6
             do j = 1,6
-              d2seds2(i,j) = d2sedfa2*dfads(i)*dfads(j) +
-     1                       dsedfa*d2fads2(i,j)
+              d2seds2(i,j) = d2sedfa2*dfads(i)*dfads(j)
+     1                       + dsedfa*d2fads2(i,j)
             end do
           end do
         else
 c                                            ---- numerical differential
-          call ummdp_yld2004_18p_nu2 ( ctp1,ctp2,s,se,am,ami,
-     1                                  dc,pi,del,d2seds2 )
+          call ummdp_yield_yld2004_nu2 ( ctp1,ctp2,s,se,am,ami,dc,pi,
+     1                                   del,d2seds2 )
         end if
       end if
 c
@@ -441,7 +442,7 @@ c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE COEFFICIENT OF EQUIVALENT STRESS 1
 c
-      subroutine ummdp_yld2004_18p_coef ( cp1,cp2,pi,am,dc )
+      subroutine ummdp_yield_yld2004_coef ( cp1,cp2,pi,am,dc )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -452,8 +453,8 @@ c
       real*8 bbp1(3),bbp2(3)
 c-----------------------------------------------------------------------
 c
-      call ummdp_yld2004_18p_coef_sub ( cp1,pi,bbp1 )
-      call ummdp_yld2004_18p_coef_sub ( cp2,pi,bbp2 )
+      call ummdp_yield_yld2004_coef_sub ( cp1,pi,bbp1 )
+      call ummdp_yield_yld2004_coef_sub ( cp2,pi,bbp2 )
       dc = 0.0d0
       do i = 1,3
         do j = 1,3
@@ -462,14 +463,14 @@ c
       end do
 c
       return
-      end subroutine ummdp_yld2004_18p_coef
+      end subroutine ummdp_yield_yld2004_coef
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE COEFFICIENT OF EQUIVALENT STRESS 2
 c
-      subroutine ummdp_yld2004_18p_coef_sub ( cp,pi,bbp )
+      subroutine ummdp_yield_yld2004_coef_sub ( cp,pi,bbp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -480,13 +481,13 @@ c
       real*8 aap(3),bbp(3)
 c-----------------------------------------------------------------------
 c                                                  ---- coefficients aap
-      aap(1) = (cp(1,2)+cp(1,3)-2.0d0*cp(2,1) +
-     1          cp(2,3)-2.0d0*cp(3,1)+cp(3,2))/9.0d0
-      aap(2) = ((2.0d0*cp(2,1)-cp(2,3))*(cp(3,2)-2.0d0*cp(3,1)) +
-     2          (2.0d0*cp(3,1)-cp(3,2))*(cp(1,2)+cp(1,3)) +
-     3          (cp(1,2)+cp(1,3))*(2.0d0*cp(2,1)-cp(2,3)))/2.7d1
-      aap(3) = (cp(1,2)+cp(1,3))*(cp(2,3)-2.0d0*cp(2,1))*
-     1         (cp(3,2)-2.0d0*cp(3,1))/5.4d1
+      aap(1) = (cp(1,2)+cp(1,3)-2.0d0*cp(2,1)
+     1          + cp(2,3)-2.0d0*cp(3,1)+cp(3,2))/9.0d0
+      aap(2) = ((2.0d0*cp(2,1)-cp(2,3))*(cp(3,2)-2.0d0*cp(3,1))
+     2          + (2.0d0*cp(3,1)-cp(3,2))*(cp(1,2)+cp(1,3))
+     3          + (cp(1,2)+cp(1,3))*(2.0d0*cp(2,1)-cp(2,3)))/2.7d1
+      aap(3) = (cp(1,2)+cp(1,3))*(cp(2,3)-2.0d0*cp(2,1))
+     1         *(cp(3,2)-2.0d0*cp(3,1))/5.4d1
 c                                          ---- coefficients ppp,qqp,ttp
       ppp = aap(1)**2 + aap(2)
       qqp = (2.0d0*aap(1)**3+3.0d0*aap(1)*aap(2)+2.0d0*aap(3)) / 2.0d0
@@ -497,16 +498,16 @@ c                                                  ---- coefficients bbp
       bbp(3) = 2.0d0*sqrt(ppp)*cos((ttp+2.0d0*pi)/3.0d0) + aap(1)
 c
       return
-      end subroutine ummdp_yld2004_18p_coef_sub
+      end subroutine ummdp_yield_yld2004_coef_sub
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE YIELD FUNCTION 1
 c
-      subroutine ummdp_yld2004_18p_yf ( ctp1,ctp2,s,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,se )
+      subroutine ummdp_yield_yld2004_yf ( ctp1,ctp2,s,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,se )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -516,8 +517,8 @@ c
 c
       integer i,j
 c-----------------------------------------------------------------------
-      call ummdp_yld2004_18p_yfsub ( ctp1,s,pi,sp1,psp1,hp1,cetpq1 )
-      call ummdp_yld2004_18p_yfsub ( ctp2,s,pi,sp2,psp2,hp2,cetpq2 )
+      call ummdp_yield_yld2004_yfsub ( ctp1,s,pi,sp1,psp1,hp1,cetpq1 )                 
+      call ummdp_yield_yld2004_yfsub ( ctp2,s,pi,sp2,psp2,hp2,cetpq2 )                                   
 c                                                    ---- yield function
       fai = 0.0d0
       do i = 1,3
@@ -529,14 +530,15 @@ c                                                 ---- equivalent stress
       se = (fai/dc) ** ami
 c
       return
-      end subroutine ummdp_yld2004_18p_yf
+      end subroutine ummdp_yield_yld2004_yf
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE YIELD FUNCTION 2
 c
-      subroutine ummdp_yld2004_18p_yfsub ( ctp,s,pi,sp,psp,hp,cetpq )
+      subroutine ummdp_yield_yld2004_yfsub ( ctp,s,pi,sp,psp,hp,cetpq )
+     1                                           
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -553,10 +555,10 @@ c                                         ---- linear-transformed stress
 c
 c                                                  ---- invariants of sp
       hp(1) = (sp(1)+sp(2)+sp(3)) / 3.0d0
-      hp(2) = (sp(5)**2+sp(6)**2+sp(4)**2 - 
-     1         sp(2)*sp(3)-sp(3)*sp(1)-sp(1)*sp(2)) / 3.0d0
-      hp(3) = (2.0d0*sp(5)*sp(6)*sp(4)+sp(1)*sp(2)*sp(3) -
-     1         sp(1)*sp(6)**2-sp(2)*sp(5)**2-sp(3)*sp(4)**2) / 2.0d0
+      hp(2) = (sp(5)**2+sp(6)**2+sp(4)**2
+     1         - sp(2)*sp(3)-sp(3)*sp(1)-sp(1)*sp(2)) / 3.0d0
+      hp(3) = (2.0d0*sp(5)*sp(6)*sp(4)+sp(1)*sp(2)*sp(3)
+     1         - sp(1)*sp(6)**2-sp(2)*sp(5)**2-sp(3)*sp(4)**2) / 2.0d0
 c
 c                           ---- coefficients of characteristic equation
       hpq = sqrt(hp(1)**2 + hp(2)**2 + hp(3)**2)
@@ -580,15 +582,15 @@ c                                           ---- principal values of sp1
       end if
 c
       return
-      end subroutine ummdp_yld2004_18p_yfsub
+      end subroutine ummdp_yield_yld2004_yfsub
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     NUMERICAL DIFFERENTIATION FOR 2ND ORDER DERIVATIVES
 c
-      subroutine ummdp_yld2004_18p_nu2 ( ctp1,ctp2,s,se,am,ami,
-     1                                    dc,pi,del,d2seds2 )
+      subroutine ummdp_yield_yld2004_nu2 ( ctp1,ctp2,s,se,am,ami,dc,pi,
+     1                                     del,d2seds2 )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -606,13 +608,13 @@ c
         do j = 1, 6
           if ( i == j ) then
             s0(i) = s(i) - del
-            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,sea )
+            call ummdp_yield_yld2004_yf ( ctp1,ctp2,s0,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,sea )
             s0(i) = s(i) + del
-            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,seb )
+            call ummdp_yield_yld2004_yf ( ctp1,ctp2,s0,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,seb )
             s0(i) = s(i)
             abc1 = (se-sea) / del
             abc2 = (seb-se) / del
@@ -620,24 +622,24 @@ c
           else
             s0(i) = s(i) - del
             s0(j) = s(j) - del
-            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,seaa )
+            call ummdp_yield_yld2004_yf ( ctp1,ctp2,s0,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,seaa )
             s0(i) = s(i) + del
             s0(j) = s(j) - del
-            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,seba )
+            call ummdp_yield_yld2004_yf ( ctp1,ctp2,s0,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,seba )
             s0(i) = s(i) - del
             s0(j) = s(j) + del
-            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,seab )
+            call ummdp_yield_yld2004_yf ( ctp1,ctp2,s0,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,seab )
             s0(i) = s(i) + del
             s0(j) = s(j) + del
-            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,sebb )
+            call ummdp_yield_yld2004_yf ( ctp1,ctp2,s0,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,sebb )
             s0(i) = s(i)
             s0(j) = s(j)
             abc1 = (seba-seaa) / (2.0d0*del)
@@ -648,14 +650,14 @@ c
       end do
 c
       return
-      end subroutine ummdp_yld2004_18p_nu2
+      end subroutine ummdp_yield_yld2004_nu2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d(psp)/d(hp)
 c
-      subroutine ummdp_yld2004_18p_dpsdhp ( i,psp,hp,dpsdhp )
+      subroutine ummdp_yield_yld2004_dpsdhp ( i,psp,hp,dpsdhp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -672,14 +674,14 @@ c
       dpsdhp(i,3) = 2.0d0/3.0d0/dummy
 c
       return
-      end subroutine ummdp_yld2004_18p_dpsdhp
+      end subroutine ummdp_yield_yld2004_dpsdhp
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2(psp)/d(hp)2
 c
-      subroutine ummdp_yld2004_18p_d2psdhp ( i,psp,hp,d2psdhp )
+      subroutine ummdp_yield_yld2004_d2psdhp ( i,psp,hp,d2psdhp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -704,7 +706,7 @@ c-----------------------------------------------------------------------
       d2psdhp(i,1,3) = d2psdhp(i,3,1)
 c
       return
-      end subroutine ummdp_yld2004_18p_d2psdhp
+      end subroutine ummdp_yield_yld2004_d2psdhp
 c
 c
 c

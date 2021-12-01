@@ -52,7 +52,7 @@ c
       if ( nvbs >= 4 ) then
         write(6,'(//8xA/)') '>> Properties'
         do i = 1,n
-          write (6,'(12xA8,I2,A3,E)') '. props(',i,') =',prop(i)
+          write (6,'(12xA8,I2,A3,E20.12)') '. props(',i,') =',prop(i)
         end do
       end if
 c
@@ -109,8 +109,7 @@ c
      1       ami(nnn,nnn),um(nttl,nnn),cm(nttl,nnn),em1(nttl,nnn),
      2       em2(nttl,nnn),bm(nnn,nttl)
       real*8 dvkdx(npbs,npbs,nttl,nttl)
-      logical debug
-      character*100 text
+      character*100 text,tmp
 c
 c-----------------------------------------------------------------------
 c     >>> Arguments List
@@ -202,9 +201,7 @@ c       ndiv    | division number of multistage
 c
 c-----------------------------------------------------------------------
 c
-      debug = .true.
-      debug = .false.
-      tol = 1.0d-5
+      tol = 1.0d-8
       maxnr = 25  
       ndiv =  5   
       maxnest = 10
@@ -250,7 +247,7 @@ c
         call ummdp_print_rupture   ( prrup,ndrup )
       end if
 c                                                           ---- set [U]
-      call ummdp_utility_clear2( um,nttl,nnn )
+      um = 0.0d0
       i1 = 1
       do i2 = 1,npbs+1
         do j = 1,nttl
@@ -426,7 +423,8 @@ c
         knr = knr + 1
         nite = nite + 1
         if ( nvbs >= 3 ) then
-          write (6,'(//12xA,I)') '+ Iteration : ',knr
+          write(tmp,'(I)') knr
+          write (6,'(//12xA,A)') 'Iteration : ',adjustl(tmp)
           text = 'Equivalent Plastic Strain Increment'
           call ummdp_utility_print3 ( text,dp,4 )
         end if
@@ -556,7 +554,7 @@ c                                                              * set [A]
           end do
         end do
 c                                                           ---- set {W}
-        call ummdp_utility_clear1( wv,nnn )
+        wv = 0.0d0
         do i1 = 1, npbs+1
           do j1 = 1,nttl
             k1 = (i1-1)*nttl + j1
@@ -618,7 +616,7 @@ c                              ---- ddp=(g1-{m}^T[C]{G})/(H+{m}^T[C]{W})
 c                                                         ---- update dp
         dp = dp + ddp
         if ( nvbs >= 3 ) then
-          write(6,'(//16xA)') '>> Update'
+          write(6,'(//16xA)') '> Update'
           text = 'Equivalent Plastic Strain Increment'
           call ummdp_utility_print3 ( text,ddp,8 )
           text = 'Updated Equivalent Plastic Strain'
@@ -633,7 +631,7 @@ c                                                         ---- update dp
         end if
 c                                                  ---- update s2 and x2
         do i1 = 1,npbs+1
-          call ummdp_utility_clear1( vv,nttl )
+          vv = 0.0d0
           do j1 = 1,nttl
             k1 = (i1-1)*nttl + j1
             do k2 = 1,nnn
@@ -723,8 +721,6 @@ c
           write (6,*) 'Initial Stress Gap         :',sgapi
           write (6,*) 'Increment of Equivalent Plastic Strain :',dp
           write (6,*) 'Updated Equivalent Plastic Strain :',p+dp
-        else
-          write (6,'(8xA)') 'NO MsRM'
         end if
       end if
 c
@@ -753,7 +749,7 @@ c                                      ---- consistent material jacobian
         write(6,'(//8xA)') '>> Material Jacobian'
       end if
 c                                                           ---- set [B]
-      call ummdp_utility_clear2( bm,nnn,nttl )
+      bm = 0.0d0
       i1 = 1
       i2 = 1
       do j1 = 1,nttl
@@ -771,7 +767,7 @@ c                                               ---- {V1}={m}-dp*[M1]{W}
         v1(i) = dseds(i) - dp*vv(i)
       end do
 c                                                 ---- [M2]={V1}{m}^T[C]
-      call ummdp_utility_clear2 ( em2,nttl,nnn )
+      em2 = 0.0d0
       do i = 1,nttl
         do j = 1,nnn
           do k = 1,nttl
@@ -862,19 +858,7 @@ c
 c
       integer ne,ip,lay,nechk,ipchk,laychk,nchk
 c-----------------------------------------------------------------------
-c                             specify verbose level and point
-c      nvbs0 = 0   ! verbose mode
 c
-c           0  error message only
-c           1  summary of MsRM
-c           2  detail of MsRM and summary of NR
-c           3  detail of NR
-c           4  input/output
-c           5  all status for debug
-c
-c       MsRM : Multistage Return Mapping
-c       NR   : Newton-Raphson
-c-----------------------------------------------------------------------
       nechk = 1     ! element no. to be checked
       ipchk = 1     ! integration point no. to checked
       laychk = 1    ! layer no. to be checked
@@ -929,7 +913,7 @@ c
           erigid = eg
         end if
 c                                       ---- set 6*6 matrix for 3d solid
-        call ummdp_utility_clear2( delast3d,6,6 )
+        delast3d = 0.0d0
         do i = 1,3
           do j = 1,3
             if ( i == j ) then

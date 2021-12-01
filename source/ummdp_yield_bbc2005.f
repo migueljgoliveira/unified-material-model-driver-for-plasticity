@@ -3,7 +3,8 @@ c     BBC2005 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: 
 c
-      subroutine ummdp_bbc2005 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      subroutine ummdp_yield_bbc2005 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                 ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -54,7 +55,6 @@ c                                            ---- anisotropic parameters
       P = pryld(1+7)
       Q = pryld(1+8)
       R = pryld(1+9)
-c
 c                                                 ---- equivalent stress
       th(1) = L*s(1)+M*s(2)
       th(2) = sqrt((N*s(1)-P*s(2))**2+s(3)**2)
@@ -119,16 +119,15 @@ c
         lth2_3 = lth(2)+lth(3)
         lth23  = lth(2)*lth(3)
 c
-        if (lth1_2 < 1e-15 * se**2) then
+        if (lth1_2 < 1e-15*se**2) then
           lth1_2 = 1e-15 * se**2
         end if
 c
-        if (lth2_3 < 1e-15 * se**2) then
+        if (lth2_3 < 1e-15*se**2) then
           lth2_3 = 1e-15 * se**2
         end if
 c
-        dphidlth(:) = 0.0d0
-c
+        dphidlth = 0.0d0
         do i = 0,mm  
           dphidlth(1) = dphidlth(1) + fact(k)/(fact(k-2*i)*fact(2*i))*
      1     (2*a*(i*4**i*lth(2)**i*lth(1)**(i-1)*lth1_2
@@ -150,22 +149,22 @@ c
         dlthds(1,1) = 2 * L * (M*s(2)+L*s(1))
         dlthds(1,2) = 2 * M * (M*s(2)+L*s(1))
         dlthds(1,3) = 0.0d0
+c
         dlthds(2,1) = 2 * N * (N*s(1)-P*s(2))
         dlthds(2,2) = -2 * P * (N*s(1)-P*s(2))
         dlthds(2,3) = 2 * s(3)
+c
         dlthds(3,1) = 2 * Q * (Q*s(1)-R*s(2))
         dlthds(3,2) = -2 * R * (Q*s(1)-R*s(2))
         dlthds(3,3) = 2 * s(3)
 c
+        dseds = 0.0d0
         do i = 1,3
-          dseds(i) = 0.0d0
           do j = 1,3
             dseds(i) = dseds(i) + dsedphi*dphidlth(j)*dlthds(j,i)
           end do
-c         write (150,*) s(1), s(2), s(3), i, dseds(i)
         end do
       end if
-c
 c                                            ---- 2nd order differential
 c
       if ( nreq >= 2 ) then
@@ -221,7 +220,7 @@ c
         d2phidlth2(2,1) = d2phidlth2(1,2)
         d2phidlth2(3,2) = d2phidlth2(2,3)
 c
-        d2lthds2(:,:,:) = 0.0d0
+        d2lthds2 = 0.0d0
 c
         d2lthds2(1,1,1) = 2.0d0 * L**2
         d2lthds2(1,1,2) = 2.0d0 * L * M
@@ -240,9 +239,9 @@ c
         d2lthds2(3,2,2) = 2.0d0 * R**2
         d2lthds2(3,3,3) = 2.0d0
 c
+        d2seds2 = 0.0d0
         do i=1,3
           do j=1,3
-            d2seds2(i,j)=0.0d0
             do ii=1,3
               do jj=1,3
                 d2seds2(i,j) = d2seds2(i,j)
@@ -260,7 +259,7 @@ c
       end if
 c
       return
-      end subroutine ummdp_bbc2005
+      end subroutine ummdp_yield_bbc2005
 c
 c
 c

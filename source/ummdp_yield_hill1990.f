@@ -3,7 +3,8 @@ c     HILL 1990 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/0022-5096(90)90006-P
 c
-      subroutine ummdp_hill1990 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )                    
+      subroutine ummdp_yield_hill1990 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                  ndyld )                    
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -83,7 +84,7 @@ c
 c
 c                               ---- coef. matrix of material parameters
 c                                ---- define a4-matrix consists of a & b
-      call ummdp_utility_clear2( a4,3,3 )
+      a4 = 0.0d0
       a4(1,1) = -2.0d0*a + b
       a4(2,2) = 2.0d0*a + b
       a4(1,2) = - b
@@ -251,7 +252,7 @@ c
         end do
 c
       return
-      end subroutine ummdp_hill1990
+      end subroutine ummdp_yield_hill1990
 c
 c
 c

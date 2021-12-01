@@ -3,7 +3,8 @@ c     GOTOH BIQUADRATIC YIELD FUNCTION AND DERIVATIVES
 c
 c       doi:
 c
-      subroutine ummdp_gotoh ( s,se,dseds,d2seds2,nreq,pryld,ndyld )          
+      subroutine ummdp_yield_gotoh ( s,se,dseds,d2seds2,nreq,pryld,
+     1                               ndyld )          
 c------------------------------------------------------------- variables
       implicit none
 c
@@ -64,13 +65,13 @@ c
       se = sqrt(sqrt(phi))
 c                                            ---- 1st order differential
       if ( nreq >= 1 ) then
-        call ummdp_utility_clear2 ( dtds,4,3 )
+        dtds = 0.0d0
         dtds(1,1) = s(1) * 2.0d0
         dtds(2,1) = s(2)
         dtds(2,2) = s(1)
         dtds(3,2) = s(2) * 2.0d0
         dtds(4,3) = s(3) * 2.0d0
-        call ummdp_utility_clear1 ( v,4 )
+        v = 0.0d0
         do i = 1,3
           do j = 1,4
             do k = 1,4
@@ -85,35 +86,34 @@ c                                            ---- 1st order differential
       end if
 c                                            ---- 2nd order differential
       if ( nreq >= 2 ) then
-        call ummdp_utility_clear3 ( d2tds2,4,3,3 )
+        d2tds2 = 0.0d0
         d2tds2(1,1,1) = 2.0d0
         d2tds2(2,1,2) = 1.0d0
         d2tds2(2,2,1) = 1.0d0
         d2tds2(3,2,2) = 2.0d0
         d2tds2(4,3,3) = 2.0d0
-        call ummdp_utility_clear2 ( d2seds2,3,3 )
+        d2seds2 = 0.0d0
         do i = 1,3
           do j = 1,3
             do m = 1,4
               do n = 1,4
-                d2seds2(i,j) = d2seds2(i,j)+
-     1                       2.0d0*c(m          ,n       )*
-     2                        ( dtds(m,i)*dtds(  n  ,j)+
-     3                           t(  m)  *d2tds2(n,i,j)  )
+                d2seds2(i,j) = d2seds2(i,j)
+     1                         + 2.0d0*c(m,n)*
+     2                           * (dtds(m,i)*dtds(n,j)
+     3                             + t(m)*d2tds2(n,i,j))
               end do
             end do
           end do
         end do
         do i = 1,3
           do j = 1,3
-            d2seds2(i,j) = q*(d2seds2(  i,   j)
-     1                      -0.75d0*v(i)*v(j)/phi)
+            d2seds2(i,j) = q * (d2seds2(i,j)-0.75d0*v(i)*v(j)/phi)  
           end do
         end do
       end if
 c
       return
-      end subroutine ummdp_gotoh
+      end subroutine ummdp_yield_gotoh
 c
 c
 c

@@ -3,8 +3,8 @@ c     KARAFILLIS-BOYCE 1993 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi:
 c
-      subroutine ummdp_karafillis_boyce ( s,se,dseds,d2seds2,nreq,
-     1                                    pryld,ndyld )
+      subroutine ummdp_yield_karafillisboyce ( s,se,dseds,d2seds2,nreq,
+     1                                         pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -92,8 +92,7 @@ c
       c_p      = pryld(1+8)
 c                                                 ---- equivalent stress
       call ummdp_utility_mv ( smallS,L,s,6,6 )
-      call ummdp_karafillis_boyce_principal_stress( smallS,Jinvar,
-     1                                              largeS )
+      call ummdp_yield_karafillisboyce_pstress( smallS,Jinvar,largeS )                                             
 c
       phiN(1) = (largeS(1)-largeS(2))**(2*k_p)
      1        + (largeS(2)-largeS(3))**(2*k_p)
@@ -460,15 +459,15 @@ c
       end if
 c
       return
-      end subroutine ummdp_karafillis_boyce
+      end subroutine ummdp_yield_karafillisboyce
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     PRINCIPAL STRESSES AND INVARIANTS BY FRANÇOIS VIETE METHOD
 c
-      subroutine ummdp_karafillis_boyce_principal_stress ( stress,invar,
-     1                                                     pStress )
+      subroutine ummdp_yield_karafillisboyce_pstress ( stress,invar,
+     1                                                 pStress )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -512,7 +511,7 @@ c
       end if
 c
       return
-      end subroutine ummdp_karafillis_boyce_principal_stress
+      end subroutine ummdp_yield_karafillisboyce_pstress
 c
 c
 c

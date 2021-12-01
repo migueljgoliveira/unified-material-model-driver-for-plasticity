@@ -3,7 +3,8 @@ c     HU2005 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2004.11.004
 c
-      subroutine ummdp_hu2005 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      subroutine ummdp_yield_hu2005 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -57,11 +58,11 @@ c
       a(8) =  pryld(1+8)    ! C2 <-
       a(9) =  pryld(1+6)    ! X7
 c
-      call ummdp_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
-     1                          a,ipow,maxa,nterms )
+      call ummdp_yield_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,a,
+     1                               ipow,maxa,nterms )
 c
       return
-      end subroutine ummdp_hu2005
+      end subroutine ummdp_yield_hu2005
 c
 c
 c

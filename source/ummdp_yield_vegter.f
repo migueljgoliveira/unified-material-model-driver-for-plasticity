@@ -3,7 +3,8 @@ c     YEGTER YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2005.04.009
 c
-      subroutine ummdp_vegter ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      subroutine ummdp_yield_vegter ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -18,18 +19,19 @@ c
 c-----------------------------------------------------------------------
 c
       nf = nint(pryld(2)) - 1
-      call ummdp_vegter_core ( s,se,dseds,d2seds2,nreq,pryld,ndyld,nf )           
+      call ummdp_yield_vegter_core ( s,se,dseds,d2seds2,nreq,pryld,
+     1                               ndyld,nf )           
 c
       return
-      end subroutine ummdp_vegter
+      end subroutine ummdp_yield_vegter
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     VEGTER CORE SUBROUTINE
 c
-      subroutine ummdp_vegter_core ( s,se,dseds,d2seds2,nreq,
-     1                               pryld,ndyld,nf )
+      subroutine ummdp_yield_vegter_core ( s,se,dseds,d2seds2,nreq,
+     1                                     pryld,ndyld,nf )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -77,21 +79,21 @@ c
       tol0 = 1.0d-8      ! exception treatment tolerance of stress state 
       tol2 = 1.0d-2      ! se tolerance change f(1) to f(2)
 c
-      f_bi0=     pryld(3)
-      r_bi0=     pryld(4)
-      do i=0,nf
-        phi_un(i)=pryld(4+i*4+1)
-        phi_sh(i)=pryld(4+i*4+2)
-        phi_ps(i)=pryld(4+i*4+3)
-        omg(   i)=pryld(4+i*4+4)
+      f_bi0 = pryld(3)
+      r_bi0 = pryld(4)
+      do i = 0,nf
+        phi_un(i) = pryld(4+i*4+1)
+        phi_sh(i) = pryld(4+i*4+2)
+        phi_ps(i) = pryld(4+i*4+3)
+        omg(   i) = pryld(4+i*4+4)
       end do
 c
-      se=0.0
-      do i=1,3
-        se=se+s(i)**2
+      se = 0.0d0
+      do i = 1,3
+        se = se + s(i)**2
       end do
-      if ( se<=0.0 ) then
-        se=0.0
+      if ( se <= 0.0d0 ) then
+        se = 0.0d0
         return
       end if
 
@@ -102,112 +104,118 @@ c     isflag  : 0 s(i,i=1,3)=0
 c             : 1 not s(i)=0
 c                                 ---- exception treatment if all s(i)=0
 c
-      if(abs(s(1))<=TOL0.and.abs(s(2))<=TOL0.and.
-     1                                         abs(s(3))<=TOL0)then
-      isflag=0
-      call ummdp_utility_clear1 ( x,4 )
+      if ( (abs(s(1)) <= tol0) .and. 
+     1     (abs(s(2)) <= tol0) .and.
+     2     (abs(s(3)) <= tol0) ) then
+      isflag = 0
+      x = 0.0d0
       goto 100
 c
       else
       isflag=1
-      call ummdp_utility_clear1 ( x,4 )
+      x = 0.0d0
 c
 c                           ---- exception treatment if s(1)=s(2),s(3)=0
 c
-      if(abs(s(1)-s(2))<=TOL0.and.abs(s(3))<=TOL0) then
-        theta=0.0d0
-        theta_rv=0.5d0*pi
-        x(1)=0.5d0*(s(1)+s(2))
-        x(2)=0.5d0*(s(1)+s(2))
-        x(3)=cos(2.0d0*theta)
-        x(4)=sin(2.0d0*theta)
-        vcos2t=x(3)
-        vsin2t=x(4)
-c
+      if ( (abs(s(1)-s(2)) <= tol0) .and. (abs(s(3)) <= tol0) ) then
+        theta = 0.0d0
+        theta_rv = 0.5d0*pi
+        x(1) = 0.5d0*(s(1)+s(2))
+        x(2) = 0.5d0*(s(1)+s(2))
+        x(3) = cos(2.0d0*theta)
+        x(4) = sin(2.0d0*theta)
+        vcos2t = x(3)
+        vsin2t = x(4)
 c                                                    ---- normal process
       else
-        vsqrt=sqrt((s(1)-s(2))**2+4.0d0*s(3)**2)
-        x(1)=0.5d0*(s(1)+s(2)+vsqrt)
-        x(2)=0.5d0*(s(1)+s(2)-vsqrt)
-        x(3)=(s(1)-s(2))/vsqrt
-        x(4)=2.0d0*s(3)/vsqrt
-        vcos2t=x(3)
-        vsin2t=x(4)
-        theta=0.5d0*acos(vcos2t)
-        theta_rv=0.5d0*pi-theta
+        vsqrt = sqrt((s(1)-s(2))**2+4.0d0*s(3)**2)
+        x(1) = 0.5d0*(s(1)+s(2)+vsqrt)
+        x(2) = 0.5d0*(s(1)+s(2)-vsqrt)
+        x(3) = (s(1)-s(2))/vsqrt
+        x(4) = 2.0d0*s(3)/vsqrt
+        vcos2t = x(3)
+        vsin2t = x(4)
+        theta = 0.5d0*acos(vcos2t)
+        theta_rv = 0.5d0*pi-theta
         end if
       end if
-c
 c                        ---- calc fk(k=un,sh,ps,bi) , rk(k=un,sh,ps,bi)
 c
 c                                                          ! un=uniaxial
-        fun1=0.0d0
-        fun1r=0.0d0
-        run=0.0d0
-        runr=0.0d0
-      do m=0,nf
-        fun1=fun1+phi_un(m)*cos(2.0d0*dble(m)*theta)
-        fun1r=fun1r+phi_un(m)*cos(2.0d0*dble(m)*theta_rv)
-        run=run+omg(m)*cos(2.0d0*dble(m)*theta)
-        runr=runr+omg(m)*cos(2.0d0*dble(m)*theta_rv)
+        fun1 = 0.0d0
+        fun1r = 0.0d0
+        run = 0.0d0
+        runr = 0.0d0
+      do m = 0,nf
+        fun1 = fun1 + phi_un(m)*cos(2.0d0*dble(m)*theta)
+        fun1r = fun1r + phi_un(m)*cos(2.0d0*dble(m)*theta_rv)
+        run = run + omg(m)*cos(2.0d0*dble(m)*theta)
+        runr = runr + omg(m)*cos(2.0d0*dble(m)*theta_rv)
       end do
-        fun2=0.0d0
-        fun2r=0.0d0
+        fun2 = 0.0d0
+        fun2r = 0.0d0
 c                                                        ! sh=pure shear
-        fsh1=0.0d0
-        fsh2=0.0d0
-      do m=0,nf
-        fsh1=fsh1+phi_sh(m)*cos(2.0d0*dble(m)*theta)
-        fsh2=fsh2-phi_sh(m)*cos(2.0d0*dble(m)*theta_rv)
+        fsh1 = 0.0d0
+        fsh2 = 0.0d0
+      do m = 0,nf
+        fsh1 = fsh1 + phi_sh(m)*cos(2.0d0*dble(m)*theta)
+        fsh2 = fsh2 - phi_sh(m)*cos(2.0d0*dble(m)*theta_rv)
       end do
-        rsh=-1.0d0
+        rsh = -1.0d0
 c                                                      ! ps=plane strain
-        fps1=0.0d0
-        fps1r=0.0d0
-        rps=0.0d0
-        rpsr=0.0d0
-      do m=0,nf
-        fps1=fps1+phi_ps(m)*cos(2.0d0*dble(m)*theta)
-        fps2=0.5d0*fps1
-        fps1r=fps1r+phi_ps(m)*cos(2.0d0*dble(m)*theta_rv)
-        fps2r=0.5d0*fps1r
+        fps1 = 0.0d0
+        fps1r = 0.0d0
+        rps = 0.0d0
+        rpsr = 0.0d0
+      do m = 0,nf
+        fps1 = fps1 + phi_ps(m)*cos(2.0d0*dble(m)*theta)
+        fps2 = 0.5d0 * fps1
+        fps1r = fps1r + phi_ps(m)*cos(2.0d0*dble(m)*theta_rv)
+        fps2r = 0.5d0 * fps1r
       end do
-        rps=-0.0d0
-        rpsr=0.0d0
+        rps = -0.0d0
+        rpsr = 0.0d0
 c                                                      ! bi=equi-biaxial
-        fbi1=f_bi0
-        fbi2=fbi1
-        rbi=((r_bi0+1.0d0)+(r_bi0-1.0d0)*vcos2t)/
-     &           ((r_bi0+1.0d0)-(r_bi0-1.0d0)*vcos2t)
+        fbi1 = f_bi0
+        fbi2 = fbi1
+        rbi = ((r_bi0+1.0d0)+(r_bi0-1.0d0)*vcos2t)/
+     1           ((r_bi0+1.0d0)-(r_bi0-1.0d0)*vcos2t)
 c
 c                                 ---- case distribution by stress state
-      if(x(1)/=0.0d0)then
-        alfa=x(2)/x(1)
+      if ( x(1) /= 0.0d0 ) then
+        alfa = x(2) / x(1)
       end if
-      if(x(2)/=0.0d0)then
-        beta=x(1)/x(2)
+      if ( x(2) /= 0.0d0 ) then
+        beta = x(1) / x(2)
       end if
 c
 c     iareaflag    :stress state flag(i=0~6)
 c
-      if(x(1)>0.0d0.and.alfa<0.0d0.and.alfa>=fsh2/fsh1) then
-        iareaflag=1
-      else if(x(1)>0.0d0.and.alfa>=0.0d0
-     1                           .and.alfa<fps2/fps1) then
-        iareaflag=2
-      else if(x(1)>0.0d0.and.alfa>=fps2/fps1
-     1                           .and.alfa<=1.0d0) then
-        iareaflag=3
+      if ( (x(1) > 0.0d0) .and. 
+     1     (alfa < 0.0d0) .and.
+     2     (alfa >= fsh2/fsh1)) then
+        iareaflag = 1
+      else if ( (x(1) > 0.0d0) .and. 
+     1          (alfa >= 0.0d0) .and. 
+     2          (alfa < fps2/fps1) ) then
+        iareaflag = 2
+      else if ( (x(1) > 0.0d0) .and. 
+     1          (alfa >= fps2/fps1) .and.
+     2          (alfa <= 1.0d0) ) then
+        iareaflag = 3
 c
-      else if(x(1)<0.0d0.and.alfa>=1.0d0
-     1                           .and.alfa<fps1r/fps2r) then
-        iareaflag=4
-      else if(x(1)<0.0d0.and.beta<=fps2r/fps1r
-     1                                      .and.beta>0.0d0) then
-        iareaflag=5
-      else if(x(1)>=0.0d0.and.beta<=0.0d0
-     1                           .and.beta>fsh1/fsh2) then
-        iareaflag=6
+      else if ( (x(1) < 0.0d0) .and.
+     1          (alfa >= 1.0d0) .and.
+     2          (alfa < fps1r/fps2r) ) then
+        iareaflag = 4
+      else if ( (x(1) < 0.0d0) .and.
+     1          (beta <= fps2r/fps1r) .and.
+     2          (beta > 0.0d0) ) then
+        iareaflag = 5
+      else if ( (x(1) >= 0.0d0) .and.
+     1          (beta <= 0.0d0) .and.
+     1          (beta > fsh1/fsh2) ) then
+        iareaflag = 6
 c
       else
         go to 100
@@ -217,93 +225,93 @@ c                                       ---- calc. hingepoint b(i,i=1~2)
       select case ( iareaflag )
 c                                            
       case ( 1 )                                           ! iareaflag=1
-         a(1)=fsh1
-         a(2)=fsh2
-         c(1)=fun1
-         c(2)=fun2
-         nn(1)=1.0d0
-         nn(2)=rsh
-         mm(1)=1.0d0
-         mm(2)=run
-         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+        a(1) = fsh1
+        a(2) = fsh2
+        c(1) = fun1
+        c(2) = fun2
+        nn(1) = 1.0d0
+        nn(2) = rsh
+        mm(1) = 1.0d0
+        mm(2) = run
+        call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                            
       case ( 2 )                                           ! iareaflag=2
-         a(1)=fun1
-         a(2)=fun2
-         c(1)=fps1
-         c(2)=fps2
-         nn(1)=1.0d0
-         nn(2)=run
-         mm(1)=1.0d0
-         mm(2)=rps
-         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+        a(1) = fun1
+        a(2) = fun2
+        c(1) = fps1
+        c(2) = fps2
+        nn(1) = 1.0d0
+        nn(2) = run
+        mm(1) = 1.0d0
+        mm(2) = rps
+        call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                   
       case ( 3 )                                           ! iareaflag=3
-         a(1)=fps1
-         a(2)=fps2
-         c(1)=fbi1
-         c(2)=fbi2
-         nn(1)=1.0d0
-         nn(2)=rps
-         mm(1)=1.0d0
-         mm(2)=rbi
-         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+        a(1) = fps1
+        a(2) = fps2
+        c(1) = fbi1
+        c(2) = fbi2
+        nn(1) = 1.0d0
+        nn(2) = rps
+        mm(1) = 1.0d0
+        mm(2) = rbi
+        call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                            
       case ( 4 )                                           ! iareaflag=4
-         a(1)=-fbi1
-         a(2)=-fbi2
-         c(1)=-fps2r
-         c(2)=-fps1r
-         nn(1)=-1.0d0
-         nn(2)=-rbi
-         mm(1)=-rpsr
-         mm(2)=-1.0d0
-         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+        a(1) = -fbi1
+        a(2) = -fbi2
+        c(1) = -fps2r
+        c(2) = -fps1r
+        nn(1) = -1.0d0
+        nn(2) = -rbi
+        mm(1) = -rpsr
+        mm(2) = -1.0d0
+        call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                            
       case ( 5 )                                           ! iareaflag=5
-         a(1)=-fps2r
-         a(2)=-fps1r
-         c(1)=-fun2r
-         c(2)=-fun1r
-         nn(1)=-rpsr
-         nn(2)=-1.0d0
-         mm(1)=-runr
-         mm(2)=-1.0d0
-         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+        a(1) = -fps2r
+        a(2) = -fps1r
+        c(1) = -fun2r
+        c(2) = -fun1r
+        nn(1) = -rpsr
+        nn(2) = -1.0d0
+        mm(1) = -runr
+        mm(2) = -1.0d0
+        call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                    
       case ( 6 )                                           ! iareaflag=6
-         a(1)=-fun2r
-         a(2)=-fun1r
-         c(1)=fsh1
-         c(2)=fsh2
-         nn(1)=-runr
-         nn(2)=-1.0d0
-         mm(1)=1.0d0
-         mm(2)=rsh
-         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+        a(1) = -fun2r
+        a(2) = -fun1r
+        c(1) = fsh1
+        c(2) = fsh2
+        nn(1) = -runr
+        nn(2) = -1.0d0
+        mm(1) = 1.0d0
+        mm(2) = rsh
+        call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c
       case default
-         write (6,*) 'iareaflag error :',iareaflag
-         call ummdp_exit (9000)
+        write (6,*) 'iareaflag error :',iareaflag
+        call ummdp_exit (9000)
       end select
 
 c                            ---- calc. fourier coefficient mu(0<=mu<=1)
-      call ummdp_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta
-     1                                            ,aa,bb,cc,dd )
+      call ummdp_yield_vegter_mu ( x,a,b,c,mu,iareaflag,s,theta,aa,
+     1                                  bb,cc,dd )
 c
 c                            ---- calc. normalized yield locus f(i)i=1~2
-      call ummdp_vegter_calc_fi ( x,a,b,c,mu,f )
+      call ummdp_yield_vegter_fi ( x,a,b,c,mu,f )
       go to 200
 c
 c                                                 ---- equivalent stress
   100 continue
-      se=0.0d0
+      se = 0.0d0
       go to 300
   200 continue
-      if(f(1)<=TOL2) then
-         se=x(2)/f(2)
+      if ( f(1) <= tol2 ) then
+         se = x(2) / f(2)
       else
-         se=x(1)/f(1)
+         se = x(1) / f(1)
       end if
 c
       go to 300
@@ -312,165 +320,142 @@ c
 c
 c                                            ---- 1st order differential
 c
-      if ( nreq>=1 ) then
+      if ( nreq >= 1 ) then
 c                        ---- set dadc,dcdc,dndc,dmdc for eq.(A.7)^(A.9)
 c
-      call ummdp_utility_clear1 ( dadc,2 )
-      call ummdp_utility_clear1 ( dbdc,2 )
-      call ummdp_utility_clear1 ( dcdc,2 )
-      call ummdp_utility_clear1 ( dndc,2 )
-      call ummdp_utility_clear1 ( dmdc,2 )
+      dadc = 0.0d0
+      dbdc = 0.0d0
+      dcdc = 0.0d0
+      dndc = 0.0d0
+      dmdc = 0.0d0
 c
       select case ( iareaflag )
 c                                            
       case ( 1 )                                           ! iareaflag=1
-       if(abs(vsin2t)>=TOL) then
-        do m=0,nf
-          dadc(1)=dadc(1)+phi_sh(m)*dble(m)
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dadc(1) = dadc(1) + phi_sh(m)*dble(m)
      1                             *sin(2.0d0*dble(m)*theta)
      2                             /sin(2.0d0*theta)
-          dadc(2)=dadc(2)+phi_sh(m)*dble(m)
+            dadc(2) = dadc(2) + phi_sh(m)*dble(m)
      1                             *sin(2.0d0*dble(m)*theta_rv)
      2                             /sin(2.0d0*theta)
-        end do
-       else
-          do m=0,nf
-              dadc(1)=dadc(1)+phi_sh(m)*dble(m)**2
-              dadc(2)=dadc(2)+phi_sh(m)*dble(m)**2
           end do
-       end if
-c
-       if(abs(vsin2t)>=TOL) then
-         do m=0,nf
-          dcdc(1)=dcdc(1)+phi_un(m)*dble(m)
-     1                             *sin(2.0d0*dble(m)*theta)
-     2                             /sin(2.0d0*theta)
-         end do
         else
-          do m=0,nf
-              dcdc(1)=dcdc(1)+phi_un(m)*dble(m)**2
+          do m = 0,nf
+            dadc(1) = dadc(1) + phi_sh(m)*dble(m)**2
+            dadc(2) = dadc(2) + phi_sh(m)*dble(m)**2
           end do
         end if
-          dcdc(2)=0.0d0
 c
-          dndc(1)=0.0d0
-          dndc(2)=0.0d0
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dcdc(1) = dcdc(1) + phi_un(m)*dble(m)
+     1                             *sin(2.0d0*dble(m)*theta)
+     2                             /sin(2.0d0*theta)
+          end do
+        else
+          do m = 0,nf
+            dcdc(1) = dcdc(1) + phi_un(m)*dble(m)**2
+          end do
+        end if
 c
-          dmdc(1)=0.0d0
-       if(abs(vsin2t)>=TOL) then
-         do m=0,nf
-          dmdc(2)=dmdc(2)+omg(m)*dble(m)
+c
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dmdc(2) = dmdc(2) + omg(m)*dble(m)
      1                          *sin(2.0d0*dble(m)*theta)
      2                          /sin(2.0d0*theta)
-         end do
+          end do
         else
-          do m=0,nf
-              dmdc(2)=dmdc(2)+omg(m)*dble(m)**2
+          do m = 0,nf
+            dmdc(2) = dmdc(2) + omg(m)*dble(m)**2
           end do
         end if
-      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                               dndc,dmdc,iareaflag,P,nnmm)
-c
+        call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+     1                                 dmdc,iareaflag,P,nnmm )
 c                                            
       case ( 2 )                                           ! iareaflag=2
-       if(abs(vsin2t)>=TOL) then
-         do m=0,nf
-          dadc(1)=dadc(1)+phi_un(m)*dble(m)
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dadc(1) = dadc(1) + phi_un(m)*dble(m)
      1                             *sin(2.0d0*dble(m)*theta)
      2                             /sin(2.0d0*theta)
-         end do
+          end do
         else
-         do m=0,nf
-          dadc(1)=dadc(1)+phi_un(m)*dble(m)**2
-         end do
-       end if
-          dadc(2)=0.0d0
+          do m = 0,nf
+            dadc(1) = dadc(1) + phi_un(m)*dble(m)**2
+          end do
+        end if
 c
-       if(abs(vsin2t)>=TOL) then
-         do m=0,nf
-          dcdc(1)=dcdc(1)+phi_ps(m)*dble(m)
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dcdc(1) = dcdc(1) + phi_ps(m)*dble(m)
      1                             *sin(2.0d0*dble(m)*theta)
      2                             /sin(2.0d0*theta)
-         end do
+          end do
         else
-         do m=0,nf
-          dcdc(1)=dcdc(1)+phi_ps(m)*dble(m)**2
-         end do
-       end if
-          dcdc(2)=0.5d0*dcdc(1)
+          do m = 0,nf
+            dcdc(1) = dcdc(1) + phi_ps(m)*dble(m)**2
+          end do
+        end if
+          dcdc(2) = 0.5d0 * dcdc(1)
 c
-          dndc(1)=0.0d0
-       if(abs(vsin2t)>=TOL) then
-        do m=0,nf
-          dndc(2)=dndc(2)+omg(m)*dble(m)
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dndc(2) = dndc(2) + omg(m)*dble(m)
      1                           *sin(2.0d0*dble(m)*theta)
      2                           /sin(2.0d0*theta)
-         end do
+          end do
         else
-         do m=0,nf
-          dndc(2)=dndc(2)+omg(m)*dble(m)**2
-         end do
-       end if
+          do m = 0,nf
+            dndc(2) = dndc(2) + omg(m)*dble(m)**2
+          end do
+        end if
 c
-          dmdc(1)=0.0d0
-          dmdc(2)=0.0d0
-      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                               dndc,dmdc,iareaflag,P,nnmm)
+        call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+     1                                 dmdc,iareaflag,P,nnmm )
 c
 c                                           
       case ( 3 )                                           ! iareaflag=3
-       if(abs(vsin2t)>=TOL) then
-        do m=0,nf
-          dadc(1)=dadc(1)+phi_ps(m)*dble(m)
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dadc(1) = dadc(1) + phi_ps(m)*dble(m)
      1                             *sin(2.0d0*dble(m)*theta)
      2                             /sin(2.0d0*theta)
-         end do
+          end do
         else
-         do m=0,nf
-          dadc(1)=dadc(1)+phi_ps(m)*dble(m)**2
-         end do
-       end if
-          dadc(2)=0.5d0*dadc(1)
+          do m = 0,nf
+          dadc(1) = dadc(1) + phi_ps(m)*dble(m)**2
+          end do
+        end if
+        dadc(2) = 0.5d0 * dadc(1)
 c
-          dcdc(1)=0.0d0
-          dcdc(2)=0.0d0
-c
-          dndc(1)=0.0d0
-          dndc(2)=0.0d0
-c
-          dmdc(1)=0.0d0
-          dmdctmp=r_bi0+1.0d0-(r_bi0-1.0d0)*vcos2t
-          dmdc(2)=2.0d0*(r_bi0*r_bi0-1.0d0)/(dmdctmp*dmdctmp)
-      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                               dndc,dmdc,iareaflag,P,nnmm)
-c
+        dmdctmp = r_bi0 + 1.0d0-(r_bi0-1.0d0)*vcos2t
+        dmdc(2) = 2.0d0*(r_bi0*r_bi0-1.0d0)/(dmdctmp*dmdctmp)
+        call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+     1                                 dmdc,iareaflag,P,nnmm )
 c                                            
       case ( 4 )                                           ! iareaflag=4
-          dadc(1)=0.0d0
-          dadc(2)=0.0d0
 c
-       if(abs(vsin2t)>=TOL) then
-        do m=0,nf
-          dcdc(2)=dcdc(2)+phi_ps(m)*dble(m)
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dcdc(2) = dcdc(2) + phi_ps(m)*dble(m)
      1                             *sin(2.0d0*dble(m)*theta_rv)
      2                             /sin(2.0d0*theta)
-         end do
+          end do
         else
-         do m=0,nf
-          dcdc(2)=dcdc(2)+phi_ps(m)*dble(m)**2
-         end do
-       end if
-          dcdc(1)=0.5d0*dcdc(2)
+          do m = 0,nf
+            dcdc(2) = dcdc(2) + phi_ps(m)*dble(m)**2
+          end do
+        end if
+        dcdc(1) = 0.5d0 * dcdc(2)
 c
-          dndc(1)=0.0d0
-          dndctmp=r_bi0+1.0d0-(r_bi0-1.0d0)*vcos2t
-          dndc(2)=-2.0d0*(r_bi0*r_bi0-1.0d0)/(dndctmp*dndctmp)
+        dndctmp = r_bi0 + 1.0d0-(r_bi0-1.0d0)*vcos2t
+        dndc(2) = -2.0d0 * (r_bi0*r_bi0-1.0d0)/(dndctmp*dndctmp)
 c
-          dmdc(1)=0.0d0
-          dmdc(2)=0.0d0
-      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                               dndc,dmdc,iareaflag,P,nnmm)
-c
+        call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+     1                                 dmdc,iareaflag,P,nnmm)
 c                                            
       case ( 5 )                                           ! iareaflag=5
        if(abs(vsin2t)>=TOL) then
@@ -514,7 +499,7 @@ c
          end do
        end if
           dmdc(2)=0.0d0
-      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
@@ -563,7 +548,7 @@ c
 c
           dmdc(1)=0.0d0
           dmdc(2)=0.0d0
-      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
       case default
@@ -573,12 +558,12 @@ c
 c
 c
 c                             ---- calc. dphidx(i) (i=1~3)  eq.(21)~(23)
-      call ummdp_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,dcdc,
+      call ummdp_yield_vegter_dphidx ( dphidx,se,a,b,c,dadc,dbdc,dcdc,
      1                      mm,nn,dndc,dmdc,f,iareaflag,mu,x,dfdmu,dfdc)
 c
 c
 c                                   ---- calc. dseds(i) (i=1~3)  eq.(20)
-      call ummdp_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,vsin2t,
+      call ummdp_yield_vegter_dseds ( dseds,x,dphidx,vcos2t,vsin2t,
      1                                iareaflag,isflag,dxds)
 c
       end if
@@ -588,11 +573,11 @@ c                                            ---- 2nd order differential
       if ( nreq>=2 ) then
 c                     ---- set d2adc2,d2cdc2,d2ndc2,d2mdc2 for d2bdc2(2)
 c
-      call ummdp_utility_clear1 ( d2adc2,2 )
-      call ummdp_utility_clear1 ( d2bdc2,2 )
-      call ummdp_utility_clear1 ( d2cdc2,2 )
-      call ummdp_utility_clear1 ( d2ndc2,2 )
-      call ummdp_utility_clear1 ( d2mdc2,2 )
+      d2adc2 = 0.0d0
+      d2bdc2 = 0.0d0
+      d2cdc2 = 0.0d0
+      d2ndc2 = 0.0d0
+      d2mdc2 = 0.0d0
 c
 c                     ---- define exception treatment condition of theta
 c                        ---- if theta<=0.002865deg then apply exception
@@ -652,7 +637,7 @@ c
          do m=0,nf
           d2mdc2(2)=d2mdc2(2)+omg(m)*dble(m)*vvtmp(m)
          end do
-      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -674,7 +659,7 @@ c
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
-      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -694,7 +679,7 @@ c
              d2mdc2tmp=r_bi0+1.0d0-(r_bi0-1.0d0)*vcos2t
           d2mdc2(2)=4.0d0*(r_bi0**2-1.0d0)*(r_bi0-1.0d0)/
      1                                              (d2mdc2tmp**3)
-      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -714,7 +699,7 @@ c
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
-      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                           
@@ -736,7 +721,7 @@ c
           d2mdc2(1)=d2mdc2(1)+omg(m)*dble(m)*vvtmp_rv(m)
          end do
           d2mdc2(2)=0.0d0
-      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -758,7 +743,7 @@ cn
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
-      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
       case default
@@ -768,27 +753,28 @@ c
 c
 c
 c                                     ---- calc. d2phidx2(k,l) (k,l=1~3)
-      call ummdp_vegter_calc_d2phidx2 (d2phidx2,se,a,b,c,dadc,dbdc,
+      call ummdp_yield_vegter_d2phidx2 (d2phidx2,se,a,b,c,dadc,dbdc,
      1             dcdc,mm,nn,dndc,dmdc,f,iareaflag,mu,x,d2adc2,d2bdc2,
      2            d2cdc2,d2ndc2,d2mdc2,dfdmu,dfdc,s,aa,bb,cc,dd,dphidx)
 c
 c
 c                                      ---- calc. d2seds2(i,j) (i,j=1~3)
-      call ummdp_vegter_calc_d2seds2 (d2seds2,d2phidx2,se,a,b,c,mu,x,
+      call ummdp_yield_vegter_d2seds2 (d2seds2,d2phidx2,se,a,b,c,mu,x,
      1         vcos2t,vsin2t,iareaflag,dxds,dphidx,isflag,s,dseds,
      2                                 pryld,ndyld)
 c
       end if
 c
       return
-      end subroutine ummdp_vegter_core
+      end subroutine ummdp_yield_vegter_core
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE HINGEPOINT b(i,i=1~2)
 c
-      subroutine ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+      subroutine ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,
+     1                                           s )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -815,15 +801,15 @@ c
       b(2) = b2u / bb
 c
       return
-      end subroutine ummdp_vegter_hingepoint
+      end subroutine ummdp_yield_vegter_hingepoint
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE FOURIER COEFFICIENT mu(0<=mu<=1)
 c
-      subroutine ummdp_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta,
-     1                                  aa,bb,cc,dd)
+      subroutine ummdp_yield_vegter_mu ( x,a,b,c,mu,iareaflag,s,theta,
+     1                                   aa,bb,cc,dd)
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -875,14 +861,14 @@ c
       end if
 c
       return
-      end subroutine ummdp_vegter_calc_mu
+      end subroutine ummdp_yield_vegter_mu
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE NORMALIZED YIELD LOCUS
 c
-      subroutine ummdp_vegter_calc_fi ( x,a,b,c,mu,f )
+      subroutine ummdp_yield_vegter_fi ( x,a,b,c,mu,f )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -899,15 +885,15 @@ c
       end do
 c
       return
-      end subroutine ummdp_vegter_calc_fi
+      end subroutine ummdp_yield_vegter_fi
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CAKCULATE dbdc(i) (i=1~2) eq.(A.7)
 c
-      subroutine ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                                    dndc,dmdc,iareaflag,P,nnmm )
+      subroutine ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+     1                                     dndc,dmdc,iareaflag,P,nnmm )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -941,16 +927,16 @@ c
       dbdc(2) = nminv * (P(2)*nn(1)-P(1)*mm(1))
 c
       return
-      end subroutine ummdp_vegter_calc_dbdc
+      end subroutine ummdp_yield_vegter_dbdc
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. dphidx(i) (i=1~3)  eq.(21)~(23)
 c
-      subroutine ummdp_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,
-     1                                      dcdc,mm,nn,dndc,dmdc,f,  
-     2                                      iareaflag,mu,x,dfdmu,dfdc )
+      subroutine ummdp_yield_vegter_dphidx ( dphidx,se,a,b,c,dadc,dbdc,
+     1                                       dcdc,mm,nn,dndc,dmdc,f,  
+     2                                       iareaflag,mu,x,dfdmu,dfdc )
 c-----------------------------------------------------------------------   
       implicit none
 c
@@ -1030,16 +1016,16 @@ c
       end do
 c
       return
-      end subroutine ummdp_vegter_calc_dphidx
+      end subroutine ummdp_yield_vegter_dphidx
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE FIRST ORDER DERIVATIVE
 c
-      subroutine ummdp_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,
-     1                                     vsin2t,iareaflag,isflag,
-     2                                     dxds )
+      subroutine ummdp_yield_vegter_dseds ( dseds,x,dphidx,vcos2t,
+     1                                      vsin2t,iareaflag,isflag,
+     2                                      dxds )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1105,8 +1091,7 @@ c
       end if
 c
 c                                   ---- calc. dseds(i) (1=1~3)  eq.(20)
-      call ummdp_utility_clear1 ( dseds,3 )
-c
+      dseds = 0.0d0
       do i = 1,3
         do j = 1,3
           dseds(i) = dseds(i) + dxds_t(i,j)*dphidx(j)
@@ -1114,17 +1099,17 @@ c
       end do
 c
       return
-      end subroutine ummdp_vegter_calc_dseds
+      end subroutine ummdp_yield_vegter_dseds
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2bdc2(i) (i=1~2)
 c
-      subroutine ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                                      dndc,dmdc,iareaflag,d2adc2,
-     2                                      d2bdc2,d2cdc2,d2ndc2,
-     3                                      d2mdc2,P,nnmm,s )      
+      subroutine ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+     1                                       dndc,dmdc,iareaflag,d2adc2,
+     2                                       d2bdc2,d2cdc2,d2ndc2,
+     3                                       d2mdc2,P,nnmm,s )      
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1165,19 +1150,19 @@ c
      2            + dp2n1p1m1/nnmm
 c
       return
-      end subroutine ummdp_vegter_calc_d2bdc2
+      end subroutine ummdp_yield_vegter_d2bdc2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2phidx2(k,l) (k,l=1~3)
 c
-      subroutine ummdp_vegter_calc_d2phidx2 ( d2phidx2,se,a,b,c,dadc,
-     1                                        dbdc,dcdc,mm,nn,dndc,
-     2                                        dmdc,f,iareaflag,mu,x,
-     3                                        d2adc2,d2bdc2,d2cdc2,
-     4                                        d2ndc2,d2mdc2,dfdmu,dfdc,
-     5                                        s,aa,bb,cc,dd,dphidx )
+      subroutine ummdp_yield_vegter_d2phidx2 ( d2phidx2,se,a,b,c,dadc,
+     1                                         dbdc,dcdc,mm,nn,dndc,
+     2                                         dmdc,f,iareaflag,mu,x,
+     3                                         d2adc2,d2bdc2,d2cdc2,
+     4                                         d2ndc2,d2mdc2,dfdmu,dfdc,
+     5                                         s,aa,bb,cc,dd,dphidx )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1293,18 +1278,18 @@ c
       end do
 c
       return
-      end subroutine ummdp_vegter_calc_d2phidx2
+      end subroutine ummdp_yield_vegter_d2phidx2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2seds2(i,j) (i,j=1~3)
 c
-      subroutine ummdp_vegter_calc_d2seds2 ( d2seds2,d2phidx2,se,a,b,c,
-     1                                       mu,x,vcos2t,vsin2t,
-     2                                       iareaflag,dxds,dphidx,
-     3                                       isflag,s,dseds,pryld,
-     4                                       ndyld )      
+      subroutine ummdp_yield_vegter_d2seds2 ( d2seds2,d2phidx2,se,a,b,c,
+     1                                        mu,x,vcos2t,vsin2t,
+     2                                        iareaflag,dxds,dphidx,
+     3                                        isflag,s,dseds,pryld,
+     4                                        ndyld )      
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1399,36 +1384,37 @@ c
 c
 c                                      ---- calc. d2seds2(i,j) (i,j=1~3)
 c
-      call ummdp_utility_clear2 ( d2seds2,3,3 )
+      d2seds2 = 0.0d0
 c
       if (iflag/=0) then
-      call ummdp_vegter_d2seds2n(d2seds2,s,dseds,pryld,ndyld,se)
+        call ummdp_yield_vegter_d2seds2n ( d2seds2,s,dseds,pryld,ndyld,
+     1                                     se )
 c
       else
-      do i=1,3
-        do j=1,3
-          do k=1,3
-            do l=1,3
-              d2seds2(i,j)=d2seds2(i,j)
-     1                    +d2phidx2(k,l)*dxds(l,j)*dxds(k,i)
+        do i=1,3
+          do j=1,3
+            do k=1,3
+              do l=1,3
+                d2seds2(i,j) = d2seds2(i,j)
+     1                         + d2phidx2(k,l)*dxds(l,j)*dxds(k,i)
+              end do
+              d2seds2(i,j) = d2seds2(i,j)
+     1                       + dphidx(k)*d2xds2(k,i,j)
             end do
-              d2seds2(i,j)=d2seds2(i,j)
-     1                    +dphidx(k)*d2xds2(k,i,j)
           end do
         end do
-      end do
       end if
 c
       return
-      end subroutine ummdp_vegter_calc_d2seds2
+      end subroutine ummdp_yield_vegter_d2seds2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     numerical differential for 2nd order differentials
 c
-      subroutine ummdp_vegter_d2seds2n ( d2seds2,s,dseds,
-     1                                   pryld,ndyld,se )
+      subroutine ummdp_yield_vegter_d2seds2n ( d2seds2,s,dseds,pryld,
+     1                                         ndyld,se )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1452,11 +1438,11 @@ c
           if ( j==k ) then
             se0=se
             ss(j)=s0(j)-delta
-            call ummdp_vegter_yieldfunc(3,ss,sea,dseds,d2seds2,0,
-     1                                   pryld,ndyld)
+            call ummdp_yield_vegter_yieldfunc ( 3,ss,sea,dseds,d2seds2,
+     1                                          0,pryld,ndyld )
             ss(j)=s0(j)+delta
-            call ummdp_vegter_yieldfunc(3,ss,seb,dseds,d2seds2,0,
-     1                                    pryld,ndyld)
+            call ummdp_yield_vegter_yieldfunc ( 3,ss,seb,dseds,d2seds2,
+     1                                          0,pryld,ndyld )
             ss(j)=s0(j)
             a=(se0-sea)/delta
             b=(seb-se0)/delta
@@ -1464,20 +1450,20 @@ c
           else
             ss(j)=s0(j)-delta
             ss(k)=s0(k)-delta
-            call ummdp_vegter_yieldfunc(3,ss,seaa,dseds,d2seds2,0,
-     1                                    pryld,ndyld)
+            call ummdp_yield_vegter_yieldfunc ( 3,ss,seaa,dseds,d2seds2,
+     1                                         0,pryld,ndyld )
             ss(j)=s0(j)+delta
             ss(k)=s0(k)-delta
-            call ummdp_vegter_yieldfunc(3,ss,seba,dseds,d2seds2,0,
-     1                                    pryld,ndyld)
+            call ummdp_yield_vegter_yieldfunc ( 3,ss,seba,dseds,d2seds2,
+     1                                          0,pryld,ndyld )
             ss(j)=s0(j)-delta
             ss(k)=s0(k)+delta
-            call ummdp_vegter_yieldfunc(3,ss,seab,dseds,d2seds2,0,
-     1                                    pryld,ndyld)
+            call ummdp_yield_vegter_yieldfunc ( 3,ss,seab,dseds,d2seds2,
+     1                                          0,pryld,ndyld )
             ss(j)=s0(j)+delta
             ss(k)=s0(k)+delta
-            call ummdp_vegter_yieldfunc(3,ss,sebb,dseds,d2seds2,0,
-     1                                    pryld,ndyld)
+            call ummdp_yield_vegter_yieldfunc ( 3,ss,sebb,dseds,d2seds2,
+     1                                          0,pryld,ndyld )
             ss(j)=s0(j)
             ss(k)=s0(k)
             a=(seba-seaa)/(2.0d0*delta)
@@ -1488,15 +1474,15 @@ c
       end do
 c
       return
-      end subroutine ummdp_vegter_d2seds2n
+      end subroutine ummdp_yield_vegter_d2seds2n
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. equivalent stress for d2seds2n
 c
-      subroutine ummdp_vegter_yieldfunc ( nttl,s,se,dseds,d2seds2,
-     1                                    nreq,pryld,ndyld )
+      subroutine ummdp_yield_vegter_yieldfunc ( nttl,s,se,dseds,d2seds2,
+     1                                          nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1508,10 +1494,10 @@ c
       real*8,intent(out) :: d2seds2(3,3)
 c-----------------------------------------------------------------------
 c
-      call ummdp_vegter ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      call ummdp_yield_vegter ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c
       return
-      end subroutine ummdp_vegter_yieldfunc
+      end subroutine ummdp_yield_vegter_yieldfunc
 c
 c
 c

@@ -436,7 +436,7 @@ c
       if ( nvbs >= 4 ) then
         write(6,'(//8xA/)') '>> Properties'
         do i = 1,n
-          write (6,'(12xA8,I2,A3,E)') '. props(',i,') =',prop(i)
+          write (6,'(12xA8,I2,A3,E20.12)') '. props(',i,') =',prop(i)
         end do
       end if
 c
@@ -493,7 +493,6 @@ c
      1       ami(nnn,nnn),um(nttl,nnn),cm(nttl,nnn),em1(nttl,nnn),
      2       em2(nttl,nnn),bm(nnn,nttl)
       real*8 dvkdx(npbs,npbs,nttl,nttl)
-      logical debug
       character*100 text
 c
 c-----------------------------------------------------------------------
@@ -586,9 +585,7 @@ c       ndiv    | division number of multistage
 c
 c-----------------------------------------------------------------------
 c
-      debug = .true.
-      debug = .false.
-      tol = 1.0d-5
+      tol = 1.0d-8
       maxnr = 25  
       ndiv =  5   
       maxnest = 10
@@ -1246,19 +1243,7 @@ c
 c
       integer ne,ip,lay,nechk,ipchk,laychk,nchk
 c-----------------------------------------------------------------------
-c                             specify verbose level and point
-c      nvbs0 = 0   ! verbose mode
 c
-c           0  error message only
-c           1  summary of MsRM
-c           2  detail of MsRM and summary of NR
-c           3  detail of NR
-c           4  input/output
-c           5  all status for debug
-c
-c       MsRM : Multistage Return Mapping
-c       NR   : Newton-Raphson
-c-----------------------------------------------------------------------
       nechk = 1     ! element no. to be checked
       ipchk = 1     ! integration point no. to checked
       laychk = 1    ! layer no. to be checked
@@ -2398,20 +2383,20 @@ c
       real*8 prela(ndela)
 c
       integer ntela,i
-      character*20 fmtid,fmtpr
+      character*50 fmtid,fmtpr
 c-----------------------------------------------------------------------
 c
       fmtid = '(16xA,I1)'
-      fmtpr = '(16xA10,I1,A3,E)'
+      fmtpr = '(16xA10,I1,A3,E20.12)'
 c
       write (6,'(/12xA)') '> Elasticity'
 c
       ntela = nint(prela(1))
       select case ( ntela )
       case ( 0 )
-        write (6,fmtid) '> Young Modulus & Poisson Ratio | ',ntela
+        write (6,fmtid) '. Young Modulus & Poisson Ratio | ',ntela
       case ( 1 )
-        write (6,fmtid) '> Bulk Modulus & Modulus of Rigidity | ',ntela
+        write (6,fmtid) '. Bulk Modulus & Modulus of Rigidity | ',ntela
       end select
 c
       do i = 1,ndela-1
@@ -2435,46 +2420,46 @@ c
 c
       integer i,j
       integer ntyld,n0,n
-      character*20 fmtid1,fmtid2,fmtpr
+      character*50 fmtid1,fmtid2,fmtpr
 c-----------------------------------------------------------------------
 c
       fmtid1 = '(16xA,I1)'
       fmtid2 = '(16xA,I2)'
-      fmtpr = '(16xA10,I1,A3,E)'
+      fmtpr = '(16xA10,I1,A3,E20.12)'
 c
       write (6,'(/12XA)') '> Yield Function'
 c
       ntyld = pryld(1)
       select case ( ntyld )
       case ( 0 )
-        write (6,fmtid1) '> von Mises | ',ntyld
+        write (6,fmtid1) '. von Mises | ',ntyld
       case ( 1 )
-        write (6,fmtid1) '> Hill 1948 | ',ntyld
+        write (6,fmtid1) '. Hill 1948 | ',ntyld
       case ( 2 )
-        write (6,fmtid1) '> Yld2004-18p | ',ntyld
+        write (6,fmtid1) '. Yld2004-18p | ',ntyld
       case ( 3 )
-        write (6,fmtid1) '> CPB 2006 | ',ntyld
+        write (6,fmtid1) '. CPB 2006 | ',ntyld
       case ( 4 )
-        write (6,fmtid1) '> Karafillis-Boyce 1993 | ',ntyld
+        write (6,fmtid1) '. Karafillis-Boyce 1993 | ',ntyld
       case ( 5 )
-        write (6,fmtid1) '> Hu 2005 | ',ntyld
+        write (6,fmtid1) '. Hu 2005 | ',ntyld
       case ( 6 )
-        write (6,fmtid1) '> Yoshida 2011 | ',ntyld
+        write (6,fmtid1) '. Yoshida 2011 | ',ntyld
 c
       case ( -1 )
-        write (6,fmtid2) '> Gotoh | ',ntyld
+        write (6,fmtid2) '. Gotoh | ',ntyld
       case ( -2 )
-        write (6,fmtid2) '> Yld2000-2d | ',ntyld
+        write (6,fmtid2) '. Yld2000-2d | ',ntyld
       case ( -3 )
-        write (6,fmtid2) '> Vegter | ',ntyld
+        write (6,fmtid2) '. Vegter | ',ntyld
       case ( -4 )
-        write (6,fmtid2) '> BBC 2005 | ',ntyld
+        write (6,fmtid2) '. BBC 2005 | ',ntyld
       case ( -5 )
-        write (6,fmtid2) '> Yld89 | ',ntyld
+        write (6,fmtid2) '. Yld89 | ',ntyld
       case ( -6 )
-        write (6,fmtid2) '> BBC 2008 | ',ntyld
+        write (6,fmtid2) '. BBC 2008 | ',ntyld
       case ( -7 )
-        write (6,fmtid2) '> Hill 1990 | ',ntyld
+        write (6,fmtid2) '. Hill 1990 | ',ntyld
       end select
 c
       select case ( ntyld )
@@ -2535,30 +2520,30 @@ c
       real*8 prihd(ndihd)
 c
       integer ntihd,i
-      character*20 fmtid,fmtpr
+      character*50 fmtid,fmtpr
 c-----------------------------------------------------------------------
 c
       fmtid = '(16xA,I1)'
-      fmtpr = '(16xA10,I1,A3,E)'
+      fmtpr = '(16xA10,I1,A3,E20.12)'
 c
       write (6,'(/12xA)') '> Isotropic Hardening Law'
 c
       ntihd = nint(prihd(1))
       select case ( ntihd )
       case ( 0 )
-        write (6,fmtid) '> Perfect Plasticity | ',ntihd
+        write (6,fmtid) '. Perfect Plasticity | ',ntihd
       case ( 1 )
-        write (6,fmtid) '> Linear | ',ntihd
+        write (6,fmtid) '. Linear | ',ntihd
       case ( 2 )
-        write (6,fmtid) '> Swift | ',ntihd
+        write (6,fmtid) '. Swift | ',ntihd
       case ( 3 )
-        write (6,fmtid) '> Ludwick | ',ntihd
+        write (6,fmtid) '. Ludwick | ',ntihd
       case ( 4 )
-        write (6,fmtid) '> Voce | ',ntihd
+        write (6,fmtid) '. Voce | ',ntihd
       case ( 5 )
-        write (6,fmtid) '> Voce & Linear | ',ntihd
+        write (6,fmtid) '. Voce & Linear | ',ntihd
       case ( 6 )
-        write (6,fmtid) '> Voce & Swift | ',ntihd
+        write (6,fmtid) '. Voce & Swift | ',ntihd
       end select
 c
       do i = 1,ndihd-1
@@ -2582,30 +2567,30 @@ c
 c
       integer i
       integer ntkin,n0
-      character*20 fmtid,fmtpr
+      character*50 fmtid,fmtpr
 c-----------------------------------------------------------------------
 c
       fmtid = '(16xA,I1)'
-      fmtpr = '(16xA10,I1,A3,E)'
+      fmtpr = '(16xA10,I1,A3,E20.12)'
 c
       write (6,'(/12xA)') '> Kinematic Hardening Law'
 c
       ntkin = nint(prkin(1))
       select case ( ntkin )
       case ( 0 )
-        write (6,fmtid) '> None | ',ntkin
+        write (6,fmtid) '. None | ',ntkin
       case ( 1 )
-        write (6,fmtid) '> Prager | ',ntkin
+        write (6,fmtid) '. Prager | ',ntkin
       case ( 2 )
-        write (6,fmtid) '> Ziegler | ',ntkin
+        write (6,fmtid) '. Ziegler | ',ntkin
       case ( 3 )
-        write (6,fmtid) '> Armstrong-Frederick | ',ntkin
+        write (6,fmtid) '. Armstrong-Frederick | ',ntkin
       case ( 4 )
-        write (6,fmtid) '> Chaboche I | ',ntkin
+        write (6,fmtid) '. Chaboche I | ',ntkin
       case ( 5 )
-        write (6,fmtid) '> Chaboche II | ',ntkin
+        write (6,fmtid) '. Chaboche II | ',ntkin
       case ( 6 )
-        write (6,fmtid) '> Yoshida-Uemori | ',ntkin
+        write (6,fmtid) '. Yoshida-Uemori | ',ntkin
       end select
 c
       do i = 1,ndkin-1
@@ -2628,30 +2613,30 @@ c
       real*8 prrup(ndrup)
 c
       integer ntrup,i
-      character*20 fmtid,fmtpr
+      character*50 fmtid,fmtpr
 c-----------------------------------------------------------------------
 c
       fmtid = '(16xA,I1)'
-      fmtpr = '(16xA10,I1,A3,E)'
+      fmtpr = '(16xA10,I1,A3,E20.12)'
 c
       write (6,'(/12xA)') '>> Uncoupled Rupture Criterion'
 c
       ntrup = nint(prrup(1))
       select case ( ntrup )
       case ( 0 )
-        write (6,fmtid) '> None | ',ntrup
+        write (6,fmtid) '. None | ',ntrup
       case ( 1 )
-        write (6,fmtid) '> Equivalent Plastic Strain | ',ntrup
+        write (6,fmtid) '. Equivalent Plastic Strain | ',ntrup
       case ( 2 )
-        write (6,fmtid) '> Cockroft and Latham | ',ntrup
+        write (6,fmtid) '. Cockroft and Latham | ',ntrup
       case ( 3 )
-        write (6,fmtid) '> Rice and Tracey | ',ntrup
+        write (6,fmtid) '. Rice and Tracey | ',ntrup
       case ( 4 )
-        write (6,fmtid) '> Ayada | ',ntrup
+        write (6,fmtid) '. Ayada | ',ntrup
       case ( 5 )
-        write (6,fmtid) '> Brozzo | ',ntrup
+        write (6,fmtid) '. Brozzo | ',ntrup
       case ( 6 )
-        write (6,fmtid) '> Forming Limit Diagram | ',ntrup
+        write (6,fmtid) '. Forming Limit Diagram | ',ntrup
       end select
 c
       do i = 1,ndrup-1
@@ -2675,22 +2660,25 @@ c
 			integer inc,nnrm,nshr
 c
 			integer ne,ip,lay,nttl,nerr
-      character*50 ptype
+      character*50 fmt1,fmt2,ptype,incs
 c-----------------------------------------------------------------------
+      fmt1 = '(/12xA,I7.1)'
+      fmt2 = '(12xA,I7.1)'
 c
       nttl = nnrm + nshr
 c
       write(6,'(2/8xA)') '>> Info'
 c
-      write (6,'(/12xA,I7.1)') '        Increment : ',inc
+      write (incs,'(I)') inc
+      write (6,'(/12xA,A)') '        Increment : ',adjustl(incs)
 c
-      write (6,'(/12xA,I7.1)') '          Element : ',ne
-      write (6, '(12xA,I7.1)') 'Integration Point : ',ip
-      write (6, '(12xA,I7.1)') '            Layer : ',lay
+      write (6,fmt1) '          Element : ',ne
+      write (6,fmt2) 'Integration Point : ',ip
+      write (6,fmt2) '            Layer : ',lay
 ! c
-      write (6,'(/12xA,I7.1)') ' Total Components : ',nttl
-      write (6, '(12xA,I7.1)') 'Normal Components : ',nnrm
-      write (6, '(12xA,I7.1)') ' Shear Components : ',nshr
+      write (6,fmt1) ' Total Components : ',nttl
+      write (6,fmt2) 'Normal Components : ',nnrm
+      write (6,fmt2) ' Shear Components : ',nshr
 ! c
       nerr = 0
       if ( nnrm == 3 ) then

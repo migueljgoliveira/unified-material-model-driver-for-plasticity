@@ -1,7 +1,7 @@
 ************************************************************************
 c     VON MISES YIELD FUNCTION AND DERIVATIVES
 c
-      subroutine ummdp_mises ( s,se,dseds,d2seds2,nreq )
+      subroutine ummdp_yield_mises ( s,se,dseds,d2seds2,nreq )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -19,7 +19,7 @@ c
 c-----------------------------------------------------------------------
 c	
 c                                               ---- coefficients matrix
-      call ummdp_utility_clear2 ( c,6,6 )
+      c = 0.0d0
       do i = 1,3
         do j = 1,3
           c(i,j) = -0.5d0
@@ -50,7 +50,7 @@ c                                              ---- 2nd order derivative
       end if
 c
       return
-      end subroutine ummdp_mises
+      end subroutine ummdp_yield_mises
 c
 c
 c

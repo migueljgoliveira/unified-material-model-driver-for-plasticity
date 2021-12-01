@@ -3,8 +3,8 @@ c     YOSHIDA2011 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2013.01.010
 c
-      subroutine ummdp_yoshida2011 ( s,se,dseds,d2seds2,nreq,
-     1                               pryld,ndyld )
+      subroutine ummdp_yield_yoshida2011 ( s,se,dseds,d2seds2,nreq,
+     1                                     pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -65,19 +65,19 @@ c
       a(15) = 1.0d0 * 27.0d0 * pryld(1+15)          ! 27   *c15
       a(16) = 1.0d0 * 27.0d0 * pryld(1+16)          ! 27   *c16
 c
-      call ummdp_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
-     1                          a,ipow,maxa,nterms )
+      call ummdp_yield_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,a,
+     1                               ipow,maxa,nterms )
 c
       return
-      end subroutine ummdp_yoshida2011
+      end subroutine ummdp_yield_yoshida2011
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     HU2005 & YOSHIDA2011 STYLE POLYNOMIAL TYPE YIELD FUNCTION
 c
-      subroutine ummdp_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
-     1                                a,ipow,maxa,nterms )
+      subroutine ummdp_yield_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
+     1                                     a,ipow,maxa,nterms )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -219,7 +219,7 @@ c
       end do
 c
       return
-      end subroutine ummdp_hy_polytype
+      end subroutine ummdp_yield_hy_polytype
 c
 c
 c

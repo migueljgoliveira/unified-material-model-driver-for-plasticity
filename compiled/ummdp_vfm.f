@@ -257,7 +257,7 @@ c
       if ( nvbs >= 4 ) then
         write(6,'(//8xA/)') '>> Properties'
         do i = 1,n
-          write (6,'(12xA8,I2,A3,E)') '. props(',i,') =',prop(i)
+          write (6,'(12xA8,I2,A3,E20.12)') '. props(',i,') =',prop(i)
         end do
       end if
 c
@@ -314,8 +314,7 @@ c
      1       ami(nnn,nnn),um(nttl,nnn),cm(nttl,nnn),em1(nttl,nnn),
      2       em2(nttl,nnn),bm(nnn,nttl)
       real*8 dvkdx(npbs,npbs,nttl,nttl)
-      logical debug
-      character*100 text
+      character*100 text,tmp
 c
 c-----------------------------------------------------------------------
 c     >>> Arguments List
@@ -407,9 +406,7 @@ c       ndiv    | division number of multistage
 c
 c-----------------------------------------------------------------------
 c
-      debug = .true.
-      debug = .false.
-      tol = 1.0d-5
+      tol = 1.0d-8
       maxnr = 25  
       ndiv =  5   
       maxnest = 10
@@ -455,7 +452,7 @@ c
         call ummdp_print_rupture   ( prrup,ndrup )
       end if
 c                                                           ---- set [U]
-      call ummdp_utility_clear2( um,nttl,nnn )
+      um = 0.0d0
       i1 = 1
       do i2 = 1,npbs+1
         do j = 1,nttl
@@ -631,7 +628,8 @@ c
         knr = knr + 1
         nite = nite + 1
         if ( nvbs >= 3 ) then
-          write (6,'(//12xA,I)') '+ Iteration : ',knr
+          write(tmp,'(I)') knr
+          write (6,'(//12xA,A)') 'Iteration : ',adjustl(tmp)
           text = 'Equivalent Plastic Strain Increment'
           call ummdp_utility_print3 ( text,dp,4 )
         end if
@@ -761,7 +759,7 @@ c                                                              * set [A]
           end do
         end do
 c                                                           ---- set {W}
-        call ummdp_utility_clear1( wv,nnn )
+        wv = 0.0d0
         do i1 = 1, npbs+1
           do j1 = 1,nttl
             k1 = (i1-1)*nttl + j1
@@ -823,7 +821,7 @@ c                              ---- ddp=(g1-{m}^T[C]{G})/(H+{m}^T[C]{W})
 c                                                         ---- update dp
         dp = dp + ddp
         if ( nvbs >= 3 ) then
-          write(6,'(//16xA)') '>> Update'
+          write(6,'(//16xA)') '> Update'
           text = 'Equivalent Plastic Strain Increment'
           call ummdp_utility_print3 ( text,ddp,8 )
           text = 'Updated Equivalent Plastic Strain'
@@ -838,7 +836,7 @@ c                                                         ---- update dp
         end if
 c                                                  ---- update s2 and x2
         do i1 = 1,npbs+1
-          call ummdp_utility_clear1( vv,nttl )
+          vv = 0.0d0
           do j1 = 1,nttl
             k1 = (i1-1)*nttl + j1
             do k2 = 1,nnn
@@ -928,8 +926,6 @@ c
           write (6,*) 'Initial Stress Gap         :',sgapi
           write (6,*) 'Increment of Equivalent Plastic Strain :',dp
           write (6,*) 'Updated Equivalent Plastic Strain :',p+dp
-        else
-          write (6,'(8xA)') 'NO MsRM'
         end if
       end if
 c
@@ -958,7 +954,7 @@ c                                      ---- consistent material jacobian
         write(6,'(//8xA)') '>> Material Jacobian'
       end if
 c                                                           ---- set [B]
-      call ummdp_utility_clear2( bm,nnn,nttl )
+      bm = 0.0d0
       i1 = 1
       i2 = 1
       do j1 = 1,nttl
@@ -976,7 +972,7 @@ c                                               ---- {V1}={m}-dp*[M1]{W}
         v1(i) = dseds(i) - dp*vv(i)
       end do
 c                                                 ---- [M2]={V1}{m}^T[C]
-      call ummdp_utility_clear2 ( em2,nttl,nnn )
+      em2 = 0.0d0
       do i = 1,nttl
         do j = 1,nnn
           do k = 1,nttl
@@ -1067,19 +1063,7 @@ c
 c
       integer ne,ip,lay,nechk,ipchk,laychk,nchk
 c-----------------------------------------------------------------------
-c                             specify verbose level and point
-c      nvbs0 = 0   ! verbose mode
 c
-c           0  error message only
-c           1  summary of MsRM
-c           2  detail of MsRM and summary of NR
-c           3  detail of NR
-c           4  input/output
-c           5  all status for debug
-c
-c       MsRM : Multistage Return Mapping
-c       NR   : Newton-Raphson
-c-----------------------------------------------------------------------
       nechk = 1     ! element no. to be checked
       ipchk = 1     ! integration point no. to checked
       laychk = 1    ! layer no. to be checked
@@ -1134,7 +1118,7 @@ c
           erigid = eg
         end if
 c                                       ---- set 6*6 matrix for 3d solid
-        call ummdp_utility_clear2( delast3d,6,6 )
+        delast3d = 0.0d0
         do i = 1,3
           do j = 1,3
             if ( i == j ) then
@@ -2219,20 +2203,20 @@ c
       real*8 prela(ndela)
 c
       integer ntela,i
-      character*20 fmtid,fmtpr
+      character*50 fmtid,fmtpr
 c-----------------------------------------------------------------------
 c
       fmtid = '(16xA,I1)'
-      fmtpr = '(16xA10,I1,A3,E)'
+      fmtpr = '(16xA10,I1,A3,E20.12)'
 c
       write (6,'(/12xA)') '> Elasticity'
 c
       ntela = nint(prela(1))
       select case ( ntela )
       case ( 0 )
-        write (6,fmtid) '> Young Modulus & Poisson Ratio | ',ntela
+        write (6,fmtid) '. Young Modulus & Poisson Ratio | ',ntela
       case ( 1 )
-        write (6,fmtid) '> Bulk Modulus & Modulus of Rigidity | ',ntela
+        write (6,fmtid) '. Bulk Modulus & Modulus of Rigidity | ',ntela
       end select
 c
       do i = 1,ndela-1
@@ -2256,46 +2240,46 @@ c
 c
       integer i,j
       integer ntyld,n0,n
-      character*20 fmtid1,fmtid2,fmtpr
+      character*50 fmtid1,fmtid2,fmtpr
 c-----------------------------------------------------------------------
 c
       fmtid1 = '(16xA,I1)'
       fmtid2 = '(16xA,I2)'
-      fmtpr = '(16xA10,I1,A3,E)'
+      fmtpr = '(16xA10,I1,A3,E20.12)'
 c
       write (6,'(/12XA)') '> Yield Function'
 c
       ntyld = pryld(1)
       select case ( ntyld )
       case ( 0 )
-        write (6,fmtid1) '> von Mises | ',ntyld
+        write (6,fmtid1) '. von Mises | ',ntyld
       case ( 1 )
-        write (6,fmtid1) '> Hill 1948 | ',ntyld
+        write (6,fmtid1) '. Hill 1948 | ',ntyld
       case ( 2 )
-        write (6,fmtid1) '> Yld2004-18p | ',ntyld
+        write (6,fmtid1) '. Yld2004-18p | ',ntyld
       case ( 3 )
-        write (6,fmtid1) '> CPB 2006 | ',ntyld
+        write (6,fmtid1) '. CPB 2006 | ',ntyld
       case ( 4 )
-        write (6,fmtid1) '> Karafillis-Boyce 1993 | ',ntyld
+        write (6,fmtid1) '. Karafillis-Boyce 1993 | ',ntyld
       case ( 5 )
-        write (6,fmtid1) '> Hu 2005 | ',ntyld
+        write (6,fmtid1) '. Hu 2005 | ',ntyld
       case ( 6 )
-        write (6,fmtid1) '> Yoshida 2011 | ',ntyld
+        write (6,fmtid1) '. Yoshida 2011 | ',ntyld
 c
       case ( -1 )
-        write (6,fmtid2) '> Gotoh | ',ntyld
+        write (6,fmtid2) '. Gotoh | ',ntyld
       case ( -2 )
-        write (6,fmtid2) '> Yld2000-2d | ',ntyld
+        write (6,fmtid2) '. Yld2000-2d | ',ntyld
       case ( -3 )
-        write (6,fmtid2) '> Vegter | ',ntyld
+        write (6,fmtid2) '. Vegter | ',ntyld
       case ( -4 )
-        write (6,fmtid2) '> BBC 2005 | ',ntyld
+        write (6,fmtid2) '. BBC 2005 | ',ntyld
       case ( -5 )
-        write (6,fmtid2) '> Yld89 | ',ntyld
+        write (6,fmtid2) '. Yld89 | ',ntyld
       case ( -6 )
-        write (6,fmtid2) '> BBC 2008 | ',ntyld
+        write (6,fmtid2) '. BBC 2008 | ',ntyld
       case ( -7 )
-        write (6,fmtid2) '> Hill 1990 | ',ntyld
+        write (6,fmtid2) '. Hill 1990 | ',ntyld
       end select
 c
       select case ( ntyld )
@@ -2356,30 +2340,30 @@ c
       real*8 prihd(ndihd)
 c
       integer ntihd,i
-      character*20 fmtid,fmtpr
+      character*50 fmtid,fmtpr
 c-----------------------------------------------------------------------
 c
       fmtid = '(16xA,I1)'
-      fmtpr = '(16xA10,I1,A3,E)'
+      fmtpr = '(16xA10,I1,A3,E20.12)'
 c
       write (6,'(/12xA)') '> Isotropic Hardening Law'
 c
       ntihd = nint(prihd(1))
       select case ( ntihd )
       case ( 0 )
-        write (6,fmtid) '> Perfect Plasticity | ',ntihd
+        write (6,fmtid) '. Perfect Plasticity | ',ntihd
       case ( 1 )
-        write (6,fmtid) '> Linear | ',ntihd
+        write (6,fmtid) '. Linear | ',ntihd
       case ( 2 )
-        write (6,fmtid) '> Swift | ',ntihd
+        write (6,fmtid) '. Swift | ',ntihd
       case ( 3 )
-        write (6,fmtid) '> Ludwick | ',ntihd
+        write (6,fmtid) '. Ludwick | ',ntihd
       case ( 4 )
-        write (6,fmtid) '> Voce | ',ntihd
+        write (6,fmtid) '. Voce | ',ntihd
       case ( 5 )
-        write (6,fmtid) '> Voce & Linear | ',ntihd
+        write (6,fmtid) '. Voce & Linear | ',ntihd
       case ( 6 )
-        write (6,fmtid) '> Voce & Swift | ',ntihd
+        write (6,fmtid) '. Voce & Swift | ',ntihd
       end select
 c
       do i = 1,ndihd-1
@@ -2403,30 +2387,30 @@ c
 c
       integer i
       integer ntkin,n0
-      character*20 fmtid,fmtpr
+      character*50 fmtid,fmtpr
 c-----------------------------------------------------------------------
 c
       fmtid = '(16xA,I1)'
-      fmtpr = '(16xA10,I1,A3,E)'
+      fmtpr = '(16xA10,I1,A3,E20.12)'
 c
       write (6,'(/12xA)') '> Kinematic Hardening Law'
 c
       ntkin = nint(prkin(1))
       select case ( ntkin )
       case ( 0 )
-        write (6,fmtid) '> None | ',ntkin
+        write (6,fmtid) '. None | ',ntkin
       case ( 1 )
-        write (6,fmtid) '> Prager | ',ntkin
+        write (6,fmtid) '. Prager | ',ntkin
       case ( 2 )
-        write (6,fmtid) '> Ziegler | ',ntkin
+        write (6,fmtid) '. Ziegler | ',ntkin
       case ( 3 )
-        write (6,fmtid) '> Armstrong-Frederick | ',ntkin
+        write (6,fmtid) '. Armstrong-Frederick | ',ntkin
       case ( 4 )
-        write (6,fmtid) '> Chaboche I | ',ntkin
+        write (6,fmtid) '. Chaboche I | ',ntkin
       case ( 5 )
-        write (6,fmtid) '> Chaboche II | ',ntkin
+        write (6,fmtid) '. Chaboche II | ',ntkin
       case ( 6 )
-        write (6,fmtid) '> Yoshida-Uemori | ',ntkin
+        write (6,fmtid) '. Yoshida-Uemori | ',ntkin
       end select
 c
       do i = 1,ndkin-1
@@ -2449,30 +2433,30 @@ c
       real*8 prrup(ndrup)
 c
       integer ntrup,i
-      character*20 fmtid,fmtpr
+      character*50 fmtid,fmtpr
 c-----------------------------------------------------------------------
 c
       fmtid = '(16xA,I1)'
-      fmtpr = '(16xA10,I1,A3,E)'
+      fmtpr = '(16xA10,I1,A3,E20.12)'
 c
       write (6,'(/12xA)') '>> Uncoupled Rupture Criterion'
 c
       ntrup = nint(prrup(1))
       select case ( ntrup )
       case ( 0 )
-        write (6,fmtid) '> None | ',ntrup
+        write (6,fmtid) '. None | ',ntrup
       case ( 1 )
-        write (6,fmtid) '> Equivalent Plastic Strain | ',ntrup
+        write (6,fmtid) '. Equivalent Plastic Strain | ',ntrup
       case ( 2 )
-        write (6,fmtid) '> Cockroft and Latham | ',ntrup
+        write (6,fmtid) '. Cockroft and Latham | ',ntrup
       case ( 3 )
-        write (6,fmtid) '> Rice and Tracey | ',ntrup
+        write (6,fmtid) '. Rice and Tracey | ',ntrup
       case ( 4 )
-        write (6,fmtid) '> Ayada | ',ntrup
+        write (6,fmtid) '. Ayada | ',ntrup
       case ( 5 )
-        write (6,fmtid) '> Brozzo | ',ntrup
+        write (6,fmtid) '. Brozzo | ',ntrup
       case ( 6 )
-        write (6,fmtid) '> Forming Limit Diagram | ',ntrup
+        write (6,fmtid) '. Forming Limit Diagram | ',ntrup
       end select
 c
       do i = 1,ndrup-1
@@ -2496,22 +2480,30 @@ c
 			integer inc,nnrm,nshr
 c
 			integer ne,ip,lay,nttl,nerr
-      character*50 ptype
+      character*50 fmt1,fmt2,fmt3,fmt4,ptype,tmp
 c-----------------------------------------------------------------------
+      fmt1 = '(/12xA,A)'
+      fmt2 =  '(12xA,A)'
+      fmt3 = '(/12xA,I1)'
+      fmt4 =  '(12xA,I1)'
 c
       nttl = nnrm + nshr
 c
       write(6,'(2/8xA)') '>> Info'
 c
-      write (6,'(/12xA,I7.1)') '        Increment : ',inc
+      write (tmp,'(I)') inc
+      write (6,fmt1) '        Increment : ',adjustl(tmp)
 c
-      write (6,'(/12xA,I7.1)') '          Element : ',ne
-      write (6, '(12xA,I7.1)') 'Integration Point : ',ip
-      write (6, '(12xA,I7.1)') '            Layer : ',lay
+      write (tmp,'(I)') ne
+      write (6,fmt1) '          Element : ',adjustl(tmp)
+      write (tmp,'(I)') ip
+      write (6,fmt2) 'Integration Point : ',adjustl(tmp)
+      write (tmp,'(I)') lay
+      write (6,fmt2) '            Layer : ',adjustl(tmp)
 ! c
-      write (6,'(/12xA,I7.1)') ' Total Components : ',nttl
-      write (6, '(12xA,I7.1)') 'Normal Components : ',nnrm
-      write (6, '(12xA,I7.1)') ' Shear Components : ',nshr
+      write (6,fmt3) ' Total Components : ',nttl
+      write (6,fmt4) 'Normal Components : ',nnrm
+      write (6,fmt4) ' Shear Components : ',nshr
 ! c
       nerr = 0
       if ( nnrm == 3 ) then
@@ -2633,87 +2625,87 @@ c
 c     ummdp_utility_file_exist ( flname )
 c       checking existence of files
 c
-c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c
-c     CLEAR 1st ORDER VECTOR A(N)
-c
-      subroutine ummdp_utility_clear1 ( a,n )
-c
-c-----------------------------------------------------------------------
-      implicit none
-c
-      integer,intent(in) :: n
-c
-      real*8,intent(inout) :: a(n)
-c
-      integer i
-c-----------------------------------------------------------------------
-c
-      do i = 1,n
-        a(i) = 0.0d0
-      end do
-c
-      return
-      end subroutine ummdp_utility_clear1
-c
-c
-c
-c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c
-c     CLEAR 2ND ORDER MATRIX
-c
-      subroutine ummdp_utility_clear2 ( a,n,m )
-c
-c-----------------------------------------------------------------------
-      implicit none
-c
-      integer,intent(in) :: n,m
-c
-      real*8,intent(inout) :: a(n,m)
-c
-      integer i,j
-c-----------------------------------------------------------------------
-c
-      do i = 1,n
-        do j = 1,m
-          a(i,j) = 0.0d0
-        end do
-      end do
-c
-      return
-      end subroutine ummdp_utility_clear2
-c
-c
-c
-c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c
-c     CLEAR 3RD ORDER MATRIX
-c
-      subroutine ummdp_utility_clear3 ( a,n,m,l )
-c
-c-----------------------------------------------------------------------
-      implicit none
-c
-      integer,intent(in) :: n,m,l
-c
-      real*8,intent(inout) ::  a(n,m,l)
-c
-      integer i,j,k
-c-----------------------------------------------------------------------
-c
-      do i = 1,n
-        do j = 1,m
-          do k = 1,l
-            a(i,j,k) = 0.0d0
-          end do
-        end do
-      end do
-c
-      return
-      end subroutine ummdp_utility_clear3
-c
-c
-c
+! c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! c
+! c     CLEAR 1st ORDER VECTOR A(N)
+! c
+!       subroutine ummdp_utility_clear1 ( a,n )
+! c
+! c-----------------------------------------------------------------------
+!       implicit none
+! c
+!       integer,intent(in) :: n
+! c
+!       real*8,intent(inout) :: a(n)
+! c
+!       integer i
+! c-----------------------------------------------------------------------
+! c
+!       do i = 1,n
+!         a(i) = 0.0d0
+!       end do
+! c
+!       return
+!       end subroutine ummdp_utility_clear1
+! c
+! c
+! c
+! c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! c
+! c     CLEAR 2ND ORDER MATRIX
+! c
+!       subroutine ummdp_utility_clear2 ( a,n,m )
+! c
+! c-----------------------------------------------------------------------
+!       implicit none
+! c
+!       integer,intent(in) :: n,m
+! c
+!       real*8,intent(inout) :: a(n,m)
+! c
+!       integer i,j
+! c-----------------------------------------------------------------------
+! c
+!       do i = 1,n
+!         do j = 1,m
+!           a(i,j) = 0.0d0
+!         end do
+!       end do
+! c
+!       return
+!       end subroutine ummdp_utility_clear2
+! c
+! c
+! c
+! c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! c
+! c     CLEAR 3RD ORDER MATRIX
+! c
+!       subroutine ummdp_utility_clear3 ( a,n,m,l )
+! c
+! c-----------------------------------------------------------------------
+!       implicit none
+! c
+!       integer,intent(in) :: n,m,l
+! c
+!       real*8,intent(inout) ::  a(n,m,l)
+! c
+!       integer i,j,k
+! c-----------------------------------------------------------------------
+! c
+!       do i = 1,n
+!         do j = 1,m
+!           do k = 1,l
+!             a(i,j,k) = 0.0d0
+!           end do
+!         end do
+!       end do
+! c
+!       return
+!       end subroutine ummdp_utility_clear3
+! c
+! c
+! c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
 c     SET UNIT 2ND ORDER MATRIX
@@ -2730,7 +2722,7 @@ c
       integer i
 c-----------------------------------------------------------------------
 c
-      call ummdp_utility_clear2 ( a,n,n )
+      a = 0.0d0 
       do i = 1,n
         a(i,i) = 1.0d0
       end do
@@ -2760,7 +2752,7 @@ c
       write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
       write (6,fmt) '. ',text
 c
-      write(fmt,'(A,I2,A)') '(',14+tab,'x6F20.12)'
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6E20.12)'
       ! write (6,'(14x6E16.8)') (a(i),i=1,n)
       write (6,fmt) (a(i),i=1,n)
       
@@ -2790,7 +2782,7 @@ c
       write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
       write (6,fmt) '. ',text
 c
-      write(fmt,'(A,I2,A)') '(',14+tab,'x6F20.12)'
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6E20.12)'
       do i = 1,n
         ! write (6,'(14x6E16.8)') (a(i,j),j=1,m)
         write (6,fmt) (a(i,j),j=1,m)
@@ -2820,7 +2812,7 @@ c
       write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
       write (6,fmt) '. ',text
 c
-      write(fmt,'(A,I2,A)') '(',14+tab,'x6F20.12)'
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6E20.12)'
       ! write (6,'(14x6E16.8)') a
       write (6,fmt) a
 c
@@ -2847,7 +2839,7 @@ c
       integer i,j
 c-----------------------------------------------------------------------
 c
-      call ummdp_utility_clear1 ( v,nv )
+      v = 0.0d0
       do i = 1,nv
         do j = 1,nu
           v(i) = v(i) + a(i,j)*u(j)
@@ -2876,7 +2868,7 @@ c
       integer i,j,k
 c-----------------------------------------------------------------------
 c
-      call ummdp_utility_clear2 ( a,na1,na2 )
+      a = 0.0d0
       do i = 1,na1
         do j = 1,na2
           do k = 1,nbc
@@ -2977,7 +2969,7 @@ c                                                 ---- check determinant
       end if
 c                                                            ---- B=A^-1
       do j = 1,n
-        call ummdp_utility_clear1 ( y,n )
+        y = 0.0d0
         y(j) = 1.0d0
         call ummdp_utility_lubksb ( a,n,indx,y,eps )
         do i = 1,n
@@ -3000,7 +2992,7 @@ c                                                             ---- check
         call ummdp_utility_print2 ( text,a,n,n )
         text = 'inversed matrix [A]^-1'
         call ummdp_utility_print2 ( text,b,n,n )
-        call ummdp_utility_clear2 ( c,n,n )
+        c = 0.0d0
         do i = 1,n
           do j = 1,n
             do k = 1,n
@@ -3407,7 +3399,7 @@ c
 c     CALCULATE YIELD FUNCTION AND DERIVATIVES
 c
       subroutine ummdp_yield ( se,cdseds,cd2seds2,nreq,cs,nttl,nnrm,
-     1                         nshr,pryld,ndyld )                 
+     1                         nshr,pryld,ndyld )
 c
 c-----------------------------------------------------------------------
       implicit none
@@ -3416,7 +3408,7 @@ c
       real*8 se
 			real*8 cdseds(nttl),cs(nttl),pryld(ndyld)
 			real*8 cd2seds2(nttl,nttl)
-c       
+c
       integer i,j
       integer ntyld
       integer indx(6)
@@ -3465,7 +3457,7 @@ c                                        ---- set index to s(i) to cs(i)
         end do
       end if
 c                                                          ---- set s(i)
-      call ummdp_utility_clear1 ( s,6 )
+      s = 0.0d0
       do i = 1,6
         if ( indx(i) /= 0 ) then
           s(i) = cs(indx(i))
@@ -3473,27 +3465,24 @@ c                                                          ---- set s(i)
       end do
 c
       select case ( ntyld )
-      case ( 0 )                                             ! von Mises
-        call ummdp_mises ( s,se,dseds,d2seds2,nreq )
-c
-      case ( 1 )                                             ! Hill 1948
-        call ummdp_hill1948 ( s,se,dseds,d2seds2,nreq,pryld,ndyld ) 
-c
-      case ( 2 )                                           ! Yld2004-18p
-        call ummdp_yld2004_18p ( s,se,dseds,d2seds2,nreq,pryld,ndyld )                         
-c
-      case ( 3 )                                              ! CPB 2006
-        call ummdp_cpb2006 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )                      
-c
-      case ( 4 )                                 ! Karafillis-Boyce 1993
-        call ummdp_karafillis_boyce ( s,se,dseds,d2seds2,nreq,
-     1                                pryld,ndyld )                         
-c
-      case ( 5 )                                               ! Hu 2005
-        call ummdp_hu2005 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )        
-c
-      case ( 6 )                                          ! Yoshida 2011
-        call ummdp_yoshida2011 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )            
+      case ( 0 )
+        call ummdp_yield_mises ( s,se,dseds,d2seds2,nreq )
+      case ( 1 )
+        call ummdp_yield_hill1948 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                              ndyld )
+      case ( 2 )
+        call ummdp_yield_yld2004 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+     1                                 
+      case ( 3 )
+        call ummdp_yield_cpb2006 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      case ( 4 )
+        call ummdp_yield_karafillisboyce ( s,se,dseds,d2seds2,nreq,
+     1                                     pryld,ndyld )
+      case ( 5 )
+        call ummdp_yield_hu2005 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      case ( 6 )
+        call ummdp_yield_yoshida2011 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                 ndyld )
 c
       case default
         write (6,*) 'error in ummdp_yield'
@@ -3527,27 +3516,27 @@ c
 c                                       ---- plane stress yield criteria
 c
       select case ( ntyld )
-      case ( -1 )                                    ! Gotoh Biquadratic
-        call ummdp_gotoh ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )
-c
-      case ( -2 )                                           ! Yld2000-2d
-        call ummdp_yld2000 ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )
-c
-      case ( -3 )                                               ! Vegter
-        call ummdp_vegter ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )
-c
-      case ( -4 )                                             ! BBC 2005
-        call ummdp_bbc2005 ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )  
-c
-      case ( -5 )                                                ! Yld89
-        call ummdp_yld89 ( cs,se,cdseds,cd2seds2,nreq, pryld,ndyld )                 
-c
-      case ( -6 )                                             ! BBC 2008
-        call ummdp_bbc2008 ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )               
-c
-      case ( -7 )                                            ! Hill 1990
-        call ummdp_hill1990 ( cs,se,cdseds,cd2seds2,nreq,pryld,ndyld )                 
-c
+      case ( -1 )
+        call ummdp_yield_gotoh ( cs,se,cdseds,cd2seds2,nreq,pryld,
+     1                           ndyld )
+      case ( -2 )
+        call ummdp_yield_yld2000 ( cs,se,cdseds,cd2seds2,nreq,pryld,
+     1                             ndyld )
+      case ( -3 )
+        call ummdp_yield_vegter ( cs,se,cdseds,cd2seds2,nreq,pryld,
+     1                            ndyld )
+      case ( -4 )
+        call ummdp_yield_bbc2005 ( cs,se,cdseds,cd2seds2,nreq,pryld,
+     1                             ndyld )
+      case ( -5 )
+        call ummdp_yield_yld89 ( cs,se,cdseds,cd2seds2,nreq, pryld,
+     1                           ndyld )
+      case ( -6 )
+        call ummdp_yield_bbc2008 ( cs,se,cdseds,cd2seds2,nreq,pryld,
+     1                             ndyld )
+      case ( -7 )
+        call ummdp_yield_hill1990 ( cs,se,cdseds,cd2seds2,nreq,pryld,
+     1                              ndyld )
       case default
         write (6,*) 'error in ummdp_yield'
         write (6,*) 'ntyld error :',ntyld
@@ -3563,7 +3552,8 @@ c     BBC2005 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: 
 c
-      subroutine ummdp_bbc2005 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      subroutine ummdp_yield_bbc2005 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                 ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3614,7 +3604,6 @@ c                                            ---- anisotropic parameters
       P = pryld(1+7)
       Q = pryld(1+8)
       R = pryld(1+9)
-c
 c                                                 ---- equivalent stress
       th(1) = L*s(1)+M*s(2)
       th(2) = sqrt((N*s(1)-P*s(2))**2+s(3)**2)
@@ -3679,16 +3668,15 @@ c
         lth2_3 = lth(2)+lth(3)
         lth23  = lth(2)*lth(3)
 c
-        if (lth1_2 < 1e-15 * se**2) then
+        if (lth1_2 < 1e-15*se**2) then
           lth1_2 = 1e-15 * se**2
         end if
 c
-        if (lth2_3 < 1e-15 * se**2) then
+        if (lth2_3 < 1e-15*se**2) then
           lth2_3 = 1e-15 * se**2
         end if
 c
-        dphidlth(:) = 0.0d0
-c
+        dphidlth = 0.0d0
         do i = 0,mm  
           dphidlth(1) = dphidlth(1) + fact(k)/(fact(k-2*i)*fact(2*i))*
      1     (2*a*(i*4**i*lth(2)**i*lth(1)**(i-1)*lth1_2
@@ -3710,22 +3698,22 @@ c
         dlthds(1,1) = 2 * L * (M*s(2)+L*s(1))
         dlthds(1,2) = 2 * M * (M*s(2)+L*s(1))
         dlthds(1,3) = 0.0d0
+c
         dlthds(2,1) = 2 * N * (N*s(1)-P*s(2))
         dlthds(2,2) = -2 * P * (N*s(1)-P*s(2))
         dlthds(2,3) = 2 * s(3)
+c
         dlthds(3,1) = 2 * Q * (Q*s(1)-R*s(2))
         dlthds(3,2) = -2 * R * (Q*s(1)-R*s(2))
         dlthds(3,3) = 2 * s(3)
 c
+        dseds = 0.0d0
         do i = 1,3
-          dseds(i) = 0.0d0
           do j = 1,3
             dseds(i) = dseds(i) + dsedphi*dphidlth(j)*dlthds(j,i)
           end do
-c         write (150,*) s(1), s(2), s(3), i, dseds(i)
         end do
       end if
-c
 c                                            ---- 2nd order differential
 c
       if ( nreq >= 2 ) then
@@ -3781,7 +3769,7 @@ c
         d2phidlth2(2,1) = d2phidlth2(1,2)
         d2phidlth2(3,2) = d2phidlth2(2,3)
 c
-        d2lthds2(:,:,:) = 0.0d0
+        d2lthds2 = 0.0d0
 c
         d2lthds2(1,1,1) = 2.0d0 * L**2
         d2lthds2(1,1,2) = 2.0d0 * L * M
@@ -3800,9 +3788,9 @@ c
         d2lthds2(3,2,2) = 2.0d0 * R**2
         d2lthds2(3,3,3) = 2.0d0
 c
+        d2seds2 = 0.0d0
         do i=1,3
           do j=1,3
-            d2seds2(i,j)=0.0d0
             do ii=1,3
               do jj=1,3
                 d2seds2(i,j) = d2seds2(i,j)
@@ -3820,7 +3808,7 @@ c
       end if
 c
       return
-      end subroutine ummdp_bbc2005
+      end subroutine ummdp_yield_bbc2005
 c
 c
 c
@@ -3852,7 +3840,8 @@ c     BBC2008 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: 
 c
-      subroutine ummdp_bbc2008 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      subroutine ummdp_yield_bbc2008 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                 ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3869,17 +3858,17 @@ c
       nds = nint(pryld(2))
       ndk = nint(pryld(3))
 c
-      call ummdp_bbc2008_core ( s,se,dseds,d2seds2,nreq,
-     1                          pryld,ndyld,nds,ndk )
+      call ummdp_yield_bbc2008_core ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                ndyld,nds,ndk )
 c
       return
-      end subroutine ummdp_bbc2008
+      end subroutine ummdp_yield_bbc2008
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      subroutine ummdp_bbc2008_core ( s,se,dseds,d2seds2,nreq,
-     1                                pryld,ndyld,sp,kp )
+      subroutine ummdp_yield_bbc2008_core ( s,se,dseds,d2seds2,nreq,
+     1                                      pryld,ndyld,sp,kp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -3892,7 +3881,7 @@ c
 c
       integer csp,m,eta
       real*8 se1,wp,phiL,phiM,phiN,phiL_m,phiM_kp_m,phiN_m,se2k,
-     1       ummdp_bbc2008_get_se 
+     1       ummdp_yield_bbc2008_se 
       real*8 wpi(2),dFds(3),dphiLds(3),dphiMds(3),dphiNds(3)
       real*8 d2Fds2(3,3),d2phiLds2(3,3),d2phiMds2(3,3),d2phiNds2(3,3)
       real*8 Lp(sp,3,3),Mp(sp,3,3),Np(sp,3,3)
@@ -3950,13 +3939,14 @@ c-----------------------------------------------------------------------
 c     ----------------
 c        parameters
 c     ----------------
-      call ummdp_bbc2008_setup ( pryld,ndyld,sp,kp,wp,Lp,Mp,Np,kCm,se1 )
+      call ummdp_yield_bbc2008_setup ( pryld,ndyld,sp,kp,wp,Lp,Mp,Np,
+     1                                 kCm,se1 )
 c ----------------
 c  se section
 c ----------------
 c
 c                             ---- The unit of this se is (stress)^(2kp)
-      se = ummdp_bbc2008_get_se ( sp,kp,wp,s,Lp,Mp,Np,kCm )
+      se = ummdp_yield_bbc2008_se ( sp,kp,wp,s,Lp,Mp,Np,kCm )
 c
 c      ---- see eq.(x.y.2b) and eq.(x.y.2) for se2k and se, respectively
       se2k = se / se1
@@ -3971,15 +3961,13 @@ c
 c --------------------------
 c  dseds & d2seds2 section
 c --------------------------
-      call ummdp_utility_clear1 ( dFds,3 )
-      call ummdp_utility_clear2 ( d2Fds2,3,3 )
+      dFds = 0.0d0
+      d2Fds2 = 0.0d0
 
 c                              ---- long-long-long do loops starts here.
       do csp = 1,sp
-c
-        call ummdp_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,
-     1                                 csp,sp,wp,Lp,Mp,Np,s )
-c
+        call ummdp_yield_bbc2008_w_phi ( wpi,phiL,phiM,phiN,csp,sp,wp,
+     1                                   Lp,Mp,Np,s )
         do m = 0,kp
 c
 c     phiM^m, phiL^(kp-m) and phiN^m terms sometimes become 0**0.
@@ -3999,9 +3987,10 @@ c
           end if
 c
 c
-          call ummdp_bbc2008_get_dphiXds ( dphiLds,Lp,s,csp,m,sp )
-          call ummdp_bbc2008_get_dphiXds ( dphiMds,Mp,s,csp,(kp-m),sp )
-          call ummdp_bbc2008_get_dphiXds ( dphiNds,Np,s,csp,m,sp )
+          call ummdp_yield_bbc2008_dphiXds ( dphiLds,Lp,s,csp,m,sp )
+          call ummdp_yield_bbc2008_dphiXds ( dphiMds,Mp,s,csp,(kp-m),
+     1                                       sp )
+          call ummdp_yield_bbc2008_dphiXds ( dphiNds,Np,s,csp,m,sp )
 c
 c                                             ---- <dseds>, see (x.y.2f)
           dFds(1:3) = dFds(1:3) + kCm(m) * 
@@ -4012,12 +4001,14 @@ c                                             ---- <dseds>, see (x.y.2f)
 c
 c
 c                     ---- <d2seds2>, see (x.y.2g), d2F/ds(eta)ds(gamma)
-          if ( nreq ==2 ) then
+          if ( nreq == 2 ) then
 c
-            call ummdp_bbc2008_get_d2phiXds2 (d2phiLds2,Lp,s,csp,m,sp)
-            call ummdp_bbc2008_get_d2phiXds2 (d2phiMds2,Mp,s,csp,
-     1                                                       (kp-m),sp)
-            call ummdp_bbc2008_get_d2phiXds2 (d2phiNds2,Np,s,csp,m,sp)
+            call ummdp_yield_bbc2008_d2phiXds2 ( d2phiLds2,Lp,s,csp,m,
+     1                                           sp)
+            call ummdp_yield_bbc2008_d2phiXds2 ( d2phiMds2,Mp,s,csp,
+     1                                           (kp-m),sp )
+            call ummdp_yield_bbc2008_d2phiXds2 ( d2phiNds2,Np,s,csp,m,
+     1                                           sp)
 c
             do eta = 1,3
               d2Fds2(eta,1:3) = d2Fds2(eta,1:3) + kCm(m)
@@ -4030,13 +4021,8 @@ c
      7                            + dphiNds(1:3) * dphiMds(eta)
      8                            + d2phiNds2(eta,1:3) * phiM_kp_m ))
             end do
-c
           end if
-c
-c                                                ---- end of m=0,kp loop
         end do
-c
-c                                                ---- end of i=1,sp loop
       end do
 c
 c
@@ -4053,7 +4039,7 @@ c                  ---- < d2seds2 >, see (x.y.2g), d2se/ds(eta)ds(gamma)
       end if
 c
       return
-      end subroutine ummdp_bbc2008_core
+      end subroutine ummdp_yield_bbc2008_core
 c
 c
 c
@@ -4061,8 +4047,8 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     ummdp_bbc2008_get_w_phi ()
 c     A subroutine to get w^(i-1), w^(s-i) and phiX variables
 c
-      subroutine ummdp_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,
-     1                                     wp,Lp,Mp,Np,s )
+      subroutine ummdp_yield_bbc2008_w_phi ( wpi,phiL,phiM,phiN,csp,sp,
+     1                                       wp,Lp,Mp,Np,s )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4074,24 +4060,24 @@ c
       real*8,intent(out) :: phiM, phiL, phiN
       real*8,intent(out) :: wpi(2)
 c
-      real*8 ummdp_bbc2008_get_phiX
+      real*8 ummdp_yield_bbc2008_phiX
 c-----------------------------------------------------------------------
 c
       wpi(1) = wp**(csp-1)
       wpi(2) = wp**(sp-csp)
-      phiL = ummdp_bbc2008_get_phiX (Lp, s, csp , sp)
-      phiM = ummdp_bbc2008_get_phiX (Mp, s, csp , sp)
-      phiN = ummdp_bbc2008_get_phiX (Np, s, csp , sp)
+      phiL = ummdp_yield_bbc2008_phiX (Lp, s, csp , sp)
+      phiM = ummdp_yield_bbc2008_phiX (Mp, s, csp , sp)
+      phiN = ummdp_yield_bbc2008_phiX (Np, s, csp , sp)
 c
       return
-      end subroutine ummdp_bbc2008_get_w_phi
+      end subroutine ummdp_yield_bbc2008_w_phi
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE EQUIVALENT STRESS
 c
-      real*8 function ummdp_bbc2008_get_se ( sp,kp,wp,s,Lp,Mp,Np,kCm )
+      real*8 function ummdp_yield_bbc2008_se ( sp,kp,wp,s,Lp,Mp,Np,kCm )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4106,12 +4092,12 @@ c
       real*8 wpi(2)
 c-----------------------------------------------------------------------
 c
-      ummdp_bbc2008_get_se = 0.0d0
+      ummdp_yield_bbc2008_se = 0.0d0
 c
       do csp = 1,sp
 c
-        call ummdp_bbc2008_get_w_phi ( wpi,phiL,phiM,phiN,csp,sp,wp,
-     1                                  Lp,Mp,Np,s )
+        call ummdp_yield_bbc2008_w_phi ( wpi,phiL,phiM,phiN,csp,sp,wp,
+     1                                   Lp,Mp,Np,s )
 c
         do m = 0,kp
 c
@@ -4127,16 +4113,16 @@ c
             phiM_kp_m = phiM**(kp-m)
           end if
 c
-          ummdp_bbc2008_get_se = 
-     1    ummdp_bbc2008_get_se 
-     2     + kCm(m) * phiM_kp_m * ( wpi(1) * phiL_m + wpi(2) * phiN_m )
-c
+          ummdp_yield_bbc2008_se = ummdp_yield_bbc2008_se 
+     1                             + kCm(m)
+     2                               * phiM_kp_m 
+     3                               * (wpi(1)*phiL_m+wpi(2)*phiN_m)
         end do
 c
       end do
 c
       return
-      end function ummdp_bbc2008_get_se
+      end function ummdp_yield_bbc2008_se
 c
 c
 c
@@ -4144,7 +4130,7 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     ummdp_bbc2008_get_phiX (Xp, s, csp , sp)
 c     A function to calculate s(a)*X(a,b)*s(b) (summation convention)
 c
-      real*8 function ummdp_bbc2008_get_phiX ( Xp,s,csp,sp )
+      real*8 function ummdp_yield_bbc2008_phiX ( Xp,s,csp,sp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4173,10 +4159,10 @@ c                                  ---- convert 3rd tensor to 2nd tensor
       end do
 c
       call ummdp_utility_mv ( v,XXp,s,nc,nc)
-      call ummdp_utility_vvs (ummdp_bbc2008_get_phiX,v,s,nc)
+      call ummdp_utility_vvs ( ummdp_yield_bbc2008_phiX,v,s,nc )
 c
       return
-      end function ummdp_bbc2008_get_phiX
+      end function ummdp_yield_bbc2008_phiX
 c
 c
 c
@@ -4185,7 +4171,8 @@ c     ummdp_bbc2008_get_dphiXds (dphiXds, Xp, s, csp, lambda,sp)
 c     A subroutine to calculate d(phiX^(lambda))/ds.
 c     It returns dphiXds(nc).
 c
-      subroutine ummdp_bbc2008_get_dphiXds ( dphiXds,Xp,s,csp,lambda,sp)
+      subroutine ummdp_yield_bbc2008_dphiXds ( dphiXds,Xp,s,csp,lambda,
+     1                                         sp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4214,10 +4201,10 @@ c     nc: the number of components.
 c     XXp: = Xp(csp, nc, nc)
 c-----------------------------------------------------------------------
 c
-      call ummdp_utility_clear1(dphiXds,nc)
+      dphiXds = 0.0d0
 c
 c                              ---- If lambda is 0, return dphiXds = {0}
-      if ( lambda == 0) then
+      if ( lambda == 0 ) then
         return
       end if
 c
@@ -4242,7 +4229,7 @@ c
       end if
 c
       return
-      end subroutine ummdp_bbc2008_get_dphiXds
+      end subroutine ummdp_yield_bbc2008_dphiXds
 c
 c
 c
@@ -4251,8 +4238,8 @@ c     ummdp_bbc2008_get_d2phiXds2 (d2phiXds2, Xp, s, csp, lambda,sp)
 c     A subroutine to calculate d2(phiX^(lambda))/(dsds').
 c     It returns d2phiXdsds(nc,nc).
 c
-      subroutine ummdp_bbc2008_get_d2phiXds2 ( d2phiXds2,Xp,s,csp,
-     1                                         lambda,sp )
+      subroutine ummdp_yield_bbc2008_d2phiXds2 ( d2phiXds2,Xp,s,csp,
+     1                                           lambda,sp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4301,18 +4288,16 @@ c
       if ( lambda /= 2 ) then
         phi_lambda2 = phi**(lambda-2)
       end if
-c
-      call ummdp_utility_clear2 ( d2phiXds2,nc,nc )
-c
 c                                            ---- d2phiX/(ds(i)ds(1:nc))
+      d2phiXds2 = 0.0d0
       do i = 1,nc
-        d2phiXds2(i, 1:nc) = 2.0d0 * lambda * phi_lambda2 * 
+        d2phiXds2(i,1:nc) = 2.0d0 * lambda * phi_lambda2 * 
      1   ( 2.0d0 * (lambda - 1) * v(1:nc) * v(i)
      2    + phi * XXp(1:nc, i) )
       end do
 c
       return
-      end subroutine ummdp_bbc2008_get_d2phiXds2
+      end subroutine ummdp_yield_bbc2008_d2phiXds2
 c
 c
 c
@@ -4320,8 +4305,8 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     setup_bbc2008_parameters()
 c     A routine to setup local variables.
 c
-      subroutine ummdp_bbc2008_setup ( pryld,ndyld,sp,kp,wp,
-     1                                 Lp,Mp,Np,kCm,se1 )
+      subroutine ummdp_yield_bbc2008_setup ( pryld,ndyld,sp,kp,wp,Lp,Mp,
+     1                                       Np,kCm,se1 )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4333,7 +4318,7 @@ c
       real*8,intent(inout) :: kCm(0:kp)
 c
       integer csp,k,l,m,n
-      real*8 ummdp_bbc2008_get_se
+      real*8 ummdp_yield_bbc2008_se
       real*8 dummy_s(3)
       real*8 Comb(kp*2,0:kp*2)
 c-----------------------------------------------------------------------
@@ -4369,7 +4354,6 @@ c
             n = n + 1
           end do
         end if
-
       end do
 c
 c                                                           ---- tensors
@@ -4387,10 +4371,12 @@ c                                                      ---- L^(i) tensor
         Lp(csp,3,2) = Lp(csp,2,3)
 c                                                      ---- M^(i) tensor
         m = l + 2
-        call ummdp_bbc2008_setup_MN_tensors (m,csp,pryld,ndyld,Mp,sp)
+        call ummdp_yield_bbc2008_setup_MN_tensors ( m,csp,pryld,ndyld,
+     1                                              Mp,sp )
 c                                                      ---- N^(i) tensor
         n = m + 3
-        call ummdp_bbc2008_setup_MN_tensors (n,csp,pryld,ndyld,Np,sp)
+        call ummdp_yield_bbc2008_setup_MN_tensors ( n,csp,pryld,ndyld,
+     1                                              Np,sp)
       end do
 c
 c
@@ -4398,12 +4384,12 @@ c     equiv. stress in uniaxial stress state.
 c     dummy_s = (1.0d0, 0.0d0, 0.0d0)
 c     ** The unit of this se1 is (stress)^(2kp)
 c
-      call ummdp_utility_clear1 (dummy_s, 3)
+      dummy_s = 0.0d0
       dummy_s(1) = 1.0d0
-      se1 = ummdp_bbc2008_get_se (sp, kp, wp, dummy_s, Lp, Mp, Np, kCm)
+      se1 = ummdp_yield_bbc2008_se ( sp,kp,wp,dummy_s,Lp,Mp,Np,kCm )
 c
       return
-      end subroutine ummdp_bbc2008_setup
+      end subroutine ummdp_yield_bbc2008_setup
 c
 c
 c
@@ -4415,8 +4401,8 @@ c       This routine returns Mp or Np tensor.
 c       Mp and Np tensors are the same style,
 c       thus this subroutine has been created.
 c
-      subroutine ummdp_bbc2008_setup_MN_tensors ( ic,csp,
-     1                                            pryld,ndyld,Xp,sp )
+      subroutine ummdp_yield_bbc2008_setup_MN_tensors ( ic,csp,pryld,
+     1                                                  ndyld,Xp,sp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4437,7 +4423,7 @@ c
       Xp(csp,3,2) = Xp(csp,2,3)
 c
       return
-      end subroutine ummdp_bbc2008_setup_MN_tensors
+      end subroutine ummdp_yield_bbc2008_setup_MN_tensors
 c
 c
 c************************************************************************
@@ -4448,7 +4434,8 @@ c
 c     !!! CAUTION !!!
 c     Plane stress condition is NOT implemented in this code.
 c
-      subroutine ummdp_cpb2006 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      subroutine ummdp_yield_cpb2006 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                 ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -4462,7 +4449,7 @@ c
       integer i,j,k,m,n,l,iq,ip,ir
       real*8 pi,eps,a,ck,ai,H1,H2,H3,p,q,theta,F,D,DseDF,denom,D2seDF2,
      1       del,sea,seb,abc1,abc2,seaa,seba,seab,sebb,
-     2       ummdp_cpb2006_seND
+     2       ummdp_yield_cpb2006_seND
       real*8 s0(6),sigma(6),psigma(3),phi(3),psi(3),omega(3),DFDH(3),
      1       DFDpsigma(3),DFDs(6)
       real*8 c(6,6),ct(6,6),DpsigmaDH(3,3),DHdsigma(3,6),DsigmaDs(6,6),
@@ -4498,9 +4485,7 @@ c
       pi = acos(-1.0d0)
       eps = 1.0d-5
 c                                        ---- set anisotropic parameters
-c
-      call ummdp_utility_clear2 ( c,6,6 )
-c
+      c = 0.0d0
       c(1,1) = pryld(1+1)            ! C11
       c(1,2) = pryld(1+2)            ! C12
       c(1,3) = pryld(1+3)            ! C13
@@ -4532,8 +4517,7 @@ c
       omega(3) = (c(1,3) + c(2,3) - 2.0d0*c(3,3)) / 3.0d0
 c
 c      ---- Calculate 4th order orthotropic tensor "L" ( named ct here )
-      call ummdp_utility_clear2 ( ct,6,6 )
-c
+      ct = 0.0d0
       ct(1,1) = phi(1)
       ct(1,2) = psi(1)
       ct(1,3) = -omega(1)
@@ -4594,23 +4578,19 @@ c
 c
 c                                            ---- 1st order differential
       if ( nreq >= 1 ) then
-c                                              ---- D(se)/D(F) -> Scalar
+c                                                        ---- D(se)/D(F)
         DseDF = (1.0d0/D)**ai * ai * F**(ai-1.0d0)
-c                                    ---- D(F)/D(psigma) -> 1 x 3 Vector
+c                                                    ---- D(F)/D(psigma)
         do i = 1,3
           DFDpsigma(i) = a * (psigma(i)/abs(psigma(i))-ck) *
      1                  (abs(psigma(i))-ck*psigma(i))**(a-1.0d0)
         end do
 c
 c                                 ---- D(F)/D(H) by using D(psigma)/D(H)
-c                                         D(F)/D(H)      -> 1 x 3 Vector
-c                                         D(psigma)/D(H) -> 3 x 3 Matrix
-        call ummdp_utility_clear1 ( DFDH,3 )
-        call ummdp_utility_clear2 ( DpsigmaDH,3,3 )
-c
         if ( abs(psigma(2)-psigma(3)) / se > eps .and.
      1       abs(psigma(2)-psigma(1)) / se > eps ) then
 c                                                 ---- not Singular case
+          DpsigmaDH = 0.0d0
           do i = 1,3
             denom = psigma(i)**2.0d0 - 2.0d0*H1*psigma(i) - H2
             DpsigmaDH(i,1) = psigma(i)**2.0d0/denom
@@ -4618,6 +4598,7 @@ c                                                 ---- not Singular case
             DpsigmaDH(i,3) = 2.0d0/3.0d0/denom
           end do
 c
+          DFDH = 0.0d0
           do i = 1,3
             do j = 1,3
               DFDH(i) = DFDH(i) + DFDpsigma(j)*DpsigmaDH(j,i)
@@ -4651,8 +4632,8 @@ c
           end if
         end if
 c
-c                                     ---- D(H)/D(sigma) -> 3 x 6 Matrix
-        call ummdp_utility_clear2 ( DHDsigma,3,6 )
+c                                                     ---- D(H)/D(sigma)
+        DHDsigma = 0.0d0
 c
         DHDsigma(1,1) = 1.0d0 / 3.0d0
         DHDsigma(1,2) = 1.0d0 / 3.0d0
@@ -4674,17 +4655,15 @@ c                                            !!-sigma(6)**2.0d0)
         DHDsigma(3,6) = sigma(6)*sigma(4) - sigma(1)*sigma(5) !!...(3,5)=
         DHDsigma(3,5) = sigma(4)*sigma(5) - sigma(2)*sigma(6) !!...(3,6)=
 c
-c                                     ---- D(sigma)/D(s) -> 6 x 6 Matrix
+c                                                     ---- D(sigma)/D(s)
         do i = 1,6
           do j = 1,6
             DsigmaDs(i,j) = ct(i,j)
           end do
         end do
-c
-c                                        ---- D(se)/D(s) -> 1 x 3 Vector
-        call ummdp_utility_clear1 ( DFDs,6 )
-        call ummdp_utility_clear2 ( dummat,3,6 )
-c
+c                                                         ---- D(se)/D(s) 
+        DFDs = 0.0d0
+        dummat = 0.0d0
         do i = 1,6
           do j = 1,3
             do k = 1,6
@@ -4701,24 +4680,19 @@ c
 c
 c                                            ---- 2nd order differential
       if ( nreq >= 2 ) then
-c                                              ---- D(se)/D(F) -> Scalar
+c                                                        ---- D(se)/D(F)
         D2seDF2 = (1.0d0/D)**ai * ai * (ai-1.0d0) * F**(ai-2.0d0)
-c
-c                                  ---- D2(F)/D(psigma)2 -> 3 x 3 Matrix
-        call ummdp_utility_clear2 ( D2FDpsigma2,3,3 )
-c
+c                                                  ---- D2(F)/D(psigma)2
+        D2FDpsigma2 = 0.0d0
         do i = 1,3
           D2FDpsigma2(i,i) = a*(psigma(i)/abs(psigma(i))-ck)**2.0d0 *
      1                       (abs(psigma(i))-ck*psigma(i))**(a-2.0d0)
         end do
-c
-c                              ---- D2(psigma)/D(H)2 -> 3 x 3 x 3 Matrix
-        call ummdp_utility_clear3 ( D2psigmaDH2,3,3,3 )
-c
+c                                                  ---- D2(psigma)/D(H)2
         if ( abs(psigma(2)-psigma(3)) / se > eps .and.
      1       abs(psigma(2)-psigma(1)) / se > eps ) then
 c                                                 ---- Not Singular case
-c
+          D2psigmaDH2 = 0.0d0
           do i = 1,3
             denom = (psigma(i)**2.0d0-2.0d0*H1*psigma(i)-H2) ** 3.0d0
             D2psigmaDH2(i,1,1) = 2.0d0 * psigma(i)**3.0d0 * 
@@ -4738,10 +4712,8 @@ c
             D2psigmaDH2(i,3,2) = D2psigmaDH2(i,2,3)
             D2psigmaDH2(i,1,3) = D2psigmaDH2(i,3,1)
           end do
-c
-c                                       ---- D2(F)/D(H)2 -> 3 x 3 Matrix
-          call ummdp_utility_clear2 ( D2FDH2,3,3 )
-c
+c                                                       ---- D2(F)/D(H)2
+          D2FDH2 = 0.0d0
           do iq = 1,3
             do m = 1,3
               do ip = 1,3
@@ -4754,9 +4726,8 @@ c
               end do
             end do
           end do
-c
-c                               ---- D2(H)/D(sigma)2 -> 3 x 6 x 6 Matrix
-          call ummdp_utility_clear3 ( D2HDsigma2,3,6,6 )
+c                                                   ---- D2(H)/D(sigma)2
+          D2HDsigma2 = 0.0d0
 c
           D2HDsigma2(2,1,2) = -1.0d0 / 3.0d0
           D2HDsigma2(2,2,3) = -1.0d0 / 3.0d0
@@ -4798,11 +4769,9 @@ c
 c
           D2HDsigma2(3,3,4) = -sigma(4)
           D2HDsigma2(3,4,3) = D2HDsigma2(3,3,4)
-c
-c                                       ---- D2(F)/D(s)2 -> 6 x 6 Matrix
-          call ummdp_utility_clear2 ( D2FDs2,6,6 )
-          call ummdp_utility_clear2 ( dummat,3,6 )
-c
+c                                                       ---- D2(F)/D(s)2
+          D2FDs2 = 0.0d0
+          dummat = 0.0d0
           do i = 1,3
             do j = 1,6
               do ip = 1,6
@@ -4829,7 +4798,7 @@ c
               end do
             end do
           end do
-c                                      ---- D2(se)/D(s)2 -> 6 x 6 Matrix
+c                                                      ---- D2(se)/D(s)2
           do i = 1,6
             do j = 1,6
               d2seds2(i,j) = D2seDF2*DfDs(i)*DfDs(j) + DseDF*D2FDs2(i,j)
@@ -4847,9 +4816,9 @@ c
             do j = 1,6
               if ( i == j ) then
                 s0(i) = s(i) - del
-                sea = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
+                sea = ummdp_yield_cpb2006_seND ( s0,ct,phi,ck,a,ai )
                 s0(i) = s(i) + del
-                seb = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
+                seb = ummdp_yield_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i)
                 abc1 = (se-sea) / del
@@ -4858,19 +4827,19 @@ c
               else
                 s0(i) = s(i) - del
                 s0(j) = s(j) - del
-                seaa = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
+                seaa = ummdp_yield_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i) + del
                 s0(j) = s(j) - del
-                seba = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
+                seba = ummdp_yield_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i) - del
                 s0(j) = s(j) + del
-                seab = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
+                seab = ummdp_yield_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i) + del
                 s0(j) = s(j) + del
-                sebb = ummdp_cpb2006_seND ( s0,ct,phi,ck,a,ai )
+                sebb = ummdp_yield_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i)
                 s0(j) = s(j)
@@ -4884,14 +4853,14 @@ c
       end if
 c
       return
-      end subroutine ummdp_cpb2006
+      end subroutine ummdp_yield_cpb2006
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     NUMERICAL DIFFERENTIATION FOR EQUIVALENT STRESS
 c
-      real*8 function ummdp_cpb2006_seND ( s,ct,phi,ck,a,ai )
+      real*8 function ummdp_yield_cpb2006_seND ( s,ct,phi,ck,a,ai )
 c-----------------------------------------------------------------------
       implicit none
 c 
@@ -4937,10 +4906,10 @@ c                                           ---- denominator coefficient
      &    (abs(phi(2))-ck*phi(2))**a +
      &    (abs(phi(3))-ck*phi(3))**a
 c
-      ummdp_cpb2006_seND = (F/D) ** ai
+      ummdp_yield_cpb2006_seND = (F/D) ** ai
 c
       return
-      end function ummdp_cpb2006_seND
+      end function ummdp_yield_cpb2006_seND
 c
 c
 c
@@ -4949,7 +4918,8 @@ c     GOTOH BIQUADRATIC YIELD FUNCTION AND DERIVATIVES
 c
 c       doi:
 c
-      subroutine ummdp_gotoh ( s,se,dseds,d2seds2,nreq,pryld,ndyld )          
+      subroutine ummdp_yield_gotoh ( s,se,dseds,d2seds2,nreq,pryld,
+     1                               ndyld )          
 c------------------------------------------------------------- variables
       implicit none
 c
@@ -5010,13 +4980,13 @@ c
       se = sqrt(sqrt(phi))
 c                                            ---- 1st order differential
       if ( nreq >= 1 ) then
-        call ummdp_utility_clear2 ( dtds,4,3 )
+        dtds = 0.0d0
         dtds(1,1) = s(1) * 2.0d0
         dtds(2,1) = s(2)
         dtds(2,2) = s(1)
         dtds(3,2) = s(2) * 2.0d0
         dtds(4,3) = s(3) * 2.0d0
-        call ummdp_utility_clear1 ( v,4 )
+        v = 0.0d0
         do i = 1,3
           do j = 1,4
             do k = 1,4
@@ -5031,35 +5001,34 @@ c                                            ---- 1st order differential
       end if
 c                                            ---- 2nd order differential
       if ( nreq >= 2 ) then
-        call ummdp_utility_clear3 ( d2tds2,4,3,3 )
+        d2tds2 = 0.0d0
         d2tds2(1,1,1) = 2.0d0
         d2tds2(2,1,2) = 1.0d0
         d2tds2(2,2,1) = 1.0d0
         d2tds2(3,2,2) = 2.0d0
         d2tds2(4,3,3) = 2.0d0
-        call ummdp_utility_clear2 ( d2seds2,3,3 )
+        d2seds2 = 0.0d0
         do i = 1,3
           do j = 1,3
             do m = 1,4
               do n = 1,4
-                d2seds2(i,j) = d2seds2(i,j)+
-     1                       2.0d0*c(m          ,n       )*
-     2                        ( dtds(m,i)*dtds(  n  ,j)+
-     3                           t(  m)  *d2tds2(n,i,j)  )
+                d2seds2(i,j) = d2seds2(i,j)
+     1                         + 2.0d0*c(m,n)*
+     2                           * (dtds(m,i)*dtds(n,j)
+     3                             + t(m)*d2tds2(n,i,j))
               end do
             end do
           end do
         end do
         do i = 1,3
           do j = 1,3
-            d2seds2(i,j) = q*(d2seds2(  i,   j)
-     1                      -0.75d0*v(i)*v(j)/phi)
+            d2seds2(i,j) = q * (d2seds2(i,j)-0.75d0*v(i)*v(j)/phi)  
           end do
         end do
       end if
 c
       return
-      end subroutine ummdp_gotoh
+      end subroutine ummdp_yield_gotoh
 c
 c
 c
@@ -5068,7 +5037,8 @@ c     Hill 1948 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi:
 c
-      subroutine ummdp_hill1948 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      subroutine ummdp_yield_hill1948 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                  ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -5093,7 +5063,7 @@ c                                            ---- anisotropic parameters
       pm = pryld(1+5)
       pn = pryld(1+6)
 c                                               ---- coefficients matrix
-      call ummdp_utility_clear2 ( c,6,6 )
+      c = 0.0d0
       c(1,1) = pg + ph
       c(1,2) = -ph
       c(1,3) = -pg
@@ -5133,7 +5103,7 @@ c                                              ---- 2nd order derivative
       end if
 c
       return
-      end subroutine ummdp_hill1948
+      end subroutine ummdp_yield_hill1948
 c
 c
 c
@@ -5142,7 +5112,8 @@ c     HILL 1990 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/0022-5096(90)90006-P
 c
-      subroutine ummdp_hill1990 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )                    
+      subroutine ummdp_yield_hill1990 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                  ndyld )                    
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -5222,7 +5193,7 @@ c
 c
 c                               ---- coef. matrix of material parameters
 c                                ---- define a4-matrix consists of a & b
-      call ummdp_utility_clear2( a4,3,3 )
+      a4 = 0.0d0
       a4(1,1) = -2.0d0*a + b
       a4(2,2) = 2.0d0*a + b
       a4(1,2) = - b
@@ -5390,7 +5361,7 @@ c
         end do
 c
       return
-      end subroutine ummdp_hill1990
+      end subroutine ummdp_yield_hill1990
 c
 c
 c
@@ -5399,7 +5370,8 @@ c     HU2005 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2004.11.004
 c
-      subroutine ummdp_hu2005 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      subroutine ummdp_yield_hu2005 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -5453,11 +5425,11 @@ c
       a(8) =  pryld(1+8)    ! C2 <-
       a(9) =  pryld(1+6)    ! X7
 c
-      call ummdp_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
-     1                          a,ipow,maxa,nterms )
+      call ummdp_yield_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,a,
+     1                               ipow,maxa,nterms )
 c
       return
-      end subroutine ummdp_hu2005
+      end subroutine ummdp_yield_hu2005
 c
 c
 c************************************************************************
@@ -5465,8 +5437,8 @@ c     KARAFILLIS-BOYCE 1993 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi:
 c
-      subroutine ummdp_karafillis_boyce ( s,se,dseds,d2seds2,nreq,
-     1                                    pryld,ndyld )
+      subroutine ummdp_yield_karafillisboyce ( s,se,dseds,d2seds2,nreq,
+     1                                         pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -5554,8 +5526,7 @@ c
       c_p      = pryld(1+8)
 c                                                 ---- equivalent stress
       call ummdp_utility_mv ( smallS,L,s,6,6 )
-      call ummdp_karafillis_boyce_principal_stress( smallS,Jinvar,
-     1                                              largeS )
+      call ummdp_yield_karafillisboyce_pstress( smallS,Jinvar,largeS )                                             
 c
       phiN(1) = (largeS(1)-largeS(2))**(2*k_p)
      1        + (largeS(2)-largeS(3))**(2*k_p)
@@ -5922,15 +5893,15 @@ c
       end if
 c
       return
-      end subroutine ummdp_karafillis_boyce
+      end subroutine ummdp_yield_karafillisboyce
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     PRINCIPAL STRESSES AND INVARIANTS BY FRANÇOIS VIETE METHOD
 c
-      subroutine ummdp_karafillis_boyce_principal_stress ( stress,invar,
-     1                                                     pStress )
+      subroutine ummdp_yield_karafillisboyce_pstress ( stress,invar,
+     1                                                 pStress )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -5974,13 +5945,13 @@ c
       end if
 c
       return
-      end subroutine ummdp_karafillis_boyce_principal_stress
+      end subroutine ummdp_yield_karafillisboyce_pstress
 c
 c
 c************************************************************************
 c     VON MISES YIELD FUNCTION AND DERIVATIVES
 c
-      subroutine ummdp_mises ( s,se,dseds,d2seds2,nreq )
+      subroutine ummdp_yield_mises ( s,se,dseds,d2seds2,nreq )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -5998,7 +5969,7 @@ c
 c-----------------------------------------------------------------------
 c	
 c                                               ---- coefficients matrix
-      call ummdp_utility_clear2 ( c,6,6 )
+      c = 0.0d0
       do i = 1,3
         do j = 1,3
           c(i,j) = -0.5d0
@@ -6029,7 +6000,7 @@ c                                              ---- 2nd order derivative
       end if
 c
       return
-      end subroutine ummdp_mises
+      end subroutine ummdp_yield_mises
 c
 c
 c
@@ -6038,7 +6009,8 @@ c     YEGTER YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2005.04.009
 c
-      subroutine ummdp_vegter ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      subroutine ummdp_yield_vegter ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -6053,18 +6025,19 @@ c
 c-----------------------------------------------------------------------
 c
       nf = nint(pryld(2)) - 1
-      call ummdp_vegter_core ( s,se,dseds,d2seds2,nreq,pryld,ndyld,nf )           
+      call ummdp_yield_vegter_core ( s,se,dseds,d2seds2,nreq,pryld,
+     1                               ndyld,nf )           
 c
       return
-      end subroutine ummdp_vegter
+      end subroutine ummdp_yield_vegter
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     VEGTER CORE SUBROUTINE
 c
-      subroutine ummdp_vegter_core ( s,se,dseds,d2seds2,nreq,
-     1                               pryld,ndyld,nf )
+      subroutine ummdp_yield_vegter_core ( s,se,dseds,d2seds2,nreq,
+     1                                     pryld,ndyld,nf )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -6112,21 +6085,21 @@ c
       tol0 = 1.0d-8      ! exception treatment tolerance of stress state 
       tol2 = 1.0d-2      ! se tolerance change f(1) to f(2)
 c
-      f_bi0=     pryld(3)
-      r_bi0=     pryld(4)
-      do i=0,nf
-        phi_un(i)=pryld(4+i*4+1)
-        phi_sh(i)=pryld(4+i*4+2)
-        phi_ps(i)=pryld(4+i*4+3)
-        omg(   i)=pryld(4+i*4+4)
+      f_bi0 = pryld(3)
+      r_bi0 = pryld(4)
+      do i = 0,nf
+        phi_un(i) = pryld(4+i*4+1)
+        phi_sh(i) = pryld(4+i*4+2)
+        phi_ps(i) = pryld(4+i*4+3)
+        omg(   i) = pryld(4+i*4+4)
       end do
 c
-      se=0.0
-      do i=1,3
-        se=se+s(i)**2
+      se = 0.0d0
+      do i = 1,3
+        se = se + s(i)**2
       end do
-      if ( se<=0.0 ) then
-        se=0.0
+      if ( se <= 0.0d0 ) then
+        se = 0.0d0
         return
       end if
 
@@ -6137,112 +6110,118 @@ c     isflag  : 0 s(i,i=1,3)=0
 c             : 1 not s(i)=0
 c                                 ---- exception treatment if all s(i)=0
 c
-      if(abs(s(1))<=TOL0.and.abs(s(2))<=TOL0.and.
-     1                                         abs(s(3))<=TOL0)then
-      isflag=0
-      call ummdp_utility_clear1 ( x,4 )
+      if ( (abs(s(1)) <= tol0) .and. 
+     1     (abs(s(2)) <= tol0) .and.
+     2     (abs(s(3)) <= tol0) ) then
+      isflag = 0
+      x = 0.0d0
       goto 100
 c
       else
       isflag=1
-      call ummdp_utility_clear1 ( x,4 )
+      x = 0.0d0
 c
 c                           ---- exception treatment if s(1)=s(2),s(3)=0
 c
-      if(abs(s(1)-s(2))<=TOL0.and.abs(s(3))<=TOL0) then
-        theta=0.0d0
-        theta_rv=0.5d0*pi
-        x(1)=0.5d0*(s(1)+s(2))
-        x(2)=0.5d0*(s(1)+s(2))
-        x(3)=cos(2.0d0*theta)
-        x(4)=sin(2.0d0*theta)
-        vcos2t=x(3)
-        vsin2t=x(4)
-c
+      if ( (abs(s(1)-s(2)) <= tol0) .and. (abs(s(3)) <= tol0) ) then
+        theta = 0.0d0
+        theta_rv = 0.5d0*pi
+        x(1) = 0.5d0*(s(1)+s(2))
+        x(2) = 0.5d0*(s(1)+s(2))
+        x(3) = cos(2.0d0*theta)
+        x(4) = sin(2.0d0*theta)
+        vcos2t = x(3)
+        vsin2t = x(4)
 c                                                    ---- normal process
       else
-        vsqrt=sqrt((s(1)-s(2))**2+4.0d0*s(3)**2)
-        x(1)=0.5d0*(s(1)+s(2)+vsqrt)
-        x(2)=0.5d0*(s(1)+s(2)-vsqrt)
-        x(3)=(s(1)-s(2))/vsqrt
-        x(4)=2.0d0*s(3)/vsqrt
-        vcos2t=x(3)
-        vsin2t=x(4)
-        theta=0.5d0*acos(vcos2t)
-        theta_rv=0.5d0*pi-theta
+        vsqrt = sqrt((s(1)-s(2))**2+4.0d0*s(3)**2)
+        x(1) = 0.5d0*(s(1)+s(2)+vsqrt)
+        x(2) = 0.5d0*(s(1)+s(2)-vsqrt)
+        x(3) = (s(1)-s(2))/vsqrt
+        x(4) = 2.0d0*s(3)/vsqrt
+        vcos2t = x(3)
+        vsin2t = x(4)
+        theta = 0.5d0*acos(vcos2t)
+        theta_rv = 0.5d0*pi-theta
         end if
       end if
-c
 c                        ---- calc fk(k=un,sh,ps,bi) , rk(k=un,sh,ps,bi)
 c
 c                                                          ! un=uniaxial
-        fun1=0.0d0
-        fun1r=0.0d0
-        run=0.0d0
-        runr=0.0d0
-      do m=0,nf
-        fun1=fun1+phi_un(m)*cos(2.0d0*dble(m)*theta)
-        fun1r=fun1r+phi_un(m)*cos(2.0d0*dble(m)*theta_rv)
-        run=run+omg(m)*cos(2.0d0*dble(m)*theta)
-        runr=runr+omg(m)*cos(2.0d0*dble(m)*theta_rv)
+        fun1 = 0.0d0
+        fun1r = 0.0d0
+        run = 0.0d0
+        runr = 0.0d0
+      do m = 0,nf
+        fun1 = fun1 + phi_un(m)*cos(2.0d0*dble(m)*theta)
+        fun1r = fun1r + phi_un(m)*cos(2.0d0*dble(m)*theta_rv)
+        run = run + omg(m)*cos(2.0d0*dble(m)*theta)
+        runr = runr + omg(m)*cos(2.0d0*dble(m)*theta_rv)
       end do
-        fun2=0.0d0
-        fun2r=0.0d0
+        fun2 = 0.0d0
+        fun2r = 0.0d0
 c                                                        ! sh=pure shear
-        fsh1=0.0d0
-        fsh2=0.0d0
-      do m=0,nf
-        fsh1=fsh1+phi_sh(m)*cos(2.0d0*dble(m)*theta)
-        fsh2=fsh2-phi_sh(m)*cos(2.0d0*dble(m)*theta_rv)
+        fsh1 = 0.0d0
+        fsh2 = 0.0d0
+      do m = 0,nf
+        fsh1 = fsh1 + phi_sh(m)*cos(2.0d0*dble(m)*theta)
+        fsh2 = fsh2 - phi_sh(m)*cos(2.0d0*dble(m)*theta_rv)
       end do
-        rsh=-1.0d0
+        rsh = -1.0d0
 c                                                      ! ps=plane strain
-        fps1=0.0d0
-        fps1r=0.0d0
-        rps=0.0d0
-        rpsr=0.0d0
-      do m=0,nf
-        fps1=fps1+phi_ps(m)*cos(2.0d0*dble(m)*theta)
-        fps2=0.5d0*fps1
-        fps1r=fps1r+phi_ps(m)*cos(2.0d0*dble(m)*theta_rv)
-        fps2r=0.5d0*fps1r
+        fps1 = 0.0d0
+        fps1r = 0.0d0
+        rps = 0.0d0
+        rpsr = 0.0d0
+      do m = 0,nf
+        fps1 = fps1 + phi_ps(m)*cos(2.0d0*dble(m)*theta)
+        fps2 = 0.5d0 * fps1
+        fps1r = fps1r + phi_ps(m)*cos(2.0d0*dble(m)*theta_rv)
+        fps2r = 0.5d0 * fps1r
       end do
-        rps=-0.0d0
-        rpsr=0.0d0
+        rps = -0.0d0
+        rpsr = 0.0d0
 c                                                      ! bi=equi-biaxial
-        fbi1=f_bi0
-        fbi2=fbi1
-        rbi=((r_bi0+1.0d0)+(r_bi0-1.0d0)*vcos2t)/
-     &           ((r_bi0+1.0d0)-(r_bi0-1.0d0)*vcos2t)
+        fbi1 = f_bi0
+        fbi2 = fbi1
+        rbi = ((r_bi0+1.0d0)+(r_bi0-1.0d0)*vcos2t)/
+     1           ((r_bi0+1.0d0)-(r_bi0-1.0d0)*vcos2t)
 c
 c                                 ---- case distribution by stress state
-      if(x(1)/=0.0d0)then
-        alfa=x(2)/x(1)
+      if ( x(1) /= 0.0d0 ) then
+        alfa = x(2) / x(1)
       end if
-      if(x(2)/=0.0d0)then
-        beta=x(1)/x(2)
+      if ( x(2) /= 0.0d0 ) then
+        beta = x(1) / x(2)
       end if
 c
 c     iareaflag    :stress state flag(i=0~6)
 c
-      if(x(1)>0.0d0.and.alfa<0.0d0.and.alfa>=fsh2/fsh1) then
-        iareaflag=1
-      else if(x(1)>0.0d0.and.alfa>=0.0d0
-     1                           .and.alfa<fps2/fps1) then
-        iareaflag=2
-      else if(x(1)>0.0d0.and.alfa>=fps2/fps1
-     1                           .and.alfa<=1.0d0) then
-        iareaflag=3
+      if ( (x(1) > 0.0d0) .and. 
+     1     (alfa < 0.0d0) .and.
+     2     (alfa >= fsh2/fsh1)) then
+        iareaflag = 1
+      else if ( (x(1) > 0.0d0) .and. 
+     1          (alfa >= 0.0d0) .and. 
+     2          (alfa < fps2/fps1) ) then
+        iareaflag = 2
+      else if ( (x(1) > 0.0d0) .and. 
+     1          (alfa >= fps2/fps1) .and.
+     2          (alfa <= 1.0d0) ) then
+        iareaflag = 3
 c
-      else if(x(1)<0.0d0.and.alfa>=1.0d0
-     1                           .and.alfa<fps1r/fps2r) then
-        iareaflag=4
-      else if(x(1)<0.0d0.and.beta<=fps2r/fps1r
-     1                                      .and.beta>0.0d0) then
-        iareaflag=5
-      else if(x(1)>=0.0d0.and.beta<=0.0d0
-     1                           .and.beta>fsh1/fsh2) then
-        iareaflag=6
+      else if ( (x(1) < 0.0d0) .and.
+     1          (alfa >= 1.0d0) .and.
+     2          (alfa < fps1r/fps2r) ) then
+        iareaflag = 4
+      else if ( (x(1) < 0.0d0) .and.
+     1          (beta <= fps2r/fps1r) .and.
+     2          (beta > 0.0d0) ) then
+        iareaflag = 5
+      else if ( (x(1) >= 0.0d0) .and.
+     1          (beta <= 0.0d0) .and.
+     1          (beta > fsh1/fsh2) ) then
+        iareaflag = 6
 c
       else
         go to 100
@@ -6252,93 +6231,93 @@ c                                       ---- calc. hingepoint b(i,i=1~2)
       select case ( iareaflag )
 c                                            
       case ( 1 )                                           ! iareaflag=1
-         a(1)=fsh1
-         a(2)=fsh2
-         c(1)=fun1
-         c(2)=fun2
-         nn(1)=1.0d0
-         nn(2)=rsh
-         mm(1)=1.0d0
-         mm(2)=run
-         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+        a(1) = fsh1
+        a(2) = fsh2
+        c(1) = fun1
+        c(2) = fun2
+        nn(1) = 1.0d0
+        nn(2) = rsh
+        mm(1) = 1.0d0
+        mm(2) = run
+        call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                            
       case ( 2 )                                           ! iareaflag=2
-         a(1)=fun1
-         a(2)=fun2
-         c(1)=fps1
-         c(2)=fps2
-         nn(1)=1.0d0
-         nn(2)=run
-         mm(1)=1.0d0
-         mm(2)=rps
-         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+        a(1) = fun1
+        a(2) = fun2
+        c(1) = fps1
+        c(2) = fps2
+        nn(1) = 1.0d0
+        nn(2) = run
+        mm(1) = 1.0d0
+        mm(2) = rps
+        call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                   
       case ( 3 )                                           ! iareaflag=3
-         a(1)=fps1
-         a(2)=fps2
-         c(1)=fbi1
-         c(2)=fbi2
-         nn(1)=1.0d0
-         nn(2)=rps
-         mm(1)=1.0d0
-         mm(2)=rbi
-         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+        a(1) = fps1
+        a(2) = fps2
+        c(1) = fbi1
+        c(2) = fbi2
+        nn(1) = 1.0d0
+        nn(2) = rps
+        mm(1) = 1.0d0
+        mm(2) = rbi
+        call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                            
       case ( 4 )                                           ! iareaflag=4
-         a(1)=-fbi1
-         a(2)=-fbi2
-         c(1)=-fps2r
-         c(2)=-fps1r
-         nn(1)=-1.0d0
-         nn(2)=-rbi
-         mm(1)=-rpsr
-         mm(2)=-1.0d0
-         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+        a(1) = -fbi1
+        a(2) = -fbi2
+        c(1) = -fps2r
+        c(2) = -fps1r
+        nn(1) = -1.0d0
+        nn(2) = -rbi
+        mm(1) = -rpsr
+        mm(2) = -1.0d0
+        call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                            
       case ( 5 )                                           ! iareaflag=5
-         a(1)=-fps2r
-         a(2)=-fps1r
-         c(1)=-fun2r
-         c(2)=-fun1r
-         nn(1)=-rpsr
-         nn(2)=-1.0d0
-         mm(1)=-runr
-         mm(2)=-1.0d0
-         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+        a(1) = -fps2r
+        a(2) = -fps1r
+        c(1) = -fun2r
+        c(2) = -fun1r
+        nn(1) = -rpsr
+        nn(2) = -1.0d0
+        mm(1) = -runr
+        mm(2) = -1.0d0
+        call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c                                    
       case ( 6 )                                           ! iareaflag=6
-         a(1)=-fun2r
-         a(2)=-fun1r
-         c(1)=fsh1
-         c(2)=fsh2
-         nn(1)=-runr
-         nn(2)=-1.0d0
-         mm(1)=1.0d0
-         mm(2)=rsh
-         call ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+        a(1) = -fun2r
+        a(2) = -fun1r
+        c(1) = fsh1
+        c(2) = fsh2
+        nn(1) = -runr
+        nn(2) = -1.0d0
+        mm(1) = 1.0d0
+        mm(2) = rsh
+        call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
 c
       case default
-         write (6,*) 'iareaflag error :',iareaflag
-         call ummdp_exit (9000)
+        write (6,*) 'iareaflag error :',iareaflag
+        call ummdp_exit (9000)
       end select
 
 c                            ---- calc. fourier coefficient mu(0<=mu<=1)
-      call ummdp_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta
-     1                                            ,aa,bb,cc,dd )
+      call ummdp_yield_vegter_mu ( x,a,b,c,mu,iareaflag,s,theta,aa,
+     1                                  bb,cc,dd )
 c
 c                            ---- calc. normalized yield locus f(i)i=1~2
-      call ummdp_vegter_calc_fi ( x,a,b,c,mu,f )
+      call ummdp_yield_vegter_fi ( x,a,b,c,mu,f )
       go to 200
 c
 c                                                 ---- equivalent stress
   100 continue
-      se=0.0d0
+      se = 0.0d0
       go to 300
   200 continue
-      if(f(1)<=TOL2) then
-         se=x(2)/f(2)
+      if ( f(1) <= tol2 ) then
+         se = x(2) / f(2)
       else
-         se=x(1)/f(1)
+         se = x(1) / f(1)
       end if
 c
       go to 300
@@ -6347,165 +6326,142 @@ c
 c
 c                                            ---- 1st order differential
 c
-      if ( nreq>=1 ) then
+      if ( nreq >= 1 ) then
 c                        ---- set dadc,dcdc,dndc,dmdc for eq.(A.7)^(A.9)
 c
-      call ummdp_utility_clear1 ( dadc,2 )
-      call ummdp_utility_clear1 ( dbdc,2 )
-      call ummdp_utility_clear1 ( dcdc,2 )
-      call ummdp_utility_clear1 ( dndc,2 )
-      call ummdp_utility_clear1 ( dmdc,2 )
+      dadc = 0.0d0
+      dbdc = 0.0d0
+      dcdc = 0.0d0
+      dndc = 0.0d0
+      dmdc = 0.0d0
 c
       select case ( iareaflag )
 c                                            
       case ( 1 )                                           ! iareaflag=1
-       if(abs(vsin2t)>=TOL) then
-        do m=0,nf
-          dadc(1)=dadc(1)+phi_sh(m)*dble(m)
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dadc(1) = dadc(1) + phi_sh(m)*dble(m)
      1                             *sin(2.0d0*dble(m)*theta)
      2                             /sin(2.0d0*theta)
-          dadc(2)=dadc(2)+phi_sh(m)*dble(m)
+            dadc(2) = dadc(2) + phi_sh(m)*dble(m)
      1                             *sin(2.0d0*dble(m)*theta_rv)
      2                             /sin(2.0d0*theta)
-        end do
-       else
-          do m=0,nf
-              dadc(1)=dadc(1)+phi_sh(m)*dble(m)**2
-              dadc(2)=dadc(2)+phi_sh(m)*dble(m)**2
           end do
-       end if
-c
-       if(abs(vsin2t)>=TOL) then
-         do m=0,nf
-          dcdc(1)=dcdc(1)+phi_un(m)*dble(m)
-     1                             *sin(2.0d0*dble(m)*theta)
-     2                             /sin(2.0d0*theta)
-         end do
         else
-          do m=0,nf
-              dcdc(1)=dcdc(1)+phi_un(m)*dble(m)**2
+          do m = 0,nf
+            dadc(1) = dadc(1) + phi_sh(m)*dble(m)**2
+            dadc(2) = dadc(2) + phi_sh(m)*dble(m)**2
           end do
         end if
-          dcdc(2)=0.0d0
 c
-          dndc(1)=0.0d0
-          dndc(2)=0.0d0
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dcdc(1) = dcdc(1) + phi_un(m)*dble(m)
+     1                             *sin(2.0d0*dble(m)*theta)
+     2                             /sin(2.0d0*theta)
+          end do
+        else
+          do m = 0,nf
+            dcdc(1) = dcdc(1) + phi_un(m)*dble(m)**2
+          end do
+        end if
 c
-          dmdc(1)=0.0d0
-       if(abs(vsin2t)>=TOL) then
-         do m=0,nf
-          dmdc(2)=dmdc(2)+omg(m)*dble(m)
+c
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dmdc(2) = dmdc(2) + omg(m)*dble(m)
      1                          *sin(2.0d0*dble(m)*theta)
      2                          /sin(2.0d0*theta)
-         end do
+          end do
         else
-          do m=0,nf
-              dmdc(2)=dmdc(2)+omg(m)*dble(m)**2
+          do m = 0,nf
+            dmdc(2) = dmdc(2) + omg(m)*dble(m)**2
           end do
         end if
-      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                               dndc,dmdc,iareaflag,P,nnmm)
-c
+        call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+     1                                 dmdc,iareaflag,P,nnmm )
 c                                            
       case ( 2 )                                           ! iareaflag=2
-       if(abs(vsin2t)>=TOL) then
-         do m=0,nf
-          dadc(1)=dadc(1)+phi_un(m)*dble(m)
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dadc(1) = dadc(1) + phi_un(m)*dble(m)
      1                             *sin(2.0d0*dble(m)*theta)
      2                             /sin(2.0d0*theta)
-         end do
+          end do
         else
-         do m=0,nf
-          dadc(1)=dadc(1)+phi_un(m)*dble(m)**2
-         end do
-       end if
-          dadc(2)=0.0d0
+          do m = 0,nf
+            dadc(1) = dadc(1) + phi_un(m)*dble(m)**2
+          end do
+        end if
 c
-       if(abs(vsin2t)>=TOL) then
-         do m=0,nf
-          dcdc(1)=dcdc(1)+phi_ps(m)*dble(m)
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dcdc(1) = dcdc(1) + phi_ps(m)*dble(m)
      1                             *sin(2.0d0*dble(m)*theta)
      2                             /sin(2.0d0*theta)
-         end do
+          end do
         else
-         do m=0,nf
-          dcdc(1)=dcdc(1)+phi_ps(m)*dble(m)**2
-         end do
-       end if
-          dcdc(2)=0.5d0*dcdc(1)
+          do m = 0,nf
+            dcdc(1) = dcdc(1) + phi_ps(m)*dble(m)**2
+          end do
+        end if
+          dcdc(2) = 0.5d0 * dcdc(1)
 c
-          dndc(1)=0.0d0
-       if(abs(vsin2t)>=TOL) then
-        do m=0,nf
-          dndc(2)=dndc(2)+omg(m)*dble(m)
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dndc(2) = dndc(2) + omg(m)*dble(m)
      1                           *sin(2.0d0*dble(m)*theta)
      2                           /sin(2.0d0*theta)
-         end do
+          end do
         else
-         do m=0,nf
-          dndc(2)=dndc(2)+omg(m)*dble(m)**2
-         end do
-       end if
+          do m = 0,nf
+            dndc(2) = dndc(2) + omg(m)*dble(m)**2
+          end do
+        end if
 c
-          dmdc(1)=0.0d0
-          dmdc(2)=0.0d0
-      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                               dndc,dmdc,iareaflag,P,nnmm)
+        call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+     1                                 dmdc,iareaflag,P,nnmm )
 c
 c                                           
       case ( 3 )                                           ! iareaflag=3
-       if(abs(vsin2t)>=TOL) then
-        do m=0,nf
-          dadc(1)=dadc(1)+phi_ps(m)*dble(m)
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dadc(1) = dadc(1) + phi_ps(m)*dble(m)
      1                             *sin(2.0d0*dble(m)*theta)
      2                             /sin(2.0d0*theta)
-         end do
+          end do
         else
-         do m=0,nf
-          dadc(1)=dadc(1)+phi_ps(m)*dble(m)**2
-         end do
-       end if
-          dadc(2)=0.5d0*dadc(1)
+          do m = 0,nf
+          dadc(1) = dadc(1) + phi_ps(m)*dble(m)**2
+          end do
+        end if
+        dadc(2) = 0.5d0 * dadc(1)
 c
-          dcdc(1)=0.0d0
-          dcdc(2)=0.0d0
-c
-          dndc(1)=0.0d0
-          dndc(2)=0.0d0
-c
-          dmdc(1)=0.0d0
-          dmdctmp=r_bi0+1.0d0-(r_bi0-1.0d0)*vcos2t
-          dmdc(2)=2.0d0*(r_bi0*r_bi0-1.0d0)/(dmdctmp*dmdctmp)
-      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                               dndc,dmdc,iareaflag,P,nnmm)
-c
+        dmdctmp = r_bi0 + 1.0d0-(r_bi0-1.0d0)*vcos2t
+        dmdc(2) = 2.0d0*(r_bi0*r_bi0-1.0d0)/(dmdctmp*dmdctmp)
+        call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+     1                                 dmdc,iareaflag,P,nnmm )
 c                                            
       case ( 4 )                                           ! iareaflag=4
-          dadc(1)=0.0d0
-          dadc(2)=0.0d0
 c
-       if(abs(vsin2t)>=TOL) then
-        do m=0,nf
-          dcdc(2)=dcdc(2)+phi_ps(m)*dble(m)
+        if ( abs(vsin2t) >= tol ) then
+          do m = 0,nf
+            dcdc(2) = dcdc(2) + phi_ps(m)*dble(m)
      1                             *sin(2.0d0*dble(m)*theta_rv)
      2                             /sin(2.0d0*theta)
-         end do
+          end do
         else
-         do m=0,nf
-          dcdc(2)=dcdc(2)+phi_ps(m)*dble(m)**2
-         end do
-       end if
-          dcdc(1)=0.5d0*dcdc(2)
+          do m = 0,nf
+            dcdc(2) = dcdc(2) + phi_ps(m)*dble(m)**2
+          end do
+        end if
+        dcdc(1) = 0.5d0 * dcdc(2)
 c
-          dndc(1)=0.0d0
-          dndctmp=r_bi0+1.0d0-(r_bi0-1.0d0)*vcos2t
-          dndc(2)=-2.0d0*(r_bi0*r_bi0-1.0d0)/(dndctmp*dndctmp)
+        dndctmp = r_bi0 + 1.0d0-(r_bi0-1.0d0)*vcos2t
+        dndc(2) = -2.0d0 * (r_bi0*r_bi0-1.0d0)/(dndctmp*dndctmp)
 c
-          dmdc(1)=0.0d0
-          dmdc(2)=0.0d0
-      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                               dndc,dmdc,iareaflag,P,nnmm)
-c
+        call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+     1                                 dmdc,iareaflag,P,nnmm)
 c                                            
       case ( 5 )                                           ! iareaflag=5
        if(abs(vsin2t)>=TOL) then
@@ -6549,7 +6505,7 @@ c
          end do
        end if
           dmdc(2)=0.0d0
-      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
 c                                            
@@ -6598,7 +6554,7 @@ c
 c
           dmdc(1)=0.0d0
           dmdc(2)=0.0d0
-      call ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+      call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
       case default
@@ -6608,12 +6564,12 @@ c
 c
 c
 c                             ---- calc. dphidx(i) (i=1~3)  eq.(21)~(23)
-      call ummdp_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,dcdc,
+      call ummdp_yield_vegter_dphidx ( dphidx,se,a,b,c,dadc,dbdc,dcdc,
      1                      mm,nn,dndc,dmdc,f,iareaflag,mu,x,dfdmu,dfdc)
 c
 c
 c                                   ---- calc. dseds(i) (i=1~3)  eq.(20)
-      call ummdp_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,vsin2t,
+      call ummdp_yield_vegter_dseds ( dseds,x,dphidx,vcos2t,vsin2t,
      1                                iareaflag,isflag,dxds)
 c
       end if
@@ -6623,11 +6579,11 @@ c                                            ---- 2nd order differential
       if ( nreq>=2 ) then
 c                     ---- set d2adc2,d2cdc2,d2ndc2,d2mdc2 for d2bdc2(2)
 c
-      call ummdp_utility_clear1 ( d2adc2,2 )
-      call ummdp_utility_clear1 ( d2bdc2,2 )
-      call ummdp_utility_clear1 ( d2cdc2,2 )
-      call ummdp_utility_clear1 ( d2ndc2,2 )
-      call ummdp_utility_clear1 ( d2mdc2,2 )
+      d2adc2 = 0.0d0
+      d2bdc2 = 0.0d0
+      d2cdc2 = 0.0d0
+      d2ndc2 = 0.0d0
+      d2mdc2 = 0.0d0
 c
 c                     ---- define exception treatment condition of theta
 c                        ---- if theta<=0.002865deg then apply exception
@@ -6687,7 +6643,7 @@ c
          do m=0,nf
           d2mdc2(2)=d2mdc2(2)+omg(m)*dble(m)*vvtmp(m)
          end do
-      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -6709,7 +6665,7 @@ c
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
-      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -6729,7 +6685,7 @@ c
              d2mdc2tmp=r_bi0+1.0d0-(r_bi0-1.0d0)*vcos2t
           d2mdc2(2)=4.0d0*(r_bi0**2-1.0d0)*(r_bi0-1.0d0)/
      1                                              (d2mdc2tmp**3)
-      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -6749,7 +6705,7 @@ c
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
-      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                           
@@ -6771,7 +6727,7 @@ c
           d2mdc2(1)=d2mdc2(1)+omg(m)*dble(m)*vvtmp_rv(m)
          end do
           d2mdc2(2)=0.0d0
-      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
 c                                            
@@ -6793,7 +6749,7 @@ cn
 c
           d2mdc2(1)=0.0d0
           d2mdc2(2)=0.0d0
-      call ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
+      call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
       case default
@@ -6803,27 +6759,28 @@ c
 c
 c
 c                                     ---- calc. d2phidx2(k,l) (k,l=1~3)
-      call ummdp_vegter_calc_d2phidx2 (d2phidx2,se,a,b,c,dadc,dbdc,
+      call ummdp_yield_vegter_d2phidx2 (d2phidx2,se,a,b,c,dadc,dbdc,
      1             dcdc,mm,nn,dndc,dmdc,f,iareaflag,mu,x,d2adc2,d2bdc2,
      2            d2cdc2,d2ndc2,d2mdc2,dfdmu,dfdc,s,aa,bb,cc,dd,dphidx)
 c
 c
 c                                      ---- calc. d2seds2(i,j) (i,j=1~3)
-      call ummdp_vegter_calc_d2seds2 (d2seds2,d2phidx2,se,a,b,c,mu,x,
+      call ummdp_yield_vegter_d2seds2 (d2seds2,d2phidx2,se,a,b,c,mu,x,
      1         vcos2t,vsin2t,iareaflag,dxds,dphidx,isflag,s,dseds,
      2                                 pryld,ndyld)
 c
       end if
 c
       return
-      end subroutine ummdp_vegter_core
+      end subroutine ummdp_yield_vegter_core
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE HINGEPOINT b(i,i=1~2)
 c
-      subroutine ummdp_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
+      subroutine ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,
+     1                                           s )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -6850,15 +6807,15 @@ c
       b(2) = b2u / bb
 c
       return
-      end subroutine ummdp_vegter_hingepoint
+      end subroutine ummdp_yield_vegter_hingepoint
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE FOURIER COEFFICIENT mu(0<=mu<=1)
 c
-      subroutine ummdp_vegter_calc_mu ( x,a,b,c,mu,iareaflag,s,theta,
-     1                                  aa,bb,cc,dd)
+      subroutine ummdp_yield_vegter_mu ( x,a,b,c,mu,iareaflag,s,theta,
+     1                                   aa,bb,cc,dd)
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -6910,14 +6867,14 @@ c
       end if
 c
       return
-      end subroutine ummdp_vegter_calc_mu
+      end subroutine ummdp_yield_vegter_mu
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE NORMALIZED YIELD LOCUS
 c
-      subroutine ummdp_vegter_calc_fi ( x,a,b,c,mu,f )
+      subroutine ummdp_yield_vegter_fi ( x,a,b,c,mu,f )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -6934,15 +6891,15 @@ c
       end do
 c
       return
-      end subroutine ummdp_vegter_calc_fi
+      end subroutine ummdp_yield_vegter_fi
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CAKCULATE dbdc(i) (i=1~2) eq.(A.7)
 c
-      subroutine ummdp_vegter_calc_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                                    dndc,dmdc,iareaflag,P,nnmm )
+      subroutine ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+     1                                     dndc,dmdc,iareaflag,P,nnmm )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -6976,16 +6933,16 @@ c
       dbdc(2) = nminv * (P(2)*nn(1)-P(1)*mm(1))
 c
       return
-      end subroutine ummdp_vegter_calc_dbdc
+      end subroutine ummdp_yield_vegter_dbdc
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. dphidx(i) (i=1~3)  eq.(21)~(23)
 c
-      subroutine ummdp_vegter_calc_dphidx ( dphidx,se,a,b,c,dadc,dbdc,
-     1                                      dcdc,mm,nn,dndc,dmdc,f,  
-     2                                      iareaflag,mu,x,dfdmu,dfdc )
+      subroutine ummdp_yield_vegter_dphidx ( dphidx,se,a,b,c,dadc,dbdc,
+     1                                       dcdc,mm,nn,dndc,dmdc,f,  
+     2                                       iareaflag,mu,x,dfdmu,dfdc )
 c-----------------------------------------------------------------------   
       implicit none
 c
@@ -7065,16 +7022,16 @@ c
       end do
 c
       return
-      end subroutine ummdp_vegter_calc_dphidx
+      end subroutine ummdp_yield_vegter_dphidx
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE FIRST ORDER DERIVATIVE
 c
-      subroutine ummdp_vegter_calc_dseds ( dseds,x,dphidx,vcos2t,
-     1                                     vsin2t,iareaflag,isflag,
-     2                                     dxds )
+      subroutine ummdp_yield_vegter_dseds ( dseds,x,dphidx,vcos2t,
+     1                                      vsin2t,iareaflag,isflag,
+     2                                      dxds )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7140,8 +7097,7 @@ c
       end if
 c
 c                                   ---- calc. dseds(i) (1=1~3)  eq.(20)
-      call ummdp_utility_clear1 ( dseds,3 )
-c
+      dseds = 0.0d0
       do i = 1,3
         do j = 1,3
           dseds(i) = dseds(i) + dxds_t(i,j)*dphidx(j)
@@ -7149,17 +7105,17 @@ c
       end do
 c
       return
-      end subroutine ummdp_vegter_calc_dseds
+      end subroutine ummdp_yield_vegter_dseds
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2bdc2(i) (i=1~2)
 c
-      subroutine ummdp_vegter_calc_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,
-     1                                      dndc,dmdc,iareaflag,d2adc2,
-     2                                      d2bdc2,d2cdc2,d2ndc2,
-     3                                      d2mdc2,P,nnmm,s )      
+      subroutine ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,
+     1                                       dndc,dmdc,iareaflag,d2adc2,
+     2                                       d2bdc2,d2cdc2,d2ndc2,
+     3                                       d2mdc2,P,nnmm,s )      
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7200,19 +7156,19 @@ c
      2            + dp2n1p1m1/nnmm
 c
       return
-      end subroutine ummdp_vegter_calc_d2bdc2
+      end subroutine ummdp_yield_vegter_d2bdc2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2phidx2(k,l) (k,l=1~3)
 c
-      subroutine ummdp_vegter_calc_d2phidx2 ( d2phidx2,se,a,b,c,dadc,
-     1                                        dbdc,dcdc,mm,nn,dndc,
-     2                                        dmdc,f,iareaflag,mu,x,
-     3                                        d2adc2,d2bdc2,d2cdc2,
-     4                                        d2ndc2,d2mdc2,dfdmu,dfdc,
-     5                                        s,aa,bb,cc,dd,dphidx )
+      subroutine ummdp_yield_vegter_d2phidx2 ( d2phidx2,se,a,b,c,dadc,
+     1                                         dbdc,dcdc,mm,nn,dndc,
+     2                                         dmdc,f,iareaflag,mu,x,
+     3                                         d2adc2,d2bdc2,d2cdc2,
+     4                                         d2ndc2,d2mdc2,dfdmu,dfdc,
+     5                                         s,aa,bb,cc,dd,dphidx )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7328,18 +7284,18 @@ c
       end do
 c
       return
-      end subroutine ummdp_vegter_calc_d2phidx2
+      end subroutine ummdp_yield_vegter_d2phidx2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2seds2(i,j) (i,j=1~3)
 c
-      subroutine ummdp_vegter_calc_d2seds2 ( d2seds2,d2phidx2,se,a,b,c,
-     1                                       mu,x,vcos2t,vsin2t,
-     2                                       iareaflag,dxds,dphidx,
-     3                                       isflag,s,dseds,pryld,
-     4                                       ndyld )      
+      subroutine ummdp_yield_vegter_d2seds2 ( d2seds2,d2phidx2,se,a,b,c,
+     1                                        mu,x,vcos2t,vsin2t,
+     2                                        iareaflag,dxds,dphidx,
+     3                                        isflag,s,dseds,pryld,
+     4                                        ndyld )      
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7434,36 +7390,37 @@ c
 c
 c                                      ---- calc. d2seds2(i,j) (i,j=1~3)
 c
-      call ummdp_utility_clear2 ( d2seds2,3,3 )
+      d2seds2 = 0.0d0
 c
       if (iflag/=0) then
-      call ummdp_vegter_d2seds2n(d2seds2,s,dseds,pryld,ndyld,se)
+        call ummdp_yield_vegter_d2seds2n ( d2seds2,s,dseds,pryld,ndyld,
+     1                                     se )
 c
       else
-      do i=1,3
-        do j=1,3
-          do k=1,3
-            do l=1,3
-              d2seds2(i,j)=d2seds2(i,j)
-     1                    +d2phidx2(k,l)*dxds(l,j)*dxds(k,i)
+        do i=1,3
+          do j=1,3
+            do k=1,3
+              do l=1,3
+                d2seds2(i,j) = d2seds2(i,j)
+     1                         + d2phidx2(k,l)*dxds(l,j)*dxds(k,i)
+              end do
+              d2seds2(i,j) = d2seds2(i,j)
+     1                       + dphidx(k)*d2xds2(k,i,j)
             end do
-              d2seds2(i,j)=d2seds2(i,j)
-     1                    +dphidx(k)*d2xds2(k,i,j)
           end do
         end do
-      end do
       end if
 c
       return
-      end subroutine ummdp_vegter_calc_d2seds2
+      end subroutine ummdp_yield_vegter_d2seds2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     numerical differential for 2nd order differentials
 c
-      subroutine ummdp_vegter_d2seds2n ( d2seds2,s,dseds,
-     1                                   pryld,ndyld,se )
+      subroutine ummdp_yield_vegter_d2seds2n ( d2seds2,s,dseds,pryld,
+     1                                         ndyld,se )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7487,11 +7444,11 @@ c
           if ( j==k ) then
             se0=se
             ss(j)=s0(j)-delta
-            call ummdp_vegter_yieldfunc(3,ss,sea,dseds,d2seds2,0,
-     1                                   pryld,ndyld)
+            call ummdp_yield_vegter_yieldfunc ( 3,ss,sea,dseds,d2seds2,
+     1                                          0,pryld,ndyld )
             ss(j)=s0(j)+delta
-            call ummdp_vegter_yieldfunc(3,ss,seb,dseds,d2seds2,0,
-     1                                    pryld,ndyld)
+            call ummdp_yield_vegter_yieldfunc ( 3,ss,seb,dseds,d2seds2,
+     1                                          0,pryld,ndyld )
             ss(j)=s0(j)
             a=(se0-sea)/delta
             b=(seb-se0)/delta
@@ -7499,20 +7456,20 @@ c
           else
             ss(j)=s0(j)-delta
             ss(k)=s0(k)-delta
-            call ummdp_vegter_yieldfunc(3,ss,seaa,dseds,d2seds2,0,
-     1                                    pryld,ndyld)
+            call ummdp_yield_vegter_yieldfunc ( 3,ss,seaa,dseds,d2seds2,
+     1                                         0,pryld,ndyld )
             ss(j)=s0(j)+delta
             ss(k)=s0(k)-delta
-            call ummdp_vegter_yieldfunc(3,ss,seba,dseds,d2seds2,0,
-     1                                    pryld,ndyld)
+            call ummdp_yield_vegter_yieldfunc ( 3,ss,seba,dseds,d2seds2,
+     1                                          0,pryld,ndyld )
             ss(j)=s0(j)-delta
             ss(k)=s0(k)+delta
-            call ummdp_vegter_yieldfunc(3,ss,seab,dseds,d2seds2,0,
-     1                                    pryld,ndyld)
+            call ummdp_yield_vegter_yieldfunc ( 3,ss,seab,dseds,d2seds2,
+     1                                          0,pryld,ndyld )
             ss(j)=s0(j)+delta
             ss(k)=s0(k)+delta
-            call ummdp_vegter_yieldfunc(3,ss,sebb,dseds,d2seds2,0,
-     1                                    pryld,ndyld)
+            call ummdp_yield_vegter_yieldfunc ( 3,ss,sebb,dseds,d2seds2,
+     1                                          0,pryld,ndyld )
             ss(j)=s0(j)
             ss(k)=s0(k)
             a=(seba-seaa)/(2.0d0*delta)
@@ -7523,15 +7480,15 @@ c
       end do
 c
       return
-      end subroutine ummdp_vegter_d2seds2n
+      end subroutine ummdp_yield_vegter_d2seds2n
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     calc. equivalent stress for d2seds2n
 c
-      subroutine ummdp_vegter_yieldfunc ( nttl,s,se,dseds,d2seds2,
-     1                                    nreq,pryld,ndyld )
+      subroutine ummdp_yield_vegter_yieldfunc ( nttl,s,se,dseds,d2seds2,
+     1                                          nreq,pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -7543,10 +7500,10 @@ c
       real*8,intent(out) :: d2seds2(3,3)
 c-----------------------------------------------------------------------
 c
-      call ummdp_vegter ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      call ummdp_yield_vegter ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
 c
       return
-      end subroutine ummdp_vegter_yieldfunc
+      end subroutine ummdp_yield_vegter_yieldfunc
 c
 c
 c************************************************************************
@@ -7555,7 +7512,8 @@ c     YLD2000-2D YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/S0749-6419(02)00019-0
 c
-      subroutine ummdp_yld2000 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      subroutine ummdp_yield_yld2000 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                 ndyld )
 c     
 c-----------------------------------------------------------------------
       implicit none
@@ -7606,17 +7564,17 @@ c                                            ---- anisotropic parameters
       end do
       em = pryld(9+1)
 c                                  ---- set linear transformation matrix
-      call ummdp_yld2000_2d_am ( a,am )
+      call ummdp_yield_yld2000_am ( a,am )
 c                                                 ---- equivalent stress
-      call ummdp_yld2000_2d_xyphi ( s,em,am,x,y,phi )
+      call ummdp_yield_yld2000_xyphi ( s,em,am,x,y,phi )
       q = phi(1) + phi(2)
       if ( q <= 0.0 ) q = 0.0
       se = (0.5d0*q) ** (1.0d0/em)
 c                                              ---- 1st order derivative
       if ( nreq >= 1 ) then
-        call ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,dsedphi,dphidx,dxdy,
-     1                              dyds,se )
-        call ummdp_utility_clear1 ( dseds,3 )
+        call ummdp_yield_yld2000_ds1 ( em,am,x,y,phi,dsedphi,dphidx,
+     1                                 dxdy,dyds,se )
+        dseds = 0.0d0
         do nd = 1,2
           do m = 1,2
             do k = 1,3
@@ -7630,9 +7588,9 @@ c                                              ---- 1st order derivative
       end if
 c                                              ---- 2nd order derivative
       if ( nreq >= 2 ) then
-        call ummdp_yld2000_2d_ds2 ( phi,x,y,em,d2sedphi2,d2phidx2,
-     1                              d2xdy2,se )                   
-        call ummdp_utility_clear2 ( d2seds2,3,3 )
+        call ummdp_yield_yld2000_ds2 ( phi,x,y,em,d2sedphi2,d2phidx2,
+     1                                 d2xdy2,se )                   
+        d2seds2 = 0.0d0
         do i = 1,3
         do j = 1,3
           do nd1 = 1,2
@@ -7683,7 +7641,7 @@ c                                              ---- 2nd order derivative
       end if
 c
       return
-      end subroutine ummdp_yld2000
+      end subroutine ummdp_yield_yld2000
 c
 c
 c
@@ -7691,7 +7649,7 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
 c     SET LINEAR TRANSFORMATION MATRIX
 c
-      subroutine ummdp_yld2000_2d_am ( a,am )
+      subroutine ummdp_yield_yld2000_am ( a,am )
 c
 c-----------------------------------------------------------------------
       implicit none
@@ -7732,7 +7690,7 @@ c
       end do
 c
       return
-      end subroutine ummdp_yld2000_2d_am
+      end subroutine ummdp_yield_yld2000_am
 c
 c
 c
@@ -7740,7 +7698,7 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
 c     CALCULATE barlat-yld2k function x,y,phi
 c
-      subroutine ummdp_yld2000_2d_xyphi ( s,em,am,x,y,phi )
+      subroutine ummdp_yield_yld2000_xyphi ( s,em,am,x,y,phi )
 c
 c-----------------------------------------------------------------------
       implicit none
@@ -7760,7 +7718,7 @@ c
       p(1) =  1.0d0
       p(2) = -1.0d0
 c                                                       ---- {y}=[am]{s}
-      call ummdp_utility_clear2 ( y,2,3 )
+      y = 0.0d0
       do nd = 1,2
         do i = 1,3
           do j = 1,3
@@ -7784,7 +7742,7 @@ c                                                 ---- phi(1) and phi(2)
      1          + abs(2.0d0*x(nd,1)+x(nd,2))**em
 c
       return
-      end subroutine ummdp_yld2000_2d_xyphi
+      end subroutine ummdp_yield_yld2000_xyphi
 c
 c
 c
@@ -7792,8 +7750,8 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
 c     SET 1ST ORDER DERIVATIVE OF PARAMETERS
 c
-      subroutine ummdp_yld2000_2d_ds1 ( em,am,x,y,phi,dsedphi,dphidx,
-     1                                  dxdy,dyds,se )     
+      subroutine ummdp_yield_yld2000_ds1 ( em,am,x,y,phi,dsedphi,
+     1                                     dphidx,dxdy,dyds,se )     
 c  
 c-----------------------------------------------------------------------
       implicit none
@@ -7873,7 +7831,7 @@ c
       end do
 c
       return
-      end subroutine ummdp_yld2000_2d_ds1
+      end subroutine ummdp_yield_yld2000_ds1
 c
 c
 c
@@ -7881,8 +7839,8 @@ c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
 c     SET 2ND ORDER DERIVATIVE OF PARAMETERS
 c
-      subroutine ummdp_yld2000_2d_ds2 ( phi,x,y,em,d2sedphi2,d2phidx2,
-     1                                  d2xdy2,se )
+      subroutine ummdp_yield_yld2000_ds2 ( phi,x,y,em,d2sedphi2,
+     1                                     d2phidx2,d2xdy2,se )
 c
 c-----------------------------------------------------------------------
       implicit none
@@ -7980,7 +7938,7 @@ c                                                           ---- d2x/dy2
       end do
 c
       return
-      end subroutine ummdp_yld2000_2d_ds2
+      end subroutine ummdp_yield_yld2000_ds2
 c
 c
 c
@@ -7989,8 +7947,8 @@ c     YLD2004-18p YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: 
 c
-      subroutine ummdp_yld2004_18p ( s,se,dseds,d2seds2,nreq,
-     1                                pryld,ndyld )
+      subroutine ummdp_yield_yld2004 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                 ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8054,13 +8012,13 @@ c
       eps3 = 1.0d-8
       del = 1.0d-4
 c                                                   ---- Kronecker Delta
-      call ummdp_utility_clear2 ( delta,3,3 )
+      delta = 0.0d0
       do i = 1,3
         delta(i,i) = 1.0d0
       end do
 c                                        ---- set anisotropic parameters
-      call ummdp_utility_clear2 ( cp1,6,6 )
-      call ummdp_utility_clear2 ( cp2,6,6 )
+      cp1 = 0.0d0
+      cp2 = 0.0d0
       cp1(1,2) = -pryld(1+1)
       cp1(1,3) = -pryld(1+2)
       cp1(2,1) = -pryld(1+3)
@@ -8084,7 +8042,7 @@ c                                        ---- set anisotropic parameters
       ami = 1.0d0 / am
 c
 c             ---- set matrix for transforming Cauchy stress to deviator
-      call ummdp_utility_clear2 ( cl,6,6 )
+      cl = 0.0d0
       do i = 1,3
         do j = 1,3
           if ( i == j ) then
@@ -8107,18 +8065,18 @@ c                  ---- matrix for transforming Cauchy stress to sp1,sp2
       call ummdp_utility_mm ( ctp1,cp1,cl,6,6,6 )
       call ummdp_utility_mm ( ctp2,cp2,cl,6,6,6 )
 c                               ---- coefficient of equivalent stress dc
-c      call ummdp_yld2004_18p_coef ( cp1,cp2,pi,am,dc )
+c      call ummdp_yield_yld2004_coef ( cp1,cp2,pi,am,dc )
 c                                  ---- calculation of equivalent stress
-      call ummdp_yld2004_18p_yf ( ctp1,ctp2,s,am,ami,dc,pi,
-     &                             sp1,sp2,psp1,psp2,hp1,hp2,
-     &                             cetpq1,cetpq2,fai,se )
+      call ummdp_yield_yld2004_yf ( ctp1,ctp2,s,am,ami,dc,pi,sp1,sp2,
+     &                              psp1,psp2,hp1,hp2,cetpq1,cetpq2,
+     &                              fai,se )
 c
 c                                            ---- 1st order differential
       if ( nreq >= 1 ) then
 c                                                     ---- d(fai)/d(psp)
+        dfadpsp1 = 0.0d0
+        dfadpsp2 = 0.0d0
         do i = 1,3
-          dfadpsp1(i) = 0.0d0
-          dfadpsp2(i) = 0.0d0
           do j = 1,3
             dfadpsp1(i) = dfadpsp1(i) + (psp1(i)-psp2(j)) *
      &                    abs(psp1(i)-psp2(j))**(am-2.0d0)
@@ -8129,20 +8087,20 @@ c                                                     ---- d(fai)/d(psp)
           dfadpsp2(i) = dfadpsp2(i) * (-am)
         end do
 c                                         ---- d(psp)/d(hp)&d(fai)/d(hp)
-        call ummdp_utility_clear2 ( dpsdhp1,3,3 )
-        call ummdp_utility_clear2 ( dpsdhp2,3,3 )
-        call ummdp_utility_clear1 ( dfadhp1,3 )
-        call ummdp_utility_clear1 ( dfadhp2,3 )
+        dpsdhp1 = 0.0d0
+        dpsdhp2 = 0.0d0
+        dfadhp1 = 0.0d0
+        dfadhp2 = 0.0d0
 c                                                  ---- theta'<>0 & <>pi
         if ( abs(cetpq1-1.0d0) >= eps2 .and. 
      &       abs(cetpq1+1.0d0) >= eps2 ) then
           do i = 1,3
-            call ummdp_yld2004_18p_dpsdhp ( i,psp1,hp1,dpsdhp1 )
+            call ummdp_yield_yld2004_dpsdhp ( i,psp1,hp1,dpsdhp1 )
           end do
 c                                                          ---- theta'=0
         else if ( abs(cetpq1-1.0d0) < eps2 ) then
           i = 1
-          call ummdp_yld2004_18p_dpsdhp ( i,psp1,hp1,dpsdhp1 )
+          call ummdp_yield_yld2004_dpsdhp ( i,psp1,hp1,dpsdhp1 )
           do i = 2,3
             do j = 1,3
               dpsdhp1(i,j) = -0.5d0 * (dpsdhp1(1,j)-3.0d0*delta(1,j))
@@ -8151,7 +8109,7 @@ c                                                          ---- theta'=0
 c                                                         ---- theta'=pi
         else
           i = 3
-          call ummdp_yld2004_18p_dpsdhp ( i,psp1,hp1,dpsdhp1 )
+          call ummdp_yield_yld2004_dpsdhp ( i,psp1,hp1,dpsdhp1 )
           do i = 1,2
             do j = 1,3
               dpsdhp1(i,j) = -0.5d0 * (dpsdhp1(3,j)-3.0d0*delta(1,j))
@@ -8162,12 +8120,12 @@ c                                                 ---- theta''<>0 & <>pi
         if ( abs(cetpq2-1.0d0) >= eps2 .and. 
      &       abs(cetpq2+1.0d0) >= eps2 ) then
           do i = 1,3
-            call ummdp_yld2004_18p_dpsdhp ( i,psp2,hp2,dpsdhp2 ) 
+            call ummdp_yield_yld2004_dpsdhp ( i,psp2,hp2,dpsdhp2 ) 
           end do
 c                                                         ---- theta''=0
         else if ( abs(cetpq2-1.0d0) < eps2 ) then
           i = 1
-          call ummdp_yld2004_18p_dpsdhp ( i,psp2,hp2,dpsdhp2 )
+          call ummdp_yield_yld2004_dpsdhp ( i,psp2,hp2,dpsdhp2 )
           do i = 2,3
             do j = 1,3
               dpsdhp2(i,j) = -0.5d0 * (dpsdhp2(1,j)-3.0d0*delta(1,j))
@@ -8176,7 +8134,7 @@ c                                                         ---- theta''=0
 c                                                        ---- theta''=pi
         else
           i = 3
-          call ummdp_yld2004_18p_dpsdhp ( i,psp2,hp2,dpsdhp2 )
+          call ummdp_yield_yld2004_dpsdhp ( i,psp2,hp2,dpsdhp2 )
           do i = 1,2
             do j = 1,3
               dpsdhp2(i,j) = -0.5d0 * (dpsdhp2(3,j)-3.0d0*delta(1,j))
@@ -8191,8 +8149,8 @@ c
           end do
         end do
 c                                                       ---- d(hp)/d(sp)
-        call ummdp_utility_clear2 ( dhdsp1,3,6 )
-        call ummdp_utility_clear2 ( dhdsp2,3,6 )
+        dhdsp1 = 0.0d0
+        dhdsp2 = 0.0d0
         do i = 1,3
           j = mod(i,  3) + 1
           k = mod(i+1,3) + 1
@@ -8225,9 +8183,9 @@ c                                                        ---- d(sp)/d(s)
           end do
         end do
 c                                                       ---- d(fai)/d(s)
-        call ummdp_utility_clear1 ( dfads,6 )
-        call ummdp_utility_clear2 ( xx1,3,6 )
-        call ummdp_utility_clear2 ( xx2,3,6 )
+        xx1 = 0.0d0
+        xx2 = 0.0d0
+        dfads = 0.0d0
         do l = 1,6
           do j = 1,3
             do k = 1,6
@@ -8249,10 +8207,10 @@ c
 c                                            ---- 2nd order differential
       if ( nreq >= 2 ) then
 c                                                   ---- d2(fai)/d(psp)2
-        call ummdp_utility_clear2 ( d2fadpsp11,3,3 )
-        call ummdp_utility_clear2 ( d2fadpsp22,3,3 )
-        call ummdp_utility_clear2 ( d2fadpsp12,3,3 )
-        call ummdp_utility_clear2 ( d2fadpsp21,3,3 )
+        d2fadpsp11 = 0.0d0
+        d2fadpsp22 = 0.0d0
+        d2fadpsp12 = 0.0d0
+        d2fadpsp21 = 0.0d0
         do i = 1,3
           d2fadpsp11(i,i) = am*(am-1.0d0) *
      1                      ( abs(psp1(i)-psp2(1))**(am-2.0d0) +
@@ -8270,44 +8228,42 @@ c                                                   ---- d2(fai)/d(psp)2
           end do
         end do
 c                                                    ---- d2(psp)/d(hp)2
-        call ummdp_utility_clear3 ( d2psdhp11,3,3,3 )
-        call ummdp_utility_clear3 ( d2psdhp22,3,3,3 )
-c
         if ( abs(cetpq1-1.0d0) >= eps3 .and. 
      1       abs(cetpq2-1.0d0) >= eps3 .and.
      2       abs(cetpq1+1.0d0) >= eps3 .and. 
      3       abs(cetpq2+1.0d0) >= eps3 ) then
 c
+          d2psdhp11 = 0.0d0
+          d2psdhp22 = 0.0d0
           do i = 1,3
-            call ummdp_yld2004_18p_d2psdhp ( i,psp1,hp1,d2psdhp11 )
-            call ummdp_yld2004_18p_d2psdhp ( i,psp2,hp2,d2psdhp22 )
+            call ummdp_yield_yld2004_d2psdhp ( i,psp1,hp1,d2psdhp11 )                                             
+            call ummdp_yield_yld2004_d2psdhp ( i,psp2,hp2,d2psdhp22 )                                 
           end do
 c                                                    ---- d2(fai)/d(hp)2
-          call ummdp_utility_clear2 ( d2fadhp11,3,3 )
-          call ummdp_utility_clear2 ( d2fadhp12,3,3 )
-          call ummdp_utility_clear2 ( d2fadhp21,3,3 )
-          call ummdp_utility_clear2 ( d2fadhp22,3,3 )
 c                                                  -- d2(fai)/d(hd)d(hd)
+          d2fadhp11 = 0.0d0
           do iq = 1,3
             do m = 1,3
               do ip = 1,3
                 do l = 1,3
-                  d2fadhp11(iq,m) = d2fadhp11(iq,m) + d2fadpsp11(ip,l) *
-     1                              dpsdhp1(l,m) * dpsdhp1(ip,iq)
+                  d2fadhp11(iq,m) = d2fadhp11(iq,m)
+     1                              + d2fadpsp11(ip,l)
+     2                                * dpsdhp1(l,m)*dpsdhp1(ip,iq)
                 end do
-                d2fadhp11(iq,m) = d2fadhp11(iq,m) + 
-     1                            dfadpsp1(ip)*d2psdhp11(ip,iq,m)
+                d2fadhp11(iq,m) = d2fadhp11(iq,m)
+     1                            + dfadpsp1(ip)*d2psdhp11(ip,iq,m)
               end do
             end do
           end do
 c                                              ---- d2(fai)/d(hdd)d(hdd)
+          d2fadhp22 = 0.0d0
           do iq = 1,3
             do m = 1,3
               do ip = 1,3
                 do l = 1,3
-                  d2fadhp22(iq,m) = d2fadhp22(iq,m) + (
-     1                              d2fadpsp22(ip,l) * 
-     2                              dpsdhp2(l,m) * dpsdhp2(ip,iq) )
+                  d2fadhp22(iq,m) = d2fadhp22(iq,m)
+     1                              + (d2fadpsp22(ip,l)
+     2                                 * dpsdhp2(l,m)*dpsdhp2(ip,iq) )
                 end do
                 d2fadhp22(iq,m) = d2fadhp22(iq,m) + 
      1                            dfadpsp2(ip)*d2psdhp22(ip,iq,m)
@@ -8315,23 +8271,25 @@ c                                              ---- d2(fai)/d(hdd)d(hdd)
             end do
           end do
 c                         ---- d2(fai)/d(hdd)d(hd) & d2(fai)/d(hd)d(hdd)
+          d2fadhp12 = 0.0d0
+          d2fadhp21 = 0.0d0
           do iq = 1,3
             do m = 1,3
               do ip = 1,3
                 do l = 1,3
-                  d2fadhp12(iq,m) = d2fadhp12(iq,m) + (
-     1                              d2fadpsp12(ip,l)*
-     2                              dpsdhp2(l,m)*dpsdhp1(ip,iq) )
-                  d2fadhp21(iq,m) = d2fadhp21(iq,m) + 
-     1                              d2fadpsp21(ip,l)*
-     2                              dpsdhp1(l,m)*dpsdhp2(ip,iq)
+                  d2fadhp12(iq,m) = d2fadhp12(iq,m)
+     1                              + (d2fadpsp12(ip,l)
+     2                                 * dpsdhp2(l,m)*dpsdhp1(ip,iq))
+                  d2fadhp21(iq,m) = d2fadhp21(iq,m)
+     1                              + d2fadpsp21(ip,l)
+     2                                * dpsdhp1(l,m)*dpsdhp2(ip,iq)
                 end do
                end do
             end do
           end do
 c                                                     ---- d2(hp)/d(sp)2
-          call ummdp_utility_clear3 ( d2hdsp11,3,6,6 )
-          call ummdp_utility_clear3 ( d2hdsp22,3,6,6 )
+          d2hdsp11 = 0.0d0
+          d2hdsp22 = 0.0d0
           do i = 1,3
             j = mod(i,  3) + 1
             k = mod(i+1,3) + 1
@@ -8371,9 +8329,8 @@ c                                                     ---- d2(hp)/d(sp)2
             d2hdsp22(3,j,i) = -sp2(j)
           end do
 c                                                     ---- d2(fai)/d(s)2
-          call ummdp_utility_clear2 ( d2fads2,6,6 )
-          call ummdp_utility_clear2 ( xx1,3,6 )
-          call ummdp_utility_clear2 ( xx2,3,6 )
+          xx1 = 0.0d0
+          xx2 = 0.0d0
           do i = 1,3
             do j = 1,6
               do ip = 1,6
@@ -8382,23 +8339,25 @@ c                                                     ---- d2(fai)/d(s)2
               end do
             end do
           end do
+c
+          d2fads2 = 0.0d0
           do i = 1,6
             do j = 1,6
               do iq = 1,3
                 do m = 1,3
                   d2fads2(i,j) = d2fads2(i,j) +
-     1                           d2fadhp11(iq,m)*xx1(iq,i)*xx1(m,j) +
-     2                           d2fadhp12(iq,m)*xx1(iq,i)*xx2(m,j) +
-     3                           d2fadhp21(iq,m)*xx2(iq,i)*xx1(m,j) +
-     4                           d2fadhp22(iq,m)*xx2(iq,i)*xx2(m,j)
+     1                           + d2fadhp11(iq,m)*xx1(iq,i)*xx1(m,j)
+     2                           + d2fadhp12(iq,m)*xx1(iq,i)*xx2(m,j)
+     3                           + d2fadhp21(iq,m)*xx2(iq,i)*xx1(m,j)
+     4                           + d2fadhp22(iq,m)*xx2(iq,i)*xx2(m,j)
                 end do
                 do n = 1,6
                   do ir = 1,6
                     d2fads2(i,j) = d2fads2(i,j) +
-     1                             d2hdsp11(iq,ir,n)*dfadhp1(iq)*
-     2                             dsdsp1(ir,i)*dsdsp1(n,j) +
-     3                             d2hdsp22(iq,ir,n)*dfadhp2(iq)*
-     4                             dsdsp2(ir,i)*dsdsp2(n,j)
+     1                             + d2hdsp11(iq,ir,n)*dfadhp1(iq)
+     2                               * dsdsp1(ir,i)*dsdsp1(n,j)
+     3                             + d2hdsp22(iq,ir,n)*dfadhp2(iq)
+     4                               * dsdsp2(ir,i)*dsdsp2(n,j)
                   end do
                 end do
               end do
@@ -8408,14 +8367,14 @@ c                                                      ---- d2(se)/d(s)2
           d2sedfa2 = ami * (ami-1.0d0) * fai**(ami-2.0d0) / dc**ami
           do i = 1,6
             do j = 1,6
-              d2seds2(i,j) = d2sedfa2*dfads(i)*dfads(j) +
-     1                       dsedfa*d2fads2(i,j)
+              d2seds2(i,j) = d2sedfa2*dfads(i)*dfads(j)
+     1                       + dsedfa*d2fads2(i,j)
             end do
           end do
         else
 c                                            ---- numerical differential
-          call ummdp_yld2004_18p_nu2 ( ctp1,ctp2,s,se,am,ami,
-     1                                  dc,pi,del,d2seds2 )
+          call ummdp_yield_yld2004_nu2 ( ctp1,ctp2,s,se,am,ami,dc,pi,
+     1                                   del,d2seds2 )
         end if
       end if
 c
@@ -8427,7 +8386,7 @@ c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE COEFFICIENT OF EQUIVALENT STRESS 1
 c
-      subroutine ummdp_yld2004_18p_coef ( cp1,cp2,pi,am,dc )
+      subroutine ummdp_yield_yld2004_coef ( cp1,cp2,pi,am,dc )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8438,8 +8397,8 @@ c
       real*8 bbp1(3),bbp2(3)
 c-----------------------------------------------------------------------
 c
-      call ummdp_yld2004_18p_coef_sub ( cp1,pi,bbp1 )
-      call ummdp_yld2004_18p_coef_sub ( cp2,pi,bbp2 )
+      call ummdp_yield_yld2004_coef_sub ( cp1,pi,bbp1 )
+      call ummdp_yield_yld2004_coef_sub ( cp2,pi,bbp2 )
       dc = 0.0d0
       do i = 1,3
         do j = 1,3
@@ -8448,14 +8407,14 @@ c
       end do
 c
       return
-      end subroutine ummdp_yld2004_18p_coef
+      end subroutine ummdp_yield_yld2004_coef
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE COEFFICIENT OF EQUIVALENT STRESS 2
 c
-      subroutine ummdp_yld2004_18p_coef_sub ( cp,pi,bbp )
+      subroutine ummdp_yield_yld2004_coef_sub ( cp,pi,bbp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8466,13 +8425,13 @@ c
       real*8 aap(3),bbp(3)
 c-----------------------------------------------------------------------
 c                                                  ---- coefficients aap
-      aap(1) = (cp(1,2)+cp(1,3)-2.0d0*cp(2,1) +
-     1          cp(2,3)-2.0d0*cp(3,1)+cp(3,2))/9.0d0
-      aap(2) = ((2.0d0*cp(2,1)-cp(2,3))*(cp(3,2)-2.0d0*cp(3,1)) +
-     2          (2.0d0*cp(3,1)-cp(3,2))*(cp(1,2)+cp(1,3)) +
-     3          (cp(1,2)+cp(1,3))*(2.0d0*cp(2,1)-cp(2,3)))/2.7d1
-      aap(3) = (cp(1,2)+cp(1,3))*(cp(2,3)-2.0d0*cp(2,1))*
-     1         (cp(3,2)-2.0d0*cp(3,1))/5.4d1
+      aap(1) = (cp(1,2)+cp(1,3)-2.0d0*cp(2,1)
+     1          + cp(2,3)-2.0d0*cp(3,1)+cp(3,2))/9.0d0
+      aap(2) = ((2.0d0*cp(2,1)-cp(2,3))*(cp(3,2)-2.0d0*cp(3,1))
+     2          + (2.0d0*cp(3,1)-cp(3,2))*(cp(1,2)+cp(1,3))
+     3          + (cp(1,2)+cp(1,3))*(2.0d0*cp(2,1)-cp(2,3)))/2.7d1
+      aap(3) = (cp(1,2)+cp(1,3))*(cp(2,3)-2.0d0*cp(2,1))
+     1         *(cp(3,2)-2.0d0*cp(3,1))/5.4d1
 c                                          ---- coefficients ppp,qqp,ttp
       ppp = aap(1)**2 + aap(2)
       qqp = (2.0d0*aap(1)**3+3.0d0*aap(1)*aap(2)+2.0d0*aap(3)) / 2.0d0
@@ -8483,16 +8442,16 @@ c                                                  ---- coefficients bbp
       bbp(3) = 2.0d0*sqrt(ppp)*cos((ttp+2.0d0*pi)/3.0d0) + aap(1)
 c
       return
-      end subroutine ummdp_yld2004_18p_coef_sub
+      end subroutine ummdp_yield_yld2004_coef_sub
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE YIELD FUNCTION 1
 c
-      subroutine ummdp_yld2004_18p_yf ( ctp1,ctp2,s,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,se )
+      subroutine ummdp_yield_yld2004_yf ( ctp1,ctp2,s,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,se )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8502,8 +8461,8 @@ c
 c
       integer i,j
 c-----------------------------------------------------------------------
-      call ummdp_yld2004_18p_yfsub ( ctp1,s,pi,sp1,psp1,hp1,cetpq1 )
-      call ummdp_yld2004_18p_yfsub ( ctp2,s,pi,sp2,psp2,hp2,cetpq2 )
+      call ummdp_yield_yld2004_yfsub ( ctp1,s,pi,sp1,psp1,hp1,cetpq1 )                 
+      call ummdp_yield_yld2004_yfsub ( ctp2,s,pi,sp2,psp2,hp2,cetpq2 )                                   
 c                                                    ---- yield function
       fai = 0.0d0
       do i = 1,3
@@ -8515,14 +8474,15 @@ c                                                 ---- equivalent stress
       se = (fai/dc) ** ami
 c
       return
-      end subroutine ummdp_yld2004_18p_yf
+      end subroutine ummdp_yield_yld2004_yf
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE YIELD FUNCTION 2
 c
-      subroutine ummdp_yld2004_18p_yfsub ( ctp,s,pi,sp,psp,hp,cetpq )
+      subroutine ummdp_yield_yld2004_yfsub ( ctp,s,pi,sp,psp,hp,cetpq )
+     1                                           
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8539,10 +8499,10 @@ c                                         ---- linear-transformed stress
 c
 c                                                  ---- invariants of sp
       hp(1) = (sp(1)+sp(2)+sp(3)) / 3.0d0
-      hp(2) = (sp(5)**2+sp(6)**2+sp(4)**2 - 
-     1         sp(2)*sp(3)-sp(3)*sp(1)-sp(1)*sp(2)) / 3.0d0
-      hp(3) = (2.0d0*sp(5)*sp(6)*sp(4)+sp(1)*sp(2)*sp(3) -
-     1         sp(1)*sp(6)**2-sp(2)*sp(5)**2-sp(3)*sp(4)**2) / 2.0d0
+      hp(2) = (sp(5)**2+sp(6)**2+sp(4)**2
+     1         - sp(2)*sp(3)-sp(3)*sp(1)-sp(1)*sp(2)) / 3.0d0
+      hp(3) = (2.0d0*sp(5)*sp(6)*sp(4)+sp(1)*sp(2)*sp(3)
+     1         - sp(1)*sp(6)**2-sp(2)*sp(5)**2-sp(3)*sp(4)**2) / 2.0d0
 c
 c                           ---- coefficients of characteristic equation
       hpq = sqrt(hp(1)**2 + hp(2)**2 + hp(3)**2)
@@ -8566,15 +8526,15 @@ c                                           ---- principal values of sp1
       end if
 c
       return
-      end subroutine ummdp_yld2004_18p_yfsub
+      end subroutine ummdp_yield_yld2004_yfsub
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     NUMERICAL DIFFERENTIATION FOR 2ND ORDER DERIVATIVES
 c
-      subroutine ummdp_yld2004_18p_nu2 ( ctp1,ctp2,s,se,am,ami,
-     1                                    dc,pi,del,d2seds2 )
+      subroutine ummdp_yield_yld2004_nu2 ( ctp1,ctp2,s,se,am,ami,dc,pi,
+     1                                     del,d2seds2 )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8592,13 +8552,13 @@ c
         do j = 1, 6
           if ( i == j ) then
             s0(i) = s(i) - del
-            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,sea )
+            call ummdp_yield_yld2004_yf ( ctp1,ctp2,s0,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,sea )
             s0(i) = s(i) + del
-            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,seb )
+            call ummdp_yield_yld2004_yf ( ctp1,ctp2,s0,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,seb )
             s0(i) = s(i)
             abc1 = (se-sea) / del
             abc2 = (seb-se) / del
@@ -8606,24 +8566,24 @@ c
           else
             s0(i) = s(i) - del
             s0(j) = s(j) - del
-            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,seaa )
+            call ummdp_yield_yld2004_yf ( ctp1,ctp2,s0,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,seaa )
             s0(i) = s(i) + del
             s0(j) = s(j) - del
-            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,seba )
+            call ummdp_yield_yld2004_yf ( ctp1,ctp2,s0,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,seba )
             s0(i) = s(i) - del
             s0(j) = s(j) + del
-            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,seab )
+            call ummdp_yield_yld2004_yf ( ctp1,ctp2,s0,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,seab )
             s0(i) = s(i) + del
             s0(j) = s(j) + del
-            call ummdp_yld2004_18p_yf ( ctp1,ctp2,s0,am,ami,dc,pi,
-     1                                   sp1,sp2,psp1,psp2,hp1,hp2,
-     2                                   cetpq1,cetpq2,fai,sebb )
+            call ummdp_yield_yld2004_yf ( ctp1,ctp2,s0,am,ami,dc,pi,sp1,
+     1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
+     2                                    cetpq2,fai,sebb )
             s0(i) = s(i)
             s0(j) = s(j)
             abc1 = (seba-seaa) / (2.0d0*del)
@@ -8634,14 +8594,14 @@ c
       end do
 c
       return
-      end subroutine ummdp_yld2004_18p_nu2
+      end subroutine ummdp_yield_yld2004_nu2
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d(psp)/d(hp)
 c
-      subroutine ummdp_yld2004_18p_dpsdhp ( i,psp,hp,dpsdhp )
+      subroutine ummdp_yield_yld2004_dpsdhp ( i,psp,hp,dpsdhp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8658,14 +8618,14 @@ c
       dpsdhp(i,3) = 2.0d0/3.0d0/dummy
 c
       return
-      end subroutine ummdp_yld2004_18p_dpsdhp
+      end subroutine ummdp_yield_yld2004_dpsdhp
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     CALCULATE d2(psp)/d(hp)2
 c
-      subroutine ummdp_yld2004_18p_d2psdhp ( i,psp,hp,d2psdhp )
+      subroutine ummdp_yield_yld2004_d2psdhp ( i,psp,hp,d2psdhp )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8690,7 +8650,7 @@ c-----------------------------------------------------------------------
       d2psdhp(i,1,3) = d2psdhp(i,3,1)
 c
       return
-      end subroutine ummdp_yld2004_18p_d2psdhp
+      end subroutine ummdp_yield_yld2004_d2psdhp
 c
 c
 c
@@ -8699,7 +8659,8 @@ c     YLD89 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: 
 c
-      subroutine ummdp_yld89 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
+      subroutine ummdp_yield_yld89 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                               ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8716,8 +8677,8 @@ c
       real*8 d2seds2z(3,3)
 c-----------------------------------------------------------------------
 c
-      call ummdp_yld89_branch ( s,se,dseds,d2seds2,nreq,
-     1                           pryld,ndyld )
+      call ummdp_yield_yld89_branch ( s,se,dseds,d2seds2,nreq,
+     1                                pryld,ndyld )
 c
       if ( nreq <= 1 ) return
 c
@@ -8730,15 +8691,15 @@ c
 c
       do i = 1,3
         s0(i) = s(i) + delta
-        call ummdp_yld89_branch ( s0,se0,dsedsz,d2seds2z,1,
-     1                             pryld,ndyld )
+        call ummdp_yield_yld89_branch ( s0,se0,dsedsz,d2seds2z,1,
+     1                                  pryld,ndyld )
         ta1 = dsedsz(1)
         ta2 = dsedsz(2)
         ta3 = dsedsz(3)
 c
         s0(i) = s(i) - delta
-        call ummdp_yld89_branch ( s0,se0,dsedsz,d2seds2z,1,
-     2                             pryld,ndyld )
+        call ummdp_yield_yld89_branch ( s0,se0,dsedsz,d2seds2z,1,
+     2                                  pryld,ndyld )
         tb1 = dsedsz(1)
         tb2 = dsedsz(2)
         tb3 = dsedsz(3)
@@ -8760,14 +8721,14 @@ c                                         ---- d2seds2 must be symmetric
       end do
 c
       return
-      end subroutine ummdp_yld89
+      end subroutine ummdp_yield_yld89
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     BRANCH OF YLD89
 c
-      subroutine ummdp_yld89_branch ( s,se,dseds,d2seds2,nreq,
-     1                                pryld,ndyld )
+      subroutine ummdp_yield_yld89_branch ( s,se,dseds,d2seds2,nreq,
+     1                                      pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -8791,22 +8752,6 @@ c                                                        ---- parameters
       a  = pryld(1+2)
       h  = pryld(1+3)
       p  = pryld(1+4)                                   
-c                                                       ---- clear start
-      call ummdp_utility_clear1 ( dfdK,2 )
-      call ummdp_utility_clear2 ( dKds,2,3 )
-c
-      call ummdp_utility_clear2 ( d2fdK2,2,2 )
-      call ummdp_utility_clear2 ( dfdKdfdK,2,2 )
-      call ummdp_utility_clear2 ( d2K1ds2,3,3 )
-      call ummdp_utility_clear2 ( d2K2ds2,3,3 )
-c
-      call ummdp_utility_clear1 ( df1dK,2 )
-      call ummdp_utility_clear1 ( df2dK,2 )
-      call ummdp_utility_clear1 ( df3dK,2 )
-c
-      call ummdp_utility_clear2 ( d2f1dK2,2,2 )
-      call ummdp_utility_clear2 ( d2f2dK2,2,2 )
-      call ummdp_utility_clear2 ( d2f3dK2,2,2 )
 c                                                         ---- clear end
 c
 c     K1
@@ -8845,7 +8790,7 @@ c
           dKds(2,3) = p*p*s(3) / pK2
         end if
 c                                                  ---- d2K1ds2(3,3)=0.0
-        call ummdp_utility_clear2 ( d2K1ds2,3,3 )
+        d2K1ds2 = 0.0d0
 c                                                      ---- d2K2ds2(3,3)
         if ( pK2 == 0.0d0 ) then
           DpK22 = 1.0d-32
@@ -8853,18 +8798,16 @@ c
           d2K2ds2(1,1) = (DpK22**(-0.5d0)-pK3*DpK22**(-1.5d0)) / 4.0d0
           d2K2ds2(1,2) = -h * d2K2ds2(1,1)
           d2K2ds2(1,3) = -p*p*s(3)*pK3/2.0d0*DpK22**(-1.5d0)
-
+c
           d2K2ds2(2,1) = d2K2ds2(1,2)
           d2K2ds2(2,2) = h * h * d2K2ds2(1,1)
           d2K2ds2(2,3) = -h * d2K2ds2(1,3)
-
+c
           d2K2ds2(3,1) = d2K2ds2(1,3)
           d2K2ds2(3,2) = d2K2ds2(2,3)
           d2K2ds2(3,3) = p*p*(DpK22**(-0.5d0) - 
      1                   p*p*s(3)*s(3)*DpK22**(-1.5d0))
-c
         else
-c
           d2K2ds2(1,1) = (pK22**(-0.5d0)-pK3*pK22**(-1.5d0))/4.0d0
           d2K2ds2(1,2) = -h*d2K2ds2(1,1)
           d2K2ds2(1,3) = -p*p*s(3)*pK3/2.0d0*pK22**(-1.5d0)
@@ -8877,10 +8820,8 @@ c
           d2K2ds2(3,2) = d2K2ds2(2,3)
           d2K2ds2(3,3) = p*p
      1                   * (pK22**(-0.5d0)-p*p*s(3)*s(3)*pK22**(-1.5d0))
-
         end if
 c                                                              ---- dfdK
-c
 c                                                             ---- df1dK
         do i = 1,2
           df1dK(i) = a*pM*(pK1+pK2)*abs(pK1+pK2)**(pM-2.0d0)
@@ -8893,6 +8834,7 @@ c                                                             ---- df3dK
         df3dK(2) = 2.0d0*pM*(2.0d0-a)*(2.0d0*pK2) * 
      1              abs(2.0d0*pK2)**(pM-2.0d0)
 c                                            ---- dfdK=df1dK+df2dK+df3dK
+        dfdK = 0.0d0
         do i = 1,2
           dfdK(i) = df1dK(i)+df2dK(i)+df3dK(i)
         end do
@@ -8901,36 +8843,29 @@ c                                                             ---- dsedf
         dsedf = (0.5d0*f) ** ((1.0d0-pM)/pM)
         dsedf = dsedf / (2.0d0*pM)
 c                                                             ---- dseds
+        dseds = 0.0d0
         do i = 1,3
-          dseds(i) = 0.0d0
           do j = 1,2
             dseds(i) = dseds(i)+dfdK(j)*dKds(j,i)
           end do
           dseds(i) = dseds(i)*dsedf
         end do
       end if
-c
 c                                                           ---- d2seds2
       if ( nreq >= 2 ) then
 c                                                            ---- d2fdK2
-c
 c                                                           ---- d2f1dK2
-c
         do i = 1,2
           do j = 1,2
             d2f1dK2(i,j) = a*pM*(pM-1.0d0)*abs(pK1+pK2)**(pM-2.0d0)
           end do
         end do
-c
 c                                                           ---- d2f2dK2
-c
         d2f2dK2(1,1) = a*pM*(pM-1.0d0)*abs(pK1-pK2)**(pM-2.0d0)
         d2f2dK2(1,2) = -a*pM*(pM-1.0d0)*abs(pK1-pK2)**(pM-2.0d0)
         d2f2dK2(2,1) = d2f2dK2(1,2)
         d2f2dK2(2,2) = d2f2dK2(1,1)
-c
 c                                                           ---- d2f3dK2
-c
         d2f3dK2(1,1) = 0.0d0
         d2f3dK2(1,2) = 0.0d0
         d2f3dK2(2,1) = 0.0d0
@@ -8950,41 +8885,34 @@ c                                                     ---- dfdKdfdK(2,2)
           end do
         end do
 c                                                           ---- d2sedf2
-        d2sedf2 = 0.0d0
         d2sedf2 = (0.5d0*f)**((1.0d0-2.0d0*pM)/pM)
         d2sedf2 = d2sedf2*(1.0d0-pM) / (4.0d0*pM*pM)
 c
         do i = 1,3
           do j = 1,3
-c
-            call ummdp_utility_clear1 (w,2)
-            call ummdp_utility_clear1 (x,2)
-c
+            w = 0.0d0
+            x = 0.0d0
             do k = 1,2
               do l = 1,2
                 w(k) = w(k) + dfdKdfdK(k,l)*dKds(l,j)
                 x(k) = x(k) + d2fdK2(k,l)*dKds(l,j)
               end do
             end do
-c
             sc1 = 0.0d0
             sc2 = 0.0d0
             sc3 = 0.0d0
-c
             do k = 1,2
               sc1 = sc1 + dKds(k,i)*w(k)
               sc2 = sc2 + dKds(k,i)*x(k)
             end do
             sc3 = dfdK(1)*d2K1ds2(j,i) + dfdK(2)*d2K2ds2(j,i)
-c
             d2seds2(i,j) = d2sedf2*sc1 + dsedf*sc2 + d2sedf2*sc3
-c
           end do
         end do
       end if
 c
       return
-      end subroutine ummdp_yld89_branch
+      end subroutine ummdp_yield_yld89_branch
 c
 c
 c
@@ -8993,8 +8921,8 @@ c     YOSHIDA2011 YIELD FUNCTION AND DERIVATIVES
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2013.01.010
 c
-      subroutine ummdp_yoshida2011 ( s,se,dseds,d2seds2,nreq,
-     1                               pryld,ndyld )
+      subroutine ummdp_yield_yoshida2011 ( s,se,dseds,d2seds2,nreq,
+     1                                     pryld,ndyld )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -9055,19 +8983,19 @@ c
       a(15) = 1.0d0 * 27.0d0 * pryld(1+15)          ! 27   *c15
       a(16) = 1.0d0 * 27.0d0 * pryld(1+16)          ! 27   *c16
 c
-      call ummdp_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
-     1                          a,ipow,maxa,nterms )
+      call ummdp_yield_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,a,
+     1                               ipow,maxa,nterms )
 c
       return
-      end subroutine ummdp_yoshida2011
+      end subroutine ummdp_yield_yoshida2011
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c     HU2005 & YOSHIDA2011 STYLE POLYNOMIAL TYPE YIELD FUNCTION
 c
-      subroutine ummdp_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
-     1                                a,ipow,maxa,nterms )
+      subroutine ummdp_yield_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
+     1                                     a,ipow,maxa,nterms )
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -9209,7 +9137,7 @@ c
       end do
 c
       return
-      end subroutine ummdp_hy_polytype
+      end subroutine ummdp_yield_hy_polytype
 c
 c
 c
