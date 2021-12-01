@@ -85,9 +85,12 @@ c
 c                                        ---- set debug and verbose mode
       nvbs0 = props(1)
       call ummdp_debugmode ( nvbs,nvbs0 )
-c                                       ---- output detailed information
-      if ( nvbs >= 4 ) then
+c                                       ---- print detailed information
+      if ( nvbs >= 1 ) then
         call ummdp_print_info  ( kinc,ndi,nshr )
+      end if
+c                                             ---- print input arguments
+      if ( nvbs >= 4 ) then
         call ummdp_print_inout ( 0,stress,dstrain,ddsdde,ntens,statev,
      1                           nstatev )
       end if
@@ -102,7 +105,7 @@ c
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
         write (6,*) 'mxpbs=',mxpbs
-        call ummdp_exit ( 9000 )
+        call ummdp_exit ( 301 )
       end if
 c                                                     ---- check nstatev
       call ummdp_check_nisv ( nstatev,ntens,npbs )
@@ -112,7 +115,7 @@ c                             ---- copy current internal state variables
      1                     mxpbs,npbs )
 c
 c                             ---- update stress and set tangent modulus
-      mjac = 0
+      mjac = 1
       call ummdp_plasticity ( stress,s2,dstrain,p,dp,dpe,de33,x1,x2,
      1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
      2                        prop,nprop,propdim )
@@ -136,7 +139,7 @@ c                                     ---- update back stress components
           end do
         end do
       end if
-c                           ----  if debug mode, output return arguments
+c                                            ---- print output arguments
       if ( nvbs >= 4 ) then
         call ummdp_print_inout ( 1,stress,dstrain,ddsdde,ntens,statev,
      1                           nstatev )

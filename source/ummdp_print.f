@@ -4,6 +4,9 @@
 *
 ************************************************************************
 c
+c     ummdp_print_ummdp ( )
+c       print ummmdp separator
+c
 c     ummdp_print_elastic ( prela,ndela )
 c       print elasticity parameters
 c
@@ -24,6 +27,24 @@ c       print informations for debug (info)
 c
 c     ummdp_print_inout
 c       print informations for debug (input/output)
+c
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c     PRINT UMMDP SEPARATOR
+c
+      subroutine ummdp_print_ummdp ( )
+c-----------------------------------------------------------------------
+      implicit none
+c
+      character*20 fmt
+c-----------------------------------------------------------------------
+c
+      fmt = '(1/,4xA,1/)'
+      write (6,fmt) '~~~~~~~~~~~~~~~~~~ UMMDp ~~~~~~~~~~~~~~~~~~'
+c
+      return
+      end subroutine ummdp_print_ummdp
+c
+c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT ELASTICITY PARAMETERS
@@ -318,7 +339,7 @@ c-----------------------------------------------------------------------
 c
       nttl = nnrm + nshr
 c
-      write(6,'(/8xA)') '>> Info'
+      write(6,'(2/8xA)') '>> Info'
 c
       write (6,'(/12xA,I7.1)') '        Increment : ',inc
 c

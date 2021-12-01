@@ -216,10 +216,7 @@ c
       end if
 c
       if ( (nvbs >= 1) .or. (nout /= 0) ) then
-        write (6,'(2/4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~ UMMDp ~~~~~~~~~~~~~~~~~'
-        write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~ START ~~~~~~~~~~~~~~~~~'
-        write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+        call ummdp_print_ummdp ( )
       end if
 c                                          ---- copy material properties
       n = 0
@@ -320,7 +317,7 @@ c                                             ---- copy delast to ddsdde
         text = 'Elastic Matrix'
         call ummdp_utility_print2 ( text,ddsdde,nttl,nttl,0 )
       end if
-c                                                
+c                           
       call ummdp_utility_mv ( vv,ddsdde,de,nttl,nttl )
       do i = 1,nttl
         s2(i) = s1(i) + vv(i)
@@ -435,7 +432,7 @@ c
         end if
 c
         pt = p + dp
-c                                        ---- calc. se and differentials
+c                       ---- calculate equivalent stress and derivatives
         do i = 1,nttl
           eta(i) = s2(i) - xt2(i)
         end do
@@ -596,7 +593,9 @@ c
           end do
           goto 200
         else
-          write (6,'(//16xA)') 'JUDGE: NO CONVERGENCE'
+          if ( nvbs >= 2 ) then
+            write (6,'(//16xA)') 'JUDGE: NO CONVERGENCE'
+          end if
         end if
 c                                                         ---- solve ddp
 c                                                           ---- set {G}
@@ -718,13 +717,14 @@ c                                        ---- thickness strain increment
 c
       if ( nvbs >= 1 ) then
         if ( nest /= 0 ) then
-          write (6,*) 'nest of MsRM               :',nest
-          write (6,*) 'total no. of stages        :',nstg
-          write (6,*) 'total no. of NR iteration  :',nite
-          write (6,*) 'initial stress gap         :',sgapi
-          write (6,*) 'inc. of equiv.plast.strain :',dp
-          write (6,*) 'equiv.plast.strain updated :',p+dp
-          write (6,*) 'location ne,ip,lay         :',ne,ip,lay
+          write (6,*) 'Nest        :',nest
+          write (6,*) 'Total Stages        :',nstg
+          write (6,*) 'Total NR Ierations  :',nite
+          write (6,*) 'Initial Stress Gap         :',sgapi
+          write (6,*) 'Increment of Equivalent Plastic Strain :',dp
+          write (6,*) 'Updated Equivalent Plastic Strain :',p+dp
+        else
+          write (6,'(8xA)') 'NO MsRM'
         end if
       end if
 c
@@ -749,7 +749,9 @@ c
       end if
 c
 c                                      ---- consistent material jacobian
-      write(6,'(//8xA)') '>> Material Jacobian'
+      if ( nvbs >= 4 ) then
+        write(6,'(//8xA)') '>> Material Jacobian'
+      end if
 c                                                           ---- set [B]
       call ummdp_utility_clear2( bm,nnn,nttl )
       i1 = 1
@@ -832,10 +834,13 @@ c
         call ummdp_utility_print2 ( text,ddsdde,nttl,nttl,0 )
       end if
 c
-  500 write (6,'(2/4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~ UMMDp ~~~~~~~~~~~~~~~~~'
-      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~ END ~~~~~~~~~~~~~~~~~~'
-      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+  500 if ( (nvbs >= 1) .or. (nout /= 0) ) then
+        call ummdp_print_ummdp ( )
+        ! write (6,'(2/4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+        ! write (6,'(2/4xA2/)') '~~~~~~~~~~~~~~~~~ UMMDp ~~~~~~~~~~~~~~~~~'
+        ! write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~ END ~~~~~~~~~~~~~~~~~~'
+        ! write (6,'(4xA2/)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+      end if
 c
       return
       end subroutine ummdp_plasticity_core

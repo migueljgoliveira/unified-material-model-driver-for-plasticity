@@ -57,14 +57,6 @@ c
       dimension prop(mxprop)
 c-----------------------------------------------------------------------
 c
-      write (6,'(2/4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-      write (6,  '(4xA)') '~~~~~~~~~~~~~ ABAQUS - UMAT ~~~~~~~~~~~~~'
-      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~ START ~~~~~~~~~~~~~~~~~'
-      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-c
-c                        ne  : element no.
-c                        ip  : integration point no.
-c                        lay : layer no. of shell
       ne = noel
       ip = npt
       lay = kspt
@@ -76,9 +68,12 @@ c
 c                                        ---- set debug and verbose mode
       nvbs0 = props(1)
       call ummdp_debugmode ( nvbs,nvbs0 )
-c                                       ---- output detailed information
-      if ( nvbs >= 4 ) then
+c                                        ---- print detailed information
+      if ( nvbs >= 1 ) then
         call ummdp_print_info  ( kinc,ndi,nshr )
+      end if
+c                                             ---- print input arguments
+      if ( nvbs >= 4 ) then
         call ummdp_print_inout ( 0,stress,dstran,ddsdde,ntens,statev,
      1                           nstatv )
       end if
@@ -130,7 +125,7 @@ c                                     ---- update back stress components
           end do
         end do
       end if
-c                           ----  if debug mode, output return arguments
+c                                            ---- print output arguments
       if ( nvbs >= 4 ) then
         call ummdp_print_inout ( 1,stress,dstran,ddsdde,ntens,statev,
      1                           nstatv )

@@ -176,7 +176,7 @@ c
       write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
       write (6,fmt) '. ',text
 c
-      write(fmt,'(A,I2,A)') '(',14+tab,'x6F18.8)'
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6E20.12)'
       ! write (6,'(14x6E16.8)') (a(i),i=1,n)
       write (6,fmt) (a(i),i=1,n)
       
@@ -206,7 +206,7 @@ c
       write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
       write (6,fmt) '. ',text
 c
-      write(fmt,'(A,I2,A)') '(',14+tab,'x6F18.8)'
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6E20.12)'
       do i = 1,n
         ! write (6,'(14x6E16.8)') (a(i,j),j=1,m)
         write (6,fmt) (a(i,j),j=1,m)
@@ -236,7 +236,7 @@ c
       write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
       write (6,fmt) '. ',text
 c
-      write(fmt,'(A,I2,A)') '(',14+tab,'x6E18.8)'
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6E20.12)'
       ! write (6,'(14x6E16.8)') a
       write (6,fmt) a
 c

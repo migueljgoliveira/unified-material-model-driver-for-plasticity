@@ -57,14 +57,6 @@ c
       dimension prop(mxprop)
 c-----------------------------------------------------------------------
 c
-      write (6,'(2/4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-      write (6,  '(4xA)') '~~~~~~~~~~~~~ ABAQUS - UMAT ~~~~~~~~~~~~~'
-      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~ START ~~~~~~~~~~~~~~~~~'
-      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-c
-c                        ne  : element no.
-c                        ip  : integration point no.
-c                        lay : layer no. of shell
       ne = noel
       ip = npt
       lay = kspt
@@ -76,9 +68,12 @@ c
 c                                        ---- set debug and verbose mode
       nvbs0 = props(1)
       call ummdp_debugmode ( nvbs,nvbs0 )
-c                                       ---- output detailed information
-      if ( nvbs >= 4 ) then
+c                                        ---- print detailed information
+      if ( nvbs >= 1 ) then
         call ummdp_print_info  ( kinc,ndi,nshr )
+      end if
+c                                             ---- print input arguments
+      if ( nvbs >= 4 ) then
         call ummdp_print_inout ( 0,stress,dstran,ddsdde,ntens,statev,
      1                           nstatv )
       end if
@@ -130,7 +125,7 @@ c                                     ---- update back stress components
           end do
         end do
       end if
-c                           ----  if debug mode, output return arguments
+c                                            ---- print output arguments
       if ( nvbs >= 4 ) then
         call ummdp_print_inout ( 1,stress,dstran,ddsdde,ntens,statev,
      1                           nstatv )
@@ -605,10 +600,7 @@ c
       end if
 c
       if ( (nvbs >= 1) .or. (nout /= 0) ) then
-        write (6,'(2/4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~ UMMDp ~~~~~~~~~~~~~~~~~'
-        write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~ START ~~~~~~~~~~~~~~~~~'
-        write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+        call ummdp_print_ummdp ( )
       end if
 c                                          ---- copy material properties
       n = 0
@@ -709,7 +701,7 @@ c                                             ---- copy delast to ddsdde
         text = 'Elastic Matrix'
         call ummdp_utility_print2 ( text,ddsdde,nttl,nttl,0 )
       end if
-c                                                
+c                           
       call ummdp_utility_mv ( vv,ddsdde,de,nttl,nttl )
       do i = 1,nttl
         s2(i) = s1(i) + vv(i)
@@ -824,7 +816,7 @@ c
         end if
 c
         pt = p + dp
-c                                        ---- calc. se and differentials
+c                       ---- calculate equivalent stress and derivatives
         do i = 1,nttl
           eta(i) = s2(i) - xt2(i)
         end do
@@ -985,7 +977,9 @@ c
           end do
           goto 200
         else
-          write (6,'(//16xA)') 'JUDGE: NO CONVERGENCE'
+          if ( nvbs >= 2 ) then
+            write (6,'(//16xA)') 'JUDGE: NO CONVERGENCE'
+          end if
         end if
 c                                                         ---- solve ddp
 c                                                           ---- set {G}
@@ -1107,13 +1101,14 @@ c                                        ---- thickness strain increment
 c
       if ( nvbs >= 1 ) then
         if ( nest /= 0 ) then
-          write (6,*) 'nest of MsRM               :',nest
-          write (6,*) 'total no. of stages        :',nstg
-          write (6,*) 'total no. of NR iteration  :',nite
-          write (6,*) 'initial stress gap         :',sgapi
-          write (6,*) 'inc. of equiv.plast.strain :',dp
-          write (6,*) 'equiv.plast.strain updated :',p+dp
-          write (6,*) 'location ne,ip,lay         :',ne,ip,lay
+          write (6,*) 'Nest        :',nest
+          write (6,*) 'Total Stages        :',nstg
+          write (6,*) 'Total NR Ierations  :',nite
+          write (6,*) 'Initial Stress Gap         :',sgapi
+          write (6,*) 'Increment of Equivalent Plastic Strain :',dp
+          write (6,*) 'Updated Equivalent Plastic Strain :',p+dp
+        else
+          write (6,'(8xA)') 'NO MsRM'
         end if
       end if
 c
@@ -1138,7 +1133,9 @@ c
       end if
 c
 c                                      ---- consistent material jacobian
-      write(6,'(//8xA)') '>> Material Jacobian'
+      if ( nvbs >= 4 ) then
+        write(6,'(//8xA)') '>> Material Jacobian'
+      end if
 c                                                           ---- set [B]
       call ummdp_utility_clear2( bm,nnn,nttl )
       i1 = 1
@@ -1200,8 +1197,8 @@ c                                                    ---- check symmetry
       a = sqrt(d/a)
       if ( a > 1.0d-8 ) then
         if ( nvbs >= 4 ) then
-          write (6,'(12xA,F)') 'Material Jacobian is not symmetric :',a
-          text = 'Material Jacobian (Non-Symmetric)'
+          write (6,'(/12xA,F)') 'Material Jacobian is not symmetric :',a
+          text = 'Material Jacobian | No Symmetry'
           call ummdp_utility_print2 ( text,ddsdde,nttl,nttl,0 )
         end if
 c                                                    ---- symmetrization
@@ -1221,10 +1218,13 @@ c
         call ummdp_utility_print2 ( text,ddsdde,nttl,nttl,0 )
       end if
 c
-  500 write (6,'(2/4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~ UMMDp ~~~~~~~~~~~~~~~~~'
-      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~ END ~~~~~~~~~~~~~~~~~~'
-      write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+  500 if ( (nvbs >= 1) .or. (nout /= 0) ) then
+        call ummdp_print_ummdp ( )
+        ! write (6,'(2/4xA)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+        ! write (6,'(2/4xA2/)') '~~~~~~~~~~~~~~~~~ UMMDp ~~~~~~~~~~~~~~~~~'
+        ! write (6,  '(4xA)') '~~~~~~~~~~~~~~~~~~ END ~~~~~~~~~~~~~~~~~~'
+        ! write (6,'(4xA2/)') '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+      end if
 c
       return
       end subroutine ummdp_plasticity_core
@@ -1302,14 +1302,14 @@ c
       case ( 0:1 )    !  isotropic linear elasticity (Hooke)
 c
         if ( ntela == 0 ) then
-          eyoung = prela(2)                           ! Young's modulus
-          epoas = prela(3)                            ! Poisson's ratio
+          eyoung = prela(2)                           ! Young modulus
+          epoas = prela(3)                            ! Poisson ratio
           erigid = eyoung / 2.0d0 / (1.0d0+epoas)     ! Rigidity
         else
           ek = prela(2)                               ! Bulk modulus
           eg = prela(3)                               ! Rigidity
-          eyoung = 9.0d0*ek*eg / (3.0d0*ek+eg)        ! Young's modulus
-          epoas = (eyoung-2.0d0*eg) / 2.0d0 / eg      ! Poisson's ratio
+          eyoung = 9.0d0*ek*eg / (3.0d0*ek+eg)        ! Young modulus
+          epoas = (eyoung-2.0d0*eg) / 2.0d0 / eg      ! Poisson ratio
           erigid = eg
         end if
 c                                       ---- set 6*6 matrix for 3d solid
@@ -1462,13 +1462,13 @@ c
       integer i,nb,it
 c-----------------------------------------------------------------------
 c
-c                                                 ---- eq.plastic strain
+c                                         ---- equivalent plastic strain
       p = stv(isvrsvd+1)
-c                                              ---- plastic strain comp.
+c                                         ---- plastic strain components
       do i = 1,nttl
         pe(i) = stv(isvrsvd + isvsclr + i)
       end do
-c                                         ---- partial back stress comp.
+c                                    ---- partial back stress components
       if ( npbs /= 0 ) then
         do nb = 1,npbs
           do i = 1,nttl
@@ -2345,6 +2345,9 @@ c************************************************************************
 *
 ************************************************************************
 c
+c     ummdp_print_ummdp ( )
+c       print ummmdp separator
+c
 c     ummdp_print_elastic ( prela,ndela )
 c       print elasticity parameters
 c
@@ -2365,6 +2368,24 @@ c       print informations for debug (info)
 c
 c     ummdp_print_inout
 c       print informations for debug (input/output)
+c
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c     PRINT UMMDP SEPARATOR
+c
+      subroutine ummdp_print_ummdp ( )
+c-----------------------------------------------------------------------
+      implicit none
+c
+      character*20 fmt
+c-----------------------------------------------------------------------
+c
+      fmt = '(1/,4xA,1/)'
+      write (6,fmt) '~~~~~~~~~~~~~~~~~~ UMMDp ~~~~~~~~~~~~~~~~~~'
+c
+      return
+      end subroutine ummdp_print_ummdp
+c
+c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c     PRINT ELASTICITY PARAMETERS
@@ -2659,7 +2680,7 @@ c-----------------------------------------------------------------------
 c
       nttl = nnrm + nshr
 c
-      write(6,'(/8xA)') '>> Info'
+      write(6,'(2/8xA)') '>> Info'
 c
       write (6,'(/12xA,I7.1)') '        Increment : ',inc
 c
@@ -3470,7 +3491,7 @@ c
       write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
       write (6,fmt) '. ',text
 c
-      write(fmt,'(A,I2,A)') '(',14+tab,'x6F18.8)'
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6E20.12)'
       ! write (6,'(14x6E16.8)') (a(i),i=1,n)
       write (6,fmt) (a(i),i=1,n)
       
@@ -3500,7 +3521,7 @@ c
       write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
       write (6,fmt) '. ',text
 c
-      write(fmt,'(A,I2,A)') '(',14+tab,'x6F18.8)'
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6E20.12)'
       do i = 1,n
         ! write (6,'(14x6E16.8)') (a(i,j),j=1,m)
         write (6,fmt) (a(i,j),j=1,m)
@@ -3530,7 +3551,7 @@ c
       write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
       write (6,fmt) '. ',text
 c
-      write(fmt,'(A,I2,A)') '(',14+tab,'x6E18.8)'
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6E20.12)'
       ! write (6,'(14x6E16.8)') a
       write (6,fmt) a
 c
