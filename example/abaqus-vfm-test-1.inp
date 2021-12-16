@@ -55,29 +55,15 @@
 ** MATERIALS
 **
 *Material, name=Material-1
-*User material, constants=29
- 5, 0, 200000.0, 0.3, -2, 1.0, 1.0, 1.0,
- 1.0, 1.0, 1.0, 1.0, 1.0, 8.0, 5, 180.0,
- 5.06, 2.11, 52.2, 5, 3, 824.9, 56.5, 135.4,
- 0.0684, 27509.4, 415.55, 2, 0.5
-**1, 0.5
+*User material, constants=11
+ 5, 0, 200000.0, 0.3, 0, 5, 180.0,5.06,
+ 2.11,52.2, 0, 0
 *Depvar
- 13,
+ 4,
  1 , PEEQ
  2 , PE11
  3 , PE22
  4 , PE12
- 5 , ALPHA1-11
- 6 , ALPHA1-22
- 7 , ALPHA1-12
- 8 , ALPHA2-11
- 9 , ALPHA2-22
- 10, ALPHA2-12
- 11, ALPHA3-11
- 12, ALPHA3-22
- 13, ALPHA3-12
-*User output variables
- 9
 **
 ** BOUNDARY CONDITIONS
 **
@@ -111,6 +97,6 @@
 *Node Output
  U,RF
 *Element Output, directions=YES
- S,LE,SDV,UVARM
+ S,LE,SDV
 **
 *End Step

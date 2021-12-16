@@ -1,8 +1,8 @@
+************************************************************************
+*
+*     UNCOUPLED RUPTURE CRITERIA
+*
 c***********************************************************************
-c
-c     UMMDp : Uncoupled Rupture Criteria
-c
-c**********************************************************************
 c
 c      0 : No Rupture Criterion
 c
@@ -13,12 +13,13 @@ c      4 : Ayada
 c      5 : Brozzo
 c      6 : Forming Limit Diagram (only plane-stress)
 c
-c-----------------------------------------------------------------------
-c     calculated rupture criteria
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-      subroutine jancae_rupture ( ntens,sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                            jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                            nt,ndrup,prrup )
+c     UNCOUPLED RUPTURE CRITERIA
+c
+      subroutine ummdp_rupture ( ntens,sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                           jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                           nt,ndrup,prrup )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -42,38 +43,38 @@ c
         return
 c
       case ( 1 )                             ! Equivalent Plastic Strain
-        call jancae_rup_eqstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                             nt,lim,wlimnorm )
+        call ummdp_rupture_eqvstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                 nt,lim,wlimnorm )
 c
       case ( 2 )                                   ! Cockroft and Latham
-        call jancae_rup_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                             jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                             nt,lim,wlimnorm )
+        call ummdp_rupture_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                                nt,lim,wlimnorm )
 c
       case ( 3 )                                       ! Rice and Tracey
-        call jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                         jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                         nt,lim,wlimnorm )
+        call ummdp_rupture_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                            jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                            nt,lim,wlimnorm )
 c
       case ( 4 )                                                 ! Ayada
-        call jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                          jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                          nt,lim,wlimnorm )
+        call ummdp_rupture_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                             jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                             nt,lim,wlimnorm )
 c
       case ( 5 )                                                ! Brozzo
-        call jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                           jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                           nt,lim,wlimnorm )
+        call ummdp_rupture_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                              jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                              nt,lim,wlimnorm )
 c
       case ( 6 )                                 ! Forming Limit Diagram
-        call jancae_rup_fld ( ntens,uvar2,uvar1,nuvarm,
-     &                        jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                        nt,lim,wlimnorm )
+        call ummdp_rupture_fld ( ntens,uvar2,uvar1,nuvarm,
+     1                           jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                           nt,lim,wlimnorm )
 c
       case default
-        write (6,*) 'error in jancae_rupture'
+        write (6,*) 'error in ummdp_rupture'
         write (6,*) 'ntrup error :',ntrup
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 205 )
       end select
 c
 c                    ---- terminate analysis if rupture limit is reached
@@ -82,7 +83,7 @@ c                    ---- terminate analysis if rupture limit is reached
         if ( wlimnorm >= 1.0d0 ) then 
           write (6,*) 'analysis terminated by rupture criterion'
           write (6,*) 'stop in uvrm.'
-          call jancae_exit( 10000 )
+          call ummdp_exit( 500 )
         end if
       end if
 c
@@ -91,11 +92,12 @@ c
 c
 c
 c
-c-----------------------------------------------------------------------
-c     Equivalent Plastic Strain
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-      subroutine jancae_rup_eqstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                                 nt,lim,wlimnorm )
+c     EQUIVALENT PLASTIC STRAIN UNCOUPLED RUPTURE CRITERIA
+c
+      subroutine ummdp_rupture_eqvstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                     nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -120,16 +122,17 @@ c                                                       ---- update uvar
       uvar2(2+nt+2) = peeq / lim
 c
       return
-      end
+      end subroutine ummdp_rupture_eqvstrain
 c
 c
 c
-c-----------------------------------------------------------------------
-c     Cockroft and Latham
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-      subroutine jancae_rup_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                                 jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                                 nt,lim,wlimnorm )
+c     COCKROFT AND LATHAM UNCOUPLED RUPTURE CRITERIA
+c
+      subroutine ummdp_rupture_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                    jrcd,jmac,jmatyp,matlayo,
+     2                                    laccfla,nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -165,11 +168,11 @@ c                                     ---- get sdv and uvar after update
 c
 c                                 ---- get principal stress after update
       call getvrm ('SP',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                  matlayo,laccfla )
+     1                  matlayo,laccfla )
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sp'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       maxsp2 = array(3)
 c
@@ -188,16 +191,17 @@ c                                                       ---- update uvar
       uvar2(2+nt+4) = wlim2/lim
 c
       return
-      end
+      end subroutine ummdp_rupture_cockroft
 c
 c
 c
-c-----------------------------------------------------------------------
-c     Rice and Tracey
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-      subroutine jancae_rup_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                             jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                             nt,lim,wlimnorm )
+c     RICE AND TRACEY UNCOUPLED RUPTURE CRITERIA
+c
+      subroutine ummdp_rupture_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                                nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -233,11 +237,11 @@ c                                     ---- get sdv and uvar after update
 c
 c                               ---- get hydrostatic stress after update
       call getvrm ( 'SINV',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                     matlayo,laccfla )
+     1                     matlayo,laccfla )
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       shyd2 = -array(3)
 c
@@ -256,16 +260,17 @@ c                                                       ---- update uvar
       uvar2(2+nt+4) = wlim2/lim
 c
       return
-      end
+      end subroutine ummdp_rupture_rice
 c
 c
 c
-c-----------------------------------------------------------------------
-c     Ayada
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-      subroutine jancae_rup_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                              jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                              nt,lim,wlimnorm )
+c     AYADA UNCOUPLED RUPTURE CRITERIA
+c
+      subroutine ummdp_rupture_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                 jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                                 nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -301,11 +306,11 @@ c                                     ---- get sdv and uvar after update
 c
 c                               ---- get hydrostatic stress after update
       call getvrm ( 'SINV',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                     matlayo,laccfla )
+     1                     matlayo,laccfla )
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       shyd2 = -array(3)
 c
@@ -324,16 +329,17 @@ c                                                       ---- update uvar
       uvar2(2+nt+4) = wlim2/lim
 c
       return
-      end
+      end subroutine ummdp_rupture_ayada
 c
 c
 c
-c-----------------------------------------------------------------------
-c     Brozzo
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-      subroutine jancae_rup_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     &                               jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                               nt,lim,wlimnorm )
+c     BROZZO UNCOUPLED RUPTURE CRITERIA
+c
+      subroutine ummdp_rupture_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
+     1                                  jrcd,jmac,jmatyp,matlayo,
+     2                                  laccfla,nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -368,21 +374,21 @@ c                                              ---- get sdv after update
 c
 c                                 ---- get principal stress after update
       call getvrm ('SP',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                  matlayo,laccfla )
+     1                  matlayo,laccfla )
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sp'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       maxsp2 = array(3)
 c
 c                               ---- get hydrostatic stress after update
       call getvrm ('SINV',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                    matlayo,laccfla )
+     1                    matlayo,laccfla )
       if ( jrcd /= 0 ) then
         write (6,*) 'request error in uvarm for sinv'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
       shyd2 = -array(3)
 c
@@ -406,17 +412,17 @@ c                                                       ---- update uvar
       uvar2(2+nt+5) = wlim2/lim
 c
       return
-      end
+      end subroutine ummdp_rupture_brozzo
 c
 c
 c
-c-----------------------------------------------------------------------
-c     Forming Limit Diagram (FLD)
-c       . only plane-stress formulation
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-      subroutine jancae_rup_fld ( ntens,uvar2,uvar1,nuvarm,
-     &                            jrcd,jmac,jmatyp,matlayo,laccfla,
-     &                            nt,lim,wlimnorm )
+c     FORMING LIMIT DIAGRAM UNCOUPLED RUPTURE CRITERIA
+c
+      subroutine ummdp_rupture_fld ( ntens,uvar2,uvar1,nuvarm,
+     1                               jrcd,jmac,jmatyp,matlayo,laccfla,
+     2                               nt,lim,wlimnorm )
 c
 c-----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
@@ -448,11 +454,11 @@ c
 c                                 ---- get principal strain after update
       if ( ntens == 3 ) then
         call getvrm ( 'LEP',array,jarray,flgray,jrcd,jmac,jmatyp,
-     &                      matlayo,laccfla )
+     1                      matlayo,laccfla )
         if ( jrcd /= 0 ) then
           write (6,*) 'request error in uvarm for lep'
           write (6,*) 'stop in uvrm.'
-          call jancae_exit ( 9000 )
+          call ummdp_exit ( 9000 )
         end if
         e2 = array(1)
         e1 = array(2)
@@ -460,16 +466,16 @@ c                               ---- get logarithmic strain after update
       else
         write (6,*) 'request error in uvarm for fld, only plane-stress'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
 !         call getvrm ( 'LE',array,jarray,flgray,jrcd,jmac,jmatyp,
 !      &                     matlayo,laccfla )
 !         if ( jrcd /= 0 ) then
 !           write (6,*) 'request error in uvarm for le'
 !           write (6,*) 'stop in uvrm.'
-!           call jancae_exit ( 9000 )
+!           call ummdp_exit ( 9000 )
 !         end if
 ! c                                            ---- assemble strain tensor
-!         call jancae_clear2 ( le,3,3 )
+!         call ummdp_clear2 ( le,3,3 )
 !         le(1,1) = array(1)
 !         le(2,2) = array(2)
 !         le(3,3) = array(3)
@@ -480,9 +486,9 @@ c                               ---- get logarithmic strain after update
 !         le(3,1) = le(1,3)
 !         le(3,2) = le(2,3)
 ! c                           ---- strain tensor eigen- values and vectors
-!         call jancae_clear1 ( es,3 )
-!         call jancae_clear2 ( ev,3,3 )
-!         call jancae_eigen_sym3 ( es,ev,le )
+!         call ummdp_clear1 ( es,3 )
+!         call ummdp_clear2 ( ev,3,3 )
+!         call ummdp_eigen_sym3 ( es,ev,le )
 !         e2 = es(2)
 !         e1 = es(1)
       end if
@@ -493,23 +499,23 @@ c                                     ---- activate fld table collection
       if ( jerror /= 0 ) then
         write (6,*) 'request error in uvarm for table collection fld'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c	                     		                        ---- get fld E1 values
       call getpropertytable ( 'FLD1',dum1,dum1,dum1,nfld,fld1,dum2,0,
-     &                               jerror )
+     1                               jerror )
       if ( jerror /= 0 ) then
         write (6,*) 'request error in uvarm for property table fld1'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c                                                 ---- get fld E2 values
       call getpropertytable ( 'FLD2',dum1,dum1,dum1,nfld,fld2,dum2,0,
-     &                               jerror )
+     1                               jerror )
       if ( jerror /= 0 ) then
         write (6,*) 'request error in uvarm for property table fld2'
         write (6,*) 'stop in uvrm.'
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c
 c                         ---- linear extra/inter -polation of E1 on FLD
@@ -517,12 +523,12 @@ c                         ---- linear extra/inter -polation of E1 on FLD
 c                              --- linear extrapolation on the left side
       if ( e2 < fld2(1) ) then
         e1fld = fld1(2) + ( (e2-fld2(2)) / (fld2(1)-fld2(2)) )
-     &          * ( fld1(1) - fld1(2) )
+     1          * ( fld1(1) - fld1(2) )
 c
 c                             --- linear extrapolation on the right side
       else if ( e2 > fld2(n) ) then
         e1fld = fld1(n-1) + ( (e2-fld2(n-1)) / (fld2(n)-fld2(n-1)) ) 
-     &          * ( fld1(n) - fld1(n-1) )
+     1          * ( fld1(n) - fld1(n-1) )
 c
 c                                  --- linear interpolation inside range
       else
@@ -533,7 +539,7 @@ c                                  --- linear interpolation inside range
           end if
         end do
         e1fld = fld1(k) + ( fld1(k+1) - fld1(k) )
-     &          * ( (e2-fld2(k)) / (fld2(k+1)-fld2(k)) )
+     1          * ( (e2-fld2(k)) / (fld2(k+1)-fld2(k)) )
       end if
 c
 c                                                 ---- rupture criterion
@@ -547,7 +553,7 @@ c                                                       ---- update uvar
       uvar2(2+nt+5) = wlim/lim
 c
       return
-      end
+      end subroutine ummdp_rupture_fld
 c
 c
 c

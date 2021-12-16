@@ -1,233 +1,212 @@
-c 171230 : start check process by venders' supporters
-c 180110 : nela=1 for LS-Dyna like input (bulk & shear modulus)
+c
+c                               OVER THIS LINE IS CODE DEPENDENT
+c<<-->><<-->><<-->><<->><<-->><<-->><<-->><<-->><<-->><<-->><<-->><<-->>
+c                            UNDER THIS LINE IS DOCE INDEPENDENT
+c
+c     UMMDp: UNIFIED MATERIAL MODEL DRIVER FOR PLASTICITY
 c
 c
+************************************************************************
 c
+c     PLASTICITY DUMMY
 c
-c                               OVER THIS LINE DEPENDS ON CODE
-c***********************************************************************
-c                            UNDER THIS LINE INDEPENDS ON CODE
-c
-c     UMMDp  : Unified Material Model Driver for Plasticity
-c
-c     JANCAE : Japan Association for Nonlinear CAE
-c     MMSM   : Material Modeling Sub Meeting
-c     MPWG   : Metal Plasticity Working Group
-c
-c
+      subroutine ummdp_plasticity ( s1,s2,de,p,dp,dpe,de33,x1,x2,mxpbs,
+     1                              ddsdde,nnrm,nshr,nttl,nvbs,mjac,
+     2                              prop,nprop,propdim )
 c
 c-----------------------------------------------------------------------
-c     this is dummy routine
+      implicit none
 c
-      subroutine jancae_plasticity ( s1,s2,de,
-     &                               p,dp,dpe,de33,
-     &                               x1,x2,mxpbs,
-     &                               ddsdde,
-     &                               nnrm,nshr,nttl,
-     &                               nvbs,mjac,
-     &                               prop,nprop,propdim )
+      integer,intent(in) :: mxpbs,nnrm,nshr,nttl,nvbs,nprop,propdim
+      real*8 ,intent(in) :: p
+      real*8 ,intent(in) :: s1(nttl),de(nttl)
+c
+      real*8,intent(out) :: dp,de33
+      real*8,intent(out) :: s2(nttl),dpe(nttl)
+      real*8,intent(out) :: ddsdde(nttl,nttl)
+c
+      integer,intent(inout) :: mjac
+      real*8 ,intent(inout) :: prop(nprop)
+      real*8 ,intent(inout) :: x1(mxpbs,nttl),x2(mxpbs,nttl)
+c
+      integer i,n,ndela,ndyld,ndihd,ndkin,npbs,ndrup,nnn
+      character*100 text
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-c
-      dimension s1(nttl),s2(nttl),
-     &          de(nttl),
-     &          dpe(nttl),
-     &          x1(mxpbs,nttl),x2(mxpbs,nttl),
-     &          ddsdde(nttl,nttl),
-     &          prop(nprop)
-c
-      character text*32
 c
       if ( prop(1) >= 1000.0d+0 ) then
         mjac = -1
-        prop(1) = prop(1) - 1000.0d+0
+        prop(1) = prop(1) - 1000.0d0
       end if
 c
-      call jancae_prop_dim ( prop,nprop,propdim,
-     &                       ndela,ndyld,ndihd,ndkin,
-     &                       npbs,ndrup )
+      call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
+     1                      npbs,ndrup )
 c
       n = ndela + ndyld + ndihd + ndkin + ndrup
       if ( n > nprop ) then
-        write (6,*) 'nprop error in jancae_plasticity'
+        write (6,*) 'nprop error in ummdp_plasticity'
         write (6,*) 'nprop=',nprop
         write (6,*) 'n    =',n
         do i = 1,5
-          write (6,*) 'prop(',i,')=',prop(i)
+          write (6,*) 'props(',i,')=',prop(i)
         end do
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 303 )
       end if
       if ( nvbs >= 4 ) then
+        write(6,'(//8xA/)') '>> Properties'
         do i = 1,n
-          write (6,*) 'prop(',i,')=',prop(i)
+          write (6,'(12xA8,I2,A3,E20.12)') '. props(',i,') =',prop(i)
         end do
       end if
 c
       nnn = (npbs+1) * nttl
 c
-      call jancae_plasticity_core
-     &                  ( s1,s2,de,
-     &                    p,dp,dpe,de33,
-     &                    x1,x2,mxpbs,
-     &                    ddsdde,
-     &                    nnrm,nshr,nttl,
-     &                    nvbs,mjac,
-     &                    prop,nprop,
-     &                    npbs,ndela,ndyld,ndihd,ndkin,ndrup,nnn )
+      call ummdp_plasticity_core ( s1,s2,de,p,dp,dpe,de33,x1,x2,mxpbs,
+     1                             ddsdde,nnrm,nshr,nttl,nvbs,mjac,
+     2                             prop,nprop,npbs,ndela,ndyld,ndihd,
+     3                             ndkin,ndrup,nnn )
 c
       return
-      end
+      end subroutine ummdp_plasticity
 c
 c
+c
+************************************************************************
+c
+c     PLASTICITY CORE
+c
+      subroutine ummdp_plasticity_core ( s1,s2,de,p,dp,dpe,de33,x1,x2,
+     1                                   mxpbs,ddsdde,nnrm,nshr,nttl,
+     2                                   nvbs,mjac,prop,nprop,npbs,
+     3                                   ndela,ndyld,ndihd,ndkin,ndrup,
+     4                                   nnn )
 c
 c-----------------------------------------------------------------------
-c     core routine
+      implicit none
 c
-      subroutine jancae_plasticity_core
-     &                  ( s1,s2,de,
-     &                    p,dp,dpe,de33,
-     &                    x1,x2,mxpbs,
-     &                    ddsdde,
-     &                    nnrm,nshr,nttl,
-     &                    nvbs,mjac,
-     &                    prop,nprop,
-     &                    npbs,ndela,ndyld,ndihd,ndkin,ndrup,nnn )
+      common /ummdp1/ne,ip,lay
+      common /ummdpa/n1234
+c
+      integer,intent(in) :: mxpbs,nnrm,nshr,nttl,nvbs,mjac,nprop,npbs,
+     1                      ndela,ndyld,ndihd,ndkin,ndrup,nnn
+      real*8 ,intent(in) :: p
+      real*8 ,intent(in) :: s1(nttl),de(nttl),prop(nprop)
+c
+      real*8,intent(out) :: de33,dp
+      real*8,intent(out) :: s2(nttl),dpe(nttl),ddsdde(nttl,nttl)
+     1
+      real*8 ,intent(inout) :: x1(mxpbs,nttl),x2(mxpbs,nttl)
+c
+      integer ne,ip,lay,n1234,i,j,k,n,m,maxnr,ndiv,maxnest,nout,i1,i2,
+     1        j1,j2,k1,k2,nest,newmstg,nite,nstg,mstg,knr,ip1,ip2,nsym
+      real*8 tol,xe,se,sy,dsydp,d2sydp2,dpconv,sgapi,sgapb,dsgap,sgap,
+     1       pt,g1,g2n,g3nn,top,top0,bot,bot0,ddp,d,a,dd,aa,aaa,sc1,det
+      real*8 prela(ndela),pryld(ndyld),prihd(ndihd),prkin(ndkin),
+     1       prrup(ndrup),dseds(nttl),stry(nttl),g2(nttl),d33d(nttl),
+     2       eta(nttl),xt1(nttl),xt2(nttl),g3n(npbs),s2conv(nttl),
+     3       vv(nttl),uv(nttl),v1(nttl),gv(nnn),wv(nnn)
+      real*8 delast(nttl,nttl),d2seds2(nttl,nttl),vk(npbs,nttl),
+     1       dvkdp(npbs,nttl),g3(npbs,nttl),x2conv(mxpbs,nttl),
+     2       em(nttl,nttl),em3(nttl,nttl)
+      real*8 dvkds(npbs,nttl,nttl),dvkdxt(npbs,nttl,nttl),am(nnn,nnn),
+     1       ami(nnn,nnn),um(nttl,nnn),cm(nttl,nnn),em1(nttl,nnn),
+     2       em2(nttl,nnn),bm(nnn,nttl)
+      real*8 dvkdx(npbs,npbs,nttl,nttl)
+      character*100 text,tmp
+c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      common /jancae1/ne,ip,lay
-      common /jancae2/n1234
+c     >>> Arguments List
 c
-      dimension s1(nttl),s2(nttl),
-     &          de(nttl),
-     &          dpe(nttl),
-     &          x1(mxpbs,nttl),x2(mxpbs,nttl),
-     &          ddsdde(nttl,nttl),
-     &          prop(nprop)
+c       ne      | index number of element                           (in)
+c       ip      | index number of integration point                 (in)
+c       lay     | index number of layer (shell and membrane)        (in)
 c
-c     arguments list
+c       nnrm    | number of normal components                       (in)
+c       nshr    | number of shear components                        (in)
+c       nttl    | number of total components                        (in)
 c
-c     ne     : index no. of element
-c     ip     : index no. of integration point
-c     lay    : index no. of layer (shell and menbrane)
+c             problem type  | nnrm | nshr |  stress components
+c            ---------------+----+----+---------------------------
+c             plane stress  |  2   |  1   |  sx,sy,   txy
+c             thin shell    |  2   |  1   |  sx,sy,   txy
+c             plane strain  |  3   |  1   |  sx,sy,sz,txy
+c             axi-symmetric |  3   |  1   |  sr,sq,sz,trz
+c             thick shell   |  2   |  3   |  sx,sy,   txy,tyz,tzx
+c             3D solid      |  3   |  3   |  sx,sy,sz,txy,txz,tyx
 c
-c     nnrm   : no. of normal components
-c     nshr   : no. of shear  components
-c     nttl   : total number of components =nnrm+nshr
-c       nnrm and nshr indicate the type of problem
+c       npbs    | number of terms for partial back stresses         (in)
+c       mxpbs   | array size of terms for partial back stresses     (in)
 c
-c       problem type  |nnrm|nshr | stress comp.
-c       --------------+----+-----+-----------------------
-c       plane stress  | 2  |  1  | sx,sy,   txy
-c       thin shell    | 2  |  1  | sx,sy,   txy
-c       plane strain  | 3  |  1  | sx,sy,sz,txy
-c       axi-symmetric | 3  |  1  | sr,sq,sz,trz
-c       thick shell   | 2  |  3  | sx,sy,   txy,tyz,tzx
-c       3D solid      | 3  |  3  | sx,sy,sz,txy,txz,tyx
+c       s1      | stress before update                              (in)
+c       de      | strain increment                                  (in)
+c       p       | equivalent plastic strain                         (in)
+c       x1      | partial back stress before update                 (in)
 c
-c     npbs   : number terms for partial back stresses
-c     mxpbs  : array size of terms for partial back stresses
+c       s2      | stress after update                              (out)
+c       dp      | equivalent plastic strain increment              (out)
+c       dpe     | plastic strain increment components              (out)
+c       de33    | strain increment in thickness direction          (out)
+c       ddsdde  | material Jacobian Dds/Dde                        (out)
+c       x2      | partial back stress after update                 (out)
 c
-c     s1     : stress before update                   (input)
-c     s2     : stress after  update                  (output)
-c     de     : strain increment                       (input)
-c     p      : equivalent plastic strain              (input)
-c              (energetic conjugate to equivalent stress)
-c     dp     : equivalent plastic strain inc.        (output)
-c     dpe    : plastic strain inc. component         (output)
-c     de33   : strain inc. in thickness direction    (output)
-c              (for plane stress thin/thick shells)
-c     x1     : partial back stress before update      (input)
-c     x2     : partial back stress after  update     (output)
+c       nvbs    | verbose mode                                      (in)
 c
-c     ddsdde : material Jacobian Dds/Dde             (output)
+c                  0 | error messages only
+c                  1 | summary of MsRM
+c                  2 | details of MsRM and summary of NR
+c                  3 | details of NR
+c                  4 | input/output
+c                  5 | all status for debug
 c
-c     nvbs   : verbose mode                           (input)
-c              0  error message only
-c              1  summary of MsRM
-c              2  detail of MsRM and summary of NR
-c              3  detail of NR
-c              4  input/output
-c              5  all status for debug
-c                 MsRM : Multistage Return Mapping
-c                 NR   : Newton-Raphson
-c     mjac   : flag for material jacobian             (input)
-c              0  only stress update
-c              1  update stress and calc. material jacobian
-c             -1  use elastic matrix (emergency mode)
+c                  MsRM | Multistage Return Mapping
+c                  NR   | Newton-Raphson
 c
-c     nprop  : dimensions of prop                     (input)
-c     prop   : material parameters                    (input)
+c       mjac    | flag for material jacobian                        (in)
 c
-c     these variables are written in Voigt notation
+c                  0 | only stress update
+c                  1 | update stress and calculate material jacobian
+c                 -1 | use elastic matrix (emergency mode)
+c
+c       nprop   | dimensions of material properties                 (in)
+c       prop    | material properties                               (in)
 c
 c
-      dimension prela(ndela),pryld(ndyld),prihd(ndihd),prkin(ndkin),
-     &          prrup(ndrup)
+c     >>> Local Variables List
 c
-      dimension delast(nttl,nttl),
-     &          dseds(nttl),d2seds2(nttl,nttl),
-     &          stry(nttl),g2(nttl),
-     &          d33d(nttl)
+c       delast  | elastic material Jacobian
+c       se      | equivalent stress
+c       dseds   | 1st derivative of yield function wrt stress
+c       d2seds2 | 2nd derivative of yield function wrt stress
+c       stry    | trial stress predicted elastically
+c       sy      | flow stress (function of equivalent plastic strain)
+c       dsydp   | 1st derivative of flow stress wrt
+c                  equivalent plastic strain
+c       g1      | residual of stress point to yield surface
+c       g2      | residual of direction of plastic strain increment to
+c                  normal of yield surface (vector)
+c       g2n     | residual of direction of plastic strain increment to
+c                  normal of yield surface (norm)
+c       eta     | stress for yield function {s}-{xt}
+c       xt1     | total back stress before update
+c       xt2     | total back stress after update
+c       vk      | evolution for kinematic hardening dx=dp*vk
+c       dvkdp   | derivative of v wrt equivalent plastic strain
+c       dvkds   | derivative of v wrt stress
+c       dvkdx   | derivative of v wrt partial back stress
+c       dvkdxt  | derivative of v wrt total back stress
+c       g3      | residual of evolution for back stress (vector)
+c       g3n     | residual of evolution for back stress (norm)
+c       sgap    | stress gap to be eliminated in multistage steps
+c       tol     | covergence tolerance
+c       maxnr   | maximum iterations of Newton-Raphson
+c       maxnest | maximum trial times of multistage gap reduction
+c       ndiv    | division number of multistage
 c
-      dimension eta(nttl),xt1(nttl),xt2(nttl),
-     &          vk(npbs,nttl),dvkdp(npbs,nttl),dvkds(npbs,nttl,nttl),
-     &          dvkdx(npbs,npbs,nttl,nttl),dvkdxt(npbs,nttl,nttl),
-     &          g3(npbs,nttl),g3n(npbs)
+c-----------------------------------------------------------------------
 c
-c     local variables list
-c
-c     delast  : elastic material Jacobian
-c     se      : equivalent stress
-c     dseds   : dse/ds 1st order differential of eq.stress
-c                             with respect to stress components
-c     d2seds2 : d2se/ds2 2nd order differential of eq.stress
-c                             with respect to stress components
-c     stry    : trial stress predicted elastically
-c     sy      : flow stress (function of eq.plast.strain)
-c     dsydp   : dsy/dp 1st order differential of flow stress
-c                             with respect to eq.plast.strain
-c     g1      : error of stress point to yield surface
-c     g2      : error of direction of plastic strain inc. to
-c                       normal of yield surface (error vector)
-c     g2n     : norm of g2 vector
-c
-c     eta     : stress for yield function {s}-{xt}
-c     xt1     : total back stress before update
-c     xt2     : total back stress after update
-c     vk      : eq. of evolution for kinematic hardening dx=dp*vk
-c     dvkdp   : dvk/dp differential of v w.r.t eq.plast.strain
-c     dvkds   : dvk/ds differential of v w.r.t stress
-c     dvkdx   : dvk/dx differential of v w.r.t partial back stress
-c     dvkdxt  : dvk/dX differential of v w.r.t total back stress
-c     g3      : error of eq. of evolution for back stress
-c               (error vector)
-c     g3n     : norm of g3 vectors
-c
-c     sgap    : stress gap to be eliminated in multistage steps
-c     tol     : covergence tolerance (default : 1.0d-5 )
-c     maxnr   : max iteration of Newton-Raphson
-c     maxnest : max trial times of multistage gap reduction
-c     ndiv    : division number of multistage
-c               max no. of multistage is ndiv^maxnest
-c
-      dimension s2conv(nttl),x2conv(mxpbs,nttl)
-      dimension vv(nttl),uv(nttl),v1(nttl),
-     &          gv(nnn),wv(nnn),
-     &          em(nttl,nttl),em3(nttl,nttl),
-     &          am(nnn,nnn),ami(nnn,nnn),
-     &          um(nttl,nnn),cm(nttl,nnn),
-     &          em1(nttl,nnn),em2(nttl,nnn),
-     &          bm(nnn,nttl)
-      character text*32
-      logical   debug
-c
-c
-      debug = .true.
-      debug = .false.
-      tol = 1.0d-5    ! tolerrance of convergence
-      maxnr = 25      ! max iterations of Newton-Raphson loop
-      ndiv =  5       ! division of multistage loop
-      maxnest = 10    ! max re-division of multistage loop
+      tol = 1.0d-8
+      maxnr = 25
+      ndiv =  5
+      maxnest = 10
 c
       nout = 0
       if ( n1234 /= 1234 ) then
@@ -235,13 +214,9 @@ c
         nout = 1
       end if
 c
-      if ( ( nvbs >= 1 ) .or. ( nout /= 0 ) ) then
-        write (6,*)
-        write (6,*) '**************************************'
-        write (6,*) '******* START OF JANCAE/UMMDp ********'
-        write (6,*) '**************************************'
+      if ( (nvbs >= 1) .or. (nout /= 0) ) then
+        call ummdp_print_ummdp ( )
       end if
-c
 c                                          ---- copy material properties
       n = 0
       do i = 1,ndela
@@ -266,16 +241,15 @@ c                                          ---- copy material properties
       enddo
 c
       if ( nout /= 0 ) then
-        write (6,*)
-        write (6,*) 'MATERIAL DATA LIST --------------------'
-        call jancae_elast_print     ( prela,ndela )
-        call jancae_yfunc_print     ( pryld,ndyld )
-        call jancae_harden_print    ( prihd,ndihd )
-        call jancae_kinematic_print ( prkin,ndkin,npbs )
-        call jancae_rupture_print   ( prrup,ndrup )
+        write (6,'(/8xA)') '>> Material Parameters'
+        call ummdp_print_elastic   ( prela,ndela )
+        call ummdp_print_yield     ( pryld,ndyld )
+        call ummdp_print_isotropic ( prihd,ndihd )
+        call ummdp_print_kinematic ( prkin,ndkin,npbs )
+        call ummdp_print_rupture   ( prrup,ndrup )
       end if
 c                                                           ---- set [U]
-      call jancae_clear2( um,nttl,nnn )
+      um = 0.0d0
       i1 = 1
       do i2 = 1,npbs+1
         do j = 1,nttl
@@ -292,41 +266,46 @@ c                                                     ---- default value
       if ( npbs == 0 ) then
         do n = 1,mxpbs
           do i = 1,nttl
-            x2(n,i) = 0.0
-            x1(n,i) = 0.0
+            x2(n,i) = 0.0d0
+            x1(n,i) = 0.0d0
           end do
         end do
       end if
 c
-      de33 = 0.0
-      dp = 0.0
+      de33 = 0.0d0
+      dp = 0.0d0
       do i = 1,nttl
-        dpe(i) = 0.0
+        dpe(i) = 0.0d0
       end do
       do n = 1,npbs
         do i = 1,nttl
           x2(n,i) = x1(n,i)
         end do
       end do
-      call jancae_backsum ( npbs,xt1,x1,nttl,mxpbs )
-      call jancae_backsum ( npbs,xt2,x2,nttl,mxpbs )
+      call ummdp_backsum ( npbs,xt1,x1,nttl,mxpbs )
+      call ummdp_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
 c                                                  ---- print out arrays
       if ( nvbs >= 4 ) then
-        text = 'current stress (input)'
-        call jancae_print1 ( text,s1,nttl )
-        text = 'strain inc. (input)'
-        call jancae_print1 ( text,de,nttl )
+        write(6,'(//8xA)') '>> Input'
+        text = 'Stress'
+        call ummdp_utility_print1 ( text,s1,nttl,0 )
+        text = 'Strain Increment'
+        call ummdp_utility_print1 ( text,de,nttl,0 )
         if ( npbs /= 0 ) then
-          text = 'part. back stess (input)'
-          call jancae_backprint ( text,npbs,x1,nttl,mxpbs )
-          text = 'total  back stess (input)'
-          call jancae_print1 ( text,xt1,nttl )
+          text = 'Partial Back Stress'
+          call ummdp_backprint ( text,npbs,x1,nttl,mxpbs )
+          text = 'Total Back Stress'
+          call ummdp_utility_print1 ( text,xt1,nttl,0 )
         end if
       end if
-c                                            ---- set elastic [D] matrix
-      call jancae_setdelast ( delast,prela,ndela,
-     &                        nttl,nnrm,nshr,d33d )
+c                                                ---- elastic prediction
+      if ( nvbs >= 5 ) then
+        write(6,'(//8xA)') '>> Elastic Prediction'
+      end if
+c                                                ---- set elastic matrix
+      call ummdp_setdelast ( delast,prela,ndela,nttl,nnrm,nshr,d33d )
+c
 c                                             ---- copy delast to ddsdde
       do i = 1,nttl
         do j = 1,nttl
@@ -334,52 +313,57 @@ c                                             ---- copy delast to ddsdde
         end do
       end do
       if ( nvbs >= 5 ) then
-        text = 'elastic matrix'
-        call jancae_print2 ( text,ddsdde,nttl,nttl )
+        text = 'Elastic Matrix'
+        call ummdp_utility_print2 ( text,ddsdde,nttl,nttl,0 )
       end if
-c                                                ---- elastic prediction
-      call jancae_mv ( vv,ddsdde,de,nttl,nttl )
+c
+      call ummdp_utility_mv ( vv,ddsdde,de,nttl,nttl )
       do i = 1,nttl
         s2(i) = s1(i) + vv(i)
       end do
       if ( nvbs >= 5 ) then
-        text = 'elastic predicted stress'
-        call jancae_print1 ( text,s2,nttl )
+        text = 'Elastic Predicted Stress'
+        call ummdp_utility_print1 ( text,s2,nttl,0 )
       end if
 c                                                       ---- back stress
       do i = 1,nttl
         eta(i) = s2(i) - xt2(i)
       end do
 c                                                       ---- check yield
-      call jancae_yfunc  ( se,dseds,d2seds2,0,
-     &                     eta,nttl,nnrm,nshr,
-     &                     pryld,ndyld )
-      call jancae_hardencurve ( sy,dsydp,d2sydp2,
-     &                          0,p,prihd,ndihd )
+      call ummdp_yield ( se,dseds,d2seds2,0,eta,nttl,nnrm,nshr,pryld,
+     1                   ndyld )
+      call ummdp_isotropic ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
 c
       if ( nvbs >= 3 ) then
-        write (6,*) 'plastic strain p=',p
-        write (6,*) 'flow stress   sy=',sy
-        write (6,*) 'equiv.stress  se=',se
+        text = 'Plastic Strain'
+        call ummdp_utility_print3 ( text,p,0 )
+        text = 'Flow Stress'
+        call ummdp_utility_print3 ( text,sy,0 )
+        text = 'Equivalent Stress'
+        call ummdp_utility_print3 ( text,se,0 )
         if ( npbs /= 0 ) then
-          call jancae_yfunc  ( xe,dseds,d2seds2,0,
-     &                         xt1,nttl,nnrm,nshr,
-     &                         pryld,ndyld )
-          write (6,*) 'equiv.back.s  xe=',xe
+          call ummdp_yield  ( xe,dseds,d2seds2,0,xt1,nttl,nnrm,nshr,
+     1                        pryld,ndyld )
+          text = 'Equivalent Back Stress'
+          call ummdp_utility_print3 ( text,xe,0 )
         end if
       end if
       if ( se <= sy ) then
-        if ( nvbs >= 3 ) write (6,*) 'judge : elastic'
-        if ( ( nttl == 3 ) .or. ( nttl == 5 ) ) then
-          de33 = 0.0
+        if ( nvbs >= 3 ) write (6,'(/12xA)') 'JUDGE : ELASTIC'
+        if ( (nttl == 3) .or. (nttl == 5) ) then
+          de33 = 0.0d0
           do i = 1,nttl
             de33 = de33 + d33d(i)*de(i)
           end do
-          if ( nvbs >= 4 ) write (6,*) 'de33=',de33
+          if ( nvbs >= 4 ) then
+            text = 'Thickness Strain'
+            call ummdp_utility_print3 ( text,de33,0 )
+          end if
         end if
-        return
+        goto 500
+        ! return
       else
-        if ( nvbs >= 3 ) write (6,*) 'judge : plastic'
+        if ( nvbs >= 3 ) write (6,'(/12xA)') 'JUDGE : PLASTIC'
       end if
 c
 c                                                   ---- initialize loop
@@ -391,8 +375,8 @@ c                                                   ---- initialize loop
           x2conv(j,i) = x1(j,i)
         end do
       end do
-      dp = 0.0
-      dpconv = 0.0
+      dp = 0.0d0
+      dpconv = 0.0d0
       nest = 0
       newmstg = 1
       sgapi = se - sy
@@ -416,7 +400,7 @@ c
           x2(n,i) = x2conv(n,i)
         end do
       end do
-      call jancae_backsum ( npbs,xt2,x2,nttl,mxpbs )
+      call ummdp_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
 c                                          ---- start of multistage loop
       do m = 1,mstg
@@ -434,76 +418,74 @@ c
         knr = 0
 c                                      ---- start of Newton-Raphson loop
         if ( nvbs >= 3 ) then
-          write (6,*)
-          write (6,*) '**** start of Newton-Raphson loop'
+          write (6,'(//8xA)') ' >> Newton-Raphson Loop'
         end if
 c
   100   continue
         knr = knr + 1
         nite = nite + 1
         if ( nvbs >= 3 ) then
-          write (6,*) '----- NR iteration',knr
-          write (6,*) 'inc of p : dp   =',dp
+          write(tmp,'(I)') knr
+          write (6,'(//12xA,A)') 'Iteration : ',adjustl(tmp)
+          text = 'Equivalent Plastic Strain Increment'
+          call ummdp_utility_print3 ( text,dp,4 )
         end if
 c
         pt = p + dp
-c                                        ---- calc. se and differentials
+c                       ---- calculate equivalent stress and derivatives
         do i = 1,nttl
           eta(i) = s2(i) - xt2(i)
         end do
-        call jancae_yfunc ( se,dseds,d2seds2,2,
-     &                      eta,nttl,nnrm,nshr,
-     &                      pryld,ndyld )
+        call ummdp_yield ( se,dseds,d2seds2,2,eta,nttl,nnrm,nshr,pryld,
+     1                     ndyld )
 c
         if ( nvbs >= 5 ) then
-          text = 's2'
-          call jancae_print1 ( text,s2,nttl )
+          text = 'Updated Stress'
+          call ummdp_utility_print1 ( text,s2,nttl,4 )
           if ( npbs /= 0 ) then
-            text = 'xt2'
-            call jancae_print1 ( text,xt2,nttl )
+            text = 'Updated Total Back Stress'
+            call ummdp_utility_print1 ( text,xt2,nttl,4 )
             text = 'eta'
-            call jancae_print1 ( text,eta,nttl )
+            call ummdp_utility_print1 ( text,eta,nttl,4 )
           end if
-          text = 'dse/ds'
-          call jancae_print1 ( text,dseds,nttl )
-          text = 'd2se/ds2'
-          call jancae_print2 ( text,d2seds2,nttl,nttl )
+          text = '1st Yield Function Derivative'
+          call ummdp_utility_print1 ( text,dseds,nttl,4 )
+          text = '2nd Yield Function Derivative'
+          call ummdp_utility_print2 ( text,d2seds2,nttl,nttl,4 )
         end if
-c                                        ---- calc. sy and differentials
-        call jancae_hardencurve ( sy,dsydp,d2sydp2,
-     &                            1,pt,prihd,ndihd )
-
+c                             ---- calculate flow stress and derivatives
+        call ummdp_isotropic ( sy,dsydp,d2sydp2,1,pt,prihd,ndihd )
+c
         if ( nvbs >= 5 ) then
-          write (6,*) 'plastic strain p=',pt
-          write (6,*) 'flow stress   sy=',sy
-          write (6,*) 'hardening dsy/dp=',dsydp
+          text = 'Plastic Strain'
+          call ummdp_utility_print3 ( text,pt,4 )
+          text = 'Flow Stress'
+          call ummdp_utility_print3 ( text,sy,4 )
+          text = 'Hardening'
+          call ummdp_utility_print3 ( text,dsydp,4 )
         end if
 c                                                          ---- calc. g1
         g1 = se - sy - sgap
 c                                                          ---- calc. g2
-        call jancae_mv ( vv,delast,dseds,nttl,nttl )
+        call ummdp_utility_mv ( vv,delast,dseds,nttl,nttl )
         do i = 1,nttl
           g2(i) = s2(i) - stry(i) + dp*vv(i)
         end do
-        call jancae_vvs ( g2n,g2,g2,nttl )
+        call ummdp_utility_vvs ( g2n,g2,g2,nttl )
         g2n = sqrt(g2n)
 c                                                          ---- calc. g3
         if ( npbs /= 0 ) then
-          call jancae_kinematic ( vk,dvkdp,
-     &                            dvkds,dvkdx,dvkdxt,
-     &                            pt,s2,x2,xt2,
-     &                            nttl,nnrm,nshr,
-     &                            mxpbs,npbs,
-     &                            prkin,ndkin,
-     &                            pryld,ndyld )
+          call ummdp_kinematic ( vk,dvkdp,dvkds,dvkdx,dvkdxt,pt,s2,x2,
+     1                           xt2,nttl,nnrm,nshr,mxpbs,npbs,prkin,
+     2                           ndkin, pryld,ndyld )
           do n = 1,npbs
             do i = 1,nttl
               g3(n,i) = x2(n,i) - x1(n,i) - dp*vk(n,i)
             end do
           end do
-          g3nn = 0.0
+          g3nn = 0.0d0
           do n = 1,npbs
-            g3n(n) = 0.0
+            g3n(n) = 0.0d0
             do i = 1,nttl
               g3n(n) = g3n(n) + g3(n,i)*g3(n,i)
             end do
@@ -512,26 +494,30 @@ c                                                          ---- calc. g3
           end do
           g3nn = sqrt(g3nn)
         else
-          g3nn = 0.0
+          g3nn = 0.0d0
         end if
 c
         if ( nvbs >= 3 ) then
-          write (6,*) 'g1 (yield surf) =',g1
-          write (6,*) 'g2n (normality) =',g2n
+          write(6,'(//16xA)') '> Residuals'
+          text = 'Yield Surface'
+          call ummdp_utility_print3 ( text,g1,8 )
+          text = 'Normality (Norm)'
+          call ummdp_utility_print3 ( text,g2n,8 )
           if ( nvbs >= 5 ) then
-            text = 'g2 vector'
-            call jancae_print1 ( text,g2,nttl )
+            text = 'Normality (Vector)'
+            call ummdp_utility_print1 ( text,g2,nttl,8 )
           end if
           if ( npbs /= 0 ) then
             if ( nvbs >= 4 ) then
               do n = 1,npbs
-                write (6,*) 'g3n(',n,')=',g3n(n)
+                write(text,'(A,I1)') 'Back Stress Evolution ',n
+                call ummdp_utility_print3 ( text,g3n(n),8 )
                 if ( nvbs >= 5 ) then
                   do i = 1,nttl
                     uv(i) = g3(n,i)
                   end do
-                  text = 'g3 vector'
-                  call jancae_print1 ( text,uv,nttl )
+                  write(text,'(A,I1)') 'Back Stress Evolution ',n
+                  call ummdp_utility_print1 ( text,uv,nttl,8 )
                 end if
               end do
             end if
@@ -539,8 +525,8 @@ c
         end if
 c                      ---- calc. dependencies common for NR and Dds/Dde
 c                                                              * set [A]
-        call jancae_setunitm ( am,nnn )
-        call jancae_mm ( em,delast,d2seds2,nttl,nttl,nttl )
+        call ummdp_utility_setunitm ( am,nnn )
+        call ummdp_utility_mm ( em,delast,d2seds2,nttl,nttl,nttl )
         do i1 = 1,npbs+1
           do i2 = 1,npbs+1
             do j1 = 1,nttl
@@ -560,7 +546,7 @@ c                                                              * set [A]
                     am(k1,k2) = am(k1,k2) - dp*dvkds(ip1,j1,j2)
                   else
                     am(k1,k2) = am(k1,k2) - dp*dvkdx(ip1,ip2,j1,j2)
-     &                                    - dp*dvkdxt(ip1,j1,j2)
+     1                                    - dp*dvkdxt(ip1,j1,j2)
                   end if
                 end if
               end do
@@ -568,7 +554,7 @@ c                                                              * set [A]
           end do
         end do
 c                                                           ---- set {W}
-        call jancae_clear1( wv,nnn )
+        wv = 0.0d0
         do i1 = 1, npbs+1
           do j1 = 1,nttl
             k1 = (i1-1)*nttl + j1
@@ -583,18 +569,17 @@ c                                                           ---- set {W}
           end do
         end do
 c                                                      ---- calc. [A]^-1
-        call jancae_minv ( ami,am,nnn,det )
+        call ummdp_utility_minv ( ami,am,nnn,det )
 c                                                     ---- [C]=[U][A]^-1
-        call jancae_mm ( cm,um,ami,nttl,nnn,nnn )
-c
+        call ummdp_utility_mm ( cm,um,ami,nttl,nnn,nnn )
 c
 c                                                 ---- check convergence
-        if ( ( abs(g1  /sy) <= tol ) .and.
-     &       ( abs(g2n /sy) <= tol ) .and.
-     &       ( abs(g3nn/sy) <= tol )      ) then
+        if ( (abs(g1  /sy) <= tol) .and.
+     1       (abs(g2n /sy) <= tol) .and.
+     2       (abs(g3nn/sy) <= tol) ) then
 c
           if ( nvbs >= 2 ) then
-            write (6,*) '**** Newton-Raphson converged.',knr
+            write (6,'(//16xA)') 'JUDGE: CONVERGENCE'
           end if
           dpconv = dp
           do i = 1,nttl
@@ -604,6 +589,10 @@ c
             end do
           end do
           goto 200
+        else
+          if ( nvbs >= 2 ) then
+            write (6,'(//16xA)') 'JUDGE: NO CONVERGENCE'
+          end if
         end if
 c                                                         ---- solve ddp
 c                                                           ---- set {G}
@@ -616,18 +605,21 @@ c                                                           ---- set {G}
           end do
         end do
 c                              ---- ddp=(g1-{m}^T[C]{G})/(H+{m}^T[C]{W})
-        call jancae_mv ( vv,cm,gv,nttl,nnn )
-        call jancae_vvs ( top0,dseds,vv,nttl )
+        call ummdp_utility_mv ( vv,cm,gv,nttl,nnn )
+        call ummdp_utility_vvs ( top0,dseds,vv,nttl )
         top = g1 - top0
-        call jancae_mv ( vv,cm,wv,nttl,nnn )
-        call jancae_vvs ( bot0,dseds,vv,nttl )
+        call ummdp_utility_mv ( vv,cm,wv,nttl,nnn )
+        call ummdp_utility_vvs ( bot0,dseds,vv,nttl )
         bot = dsydp + bot0
         ddp = top / bot
 c                                                         ---- update dp
         dp = dp + ddp
         if ( nvbs >= 3 ) then
-          write (6,*) 'modification of dp:ddp=',ddp
-          write (6,*) 'updated             dp=',dp
+          write(6,'(//16xA)') '> Update'
+          text = 'Equivalent Plastic Strain Increment'
+          call ummdp_utility_print3 ( text,ddp,8 )
+          text = 'Updated Equivalent Plastic Strain'
+          call ummdp_utility_print3 ( text,dp,8 )
         end if
         if ( dp <= 0.0 ) then
           if ( nvbs >= 3 ) then
@@ -638,7 +630,7 @@ c                                                         ---- update dp
         end if
 c                                                  ---- update s2 and x2
         do i1 = 1,npbs+1
-          call jancae_clear1( vv,nttl )
+          vv = 0.0d0
           do j1 = 1,nttl
             k1 = (i1-1)*nttl + j1
             do k2 = 1,nnn
@@ -653,8 +645,7 @@ c                                                  ---- update s2 and x2
             end if
           end do
         end do
-        call jancae_backsum ( npbs,xt2,x2,nttl,mxpbs )
-c
+        call ummdp_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
         if ( knr <= maxnr ) goto 100
 c                                        ---- end of Newton-Raphson loop
@@ -670,11 +661,11 @@ c
           goto 300
         else
           write (6,*) 'Nest of multistage is over.',nest
-          text = 'current stress (input)'
-          call jancae_print1 ( text,s1,nttl )
-          text = 'strain inc. (input)'
-          call jancae_print1 ( text,de,nttl )
-          write (6,*) 'eq.plast.strain (input)'
+          text = 'Current stress (input)'
+          call ummdp_utility_print1 ( text,s1,nttl,0 )
+          text = 'Strain Increment (input)'
+          call ummdp_utility_print1 ( text,de,nttl,0 )
+          write (6,*) 'Equivalent Plastic Strain (input)'
           write (6,*) p
           write (6,*) 'the proposals to fix this error'
           write (6,*) ' reduce the amount of strain per inc.'
@@ -682,7 +673,7 @@ c
           write (6,*) ' increase ndiv    in program',ndiv
           write (6,*) ' increase maxnr   in program',maxnr
           write (6,*) ' increase tol     in program',tol
-          call jancae_exit ( 9000 )
+          call ummdp_exit ( 403 )
         end if
 c
   200   continue
@@ -697,47 +688,48 @@ c                                                 ---- plast.strain inc.
       end do
 c                                               ---- print out converged
       if ( nvbs >= 4 ) then
-        text = 'updated stress'
-        call jancae_print1 ( text,s2,nttl )
-        text = 'plastic strain inc'
-        call jancae_print1 ( text,dpe,nttl )
+        write(6,'(//8xA)') '>> Convergence'
+        text = 'Stress'
+        call ummdp_utility_print1 ( text,s2,nttl,0 )
+        text = 'Plastic Strain Increment'
+        call ummdp_utility_print1 ( text,dpe,nttl,0 )
         if ( npbs /= 0 ) then
-          text = 'updated part. back stess'
-          call jancae_backprint ( text,npbs,x2,nttl,mxpbs )
-          text = 'updated total back stess'
-          call jancae_print1 ( text,xt2,nttl )
+          text = 'Partial Back Stress'
+          call ummdp_backprint ( text,npbs,x2,nttl,mxpbs )
+          text = 'Total Back Stress'
+          call ummdp_utility_print1 ( text,xt2,nttl,0 )
         end if
       end if
-c                                    ---- calc. strain inc. in thickness
-      if ( ( nttl == 3 ) .or. ( nttl == 5 ) ) then
+c                                        ---- thickness strain increment
+      if ( (nttl == 3) .or. (nttl == 5) ) then
         de33 = -dpe(1) - dpe(2)
         do i = 1,nttl
           de33 = de33 + d33d(i)*(de(i)-dpe(i))
         end do
         if ( nvbs >= 4 ) then
-          write (6,*) 'de33=',de33
+          text = 'Thickness Strain'
+          call ummdp_utility_print3 ( text,de33,0 )
         end if
       end if
 c
       if ( nvbs >= 1 ) then
         if ( nest /= 0 ) then
-          write (6,*) 'nest of MsRM               :',nest
-          write (6,*) 'total no. of stages        :',nstg
-          write (6,*) 'total no. of NR iteration  :',nite
-          write (6,*) 'initial stress gap         :',sgapi
-          write (6,*) 'inc. of equiv.plast.strain :',dp
-          write (6,*) 'equiv.plast.strain updated :',p+dp
-          write (6,*) 'location ne,ip,lay         :',ne,ip,lay
+          write (6,*) 'Nest        :',nest
+          write (6,*) 'Total Stages        :',nstg
+          write (6,*) 'Total NR Ierations  :',nite
+          write (6,*) 'Initial Stress Gap         :',sgapi
+          write (6,*) 'Increment of Equivalent Plastic Strain :',dp
+          write (6,*) 'Updated Equivalent Plastic Strain :',p+dp
         end if
       end if
 c
       if ( mjac == 0 ) then
         do i = 1,nttl
           do j = 1,nttl
-            ddsdde(i,j) = 0.0
+            ddsdde(i,j) = 0.0d0
           end do
         end do
-        return
+        goto 500
       end if
 c
       if ( mjac == -1 ) then
@@ -746,12 +738,15 @@ c
             ddsdde(i,j) = delast(i,j)
           end do
         end do
-        return
+        goto 500
       end if
 c
 c                                      ---- consistent material jacobian
+      if ( nvbs >= 4 ) then
+        write(6,'(//8xA)') '>> Material Jacobian'
+      end if
 c                                                           ---- set [B]
-      call jancae_clear2( bm,nnn,nttl )
+      bm = 0.0d0
       i1 = 1
       i2 = 1
       do j1 = 1,nttl
@@ -762,14 +757,14 @@ c                                                           ---- set [B]
         end do
       end do
 c                                                       ---- [M1]=[N][C]
-      call jancae_mm ( em1,d2seds2,cm,nttl,nnn,nttl )
+      call ummdp_utility_mm ( em1,d2seds2,cm,nttl,nnn,nttl )
 c                                               ---- {V1}={m}-dp*[M1]{W}
-      call jancae_mv ( vv ,em1,wv,nttl,nnn )
+      call ummdp_utility_mv ( vv ,em1,wv,nttl,nnn )
       do i = 1,nttl
         v1(i) = dseds(i) - dp*vv(i)
       end do
 c                                                 ---- [M2]={V1}{m}^T[C]
-      call jancae_clear2 ( em2,nttl,nnn )
+      em2 = 0.0d0
       do i = 1,nttl
         do j = 1,nnn
           do k = 1,nttl
@@ -785,7 +780,7 @@ c                                                  ---- S1=H+{m}^T[C]{W}
         end do
       end do
 c                                     ---- [M3]=[I]-[dp*[M1]-[M2]/S1][B]
-      call jancae_setunitm ( em3,nttl )
+      call ummdp_utility_setunitm ( em3,nttl )
       do i = 1,nttl
         do j = 1,nttl
           do k = 1,nnn
@@ -794,10 +789,10 @@ c                                     ---- [M3]=[I]-[dp*[M1]-[M2]/S1][B]
         end do
       end do
 c                                                     ---- [Dc]=[De][M3]
-      call jancae_mm ( ddsdde,delast,em3,nttl,nttl,nttl )
+      call ummdp_utility_mm ( ddsdde,delast,em3,nttl,nttl,nttl )
 c
 c                                                    ---- check symmetry
-      nsym = 0
+      nsym = 1
       d = 0.0d0
       a = 0.0d0
       do i = 1,nttl
@@ -811,9 +806,9 @@ c                                                    ---- check symmetry
       a = sqrt(d/a)
       if ( a > 1.0d-8 ) then
         if ( nvbs >= 4 ) then
-          write (6,*) 'ddsdde is not symmetric.',a
-          text = 'material jacobian (nonsym)'
-          call jancae_print2 ( text,ddsdde,nttl,nttl )
+          write (6,'(/12xA,F)') 'Material Jacobian is not symmetric :',a
+          text = 'Material Jacobian | No Symmetry'
+          call ummdp_utility_print2 ( text,ddsdde,nttl,nttl,0 )
         end if
 c                                                    ---- symmetrization
         if ( nsym == 1 ) then
@@ -828,109 +823,113 @@ c                                                    ---- symmetrization
       end if
 c
       if ( nvbs >= 4 ) then
-        text = 'material jacobian (output)'
-        call jancae_print2 ( text,ddsdde,nttl,nttl )
+        text = 'Material Jacobian'
+        call ummdp_utility_print2 ( text,ddsdde,nttl,nttl,0 )
+      end if
+c
+  500 if ( (nvbs >= 1) .or. (nout /= 0) ) then
+        call ummdp_print_ummdp ( )
       end if
 c
       return
-      end
+      end subroutine ummdp_plasticity_core
 c
 c
+c
+************************************************************************
+c
+c     SET DEBUG AND PRINT VERBOSE MODE
+c
+      subroutine ummdp_debugmode ( nvbs,nvbs0 )
 c
 c-----------------------------------------------------------------------
-c     set debug and print mode
+      implicit none
 c
-      subroutine jancae_debugmode ( nvbs,nvbs0 )
+      common /ummdp1/ne,ip,lay
+c
+      integer,intent(in) :: nvbs0
+c
+      integer,intent(out) :: nvbs
+c
+      integer ne,ip,lay,nechk,ipchk,laychk,nchk
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      common /jancae1/ne,ip,lay
-c                             specify verbose level and point
-c      nvbs0 = 0   ! verbose mode
 c
-c           0  error message only
-c           1  summary of MsRM
-c           2  detail of MsRM and summary of NR
-c           3  detail of NR
-c           4  input/output
-c           5  all status for debug
-c
-c       MsRM : Multistage Return Mapping
-c       NR   : Newton-Raphson
-c
-      nechk = 1     ! element no. to be checked
-      ipchk = 1     ! integration point no. to checked
-      laychk = 1    ! layer no. to be checked
+      nechk = 1     ! element number to be checked
+      ipchk = 1     ! integration point number to checked
+      laychk = 1    ! layer number to be checked
 c
       nvbs = 0
       nchk = nechk * ipchk * laychk
       if ( nchk > 0 ) then
-        if ( (ne == nechk ) .and.
-     &       (ip == ipchk ) .and.
-     &       (lay == laychk ) ) then
+        if ( (ne == nechk) .and.
+     1       (ip == ipchk) .and.
+     2       (lay == laychk) ) then
           nvbs = nvbs0
         end if
       end if
 c
       return
-      end
+      end subroutine ummdp_debugmode
 c
 c
+c
+************************************************************************
+c
+c     SET ELASTIC MATERIAL JACOBIAN MATRIX
+c
+      subroutine ummdp_setdelast ( delast,prela,ndela,nttl,nnrm,nshr,
+     1                             d33d )
 c
 c-----------------------------------------------------------------------
-c     set elastic material jacobian marix
+      implicit none
 c
-      subroutine jancae_setdelast ( delast,prela,ndela,
-     &                              nttl,nnrm,nshr,d33d )
+      integer,intent(in) :: ndela,nttl,nnrm,nshr
+      real*8 ,intent(in) :: prela(ndela)
+c
+      real*8,intent(out) :: delast(nttl,nttl),d33d(nttl)
+c
+      integer i,j,k,ib,ni,jb,nj,is,i3,js,j3,id,ntela
+      real*8 eyoung,epoas,erigid,ek,eg,coef,d33
+      real*8 delast3d(6,6)
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension delast(nttl,nttl),prela(ndela),d33d(nttl)
-c
-      dimension delast3d(6,6)
 c
       ntela = nint(prela(1))
       select case ( ntela )
-c
-      case ( 0:1 )    !  isotropic linear elasticity (Hooke)
-c
-        if ( ntela == 0 ) then
-          eyoung = prela(2)                           ! Young's modulus
-          epoas = prela(3)                            ! Poisson's ratio
-          erigid = eyoung / 2.0d0 / (1.0d0+epoas)     ! Rigidity
-        else
-          ek = prela(2)                               ! Bulk modulus
-          eg = prela(3)                               ! Rigidity
-          eyoung = 9.0d0*ek*eg / (3.0d0*ek+eg)        ! Young's modulus
-          epoas = (eyoung-2.0d0*eg) / 2.0d0 / eg      ! Poisson's ratio
-          erigid = eg
-        end if
-c                                       ---- set 6*6 matrix for 3d solid
-        call jancae_clear2( delast3d,6,6 )
-        do i = 1,3
-          do j = 1,3
-            if ( i == j ) then
-              delast3d(i,j) = 1.0d0 - epoas
-            else
-              delast3d(i,j) = epoas
-            end if
-          end do
-        end do
-        do i = 4,6
-          delast3d(i,i) = 0.5d0 - epoas
-        end do
-        coef = erigid / (0.5d0-epoas)
-        do i = 1,6
-          do j = 1,6
-            delast3d(i,j) = coef * delast3d(i,j)
-          end do
-        end do
-c
-      case default                                              ! Error
-        write (6,*) 'elasticity code error in jancae_setelast'
-        write (6,*) 'ntela=',ntela
-        call jancae_exit ( 9000 )
-c
+      case ( 0 )    !  isotropic linear elasticity (Hooke)
+        eyoung = prela(2)                           ! Young modulus
+        epoas = prela(3)                            ! Poisson ratio
+        erigid = eyoung / 2.0d0 / (1.0d0+epoas)     ! Rigidity
+      case ( 1 )
+        ek = prela(2)                               ! Bulk modulus
+        eg = prela(3)                               ! Rigidity
+        eyoung = 9.0d0*ek*eg / (3.0d0*ek+eg)        ! Young modulus
+        epoas = (eyoung-2.0d0*eg) / 2.0d0 / eg      ! Poisson ratio
+        erigid = eg
+      case default
+        write (6,*) 'error in ummdp_setdelast'
+        write (6,*) 'ntela error :',ntela
+        call ummdp_exit ( 201 )
       end select
-c
+c                                       ---- set 6*6 matrix for 3d solid
+      delast3d = 0.0d0
+      do i = 1,3
+        do j = 1,3
+          if ( i == j ) then
+            delast3d(i,j) = 1.0d0 - epoas
+          else
+            delast3d(i,j) = epoas
+          end if
+        end do
+      end do
+      do i = 4,6
+        delast3d(i,i) = 0.5d0 - epoas
+      end do
+      coef = erigid / (0.5d0-epoas)
+      do i = 1,6
+        do j = 1,6
+          delast3d(i,j) = coef * delast3d(i,j)
+        end do
+      end do
 c                                       ---- condensation for 2D problem
       do ib = 1,2
         if ( ib == 1 ) then
@@ -949,7 +948,7 @@ c                                       ---- condensation for 2D problem
             i3 = (ib-1)*3 + is
             do js = 1,nj
               j = (jb-1)*nnrm + js
-              j3 = (jb-1)*3    + js
+              j3 = (jb-1)*3 + js
               delast(i,j) = delast3d(i3,j3)
             end do
           end do
@@ -977,7 +976,7 @@ c                                     ---- plane stress or shell element
                 j = (jb-1)*nnrm + js
                 j3 = (jb-1)*3 + js
                 delast(i,j) = delast(i,j)
-     &                      - delast3d(i3,3)*delast3d(3,j3)/d33
+     1                        - delast3d(i3,3)*delast3d(3,j3)/d33
               end do
             end do
           end do
@@ -995,18 +994,25 @@ c                                             ---- e_t=SUM(d33d(i)*e(i))
       end if
 c
       return
-      end
+      end subroutine ummdp_setdelast
 c
 c
+c
+************************************************************************
+c
+c     CHECK DIMENSIONS OF INTERNAL STATE VARIABLES
+c
+      subroutine ummdp_check_nisv ( nisv,nttl,npbs )
 c
 c-----------------------------------------------------------------------
-c     check dimensions of internal state variables
+      implicit none
 c
-      subroutine jancae_check_nisv ( nisv,nttl,npbs )
+      integer,intent(in) :: nisv,nttl,npbs
+c
+      integer isvrsvd,isvsclr,isvtnsr,isvttl
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
 c
-      call jancae_isvprof ( isvrsvd,isvsclr )
+      call ummdp_isvprof ( isvrsvd,isvsclr )
 c
       if ( npbs == 0 ) then
         isvtnsr = nttl
@@ -1022,52 +1028,71 @@ c
         write (6,*) 'isv : system reserved',isvrsvd
         write (6,*) 'isv : for scaler     ',isvsclr
         write (6,*) 'isv : for tensor     ',isvtnsr
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 302 )
       end if
 c
       return
-      end
+      end subroutine ummdp_check_nisv
 c
 c
+c
+************************************************************************
+c
+c     SET VARIABLES FROM STATE VARIABLES
+c
+      subroutine ummdp_isv2pex ( isvrsvd,isvsclr,stv,nstv,p,pe,x,nttl,
+     1                           mxpbs,npbs )
 c
 c-----------------------------------------------------------------------
-c     set variables from state variables
+      implicit none
 c
-      subroutine jancae_isv2pex ( isvrsvd,isvsclr,
-     &                            stv,nstv,
-     &                            p,pe,x,nttl,mxpbs,npbs )
+      integer,intent(in) :: nstv,nttl,mxpbs,npbs,isvrsvd,isvsclr
+      real*8 ,intent(in) :: stv(nstv)
+c
+      real*8,intent(out) :: p
+      real*8,intent(out) :: pe(nttl)
+      real*8,intent(out) :: x(mxpbs,nttl)
+c
+      integer i,nb,it
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension stv(nstv),pe(nttl),x(mxpbs,nttl)
 c
-c                                                 ---- eq.plastic strain
+c                                         ---- equivalent plastic strain
       p = stv(isvrsvd+1)
-c                                              ---- plastic strain comp.
+c                                         ---- plastic strain components
       do i = 1,nttl
-        pe(i) = stv(isvrsvd+isvsclr+i)
+        pe(i) = stv(isvrsvd + isvsclr + i)
       end do
-c                                         ---- partial back stress comp.
+c                                    ---- partial back stress components
       if ( npbs /= 0 ) then
         do nb = 1,npbs
           do i = 1,nttl
-            it = isvrsvd + isvsclr + nttl*nb+i
+            it = isvrsvd + isvsclr + nttl*nb + i
             x(nb,i) = stv(it)
           end do
         end do
       end if
 c
       return
-      end
+      end subroutine ummdp_isv2pex
 c
 c
+c
+************************************************************************
+c
+c     SUM PARTIAL BACK STRESS FOR TOTAL BACK STREESS
+c
+      subroutine ummdp_backsum ( npbs,xt,x,nttl,mxpbs )
 c
 c-----------------------------------------------------------------------
-c     sum partial back stress for total back stress
+      implicit none
 c
-      subroutine jancae_backsum ( npbs,xt,x,nttl,mxpbs )
+      integer,intent(in) :: npbs,nttl,mxpbs
+      real*8 ,intent(in) :: x(mxpbs,nttl)
+c
+      real*8,intent(out) :: xt(nttl)
+c
+      integer i,j
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension xt(nttl),x(mxpbs,nttl)
 c
       do i = 1,nttl
         xt(i) = 0.0
@@ -1081,19 +1106,26 @@ c
       end do
 c
       return
-      end
+      end subroutine ummdp_backsum
 c
 c
+c
+************************************************************************
+c
+c     PRINT BACK STRESS
+c
+      subroutine ummdp_backprint ( text,npbs,x,nttl,mxpbs )
 c
 c-----------------------------------------------------------------------
-c     print back stress
+      implicit none
 c
-      subroutine jancae_backprint ( text,npbs,x,nttl,mxpbs )
+      integer      ,intent(in) :: npbs,nttl,mxpbs
+      real*8       ,intent(in) :: x(mxpbs,nttl)
+      character*100,intent(in) :: text
+c
+      integer i,j
+      real*8 xx(npbs,nttl)
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension x(mxpbs,nttl)
-      character text*32
-      dimension xx(npbs,nttl)
 c
       if ( npbs == 0 ) return
 c
@@ -1102,23 +1134,31 @@ c
           xx(j,i) = x(j,i)
         end do
       end do
-      call jancae_print2 ( text,xx,npbs,nttl )
+      call ummdp_utility_print2 ( text,xx,npbs,nttl,0 )
 c
       return
-      end
+      end subroutine ummdp_backprint
 c
 c
+c
+************************************************************************
+c
+c     SET DIMENSIONS OF MATERIAL PROPERTIES
+c
+      subroutine ummdp_prop_dim ( prop,mxprop,propdim,ndela,ndyld,ndihd,
+     1                            ndkin,npbs,ndrup )
 c
 c-----------------------------------------------------------------------
-c     set dimensions of material properties
+      implicit none
 c
-      subroutine jancae_prop_dim ( prop,mxprop,propdim,
-     &                             ndela,ndyld,ndihd,ndkin,
-     &                             npbs,ndrup )
+      integer,intent(in) :: mxprop,propdim
+      real*8 ,intent(in) :: prop(mxprop)
+c
+      integer,intent(out) :: ndela,ndyld,ndihd,ndkin,npbs,ndrup
+c
+      integer n,nd,nela,nyld,nihd,nkin,nrup
+      real*8 p
 c-----------------------------------------------------------------------
-c
-      implicit real*8 (a-h,o-z)
-      dimension prop(mxprop)
 c
       n = 0
       p = prop(n+1)
@@ -1126,84 +1166,104 @@ c
 c
       nela = nint(p)
       select case ( nela )
-c
-      case (0) ; nd = 2
-        case (1) ; nd = 2
-c
+        case (0)
+          nd = 2
+        case (1)
+          nd = 2
         case default
-          write (6,*) 'error elastic property id :',nela
-          call jancae_exit ( 9000 )
-c
+          write (6,*) 'Elasticity ID :',nela
+          call ummdp_exit ( 201 )
       end select
       ndela = nd + 1
 c
       n = ndela
       nyld = nint(prop(n+1))
       select case (nyld)
+        case ( 0 ) ! von Mises
+          nd = 0
+        case ( 1 ) ! Hill 1948
+          nd = 6
+        case ( 2 ) ! Yld2004-18p
+          nd = 19
+        case ( 3 ) ! CPB2005
+          nd = 14
+        case ( 4 ) ! Karafillis-Boyce
+          nd = 8
+        case ( 5 ) ! Hu 2005
+          nd = 10
+        case ( 6 ) ! Yoshida 2011
+          nd = 16
 c
-        case ( 0 ) ; nd = 0                   ! von Mises
-        case ( 1 ) ; nd = 6                   ! Hill 1948
-        case ( 2 ) ; nd = 19                  ! Yld2004-18p
-        case ( 3 ) ; nd = 14                  ! CPB 2005
-        case ( 4 ) ; nd = 8                   ! Karafillis-Boyce
-        case ( 5 ) ; nd = 10                  ! Hu 2005
-        case ( 6 ) ; nd = 16                  ! Yoshida 2011
-c
-        case ( -1 ) ; nd = 9                  ! Gotoh biquadratic (1978)
-        case ( -2 ) ; nd = 9                  ! Yld2000-2d
-        case ( -3 )                           ! Vegter
+        case ( -1 ) ! Gotoh
+          nd = 9
+        case ( -2 ) ! Yld2000-2d
+          nd = 9
+        case ( -3 ) ! Vegter
           nd = 3 + 4*nint(prop(n+2))
-        case ( -4 ) ; nd = 9                  ! BBC 2005
-        case ( -5 ) ; nd = 4                  ! Yld89
-        case ( -6 )                           ! BBC 2008
+        case ( -4 ) ! BBC2005
+          nd = 9
+        case ( -5 ) ! Yld89
+          nd = 4
+        case ( -6 ) ! BBC2008
           nd = 2 + 8*nint(prop(n+2))
-        case ( -7 ) ; nd = 0.5d0              ! Hill 1990
-c
+        case ( -7 ) ! Hill1990
+          nd = 0.5d0
         case default
-          write (6,*) 'error yield function id :',nyld
-          call jancae_exit ( 9000 )
-c
+          write (6,*) 'Yield Function ID :',nyld
+          call ummdp_exit ( 202 )
       end select
       ndyld = nd + 1
 c
       n = ndela + ndyld
       nihd = nint(prop(n+1))
       select case ( nihd )
-c
-        case ( 0 ) ; nd = 1                           ! Perfecty Plastic
-        case ( 1 ) ; nd = 2                           ! Linear
-        case ( 2 ) ; nd = 3                           ! Swift
-        case ( 3 ) ; nd = 3                           ! Ludwick
-        case ( 4 ) ; nd = 3                           ! Voce
-        case ( 5 ) ; nd = 4                           ! Voce + Linear
-        case ( 6 ) ; nd = 7                           ! Voce + Swift
-c
+        case ( 0 ) ! Perfecty Plastic
+          nd = 1
+        case ( 1 ) ! Linear
+          nd = 2
+        case ( 2 ) ! Swift
+          nd = 3
+        case ( 3 ) ! Ludwick
+          nd = 3
+        case ( 4 ) ! Voce
+          nd = 3
+        case ( 5 ) ! Voce + Linear
+          nd = 4
+        case ( 6 ) ! Voce + Swift
+          nd = 7
         case default
-          write (6,*) 'error work hardening curve id :',nihd
-          call jancae_exit ( 9000 )
-c
+          write (6,*) 'Isotropic Hardening Law ID :',nihd
+          call ummdp_exit ( 203 )
       end select
       ndihd = nd + 1
 c
       n = ndela + ndyld + ndihd
       nkin = nint(prop(n+1))
       select case ( nkin )
-c
-        case ( 0 ) ; nd = 0 ; npbs = 0          ! No Kinematic Hardening
-        case ( 1 ) ; nd = 1 ; npbs = 1          ! Prager
-        case ( 2 ) ; nd = 1 ; npbs = 1          ! Ziegler
-        case ( 3 ) ; nd = 2 ; npbs = 1          ! Armstrong & Frederick
-        case ( 4 )                              ! Chaboche
+        case ( 0 ) ! None
+          nd = 0
+          npbs = 0
+        case ( 1 ) ! Prager
+          nd = 1
+          npbs = 1
+        case ( 2 ) ! Ziegler
+          nd = 1
+          npbs = 1
+        case ( 3 ) ! Armstrong & Frederick
+          nd = 2
+          npbs = 1
+        case ( 4 ) ! Chaboche I
           npbs = nint(prop(n+2))
           nd = 2*npbs + 1
-        case ( 5 )                              ! Chaboche - Ziegler
+        case ( 5 ) ! Chaboche II
           npbs = nint(prop(n+2))
           nd = 2*npbs + 1
-        case ( 6 ) ; nd = 5 ; npbs = 2          ! Yoshida-Uemori
-c
+        case ( 6 ) ! Yoshida-Uemori
+          nd = 5
+          npbs = 2
         case default
-          write (6,*) 'error kinematic hardening id :',nkin
-          call jancae_exit ( 9000 )
+          write (6,*) 'Kinematic Hardening Law ID :',nkin
+          call ummdp_exit ( 204 )
 c
       end select
       ndkin = nd + 1
@@ -1211,24 +1271,28 @@ c
       n = ndela + ndyld + ndihd + ndkin
       nrup = nint(prop(n+1))
       select case (nrup)
-c
-        case ( 0 ) ; nd = 0             ! No Uncoupled Rupture Criterion
-        case ( 1 ) ; nd = 2             ! Equivalent Plastic Strain
-        case ( 2 ) ; nd = 2             ! Cockroft and Latham
-        case ( 3 ) ; nd = 2             ! Rice and Tracey
-        case ( 4 ) ; nd = 2             ! Ayada
-        case ( 5 ) ; nd = 2             ! Brozzo
-        case ( 6 ) ; nd = 2             ! Forming Limit Diagram
-c
+        case ( 0 ) ! None
+          nd = 0
+        case ( 1 ) ! Equivalent Plastic Strain
+          nd = 1
+        case ( 2 ) ! Cockroft and Latham
+          nd = 1
+        case ( 3 ) ! Rice and Tracey
+          nd = 1
+        case ( 4 ) ! Ayada
+          nd = 1
+        case ( 5 ) ! Brozzo
+          nd = 1
+        case ( 6 ) ! Forming Limit Diagram
+          nd = 1
         case default
-          write (6,*) 'error uncoupled rupture criterion id :',nrup
-          call jancae_exit ( 9000 )
-c
+          write (6,*) 'Uncoupled Rupture Criterion ID :',nrup
+          call ummdp_exit ( 205 )
       end select
       ndrup = nd + 1
 c
       return
-      end
+      end subroutine ummdp_prop_dim
 c
 c
 c

@@ -1,34 +1,35 @@
-c--------------------------------------------------------------(cpb2006)
-c     Cazacu 2006 yield function and its dfferentials
-c     ( IJP v.22(2006) p1171-1194. )
+************************************************************************
+c
+c     CPB2006 YIELD FUNCTION
+c
+c       doi: 
 c
 c     !!! CAUTION !!!
 c     Plane stress condition is NOT implemented in this code.
 c
-      subroutine jancae_cpb2006 ( s,se,dseds,d2seds2,nreq,
-     &                             pryld,ndyld )
+      subroutine ummdp_yield_cpb2006 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                 ndyld )
+c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(6),dseds(6),d2seds2(6,6),pryld(ndyld)
+      implicit none
 c
-      dimension sigma(6),psigma(3)
-      dimension phi(3),psi(3),omega(3)
-      dimension c(6,6),ct(6,6)
+      integer,intent(in) :: nreq,ndyld
+      real*8 ,intent(in) :: s(6),pryld(ndyld)
 c
-      dimension DFDH(3),DFDpsigma(3)
-      dimension DpsigmaDH(3,3),DHdsigma(3,6),DsigmaDs(6,6)
-      dimension DFDs(6)
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(6)
+			real*8,intent(out) :: d2seds2(6,6)
 c
-      dimension D2FDpsigma2(3,3),D2psigmaDH2(3,3,3)
-      dimension D2FDH2(3,3)
-      dimension D2HDsigma2(3,6,6),D2FDs2(6,6)
-c
-      dimension s0(6)
-      dimension dummat(3,6)
-c
-      parameter ( pi=3.141592653589793d0 )
-      parameter ( eps=1.0d-5 )
-c
+      integer i,j,k,m,n,l,iq,ip,ir
+      real*8 pi,eps,a,ck,ai,H1,H2,H3,p,q,theta,F,D,DseDF,denom,D2seDF2,
+     1       del,sea,seb,abc1,abc2,seaa,seba,seab,sebb,
+     2       ummdp_yield_cpb2006_seND
+      real*8 s0(6),sigma(6),psigma(3),phi(3),psi(3),omega(3),DFDH(3),
+     1       DFDpsigma(3),DFDs(6)
+      real*8 c(6,6),ct(6,6),DpsigmaDH(3,3),DHdsigma(3,6),DsigmaDs(6,6),
+     1       D2FDpsigma2(3,3),D2FDH2(3,3),D2FDs2(6,6),dummat(3,6)
+      real*8 D2psigmaDH2(3,3,3),D2HDsigma2(3,6,6)     
+c-----------------------------------------------------------------------
 c                                                         ---- variables
 c
 c     sigma(6)  : Linear-transformed stress
@@ -53,12 +54,12 @@ c     D2psigmaDH2(3,3,3) : D2(psigma)/D(H)2
 c     D2FDH2(3,3)        : D2(F)/D(H)2
 c     D2HDsigma2(3,6,6)  : D2(H)/D(sigma)2
 c     D2FDs2(6,6)        : D2(F)/D(s)2
+c-----------------------------------------------------------------------
 c
-c
+      pi = acos(-1.0d0)
+      eps = 1.0d-5
 c                                        ---- set anisotropic parameters
-c
-      call jancae_clear2 ( c,6,6 )
-c
+      c = 0.0d0
       c(1,1) = pryld(1+1)            ! C11
       c(1,2) = pryld(1+2)            ! C12
       c(1,3) = pryld(1+3)            ! C13
@@ -71,8 +72,8 @@ c
       c(4,4) = pryld(1+10)           ! C44     ! tau_xy
       c(5,5) = pryld(1+11)           ! C55     ! tau_xz
       c(6,6) = pryld(1+12)           ! C66     ! tau_yz
-      a      = pryld(1+13)                ! a
-      ck     = pryld(1+14)               ! k
+      a      = pryld(1+13)           ! a
+      ck     = pryld(1+14)           ! k
 c
       ai = 1.0d0 / a
 c
@@ -90,8 +91,7 @@ c
       omega(3) = (c(1,3) + c(2,3) - 2.0d0*c(3,3)) / 3.0d0
 c
 c      ---- Calculate 4th order orthotropic tensor "L" ( named ct here )
-      call jancae_clear2 ( ct,6,6 )
-c
+      ct = 0.0d0
       ct(1,1) = phi(1)
       ct(1,2) = psi(1)
       ct(1,3) = -omega(1)
@@ -106,7 +106,7 @@ c
       ct(6,6) = c(6,6)
 c
 c                               ---- Calculate linear transformed stress
-      call jancae_mv ( sigma,ct,s,6,6 )
+      call ummdp_utility_mv ( sigma,ct,s,6,6 )
 c
 c            ---- Calculate principal values of transformed stress sigma
 c                                                     by Cardan's method
@@ -114,13 +114,13 @@ c
 c                                       ---- 1st, 2nd and 3rd invariants
       H1 = (sigma(1) + sigma(2) + sigma(3)) / 3.0d0
       H2 = (sigma(5)**2.0d0 + sigma(6)**2.0d0 + sigma(4)**2.0d0 -
-     &      sigma(2)*sigma(3) - sigma(3)*sigma(1) - 
-     &      sigma(1)*sigma(2)) / 3.0d0
+     1      sigma(2)*sigma(3) - sigma(3)*sigma(1) - 
+     2      sigma(1)*sigma(2)) / 3.0d0
       H3 = (2.0d0*sigma(5)*sigma(6)*sigma(4) + 
-     &            sigma(1)*sigma(2)*sigma(3) - 
-     &            sigma(1)*sigma(6)**2.0d0 - 
-     &            sigma(2)*sigma(5)**2.0d0 -
-     &      sigma(3)*sigma(4)**2.0d0) / 2.0d0 ! sigma(5) <-> sigma(6)
+     1            sigma(1)*sigma(2)*sigma(3) - 
+     2            sigma(1)*sigma(6)**2.0d0 - 
+     3            sigma(2)*sigma(5)**2.0d0 -
+     4      sigma(3)*sigma(4)**2.0d0) / 2.0d0 ! sigma(5) <-> sigma(6)
 c
       p = H1**2.0d0 + H2
       q = (2.0d0*H1**3.0d0 + 3.0d0*H1*H2 + 2.0d0*H3) / 2.0d0
@@ -142,33 +142,29 @@ c                                                 ---- equivalent stress
 c
 c                                          ---- calculate yield function
       F = (abs(psigma(1)) - ck*psigma(1))**a + 
-     &    (abs(psigma(2)) - ck*psigma(2))**a + 
-     &    (abs(psigma(3)) - ck*psigma(3))**a
+     1    (abs(psigma(2)) - ck*psigma(2))**a + 
+     2    (abs(psigma(3)) - ck*psigma(3))**a
 c                                           ---- denominator coefficient
       D = (abs(phi(1)) - ck*phi(1))**a + (abs(phi(2)) - ck*phi(2))**a +
-     &    (abs(phi(3)) - ck*phi(3))**a
+     1    (abs(phi(3)) - ck*phi(3))**a
 c
       se = (F/D) ** ai
 c
 c                                            ---- 1st order differential
       if ( nreq >= 1 ) then
-c                                              ---- D(se)/D(F) -> Scalar
+c                                                        ---- D(se)/D(F)
         DseDF = (1.0d0/D)**ai * ai * F**(ai-1.0d0)
-c                                    ---- D(F)/D(psigma) -> 1 x 3 Vector
+c                                                    ---- D(F)/D(psigma)
         do i = 1,3
           DFDpsigma(i) = a * (psigma(i)/abs(psigma(i))-ck) *
-     &                   (abs(psigma(i))-ck*psigma(i))**(a-1.0d0)
+     1                  (abs(psigma(i))-ck*psigma(i))**(a-1.0d0)
         end do
 c
 c                                 ---- D(F)/D(H) by using D(psigma)/D(H)
-c                                         D(F)/D(H)      -> 1 x 3 Vector
-c                                         D(psigma)/D(H) -> 3 x 3 Matrix
-        call jancae_clear1 ( DFDH,3 )
-        call jancae_clear2 ( DpsigmaDH,3,3 )
-c
         if ( abs(psigma(2)-psigma(3)) / se > eps .and.
-     &       abs(psigma(2)-psigma(1)) / se > eps ) then
+     1       abs(psigma(2)-psigma(1)) / se > eps ) then
 c                                                 ---- not Singular case
+          DpsigmaDH = 0.0d0
           do i = 1,3
             denom = psigma(i)**2.0d0 - 2.0d0*H1*psigma(i) - H2
             DpsigmaDH(i,1) = psigma(i)**2.0d0/denom
@@ -176,6 +172,7 @@ c                                                 ---- not Singular case
             DpsigmaDH(i,3) = 2.0d0/3.0d0/denom
           end do
 c
+          DFDH = 0.0d0
           do i = 1,3
             do j = 1,3
               DFDH(i) = DFDH(i) + DFDpsigma(j)*DpsigmaDH(j,i)
@@ -191,7 +188,7 @@ c                                           ---- Case1 S2=S3 ( theta=0 )
             DpsigmaDH(1,3) = 2.0d0/3.0d0/denom
 c
             DFDH(1) = DpsigmaDH(1,1)*(DFDpsigma(1)-DFDpsigma(2)) +
-     &                3.0d0*DFDpsigma(2)
+     1                3.0d0*DFDpsigma(2)
             DFDH(2) = DpsigmaDH(1,2) * (DFDpsigma(1)-DFDpsigma(2))
             DFDH(3) = DpsigmaDH(1,3) * (DFDpsigma(1)-DFDpsigma(2))
           else if ( abs(psigma(2)-psigma(1)) / se <= eps ) then
@@ -203,46 +200,44 @@ c                                          ---- Case2 S2=S1 ( theta=pi )
             DpsigmaDH(3,3) = 2.0d0/3.0d0/denom
 c
             DFDH(1) = DpsigmaDH(3,1)*(DFDpsigma(3)-DFDpsigma(2)) +
-     &                3.0d0*DFDpsigma(2)
+     1                3.0d0*DFDpsigma(2)
             DFDH(2) = DpsigmaDH(3,2) * (DFDpsigma(3)-DFDpsigma(2))
             DFDH(3) = DpsigmaDH(3,3) * (DFDpsigma(3)-DFDpsigma(2))
           end if
         end if
 c
-c                                     ---- D(H)/D(sigma) -> 3 x 6 Matrix
-         call jancae_clear2 ( DHDsigma,3,6 )
+c                                                     ---- D(H)/D(sigma)
+        DHDsigma = 0.0d0
 c
-         DHDsigma(1,1) = 1.0d0 / 3.0d0
-         DHDsigma(1,2) = 1.0d0 / 3.0d0
-         DHDsigma(1,3) = 1.0d0 / 3.0d0
+        DHDsigma(1,1) = 1.0d0 / 3.0d0
+        DHDsigma(1,2) = 1.0d0 / 3.0d0
+        DHDsigma(1,3) = 1.0d0 / 3.0d0
 c
-         DHDsigma(2,1) = -1.0d0/3.0d0*(sigma(2)+sigma(3))
-         DHDsigma(2,2) = -1.0d0/3.0d0*(sigma(3)+sigma(1))
-         DHDsigma(2,3) = -1.0d0/3.0d0*(sigma(1)+sigma(2))
-         DHDsigma(2,4) = 2.0d0/3.0d0*sigma(4)
-         DHDsigma(2,5) = 2.0d0/3.0d0*sigma(5)
-         DHDsigma(2,6) = 2.0d0/3.0d0*sigma(6)
+        DHDsigma(2,1) = -1.0d0/3.0d0*(sigma(2)+sigma(3))
+        DHDsigma(2,2) = -1.0d0/3.0d0*(sigma(3)+sigma(1))
+        DHDsigma(2,3) = -1.0d0/3.0d0*(sigma(1)+sigma(2))
+        DHDsigma(2,4) = 2.0d0/3.0d0*sigma(4)
+        DHDsigma(2,5) = 2.0d0/3.0d0*sigma(5)
+        DHDsigma(2,6) = 2.0d0/3.0d0*sigma(6)
 c
 c                                            !!-sigma(5)**2.0d0)
-         DHDsigma(3,1) = 0.5d0 * (sigma(2)*sigma(3)-sigma(6)**2.0d0)
+        DHDsigma(3,1) = 0.5d0 * (sigma(2)*sigma(3)-sigma(6)**2.0d0)
 c                                            !!-sigma(6)**2.0d0)
-         DHDsigma(3,2) = 0.5d0 * (sigma(3)*sigma(1)-sigma(5)**2.0d0)
-         DHDsigma(3,3) = 0.5d0 * (sigma(1)*sigma(2)-sigma(4)**2.0d0)
-         DHDsigma(3,4) = sigma(5)*sigma(6) - sigma(3)*sigma(4)
-         DHDsigma(3,6) = sigma(6)*sigma(4) - sigma(1)*sigma(5) !!...(3,5)=
-         DHDsigma(3,5) = sigma(4)*sigma(5) - sigma(2)*sigma(6) !!...(3,6)=
+        DHDsigma(3,2) = 0.5d0 * (sigma(3)*sigma(1)-sigma(5)**2.0d0)
+        DHDsigma(3,3) = 0.5d0 * (sigma(1)*sigma(2)-sigma(4)**2.0d0)
+        DHDsigma(3,4) = sigma(5)*sigma(6) - sigma(3)*sigma(4)
+        DHDsigma(3,6) = sigma(6)*sigma(4) - sigma(1)*sigma(5) !!...(3,5)=
+        DHDsigma(3,5) = sigma(4)*sigma(5) - sigma(2)*sigma(6) !!...(3,6)=
 c
-c                                     ---- D(sigma)/D(s) -> 6 x 6 Matrix
+c                                                     ---- D(sigma)/D(s)
         do i = 1,6
           do j = 1,6
             DsigmaDs(i,j) = ct(i,j)
           end do
         end do
-c
-c                                        ---- D(se)/D(s) -> 1 x 3 Vector
-        call jancae_clear1 ( DFDs,6 )
-        call jancae_clear2 ( dummat,3,6 )
-c
+c                                                         ---- D(se)/D(s) 
+        DFDs = 0.0d0
+        dummat = 0.0d0
         do i = 1,6
           do j = 1,3
             do k = 1,6
@@ -259,62 +254,54 @@ c
 c
 c                                            ---- 2nd order differential
       if ( nreq >= 2 ) then
-c                                              ---- D(se)/D(F) -> Scalar
+c                                                        ---- D(se)/D(F)
         D2seDF2 = (1.0d0/D)**ai * ai * (ai-1.0d0) * F**(ai-2.0d0)
-c
-c                                  ---- D2(F)/D(psigma)2 -> 3 x 3 Matrix
-        call jancae_clear2 ( D2FDpsigma2,3,3 )
-c
+c                                                  ---- D2(F)/D(psigma)2
+        D2FDpsigma2 = 0.0d0
         do i = 1,3
           D2FDpsigma2(i,i) = a*(psigma(i)/abs(psigma(i))-ck)**2.0d0 *
-     &                       (abs(psigma(i))-ck*psigma(i))**(a-2.0d0)
+     1                       (abs(psigma(i))-ck*psigma(i))**(a-2.0d0)
         end do
-c
-c                              ---- D2(psigma)/D(H)2 -> 3 x 3 x 3 Matrix
-        call jancae_clear3 ( D2psigmaDH2,3,3,3 )
-c
+c                                                  ---- D2(psigma)/D(H)2
         if ( abs(psigma(2)-psigma(3)) / se > eps .and.
-     &       abs(psigma(2)-psigma(1)) / se > eps ) then
+     1       abs(psigma(2)-psigma(1)) / se > eps ) then
 c                                                 ---- Not Singular case
-c
+          D2psigmaDH2 = 0.0d0
           do i = 1,3
             denom = (psigma(i)**2.0d0-2.0d0*H1*psigma(i)-H2) ** 3.0d0
             D2psigmaDH2(i,1,1) = 2.0d0 * psigma(i)**3.0d0 * 
-     &                         (psigma(i)**2.0d0-3.0d0*H1*psigma(i)
-     &                         -2.0d0*H2) / denom
+     1                         (psigma(i)**2.0d0-3.0d0*H1*psigma(i)
+     2                         -2.0d0*H2) / denom
             D2psigmaDH2(i,2,2) = -2.0d0 * psigma(i) * 
-     &                           (H1*psigma(i)+H2) / denom
+     1                           (H1*psigma(i)+H2) / denom
             D2psigmaDH2(i,3,3) = -8.0d0/9.0d0 * (psigma(i)-H1) / denom
             D2psigmaDH2(i,1,2) = psigma(i)**2.0d0 * (psigma(i)**2.0d0 -
-     &                           4.0d0*H1*psigma(i)-3.0d0*H2) / denom
+     1                           4.0d0*H1*psigma(i)-3.0d0*H2) / denom
             D2psigmaDH2(i,2,3) = (-2.0d0/3.0d0) * 
-     &                           (psigma(i)**2.0d0+H2) / denom
+     1                           (psigma(i)**2.0d0+H2) / denom
             D2psigmaDH2(i,3,1) = -4.0d0/3.0d0 * psigma(i) * 
-     &                           (H1*psigma(i)+H2) / denom
+     1                           (H1*psigma(i)+H2) / denom
 c
             D2psigmaDH2(i,2,1) = D2psigmaDH2(i,1,2)
             D2psigmaDH2(i,3,2) = D2psigmaDH2(i,2,3)
             D2psigmaDH2(i,1,3) = D2psigmaDH2(i,3,1)
           end do
-c
-c                                       ---- D2(F)/D(H)2 -> 3 x 3 Matrix
-          call jancae_clear2 ( D2FDH2,3,3 )
-c
+c                                                       ---- D2(F)/D(H)2
+          D2FDH2 = 0.0d0
           do iq = 1,3
             do m = 1,3
               do ip = 1,3
                 do l = 1,3
                   D2FDH2(iq,m) = D2FDH2(iq,m) + D2FDpsigma2(ip,l)*
-     &                           DpsigmaDH(l,m)*DpsigmaDH(ip,iq)
+     1                           DpsigmaDH(l,m)*DpsigmaDH(ip,iq)
                 end do
                 D2FDH2(iq,m) = D2FDH2(iq,m) + DFDpsigma(ip)*
-     &                         D2psigmaDH2(ip,iq,m)
+     1                         D2psigmaDH2(ip,iq,m)
               end do
             end do
           end do
-c
-c                               ---- D2(H)/D(sigma)2 -> 3 x 6 x 6 Matrix
-          call jancae_clear3 ( D2HDsigma2,3,6,6 )
+c                                                   ---- D2(H)/D(sigma)2
+          D2HDsigma2 = 0.0d0
 c
           D2HDsigma2(2,1,2) = -1.0d0 / 3.0d0
           D2HDsigma2(2,2,3) = -1.0d0 / 3.0d0
@@ -356,16 +343,14 @@ c
 c
           D2HDsigma2(3,3,4) = -sigma(4)
           D2HDsigma2(3,4,3) = D2HDsigma2(3,3,4)
-c
-c                                       ---- D2(F)/D(s)2 -> 6 x 6 Matrix
-          call jancae_clear2 ( D2FDs2,6,6 )
-          call jancae_clear2 ( dummat,3,6 )
-c
+c                                                       ---- D2(F)/D(s)2
+          D2FDs2 = 0.0d0
+          dummat = 0.0d0
           do i = 1,3
             do j = 1,6
               do ip = 1,6
                 dummat(i,j) = dummat(i,j) + 
-     &                        DHDsigma(i,ip)*DsigmaDs(ip,j)
+     1                        DHDsigma(i,ip)*DsigmaDs(ip,j)
               end do
             end do
           end do
@@ -375,19 +360,19 @@ c
               do iq = 1,3
                 do m = 1,3
                   D2FDs2(i,j) = D2FDs2(i,j) +
-     &                          D2FDH2(iq,m)*dummat(iq,i)*dummat(m,j)
+     1                          D2FDH2(iq,m)*dummat(iq,i)*dummat(m,j)
                 end do
 c
                 do n = 1,6
                   do ir = 1,6
                     D2FDs2(i,j) = D2FDs2(i,j) + D2HDsigma2(iq,ir,n) *
-     &                            DFDH(iq)*DsigmaDs(ir,i)*DsigmaDs(n,j)
+     1                            DFDH(iq)*DsigmaDs(ir,i)*DsigmaDs(n,j)
                   end do
                 end do
               end do
             end do
           end do
-c                                      ---- D2(se)/D(s)2 -> 6 x 6 Matrix
+c                                                      ---- D2(se)/D(s)2
           do i = 1,6
             do j = 1,6
               d2seds2(i,j) = D2seDF2*DfDs(i)*DfDs(j) + DseDF*D2FDs2(i,j)
@@ -405,9 +390,9 @@ c
             do j = 1,6
               if ( i == j ) then
                 s0(i) = s(i) - del
-                sea = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                sea = ummdp_yield_cpb2006_seND ( s0,ct,phi,ck,a,ai )
                 s0(i) = s(i) + del
-                seb = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                seb = ummdp_yield_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i)
                 abc1 = (se-sea) / del
@@ -416,19 +401,19 @@ c
               else
                 s0(i) = s(i) - del
                 s0(j) = s(j) - del
-                seaa = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                seaa = ummdp_yield_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i) + del
                 s0(j) = s(j) - del
-                seba = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                seba = ummdp_yield_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i) - del
                 s0(j) = s(j) + del
-                seab = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                seab = ummdp_yield_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i) + del
                 s0(j) = s(j) + del
-                sebb = cpb2006_seND(s0,ct,phi,ck,a,ai)
+                sebb = ummdp_yield_cpb2006_seND ( s0,ct,phi,ck,a,ai )
 c
                 s0(i) = s(i)
                 s0(j) = s(j)
@@ -442,29 +427,37 @@ c
       end if
 c
       return
-      end
+      end subroutine ummdp_yield_cpb2006
 c
 c
 c
-c--------------------------------------------------------------(cpb2006)
-      double precision function cpb2006_seND ( s,ct,phi,ck,a,ai )
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     NUMERICAL DIFFERENTIATION FOR EQUIVALENT STRESS
+c
+      real*8 function ummdp_yield_cpb2006_seND ( s,ct,phi,ck,a,ai )
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(6),sigma(6),psigma(3)
-      dimension ct(6,6), phi(3)
-      parameter ( pi=3.141592653589793d0 )
+      implicit none
+c 
+      real*8 ck,a,ai
+      real*8 s(6),phi(3)
+      real*8 ct(6,6)
 c
+      real*8 pi,H1,H2,H3,p,q,theta,F,D
+      real*8 sigma(6),psigma(3)
+c-----------------------------------------------------------------------
+c
+      pi = acos(-1.0d0)
 c                               ---- calculate linear transformed stress
-      call jancae_mv ( sigma,ct,s,6,6 )
+      call ummdp_utility_mv ( sigma,ct,s,6,6 )
 c                                       ---- 1st, 2nd and 3rd invariants
       H1 = (sigma(1)+sigma(2)+sigma(3)) / 3.0d0
       H2 = (sigma(5)**2.0d0+sigma(6)**2.0d0+sigma(4)**2.0d0 - 
-     &     sigma(2)*sigma(3)-sigma(3)*sigma(1)-sigma(1)*sigma(2))/3.0d0
+     1     sigma(2)*sigma(3)-sigma(3)*sigma(1)-sigma(1)*sigma(2))/3.0d0
       H3 = (2.0d0*sigma(5)*sigma(6)*sigma(4) + 
-     &            sigma(1)*sigma(2)*sigma(3) -
-     &            sigma(1)*sigma(6)**2.0d0 - 
-     &            sigma(2)*sigma(5)**2.0d0 -
-     &            sigma(3)*sigma(4)**2.0d0) / 2.0d0 ! sigma(5) <-> sigma(6)
+     1            sigma(1)*sigma(2)*sigma(3) -
+     2            sigma(1)*sigma(6)**2.0d0 - 
+     3            sigma(2)*sigma(5)**2.0d0 -
+     4            sigma(3)*sigma(4)**2.0d0) / 2.0d0 ! sigma(5) <-> sigma(6)
 c
       p = H1**2.0d0+H2
       q = (2.0d0*H1**3.0d0+3.0d0*H1*H2+2.0d0*H3) / 2.0d0
@@ -487,10 +480,10 @@ c                                           ---- denominator coefficient
      &    (abs(phi(2))-ck*phi(2))**a +
      &    (abs(phi(3))-ck*phi(3))**a
 c
-      cpb2006_seND = (F/D) ** ai
+      ummdp_yield_cpb2006_seND = (F/D) ** ai
 c
       return
-      end
+      end function ummdp_yield_cpb2006_seND
 c
 c
 c

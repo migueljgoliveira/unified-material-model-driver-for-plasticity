@@ -6,14 +6,14 @@
 *                                                                      *
 *              UNIFIED MATERIAL MODEL DRIVER FOR PLASTICITY            *
 *                                                                      *
-*                         < PLUG-IN FOR ABAQUS >                       *
+*                  < PLUG-IN FOR VIRTUAL FIELDS METHOD >               *
 *                                                                      *
 ************************************************************************
 *                                                                      *
 *     > Copyright (c) 2018 JANCAE                                      *
 *       . This software includes code originally developed by the      *
 *       Material Modeling Working group of JANCAE.                     *
-*
+*                                                                      *
 *     > Extended by M.G. Oliveira from University of Aveiro, Portugal  *
 *       . Added additional isotropic hardening laws                    *
 *       . Corrected Voigt notation for Yld2004-18p with Abaqus         *
@@ -24,52 +24,76 @@
 *                                                                      *
 ************************************************************************
 c
-      SUBROUTINE UMAT ( STRESS,STATEV,DDSDDE,SSE,SPD,SCD,
-     &    RPL,DDSDDT,DRPLDE,DRPLDT,STRAN,DSTRAN,
-     &    TIME,DTIME,TEMP,DTEMP,PREDEF,DPRED,MATERL,NDI,NSHR,NTENS,
-     &    NSTATV,PROPS,NPROPS,COORDS,DROT,PNEWDT,CELENT,
-     &    DFGRD0,DFGRD1,NOEL,NPT,KSLAY,KSPT,KSTEP,KINC )
+c     UMMDP-VFM MAIN SUBROUTINE
 c
-      INCLUDE 'ABA_PARAM.INC'
+      subroutine ummdp_vfm ( stress1,statev1,strain,dstrain,ndi,nshr,
+     1                       ntens,nstatev,props,nprops,noel,npt,kinc,
+     2                       stress2,statev2,nexit )
 c
-      CHARACTER*80 MATERL
-      DIMENSION STRESS(NTENS),STATEV(NSTATV),
-     &          DDSDDE(NTENS,NTENS),DDSDDT(NTENS),DRPLDE(NTENS),
-     &          STRAN(NTENS),DSTRAN(NTENS),TIME(2),PREDEF(1),DPRED(1),
-     &          PROPS(NPROPS),COORDS(3),DROT(3,3),
-     &          DFGRD0(3,3),DFGRD1(3,3)
-c
-c***********************************************************************
 c-----------------------------------------------------------------------
+      implicit none
+c
       common /ummdp1/ne,ip,lay
       common /ummdp2/prop
       common /ummdp3/nsdv
       common /ummdp4/propdim
+      common /ummdp5/nexito
 c
+      integer,intent(in) :: ndi,nshr,ntens,nstatev,nprops,noel,npt,kinc                      
+      real*8 ,intent(in) :: props(nprops)
+      real*8 ,intent(in) :: stress1(ntens),statev1(nstatev),
+     1                      strain(ntens),dstrain(ntens)
+c
+      integer,intent(out) :: nexit
+      real*8 ,intent(out) :: stress2(ntens),statev2(nstatev)
+c 
+      integer mxpbs,mxprop,nrot
       parameter (mxpbs=10,mxprop=100)
-      real*8 s2(ntens),dpe(ntens),pe(ntens),ustatev(ntens),prop(mxprop)
-      real*8 x1(mxpbs,ntens),x2(mxpbs,ntens)
+      integer ne,ip,lay,nsdv,propdim,nexito,i,k,n,is,nprop,nvbs0,nvbs,
+     1        ndela,ndyld,ndihd,ndkin,npbs,ndrup,mjac,isvrsvd,isvsclr,
+     2        maxsdv
+      real*8 de33,p,dp
+      real*8 ustatev(ntens),s2(ntens),dpe(ntens),pe(ntens),prop(mxprop)
+      real*8 x1(mxpbs,ntens),x2(mxpbs,ntens),ddsdde(ntens,ntens)
+      character*100 text
 c-----------------------------------------------------------------------
 c
+cf2py intent(in) stress1,statev1,strain,dstrain
+cf2py intent(in) ndi,nshr,ntens,nstatev
+cf2py intent(in) props,nprops
+cf2py intent(in) noel,npt,kspt,kinc
+cf2py intent(out) stress2,statev2,nexit
+cf2py depend(ntens) stress1,stress2,strain,dstrain
+cf2py depend(nstatev) statev1,statev2
+cf2py depend(nprops) props
+c
+c-----------------------------------------------------------------------
+c
+c                                                   ---- open debug file
+      if ( kinc == 1 ) then
+        open(6,file='ummdp_vfm.log')
+      else
+        open(6,file='ummdp_vfm.log',access='APPEND',status='OLD')
+      end if
+c 
       ne = noel
       ip = npt
-      lay = kspt
-      if ( lay == 0 ) lay = 1
-      nsdv = nstatv
+      lay = 1
+      nsdv = nstatev
       nprop = mxprop
       propdim = nprops - 1
-c
 c                                        ---- set debug and verbose mode
       nvbs0 = props(1)
       call ummdp_debugmode ( nvbs,nvbs0 )
-c                                        ---- print detailed information
+c                                       ---- print detailed information
       if ( nvbs >= 1 ) then
         call ummdp_print_info  ( kinc,ndi,nshr )
       end if
 c                                             ---- print input arguments
       if ( nvbs >= 4 ) then
-        call ummdp_print_inout ( 0,stress,dstran,ddsdde,ntens,statev,
-     1                           nstatv )
+        ddsdde = 0.0d0
+        call ummdp_print_inout ( 0,stress1,dstrain,ddsdde,ntens,statev1,
+     1                           nstatev )
       end if
 c                                           ---- set material properties
       do i = 2,nprops
@@ -84,285 +108,89 @@ c
         write (6,*) 'mxpbs=',mxpbs
         call ummdp_exit ( 301 )
       end if
-c                                                      ---- check nstatv
-      call ummdp_check_nisv ( nstatv,ntens,npbs )
+c                                                     ---- check nstatev
+      call ummdp_check_nisv ( nstatev,ntens,npbs )
 c                             ---- copy current internal state variables
       call ummdp_isvprof ( isvrsvd,isvsclr )
-      call ummdp_isv2pex ( isvrsvd,isvsclr,statev,nstatv,p,pe,x1,ntens,
-     1                     mxpbs,npbs )
+      call ummdp_isv2pex ( isvrsvd,isvsclr,statev1,nstatev,p,pe,x1,
+     1                     ntens,mxpbs,npbs )
 c
 c                             ---- update stress and set tangent modulus
-      mjac = 1
-      call ummdp_plasticity ( stress,s2,dstran,p,dp,dpe,de33,x1,x2,
+      mjac = 0
+      call ummdp_plasticity ( stress1,s2,dstrain,p,dp,dpe,de33,x1,x2,
      1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
      2                        prop,nprop,propdim )
 c                                                     ---- update stress
       do i = 1,ntens
-        stress(i) = s2(i)
+        stress2(i) = s2(i)
       end do
 c                                  ---- update equivalent plastic strain
-      statev(isvrsvd+1) = p + dp
+      statev2(isvrsvd+1) = p + dp
 c                                  ---- update plastic strain components
-      call rotsig ( statev(isvrsvd+2),drot,ustatev,2,ndi,nshr )
-c
       do i = 1,ntens
         is = isvrsvd + isvsclr + i
-        statev(is) = ustatev(i) + dpe(i)
+        statev2(is) = statev1(is) + dpe(i)
       end do
 c                                     ---- update back stress components
       if ( npbs /= 0 ) then
         do n = 1,npbs
           do i = 1,ntens
             is = isvrsvd + isvsclr + ntens*n + i
-            statev(is) = x2(n,i)
+            statev2(is) = x2(n,i)
           end do
         end do
       end if
 c                                            ---- print output arguments
       if ( nvbs >= 4 ) then
-        call ummdp_print_inout ( 1,stress,dstran,ddsdde,ntens,statev,
-     1                           nstatv )
+        call ummdp_print_inout ( 1,stress2,dstrain,ddsdde,ntens,
+     1                           statev2,nstatev )
       end if
+c                                                  ---- close debug file
+      close(6)
+c                                                 ---- return error code
+      nexit = nexito
 c
       return
-      end subroutine umat
+      end
 c
 c
 c
-************************************************************************
-c
-      SUBROUTINE SDVINI ( STATEV,COORDS,NSTATV,NCRDS,NOEL,NPT,
-     1                    LAYER,KSPT )
-c
-c-----------------------------------------------------------------------
-      INCLUDE 'ABA_PARAM.INC'
-c
-      DIMENSION STATEV(NSTATV),COORDS(NCRDS)
-c-----------------------------------------------------------------------
-c
-      ne = noel
-      ip = npt
-      lay = kspt
-      if ( lay == 0 ) lay = 1
-c
-      if ( ne*ip*lay == 1 ) then
-        write (6,*) 'SDVINI is called. '
-      end if
-c
-      do n = 1,nstatv
-        statev(n) = 0.0
-      end do
-c
-      return
-      end subroutine sdvini
-c
-c
-c
-************************************************************************
-c
-      SUBROUTINE UVARM ( UVAR,DIRECT,T,TIME,DTIME,CMNAME,ORNAME,
-     1    NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
-     2    JMAC,JMATYP,MATLAYO,LACCFLA )
-c
-c-----------------------------------------------------------------------
-      INCLUDE 'ABA_PARAM.INC'
-c
-      CHARACTER*80 CMNAME,ORNAME
-      CHARACTER*3  flgray(15)
-      DIMENSION UVAR(NUVARM),DIRECT(3,3),T(3,3),TIME(2)
-      DIMENSION array(15),jarray(15),JMAC(*),JMATYP(*),COORD(*)
-c-----------------------------------------------------------------------
-c     The dimensions of the variables flgray, array and jarray
-c     must be set equal to or greater than 15.
-c
-      parameter (maxsdv=50)
-      parameter (mxpbs=10)
-      parameter (mxprop=100)
-c
-      common /ummdp2/prop
-      common /ummdp3/nsdv
-      common /ummdp4/propdim
-c
-      dimension s(ndi+nshr),xsum(ndi+nshr),x(mxpbs,ndi+nshr),
-     &          pe(ndi+nshr),eta(ndi+nshr),
-     &          dseds(ndi+nshr),d2seds2(ndi+nshr,ndi+nshr)
-c
-      dimension   ARRAY2(maxsdv),JARRAY2(maxsdv)
-      character*3 FLGRAY2(maxsdv)
-      dimension   sdv(maxsdv),uvar1(nuvarm)
-c
-      dimension prop(mxprop)
-      real*8,allocatable,dimension(:) :: prela,pryld,prihd,prkin,prrup
-c-----------------------------------------------------------------------
-c
-      nprop = mxprop
-c
-c     variables list :
-c        uvar codes and state variables arrays
-c        nt : ntens
-c
-c     statev(1                    ) : equivalent plastic strain
-c     statev(2        ~ 1+nt      ) : plastic strain components
-c     statev(1+nt*i+1 ~ 1+nt*(i+1)) : partial back stress component xi
-c
-c     uvar(1     ) : equivalent stress
-c     uvar(2     ) : flow stress
-c     uvar(3~2+nt) : total back stress components
-c     uvar(3~2+nt) : rupture criterion
-c
-      ne = noel
-      ip = npt
-      lay = kspt
-      if ( lay == 0 ) lay = 1
-      ntens = ndi + nshr
-
-c                                            ---- get uvar before update
-      do i = 1,nuvarm
-        uvar1(i) = uvar(i)
-      end do
-c                                                        ---- get stress
-      call getvrm ( 'S',array,jarray,flgray,jrcd,jmac,jmatyp,matlayo,
-     1              laccfla )
-      if ( jrcd /= 0 ) then
-        write (6,*) 'request error in uvarm for s'
-        write (6,*) 'stop in uvrm.'
-        call ummdp_exit ( 9000 )
-      end if
-c
-      do i = 1,ndi
-        s(i) = array(i)
-      end do
-      do i = 1,nshr
-        i1 = ndi + i
-        i2 = 3 + i
-        s(i1) = array(i2)
-      end do
-c                                               ---- get state variables
-      if ( nsdv > maxsdv ) then
-        write (6,*) 'increase dimension of ARRAY2 and JARRAY2'
-        write (6,*) 'stop in uvrm.'
-        call ummdp_exit ( 9000 )
-      end if
-      call getvrm ( 'SDV',ARRAY2,JARRAY2,FLGRAY2,jrcd,jmac,jmatyp,
-     1              matlayo,laccfla)
-      if ( jrcd /= 0 ) then
-        write (6,*) 'request error in uvarm for sdv'
-        write (6,*) 'stop in uvrm.'
-        call ummdp_exit ( 9000 )
-      end if
-      do i = 1,nsdv
-        sdv(i) = array2(i)
-      end do
-c                                           ---- set material properties
-      call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
-     1                      npbs,ndrup )
-      allocate( prela(ndela) )
-      allocate( pryld(ndyld) )
-      allocate( prihd(ndihd) )
-      allocate( prkin(ndkin) )
-      allocate( prrup(ndrup) )
-      k = 0
-      do i = 1,ndela
-        k = k + 1
-        prela(i) = prop(k)
-      end do
-      do i = 1,ndyld
-        k = k + 1
-        pryld(i) = prop(k)
-      end do
-      do i = 1,ndihd
-        k = k + 1
-        prihd(i) = prop(k)
-      end do
-      do i = 1,ndkin
-        k = k + 1
-        prkin(i) = prop(k)
-      end do
-      do i = 1,ndrup
-        k = k + 1
-        prrup(i) = prop(k)
-      end do
-c
-c                                                  ---- calc back stress
-      call ummdp_isvprof ( isvrsvd,isvsclr )
-      call ummdp_isv2pex ( isvrsvd,isvsclr,sdv,maxsdv,p,pe,x,ntens,
-     1                     mxpbs,npbs )
-      do i = 1,ntens
-         xsum(i) = 0.0
-      end do
-      if ( npbs /= 0 ) then
-        do i = 1,ntens
-          do nb = 1,npbs
-            xsum(i) = xsum(i) + x(nb,i)
-          end do
-        end do
-      end if
-c                                                 ---- equivalent stress
-      if ( nuvarm >= 1 ) then
-        do i = 1,ntens
-          eta(i) = s(i) - xsum(i)
-        end do
-        call ummdp_yield ( se,dseds,d2seds2,0,eta,ntens,ndi,nshr,pryld,
-     1                     ndyld )
-        uvar(1) = se
-      end if
-c                                                       ---- flow stress
-      if ( nuvarm >= 2 ) then
-        call ummdp_isotropic ( sy,dsydp,d2sydp2,0,p,prihd,ndihd )
-        uvar(2) = sy
-      end if
-c                                                       ---- back stress
-      if ( npbs /= 0 ) then
-        if ( nuvarm >= 3 ) then
-          do i = 1,ntens
-            uvar(2+i) = xsum(i)
-          end do
-        end if
-      end if
-c                                                 ---- rupture criterion
-      if ( prrup(1) /= 0) then
-        nt = ntens
-        if ( npbs == 0 ) nt = 0
-        if ( nuvarm >= (3+nt) ) then
-          call ummdp_rupture ( ntens,sdv,nsdv,uvar,uvar1,nuvarm,jrcd,
-     1                         jmac,jmatyp,matlayo,laccfla,nt,ndrup,
-     2                         prrup)
-        end if
-      end if
-c
-      return
-      end subroutine uvarm
-c
-c
-c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
 c     SET INTERNAL STATE VARIABLES PROFILE
 c
       subroutine ummdp_isvprof ( isvrsvd,isvsclr )
 c
 c-----------------------------------------------------------------------
-      INCLUDE 'ABA_PARAM.INC'
+      implicit none
 c
-      isvrsvd = 0             ! no reserved variables
+      integer,intent(out) :: isvrsvd,isvsclr
+c-----------------------------------------------------------------------
+
+      isvrsvd = 0           ! no reserved variables
 c
-      isvsclr = 1             ! statev(1) is for eq.plast.strain
+      isvsclr = 1           ! statev(1) is for equivalent plastic strain
 c
       return
       end subroutine ummdp_isvprof
 c
 c
 c
-************************************************************************
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
 c     EXIT PROGRAM BY ERROR
 c
       subroutine ummdp_exit ( nexit )
 c
 c-----------------------------------------------------------------------
-      INCLUDE 'ABA_PARAM.INC'
+      implicit none
 c
       common /ummdp1/ne,ip,lay
+      common /ummdp5/nexito
+c
+      integer,intent(in) :: nexit
+c
+      integer ne,ip,lay,nexito
       character*50 fmt1,fmt2,tmp
 c-----------------------------------------------------------------------
 c
@@ -378,7 +206,7 @@ c
       write (tmp,'(I)') lay
       write (6,fmt2) '            Layer :',adjustl(tmp)
 c
-      call xit
+      nexito = -1
 c
       return
       end subroutine ummdp_exit
@@ -2657,564 +2485,6 @@ c
 c
       return
       end subroutine ummdp_print_inout
-c
-c
-c************************************************************************
-*
-*     UNCOUPLED RUPTURE CRITERIA
-*
-c***********************************************************************
-c
-c      0 : No Rupture Criterion
-c
-c      1 : Equivalent Plastic Strain
-c      2 : Cockroft and Latham
-c      3 : Rice and Tracey
-c      4 : Ayada
-c      5 : Brozzo
-c      6 : Forming Limit Diagram (only plane-stress)
-c
-c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c
-c     UNCOUPLED RUPTURE CRITERIA
-c
-      subroutine ummdp_rupture ( ntens,sdv,nsdv,uvar2,uvar1,nuvarm,
-     1                           jrcd,jmac,jmatyp,matlayo,laccfla,
-     2                           nt,ndrup,prrup )
-c
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-c
-      dimension UVAR1(NUVARM),jmac(*),jmatyp(*)
-      dimension sdv(nsdv),uvar2(nuvarm),prrup(ndrup)
-      real*8 lim,wlimnorm
-c-----------------------------------------------------------------------
-c
-c      prrup(1) : criteria id
-c      prrup(2) : flag to terminate analysis if limit is reached
-c      prrup(3) : rupture limit
-c
-c 																		       ---- rupture criteria limit
-      lim = prrup(3)
-c                                           ---- select rupture criteria
-      ntrup = nint(prrup(1))
-      select case ( ntrup )
-c
-      case ( 0 )                                  ! No Rupture Criterion
-        return
-c
-      case ( 1 )                             ! Equivalent Plastic Strain
-        call ummdp_rupture_eqvstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     1                                 nt,lim,wlimnorm )
-c
-      case ( 2 )                                   ! Cockroft and Latham
-        call ummdp_rupture_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     1                                jrcd,jmac,jmatyp,matlayo,laccfla,
-     2                                nt,lim,wlimnorm )
-c
-      case ( 3 )                                       ! Rice and Tracey
-        call ummdp_rupture_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     1                            jrcd,jmac,jmatyp,matlayo,laccfla,
-     2                            nt,lim,wlimnorm )
-c
-      case ( 4 )                                                 ! Ayada
-        call ummdp_rupture_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     1                             jrcd,jmac,jmatyp,matlayo,laccfla,
-     2                             nt,lim,wlimnorm )
-c
-      case ( 5 )                                                ! Brozzo
-        call ummdp_rupture_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     1                              jrcd,jmac,jmatyp,matlayo,laccfla,
-     2                              nt,lim,wlimnorm )
-c
-      case ( 6 )                                 ! Forming Limit Diagram
-        call ummdp_rupture_fld ( ntens,uvar2,uvar1,nuvarm,
-     1                           jrcd,jmac,jmatyp,matlayo,laccfla,
-     2                           nt,lim,wlimnorm )
-c
-      case default
-        write (6,*) 'error in ummdp_rupture'
-        write (6,*) 'ntrup error :',ntrup
-        call ummdp_exit ( 205 )
-      end select
-c
-c                    ---- terminate analysis if rupture limit is reached
-      end = nint(prrup(2))
-      if ( end == 1 ) then
-        if ( wlimnorm >= 1.0d0 ) then 
-          write (6,*) 'analysis terminated by rupture criterion'
-          write (6,*) 'stop in uvrm.'
-          call ummdp_exit( 500 )
-        end if
-      end if
-c
-      return
-      end
-c
-c
-c
-c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c
-c     EQUIVALENT PLASTIC STRAIN UNCOUPLED RUPTURE CRITERIA
-c
-      subroutine ummdp_rupture_eqvstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     1                                     nt,lim,wlimnorm )
-c
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-c
-      dimension sdv(nsdv),uvar2(nuvarm),uvar1(nuvarm)
-      real*8 lim,peeq
-c-----------------------------------------------------------------------
-c
-c     nuvarm : 2
-c
-c     uvar(2+nt+1) : equivalent plastic strain
-c     uvar(2+nt+2) : rupture parameter normalised by critical value
-c
-c                                            ---- get uvar before update
-      wlimnorm  = uvar1(2+nt+2)
-c
-c                                              ---- get sdv after update
-      peeq = sdv(1)
-c
-c                                                       ---- update uvar
-      uvar2(2+nt+1) = peeq
-      uvar2(2+nt+2) = peeq / lim
-c
-      return
-      end subroutine ummdp_rupture_eqvstrain
-c
-c
-c
-c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c
-c     COCKROFT AND LATHAM UNCOUPLED RUPTURE CRITERIA
-c
-      subroutine ummdp_rupture_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     1                                    jrcd,jmac,jmatyp,matlayo,
-     2                                    laccfla,nt,lim,wlimnorm )
-c
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-c
-      dimension UVAR1(NUVARM),jmac(*),jmatyp(*)
-      dimension array(15),jarray(15)
-      dimension sdv(nsdv),uvar2(nuvarm)
-      character*3 flgray(15)
-      real*8 lim,wlimnorm
-      real*8 se1,peeq1,maxsp1,maxsp1se1,wlim1
-      real*8 se2,peeq2,maxsp2,maxsp2se2,wlim2
-c-----------------------------------------------------------------------
-c
-c     nuvarm : 4
-c
-c     uvar(1)      : equivalent stress
-c     uvar(2+nt+1) : equivalent plastic strain
-c     uvar(2+nt+2) : maximum principal stress
-c     uvar(2+nt+3) : rupture parameter
-c     uvar(2+nt+4) : rupture parameter normalised by critical value
-c
-c                                            ---- get uvar before update
-      se1    = uvar1(1)
-      peeq1  = uvar1(2+nt+1)
-      maxsp1 = uvar1(2+nt+2)
-      wlim1  = uvar1(2+nt+3)
-c
-      wlimnorm  = uvar1(2+nt+4)
-c
-c                                     ---- get sdv and uvar after update
-      se2 = uvar2(1)
-      peeq2 = sdv(1)
-c
-c                                 ---- get principal stress after update
-      call getvrm ('SP',array,jarray,flgray,jrcd,jmac,jmatyp,
-     1                  matlayo,laccfla )
-      if ( jrcd /= 0 ) then
-        write (6,*) 'request error in uvarm for sp'
-        write (6,*) 'stop in uvrm.'
-        call ummdp_exit ( 9000 )
-      end if
-      maxsp2 = array(3)
-c
-c                                                 ---- rupture criterion
-      maxsp1se1 = 0.0d0
-      maxsp2se2 = 0.0d0
-      if ( se1 > 0.0d0 ) maxsp1se1 = maxsp1 / se1
-      if ( se2 > 0.0d0 ) maxsp2se2 = maxsp2 / se2
-c
-      wlim2 = wlim1 + (maxsp2se2+maxsp1se1)*(peeq2-peeq1)/2.0d0
-c
-c                                                       ---- update uvar
-      uvar2(2+nt+1) = peeq2
-      uvar2(2+nt+2) = maxsp2
-      uvar2(2+nt+3) = wlim2
-      uvar2(2+nt+4) = wlim2/lim
-c
-      return
-      end subroutine ummdp_rupture_cockroft
-c
-c
-c
-c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c
-c     RICE AND TRACEY UNCOUPLED RUPTURE CRITERIA
-c
-      subroutine ummdp_rupture_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     1                                jrcd,jmac,jmatyp,matlayo,laccfla,
-     2                                nt,lim,wlimnorm )
-c
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-c
-      dimension UVAR1(NUVARM),jmac(*),jmatyp(*)
-      dimension array(15),jarray(15)
-      dimension sdv(nsdv),uvar2(nuvarm)
-      character*3 flgray(15)
-      real*8 lim,wlimnorm
-      real*8 se1,peeq1,shyd1,shyd1se1,wlim1
-      real*8 se2,peeq2,shyd2,shyd2se2,wlim2
-c-----------------------------------------------------------------------
-c
-c     nuvarm : 4
-c
-c     uvar(1)      : equivalent stress
-c     uvar(2+nt+1) : equivalent plastic strain
-c     uvar(2+nt+2) : hydrostatic stress
-c     uvar(2+nt+3) : rupture parameter
-c     uvar(2+nt+4) : rupture parameter normalised by critical value
-c
-c                                            ---- get uvar before update
-      se1   = uvar1(1)
-      peeq1 = uvar1(2+nt+1)
-      shyd1 = uvar1(2+nt+2)
-      wlim1 = uvar1(2+nt+3)
-c
-      wlimnorm  = uvar1(2+nt+4)
-c
-c                                     ---- get sdv and uvar after update
-      se2 = uvar2(1)
-      peeq2 = sdv(1)
-c
-c                               ---- get hydrostatic stress after update
-      call getvrm ( 'SINV',array,jarray,flgray,jrcd,jmac,jmatyp,
-     1                     matlayo,laccfla )
-      if ( jrcd /= 0 ) then
-        write (6,*) 'request error in uvarm for sinv'
-        write (6,*) 'stop in uvrm.'
-        call ummdp_exit ( 9000 )
-      end if
-      shyd2 = -array(3)
-c
-c                                                 ---- rupture criterion
-      shyd1se1 = 0.0d0
-      shyd2se2 = 0.0d0
-      if ( se1 > 0.0d0 ) shyd1se1 = exp(1.5d0*shyd1/se1)
-      if ( se2 > 0.0d0 ) shyd2se2 = exp(1.5d0*shyd2/se2)
-c
-      wlim2 = wlim1 + (shyd1se1+shyd2se2)*(peeq2-peeq1)/2.0d0
-c
-c                                                       ---- update uvar
-      uvar2(2+nt+1) = peeq2
-      uvar2(2+nt+2) = shyd2
-      uvar2(2+nt+3) = wlim2
-      uvar2(2+nt+4) = wlim2/lim
-c
-      return
-      end subroutine ummdp_rupture_rice
-c
-c
-c
-c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c
-c     AYADA UNCOUPLED RUPTURE CRITERIA
-c
-      subroutine ummdp_rupture_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     1                                 jrcd,jmac,jmatyp,matlayo,laccfla,
-     2                                 nt,lim,wlimnorm )
-c
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-c
-      dimension UVAR1(NUVARM),jmac(*),jmatyp(*)
-      dimension array(15),jarray(15)
-      dimension sdv(nsdv),uvar2(nuvarm)
-      character*3 flgray(15)
-      real*8 lim,wlimnorm
-      real*8 se1,peeq1,shyd1,shyd1se1,wlim1
-      real*8 se2,peeq2,shyd2,shyd2se2,wlim2
-c-----------------------------------------------------------------------
-c
-c     nuvarm : 4
-c
-c     uvar(1)      : equivalent stress
-c     uvar(2+nt+1) : equivalent plastic strain
-c     uvar(2+nt+2) : hydrostatic stress
-c     uvar(2+nt+3) : rupture parameter
-c     uvar(2+nt+4) : rupture parameter normalised by critical value
-c
-c                                            ---- get uvar before update
-      se1   = uvar1(1)
-      peeq1 = uvar1(2+nt+1)
-      shyd1 = uvar1(2+nt+2)
-      wlim1 = uvar1(2+nt+3)
-c
-      wlimnorm  = uvar1(2+nt+4)
-c
-c                                     ---- get sdv and uvar after update
-      se2 = uvar2(1)
-      peeq2 = sdv(1)
-c
-c                               ---- get hydrostatic stress after update
-      call getvrm ( 'SINV',array,jarray,flgray,jrcd,jmac,jmatyp,
-     1                     matlayo,laccfla )
-      if ( jrcd /= 0 ) then
-        write (6,*) 'request error in uvarm for sinv'
-        write (6,*) 'stop in uvrm.'
-        call ummdp_exit ( 9000 )
-      end if
-      shyd2 = -array(3)
-c
-c                                                 ---- rupture criterion
-      shyd1se1 = 0.0d0
-      shyd2se2 = 0.0d0
-      if ( se1 > 0.0d0 ) shyd1se1 = shyd1 / se1
-      if ( se2 > 0.0d0 ) shyd2se2 = shyd2 / se2
-c
-      wlim2 = wlim1 + (shyd1se1+shyd2se2)*(peeq2-peeq1)/2.0d0
-c
-c                                                       ---- update uvar
-      uvar2(2+nt+1) = peeq2
-      uvar2(2+nt+2) = shyd2
-      uvar2(2+nt+3) = wlim2
-      uvar2(2+nt+4) = wlim2/lim
-c
-      return
-      end subroutine ummdp_rupture_ayada
-c
-c
-c
-c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c
-c     BROZZO UNCOUPLED RUPTURE CRITERIA
-c
-      subroutine ummdp_rupture_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
-     1                                  jrcd,jmac,jmatyp,matlayo,
-     2                                  laccfla,nt,lim,wlimnorm )
-c
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-c
-      dimension UVAR1(NUVARM),jmac(*),jmatyp(*)
-      dimension array(15),jarray(15)
-      dimension sdv(nsdv),uvar2(nuvarm)
-      character*3 flgray(15)
-      real*8 lim,wlimnorm
-      real*8 se1,peeq1,shyd1,maxsp1,maxsp1shyd1,wlim1
-      real*8 se2,peeq2,shyd2,maxsp2,maxsp2shyd2,wlim2
-c-----------------------------------------------------------------------
-c
-c     nuvarm : 5
-c
-c     uvar(2+nt+1) : equivalent plastic strain
-c     uvar(2+nt+2) : maximum principal stress
-c     uvar(2+nt+3) : hydrostatic stress
-c     uvar(2+nt+4) : rupture parameter
-c     uvar(2+nt+5) : rupture parameter normalised by critical value
-c
-c                                            ---- get uvar before update
-      peeq1  = uvar1(2+nt+1)
-      maxsp1 = uvar1(2+nt+2)
-      shyd1  = uvar1(2+nt+3)
-      wlim1  = uvar1(2+nt+4)
-c
-      wlimnorm  = uvar1(2+nt+5)
-c
-c                                              ---- get sdv after update
-      peeq2 = sdv(1)
-c
-c                                 ---- get principal stress after update
-      call getvrm ('SP',array,jarray,flgray,jrcd,jmac,jmatyp,
-     1                  matlayo,laccfla )
-      if ( jrcd /= 0 ) then
-        write (6,*) 'request error in uvarm for sp'
-        write (6,*) 'stop in uvrm.'
-        call ummdp_exit ( 9000 )
-      end if
-      maxsp2 = array(3)
-c
-c                               ---- get hydrostatic stress after update
-      call getvrm ('SINV',array,jarray,flgray,jrcd,jmac,jmatyp,
-     1                    matlayo,laccfla )
-      if ( jrcd /= 0 ) then
-        write (6,*) 'request error in uvarm for sinv'
-        write (6,*) 'stop in uvrm.'
-        call ummdp_exit ( 9000 )
-      end if
-      shyd2 = -array(3)
-c
-c                                                 ---- rupture criterion
-      maxsp1shyd1 = 0.0d0
-      maxsp2shyd2 = 0.0d0
-      if ( shyd1 > 0.0d0 ) then
-        maxsp1shyd1 = (2.0d0/3.0d0) * maxsp1 / (maxsp1-shyd1)
-      end if
-      if ( shyd2 > 0.0d0 ) then 
-        maxsp2shyd2 = (2.0d0/3.0d0) * maxsp2 / (maxsp2-shyd2)
-      end if
-c
-      wlim2 = wlim1 + (maxsp2shyd2+maxsp1shyd1)*(peeq2-peeq1)/2.0d0
-c
-c                                                       ---- update uvar
-      uvar2(2+nt+1) = peeq2
-      uvar2(2+nt+2) = maxsp2
-      uvar2(2+nt+3) = shyd2
-      uvar2(2+nt+4) = wlim2
-      uvar2(2+nt+5) = wlim2/lim
-c
-      return
-      end subroutine ummdp_rupture_brozzo
-c
-c
-c
-c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c
-c     FORMING LIMIT DIAGRAM UNCOUPLED RUPTURE CRITERIA
-c
-      subroutine ummdp_rupture_fld ( ntens,uvar2,uvar1,nuvarm,
-     1                               jrcd,jmac,jmatyp,matlayo,laccfla,
-     2                               nt,lim,wlimnorm )
-c
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-c
-      parameter (mxflc=50)
-c
-      dimension jmac(*),jmatyp(*)
-      dimension array(15),jarray(15)
-      dimension uvar2(nuvarm),uvar1(nuvarm)
-      character*3 flgray(15)
-      real*8 lim,wlimnorm
-      real*8 e1,e2,e1fld,wlim
-      real*8 le(3,3),es(3),ev(3,3)
-      dimension dum1(0),dum2(mxflc,0)
-      dimension fld1(mxflc),fld2(mxflc)
-c-----------------------------------------------------------------------
-c
-c     nuvarm : 5
-c
-c     uvar(2+nt+1) : maximum principal strain
-c     uvar(2+nt+2) : minimum principal strain
-c     uvar(2+nt+3) : projection of major principal strain on FLD
-c     uvar(2+nt+4) : rupture parameter
-c     uvar(2+nt+5) : rupture parameter normalised by critical value
-c
-c                                            ---- get uvar before update
-      wlimnorm  = uvar1(2+nt+6)
-c      
-c                                 ---- get principal strain after update
-      if ( ntens == 3 ) then
-        call getvrm ( 'LEP',array,jarray,flgray,jrcd,jmac,jmatyp,
-     1                      matlayo,laccfla )
-        if ( jrcd /= 0 ) then
-          write (6,*) 'request error in uvarm for lep'
-          write (6,*) 'stop in uvrm.'
-          call ummdp_exit ( 9000 )
-        end if
-        e2 = array(1)
-        e1 = array(2)
-c                               ---- get logarithmic strain after update
-      else
-        write (6,*) 'request error in uvarm for fld, only plane-stress'
-        write (6,*) 'stop in uvrm.'
-        call ummdp_exit ( 9000 )
-!         call getvrm ( 'LE',array,jarray,flgray,jrcd,jmac,jmatyp,
-!      &                     matlayo,laccfla )
-!         if ( jrcd /= 0 ) then
-!           write (6,*) 'request error in uvarm for le'
-!           write (6,*) 'stop in uvrm.'
-!           call ummdp_exit ( 9000 )
-!         end if
-! c                                            ---- assemble strain tensor
-!         call ummdp_clear2 ( le,3,3 )
-!         le(1,1) = array(1)
-!         le(2,2) = array(2)
-!         le(3,3) = array(3)
-!         le(1,2) = array(4)/2
-!         le(1,3) = array(5)/2
-!         le(2,3) = array(6)/2
-!         le(2,1) = le(1,2)
-!         le(3,1) = le(1,3)
-!         le(3,2) = le(2,3)
-! c                           ---- strain tensor eigen- values and vectors
-!         call ummdp_clear1 ( es,3 )
-!         call ummdp_clear2 ( ev,3,3 )
-!         call ummdp_eigen_sym3 ( es,ev,le )
-!         e2 = es(2)
-!         e1 = es(1)
-      end if
-c
-c                                     ---- activate fld table collection
-      call settablecollection ( 'FLD',jerror )
-
-      if ( jerror /= 0 ) then
-        write (6,*) 'request error in uvarm for table collection fld'
-        write (6,*) 'stop in uvrm.'
-        call ummdp_exit ( 9000 )
-      end if
-c	                     		                        ---- get fld E1 values
-      call getpropertytable ( 'FLD1',dum1,dum1,dum1,nfld,fld1,dum2,0,
-     1                               jerror )
-      if ( jerror /= 0 ) then
-        write (6,*) 'request error in uvarm for property table fld1'
-        write (6,*) 'stop in uvrm.'
-        call ummdp_exit ( 9000 )
-      end if
-c                                                 ---- get fld E2 values
-      call getpropertytable ( 'FLD2',dum1,dum1,dum1,nfld,fld2,dum2,0,
-     1                               jerror )
-      if ( jerror /= 0 ) then
-        write (6,*) 'request error in uvarm for property table fld2'
-        write (6,*) 'stop in uvrm.'
-        call ummdp_exit ( 9000 )
-      end if
-c
-c                         ---- linear extra/inter -polation of E1 on FLD
-      n = nfld
-c                              --- linear extrapolation on the left side
-      if ( e2 < fld2(1) ) then
-        e1fld = fld1(2) + ( (e2-fld2(2)) / (fld2(1)-fld2(2)) )
-     1          * ( fld1(1) - fld1(2) )
-c
-c                             --- linear extrapolation on the right side
-      else if ( e2 > fld2(n) ) then
-        e1fld = fld1(n-1) + ( (e2-fld2(n-1)) / (fld2(n)-fld2(n-1)) ) 
-     1          * ( fld1(n) - fld1(n-1) )
-c
-c                                  --- linear interpolation inside range
-      else
-        k = 0
-        do i = 1,n-1
-          if ( ( e2 >= fld2(i) ) .and. ( e2 <= fld2(i+1) ) ) then
-            k = i
-          end if
-        end do
-        e1fld = fld1(k) + ( fld1(k+1) - fld1(k) )
-     1          * ( (e2-fld2(k)) / (fld2(k+1)-fld2(k)) )
-      end if
-c
-c                                                 ---- rupture criterion
-      wlim = e1/e1fld
-c
-c                                                       ---- update uvar
-      uvar2(2+nt+1) = e1
-      uvar2(2+nt+2) = e2
-      uvar2(2+nt+3) = e1fld
-      uvar2(2+nt+4) = wlim
-      uvar2(2+nt+5) = wlim/lim
-c
-      return
-      end subroutine ummdp_rupture_fld
 c
 c
 c************************************************************************

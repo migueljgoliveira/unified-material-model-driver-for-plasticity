@@ -1,36 +1,32 @@
-c-------------------------------------------------------------(hill1990)
-c     Hill 1990 anisotropic yield function and its dfferentials
+************************************************************************
+c     HILL 1990 YIELD FUNCTION
 c
-c     ---( 1990 ) Pergamon Press Plc.
-c      by R.Hill (Department of Applied Mathematics and Theoretical
-c                 Physics, University of Cambridge, Cambridge) EW, U.K)
+c       doi: https://doi.org/10.1016/0022-5096(90)90006-P
 c
-c     "Constitutive Modelling of Orthotropic Plasticity in Sheet Metals"
-c      Received in 18 July 1989)
-c      J. Mech. Physics. Solids Vol.38, No.3, pp-405-417,  1990
-c      Printed in Great Britain
+      subroutine ummdp_yield_hill1990 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                  ndyld )
+c
 c-----------------------------------------------------------------------
-c     coded by Tatsuhiko Ine ( at NIED ), 22/11/2010
+      implicit none
+c
+      integer,intent(in) :: nreq,ndyld
+      real*8 ,intent(in) :: s(3),pryld(ndyld)
+c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(3)
+			real*8,intent(out) :: d2seds2(3,3)
+c
+      integer i,j
+      real*8 a,b,tau,sigb,am,syini,sigbtm,alarge,x1,x2,x3,x4,fai1,fai2,
+     1       fai3,fai4,fyild,wrk,wrk1,wrk2,wrk3,wrk4
+      real*8 v(3),a1(3),dfds1(3),dfds2(3),dfds3(3),dfds4(3),dfds_t(3),
+     1       dxds1(3),dxds2(3),dxds3(3),dxds4(3)
+      real*8 c(3,3),a2(3,3),a3(3,3),a4(3,3),d2fds1(3,3),d2fds2(3,3),
+     1       d2fds3(3,3),d2fds4(3,3),d2fds_t(3,3),dx1dx1(3,3),
+     2       dx2dx2(3,3),dx3dx3(3,3),dx4dx4(3,3),df4df3(3,3),
+     3       df3df4(3,3),d2xds1(3,3),d2xds2(3,3),d2xds3(3,3),d2xds4(3,3)
+      character*32 text
 c-----------------------------------------------------------------------
-c
-      subroutine jancae_hill1990 ( s,se,dseds,d2seds2,nreq,
-     &                             pryld,ndyld )
-c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      dimension s(3),dseds(3),d2seds2(3,3),pryld(ndyld)
-c
-      dimension c(3,3),v(3)
-      dimension A1(3),A2(3,3),A3(3,3),A4(3,3)
-      dimension dfds1(3),dfds2(3),dfds3(3),dfds4(3)
-      dimension dfds_t(3)
-      dimension dxds1(3),dxds2(3),dxds3(3),dxds4(3)
-      dimension d2fds1(3,3),d2fds2(3,3),d2fds3(3,3),d2fds4(3,3)
-      dimension d2fds_t(3,3)
-      dimension dx1dx1(3,3),dx2dx2(3,3),dx3dx3(3,3),dx4dx4(3,3)
-      dimension df4df3(3,3),df3df4(3,3)
-      dimension d2xds1(3,3),d2xds2(3,3),d2xds3(3,3),d2xds4(3,3)
-      character text*32
-c
 c                                                         ---- variables
 c
 c     s(3) : stress
@@ -66,15 +62,16 @@ c     d2fds2(3,3)  : d2f2/ds2 =fai2 2nd order derivative by stress
 c     d2fds3(3,3)  : d2f3/ds2 =fai3 2nd order derivative by stress
 c     d2fds4(3,3)  : d2f4/ds2 =fai4 2nd order derivative by stress
 c     d2fds_t(3,3) : d2f/ds2 =fai  2nd order derivative by stress
+c-----------------------------------------------------------------------
 c
 c                                       ---- define a1-matrix, a2-matrix
       data a1/ 1.0d0 , 1.0d0 , 0.0d0 /,
-     &     a2/ 1.0d0 ,-1.0d0 , 0.0d0 ,
-     &        -1.0d0 , 1.0d0 , 0.d00 ,
-     &         0.0d0 , 0.0d0 , 4.0d0 /,
-     &     a3/ 1.0d0 , 0.0d0 , 0.0d0 ,
-     &         0.0d0 , 1.0d0 , 0.0d0 ,
-     &         0.0d0 , 0.0d0 , 2.0d0 /
+     1     a2/ 1.0d0 ,-1.0d0 , 0.0d0 ,
+     2        -1.0d0 , 1.0d0 , 0.d00 ,
+     3         0.0d0 , 0.0d0 , 4.0d0 /,
+     4     a3/ 1.0d0 , 0.0d0 , 0.0d0 ,
+     5         0.0d0 , 1.0d0 , 0.0d0 ,
+     6         0.0d0 , 0.0d0 , 2.0d0 /
 c                                        ---- set anisotropic parameters
       a    = pryld(1+1)
       b    = pryld(1+2)
@@ -88,7 +85,7 @@ c
 c
 c                               ---- coef. matrix of material parameters
 c                                ---- define a4-matrix consists of a & b
-      call jancae_clear2( a4,3,3 )
+      a4 = 0.0d0
       a4(1,1) = -2.0d0*a + b
       a4(2,2) = 2.0d0*a + b
       a4(1,2) = - b
@@ -97,16 +94,16 @@ c                                                              ---- fai1
       x1 = s(1) + s(2)
       fai1 = abs(x1)**am
 c                                                              ---- fai2
-      call jancae_mv  ( v,a2,s,3,3 )
-      call jancae_vvs ( x2,s,v,3 )
+      call ummdp_utility_mv  ( v,a2,s,3,3 )
+      call ummdp_utility_vvs ( x2,s,v,3 )
       fai2 = sigbtm * (x2)**(am/2.0d0)
 c                                                              ---- fai3
-      call jancae_mv  ( v,a3,s,3,3 )
-      call jancae_vvs ( x3,s,v,3 )
+      call ummdp_utility_mv  ( v,a3,s,3,3 )
+      call ummdp_utility_vvs ( x3,s,v,3 )
       fai3 = (x3)**(am/2.0d0-1.0d0)
 c                                                              ---- fai4
-      call jancae_mv  ( v,a4,s,3,3 )
-      call jancae_vvs ( x4,s,v,3 )
+      call ummdp_utility_mv  ( v,a4,s,3,3 )
+      call ummdp_utility_vvs ( x4,s,v,3 )
       fai4 = x4
 c                                             ---- yield fuction : fyild
       fyild = fai1 + fai2 + fai3*fai4
@@ -114,7 +111,7 @@ c
 c                                                 ---- equivalent stress
       se = (fyild/alarge)**(1.0d0/am)
 c
-      if ( nreq >= 1 ) return
+      if ( nreq <= 1 ) return
 
 c               ---- 1st order differential coefficient of yield fuction
 c     dfdsi(i) : diff. of fai-i(i) with respect to s(j)
@@ -132,20 +129,20 @@ c
       end do
 c                                                          ---- dfai2/ds
       wrk = sigbtm * (am/2.0) * (x2)**(am/2.0-1.0)
-      call jancae_mv( dxds2,a2,s,3,3 )
+      call ummdp_utility_mv( dxds2,a2,s,3,3 )
       do i = 1,3
         dxds2(i) = 2.0 * dxds2(i)
         dfds2(i) = wrk * dxds2(i)
       end do
 c                                                          ---- dfai3/ds
       wrk = (am/2.0-1.0) * (x3)**(am/2.0-2.0)
-      call jancae_mv( dxds3,a3,s,3,3 )
+      call ummdp_utility_mv( dxds3,a3,s,3,3 )
       do i = 1,3
         dxds3(i) = 2.0 * dxds3(i)
         dfds3(i) = wrk * dxds3(i)
       end do
 c                                                          ---- dfai4/ds
-      call jancae_mv( dxds4,a4,s,3,3 )
+      call ummdp_utility_mv( dxds4,a4,s,3,3 )
       do i = 1,3
         dxds4(i) = 2.0 * dxds4(i)
         dfds4(i) = dxds4(i)
@@ -163,7 +160,7 @@ c           ---- 1st order differential coefficient of equivalent stress
       end do
 c
 c
-      if ( nreq >= 2 ) return
+      if ( nreq <= 2 ) return
 c
 c            --- 2st order differential coefficient of equivalent stress
 c                                                   with respect to s(j)
@@ -201,23 +198,23 @@ c                                   ---- d2fai3/ds2   make   d2fds3(i,j)
       wrk2 = wrk1 * wrk2
       wrk3 = wrk1 * wrk3
 c                                   ---- [d2x3/ds2] &  make [d2fai3/ds2]
-        do i = 1,3
-          do j = 1,3
-            dx3dx3(i,j) = dxds3(i) * dxds3(j)
-            d2xds3(i,j) = 2.0 * a3(j,i)
-            d2fds3(i,j) = wrk2 * dx3dx3(i,j) + wrk3 * d2xds3(i,j)
-          end do
+      do i = 1,3
+        do j = 1,3
+          dx3dx3(i,j) = dxds3(i) * dxds3(j)
+          d2xds3(i,j) = 2.0 * a3(j,i)
+          d2fds3(i,j) = wrk2 * dx3dx3(i,j) + wrk3 * d2xds3(i,j)
         end do
+      end do
 c                                                 ---- [d2fai3/ds2]*fai4
-        do i = 1,3
-          do j = 1,3
+      do i = 1,3
+        do j = 1,3
             d2fds3(i,j) = d2fds3(i,j) * fai4
           end do
         end do
 c                                          ---- [dfai4/ds]*[dfai3/ds](T)
-        do i=1,3
-          do j=1,3
-            df4df3(i,j)= dfds4(i)*dfds3(j)
+        do i = 1,3
+          do j = 1,3
+            df4df3(i,j) = dfds4(i) * dfds3(j)
           end do
         end do
 c                                                        ---- d2fai4/ds2
@@ -234,8 +231,8 @@ c
         do i = 1,3
           do j = 1,3
             d2fds_t(i,j) = d2fds1(i,j) + d2fds2(i,j) + 
-     &                     d2fds3(i,j)*fai4 + df4df3(i,j) + 
-     &                     df4df3(j,i) + fai3*d2fds4(i,j)
+     1                     d2fds3(i,j)*fai4 + df4df3(i,j) + 
+     2                     df4df3(j,i) + fai3*d2fds4(i,j)
           end do
         end do
 c
@@ -251,12 +248,12 @@ c
         do i = 1,3
           do j = 1,3
             d2seds2(i,j) = wrk2 * dfds_t(i) * dfds_t(j) + 
-     &                     wrk4 * d2fds_t(i,j)
+     1                     wrk4 * d2fds_t(i,j)
           end do
         end do
 c
       return
-      end
+      end subroutine ummdp_yield_hill1990
 c
 c
 c

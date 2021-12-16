@@ -1,19 +1,28 @@
-c----------------------------------------------------------(yoshida2011)
-c     F.Yoshida (2011,2013) yield function and its dfferentials
+************************************************************************
 c
-c     NUMISHEET 2011 Proceedings, AIP Conf. Proc.1383 (2011), pp.807-814
+c     YOSHIDA2011 YIELD FUNCTION
 c
-c     "A user-friendly 3D yield function to describe anisotropy of 
-c       steel sheets ",IJP,v.45(2013), pp.1119-139. )
+c       doi: https://doi.org/10.1016/j.ijplas.2013.01.010
 c
-      subroutine jancae_yoshida2011 ( s,se,dseds,d2seds2,nreq,
-     &                                 pryld,ndyld )
+      subroutine ummdp_yield_yoshida2011 ( s,se,dseds,d2seds2,nreq,
+     1                                     pryld,ndyld )
+c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
-      parameter (maxa=100)
-      dimension s(6),dseds(6),d2seds2(6,6),pryld(ndyld)
-      dimension a(maxa),ipow(maxa,3)
+      implicit none
 c
+      integer,parameter :: maxa = 100
+c
+      integer,intent(in) :: nreq,ndyld
+      real*8 ,intent(in) :: s(6),pryld(ndyld)
+c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(6)
+      real*8,intent(out) :: d2seds2(6,6)
+c
+      integer nd0,n,it,nterms,ndmax,jy,jx
+      integer ipow(maxa,3)
+      real*8 a(maxa)
+c-----------------------------------------------------------------------
 c
       nd0 = 3
 c
@@ -24,7 +33,7 @@ c
       nterms = n
       if ( maxa < nterms ) then
         write (6,*) 'increase maxa :',maxa,nterms
-        call jancae_exit ( 9000 )
+        call ummdp_exit ( 9000 )
       end if
 c
       n = 0
@@ -40,7 +49,7 @@ c
         end do
       end do
 c
-      a = 0.0
+      a = 0.0d0
       a(1) =  1.0d0 *          pryld(1+1)           !       c1
       a(2) = -3.0d0 *          pryld(1+2)           !    -3*c2
       a(3) =  6.0d0 *          pryld(1+3)           !     6*c3
@@ -58,29 +67,41 @@ c
       a(15) = 1.0d0 * 27.0d0 * pryld(1+15)          ! 27   *c15
       a(16) = 1.0d0 * 27.0d0 * pryld(1+16)          ! 27   *c16
 c
-      call jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,
-     &                          nd0,a,ipow,maxa,nterms )
+      call ummdp_yield_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,a,
+     1                               ipow,maxa,nterms )
 c
       return
-      end
+      end subroutine ummdp_yield_yoshida2011
 c
 c
 c
-c----------------------------------------------------------(yoshida2011)
-c     Weilong Hu & F.Yoshida style polynominal type yield function
+c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-      subroutine jancae_hy_polytype ( s,se,dseds,d2seds2,nreq,
-     &                                nd0,a,ipow,maxa,nterms )
+c     HU2005 & YOSHIDA2011 STYLE POLYNOMIAL TYPE YIELD FUNCTION
+c
+      subroutine ummdp_yield_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
+     1                                     a,ipow,maxa,nterms )
+c
 c-----------------------------------------------------------------------
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      dimension s(6),dseds(6),d2seds2(6,6)
-      dimension a(maxa),ipow(maxa,3)
-      dimension sterm(3),ii(3),v(6)
+      integer,intent(in) :: nreq,nd0,maxa,nterms
+      integer,intent(in) :: ipow(maxa,3)
+      real*8 ,intent(in) :: s(6),a(maxa)
 c
+      real*8,intent(out) :: se
+      real*8,intent(out) :: dseds(6)
+      real*8,intent(out) :: d2seds2(6,6)
+c    
+      integer i,j,k,n,id,idmax,jdmax,jd,nd
+      integer ii(3)
+      real*8 dinv,fai,q,dd,ff,fff,ddi,ddj
+      real*8 sterm(3),v(6)
+c-----------------------------------------------------------------------
 c     nd        : order of polynominal nd=2*nd0
 c     a(n)      : constants of function
 c     ipow(n,i) : power of terms
+c-----------------------------------------------------------------------
 c
       nd = nd0 * 2
       dinv = 1.0d0 / float(nd)
@@ -89,7 +110,7 @@ c
       sterm(2) = s(2) - s(3)                  ! sy-sz
       sterm(3) = s(4)**2 + s(5)**2 + s(6)**2  ! txy^2+tyz^2+tzx^2
 c
-      fai = 0.0
+      fai = 0.0d0
       do n = 1,nterms
         q = a(n)
         do k = 1,3
@@ -102,7 +123,7 @@ c
       se = fai ** dinv
       if ( nreq == 0 ) return
 c
-      v = 0.0
+      v = 0.0d0
       do i = 1,6
         idmax = 1
         if ( i == 3 ) idmax = 2
@@ -191,7 +212,7 @@ c
                   if ( ii(k) > 0 ) then
                     q = q * sterm(k)**ii(k)
                   else if ( ii(k) < 0 ) then
-                    q = 0.0
+                    q = 0.0d0
                   end if
                 end do
                 d2seds2(i,j) = d2seds2(i,j) + ff*q
@@ -202,7 +223,7 @@ c
       end do
 c
       return
-      end
+      end subroutine ummdp_yield_hy_polytype
 c
 c
 c
