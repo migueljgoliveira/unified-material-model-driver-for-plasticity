@@ -25,7 +25,7 @@ c      -7 : Hill 1990
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-c     CALCULATE YIELD FUNCTION AND DERIVATIVES
+c     YIELD FUNCTION
 c
       subroutine ummdp_yield ( se,cdseds,cd2seds2,nreq,cs,nttl,nnrm,
      1                         nshr,pryld,ndyld )
@@ -53,7 +53,7 @@ c
           write (6,*) 'error in ummdp_yield'
           write (6,*) 'ntyld<0 for plane stress'
           write (6,*) 'nnrm,nshr,ntyld:',nnrm,nshr,ntyld
-          call ummdp_exit (9000)
+          call ummdp_exit ( 304 )
         end if
         goto 100
       end if
@@ -101,7 +101,7 @@ c
      1                              ndyld )
       case ( 2 )
         call ummdp_yield_yld2004 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
-     1                                 
+     1
       case ( 3 )
         call ummdp_yield_cpb2006 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
       case ( 4 )
@@ -116,7 +116,7 @@ c
       case default
         write (6,*) 'error in ummdp_yield'
         write (6,*) 'ntyld error :',ntyld
-        call ummdp_exit (9000)
+        call ummdp_exit ( 202 )
       end select
 c
 c                                                        ---- set dse/ds
@@ -169,7 +169,7 @@ c
       case default
         write (6,*) 'error in ummdp_yield'
         write (6,*) 'ntyld error :',ntyld
-        call ummdp_exit (9000)
+        call ummdp_exit ( 202 )
       end select
 c
       return

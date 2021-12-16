@@ -1,10 +1,12 @@
 ************************************************************************
-c     KARAFILLIS-BOYCE 1993 YIELD FUNCTION AND DERIVATIVES
+c
+c     KARAFILLIS-BOYCE 1993 YIELD FUNCTION
 c
 c       doi:
 c
       subroutine ummdp_yield_karafillisboyce ( s,se,dseds,d2seds2,nreq,
      1                                         pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -464,10 +466,12 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     PRINCIPAL STRESSES AND INVARIANTS BY FRANÇOIS VIETE METHOD
 c
       subroutine ummdp_yield_karafillisboyce_pstress ( stress,invar,
      1                                                 pStress )
+c
 c-----------------------------------------------------------------------
       implicit none
 c

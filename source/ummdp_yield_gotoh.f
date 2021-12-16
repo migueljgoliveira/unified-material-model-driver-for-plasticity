@@ -1,11 +1,13 @@
 ************************************************************************
-c     GOTOH BIQUADRATIC YIELD FUNCTION AND DERIVATIVES
+c
+c     GOTOH BIQUADRATIC YIELD FUNCTION
 c
 c       doi:
 c
       subroutine ummdp_yield_gotoh ( s,se,dseds,d2seds2,nreq,pryld,
-     1                               ndyld )          
-c------------------------------------------------------------- variables
+     1                               ndyld )
+c
+c-----------------------------------------------------------------------
       implicit none
 c
       integer,intent(in) :: nreq,ndyld

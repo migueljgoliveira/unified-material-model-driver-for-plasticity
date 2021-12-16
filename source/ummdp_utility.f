@@ -4,132 +4,39 @@
 *
 ************************************************************************
 c
-c     ummdp_utility_clear1 ( a,n )
-c       clear 1st order vector
-c
-c     ummdp_utility_clear2 ( a,n,m )
-c       clear 2nd order matrix
-c
-c     ummdp_utility_clear3 ( a,n,m,l )
-c       clear 3rd order tensor
-c
-c     ummdp_utility_setunitm ( a,n )
+c     ummdp_utility_setunitm
 c       set unit 2nd order matrix
 c
-c     ummdp_utility_print1 ( text,a,n )
+c     ummdp_utility_print1
 c       print vector with text
 c
-c     ummdp_utility_print2 ( text,a,n,m )
+c     ummdp_utility_print2
 c       print matrix with text
 c
-c     ummdp_utility_mv (v,a,u,nv,nu)
+c     ummdp_utility_mv
 c       mutiply matrix and vector
 c
-c     ummdp_utility_mm (a,b,c,na1,na2,nbc)
+c     ummdp_utility_mm
 c       mutiply matrix and matrix
 c
-c     ummdp_utility_vvs ( s,u,v,n )
+c     ummdp_utility_vvs
 c       calculate scalar product of vectors 
 c
-c     ummdp_utility_minv ( b,a,n,d )
+c     ummdp_utility_minv
 c       calculate inverse matrix using lu decomposition
 c
-c         ummdp_utility_ludcmp( a,n,indx,d )
+c         ummdp_utility_ludcmp
 c           lu decomposition
-c         ummdp_utility_lubksb(a,n,indx,b)
+c         ummdp_utility_lubks
 c           lu backward substitution
-c         ummdp_utility_minv2 ( b,a,deta )
+c         ummdp_utility_minv2
 c           calculate inverse matrix 2x2
-c         ummdp_utility_minv3 ( b,a,deta )
+c         ummdp_utility_minv3
 c           calculate inverse matrix 3x3
 c
-c     ummdp_utility_eigen_sym3 ( es,ev,a )
-c       calculate eigenvalues and eigenvectors by jacobi method
-c
-c     ummdp_utility_file_exist ( flname )
+c     ummdp_utility_file_exist
 c       checking existence of files
 c
-! c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-! c
-! c     CLEAR 1st ORDER VECTOR A(N)
-! c
-!       subroutine ummdp_utility_clear1 ( a,n )
-! c
-! c-----------------------------------------------------------------------
-!       implicit none
-! c
-!       integer,intent(in) :: n
-! c
-!       real*8,intent(inout) :: a(n)
-! c
-!       integer i
-! c-----------------------------------------------------------------------
-! c
-!       do i = 1,n
-!         a(i) = 0.0d0
-!       end do
-! c
-!       return
-!       end subroutine ummdp_utility_clear1
-! c
-! c
-! c
-! c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-! c
-! c     CLEAR 2ND ORDER MATRIX
-! c
-!       subroutine ummdp_utility_clear2 ( a,n,m )
-! c
-! c-----------------------------------------------------------------------
-!       implicit none
-! c
-!       integer,intent(in) :: n,m
-! c
-!       real*8,intent(inout) :: a(n,m)
-! c
-!       integer i,j
-! c-----------------------------------------------------------------------
-! c
-!       do i = 1,n
-!         do j = 1,m
-!           a(i,j) = 0.0d0
-!         end do
-!       end do
-! c
-!       return
-!       end subroutine ummdp_utility_clear2
-! c
-! c
-! c
-! c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-! c
-! c     CLEAR 3RD ORDER MATRIX
-! c
-!       subroutine ummdp_utility_clear3 ( a,n,m,l )
-! c
-! c-----------------------------------------------------------------------
-!       implicit none
-! c
-!       integer,intent(in) :: n,m,l
-! c
-!       real*8,intent(inout) ::  a(n,m,l)
-! c
-!       integer i,j,k
-! c-----------------------------------------------------------------------
-! c
-!       do i = 1,n
-!         do j = 1,m
-!           do k = 1,l
-!             a(i,j,k) = 0.0d0
-!           end do
-!         end do
-!       end do
-! c
-!       return
-!       end subroutine ummdp_utility_clear3
-! c
-! c
-! c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
 c     SET UNIT 2ND ORDER MATRIX
@@ -170,14 +77,13 @@ c
       character*100,intent(in) :: text
 c
       integer i
-      character*20 fmt
+      character*100 fmt
 c-----------------------------------------------------------------------
 c
       write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
       write (6,fmt) '. ',text
 c
-      write(fmt,'(A,I2,A)') '(',14+tab,'x6E20.12)'
-      ! write (6,'(14x6E16.8)') (a(i),i=1,n)
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6E23.15)'
       write (6,fmt) (a(i),i=1,n)
       
 c
@@ -206,9 +112,8 @@ c
       write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
       write (6,fmt) '. ',text
 c
-      write(fmt,'(A,I2,A)') '(',14+tab,'x6E20.12)'
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6E23.15)'
       do i = 1,n
-        ! write (6,'(14x6E16.8)') (a(i,j),j=1,m)
         write (6,fmt) (a(i,j),j=1,m)
       end do
 c
@@ -236,8 +141,7 @@ c
       write(fmt,'(A,I2,A)') '(/',12+tab,'xA,A)'
       write (6,fmt) '. ',text
 c
-      write(fmt,'(A,I2,A)') '(',14+tab,'x6E20.12)'
-      ! write (6,'(14x6E16.8)') a
+      write(fmt,'(A,I2,A)') '(',14+tab,'x6E23.15)'
       write (6,fmt) a
 c
       return
@@ -337,8 +241,6 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
 c     CALCULATE INVERSE MATRIX USING LU DECOMPOSITION
 c
-c       Ref.: http://astr-www.kj.yamagata-u.ac.jp/~shibata/kbg/
-c
       subroutine ummdp_utility_minv ( b,a,n,d )
 c
 c-----------------------------------------------------------------------
@@ -389,7 +291,7 @@ c                                                 ---- check determinant
       if ( abs(d) <= eps ) then
          write (6,*) 'determinant det[a] error',d
          write (6,*) 'stop in minv'
-         call ummdp_exit ( 9000 ) 
+         call ummdp_exit ( 401 )
       end if
 c                                                            ---- B=A^-1
       do j = 1,n
@@ -434,6 +336,7 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     LU DECOMPOSITION
 c
       subroutine ummdp_utility_ludcmp ( a,n,indx,d,eps )
@@ -463,7 +366,7 @@ c
           write (6,*) 'singular matrix in ummdp_ludcmp'
           text = 'matrix detail'
           call ummdp_utility_print2 ( text,a,n,n )
-          call ummdp_exit ( 9000 )
+          call ummdp_exit ( 402 )
         end if
         vtemp(i) = 1.0d0 / aamax
       end do
@@ -520,9 +423,11 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     LU BACKWARD SUBSTITUTION
 c
       subroutine ummdp_utility_lubksb ( a,n,indx,b,eps )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -585,7 +490,7 @@ c
       if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv2'
-         call ummdp_exit ( 9000 )
+         call ummdp_exit ( 401 )
       end if
 c
       detai = 1.0d0 / deta
@@ -600,9 +505,11 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     CALCULATE INVERSE MATRIX 3x3
 c
       subroutine ummdp_utility_minv3 ( b,a,deta,eps )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -621,7 +528,7 @@ c
       if ( abs(deta) <= eps ) then
          write (6,*) 'determinant det[a] error',deta
          write (6,*) 'stop in minv3'
-         call ummdp_exit ( 9000 )
+         call ummdp_exit ( 401 )
       end if
 c
       detai = 1.0d0 / deta
@@ -637,131 +544,6 @@ c
 c
       return
       end subroutine ummdp_utility_minv3
-c
-c
-c
-c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c     CALCULATE EIGENVALUES AND EIGENVECTORS BY JACOBI METHOD
-c
-c     Ref.: http://www.flagshyp.com/
-c
-c     input
-c       a(3,3)  : symmetric matrix to be analyzed
-c
-c     output
-c       es(i)   : i-th eigenvalue
-c       ev(i,3) : normalized eigenvector for i-th eigenvalue
-c
-      subroutine ummdp_utility_eigen_sym3 ( es,ev,a )
-c-----------------------------------------------------------------------
-      implicit none
-c
-      real*8 es(3)
-			real*8 ev(3,3),a(3,3)
-c
-			integer i,j,is,ip,iq,ir
-			integer msweep
-			real*8 eps,ax,er,sum,od,hd,theta,t,c,s,tau,h,g
-      real*8 w(3,3),prc(3,3)
-c-----------------------------------------------------------------------
-c
-      msweep = 100
-      eps = 1.0d-8
-c
-c                                                       ---- preparation
-      ax = 0.0d0
-      er = 0.0d0
-      do i = 1,3
-        do j = 1,3
-          if ( abs(a(i,j)) > ax ) ax = abs(a(i,j))
-          er = er + abs(a(i,j)-a(j,i))
-        end do
-      end do
-      if ( er/ax > eps ) then
-        write (6,*) 'a is not symmetric'
-        write (6,*) 'stop in ummdp_eigen_sym3'
-        call ummdp_exit ( 9000 )
-      end if
-      do i = 1,3
-        do j = 1,3
-          w(i,j) = a(i,j) / ax
-        end do
-      end do
-c                                    ---- initialise prc to the identity
-      do i = 1,3
-        do j = 1,3
-          prc(i,j) = 0.0d0
-        end do
-        prc(i,i) = 1.0d0
-        es(i) = w(i,i)
-      end do
-c                                                   ---- starts sweeping
-      do is = 1,msweep
-c
-        sum = 0.0d0
-        do ip = 1,2
-          do iq = ip+1,3
-            sum = sum + abs( w(ip,iq) )
-          end do
-        end do
-c       write (6,*) 'ite',is,sum,eps
-c            ---- if the sum of off-diagonal terms is zero evaluates the
-c                                                     esches and returns
-        if ( abs(sum) < eps ) then
-          do i = 1,3
-            do j = 1,3
-              ev(i,j) = prc(j,i)
-            end do
-            es(i) = es(i)*ax
-          end do
-          return
-        end if
-c                             ---- performs the sweep in three rotations
-c                                         ---- one per off diagonal term
-        do ip = 1,2
-          do iq = ip+1,3
-            od = 100.0d0 * abs( w(ip,iq) )
-            if ( abs(od) > eps ) then
-              hd = es(iq) - es(ip)
-c                                      ---- evaluates the rotation angle
-              theta = 0.5d0 * hd / w(ip,iq)
-              t = 1.0d0/(abs(theta) + sqrt(1.0d0+theta**2))
-              if ( theta < 0.0d0 ) t = -t
-c                                   ---- re-evaluates the diagonal terms
-              c = 1.0d0 / sqrt(1.0d0+t**2)
-              s = t * c
-              tau = s / (1.0d0+c)
-              h = t * w(ip,iq)
-              es(ip) = es(ip) - h
-              es(iq) = es(iq) + h
-c                     ---- re-evaluates the remaining off-diagonal terms
-              ir = 6 - ip - iq
-              g = w( min(ir,ip),max(ir,ip) )
-              h = w( min(ir,iq),max(ir,iq) )
-              w( min(ir,ip),max(ir,ip) ) = g - s*(h+g*tau)
-              w( min(ir,iq),max(ir,iq) ) = h + s*(g-h*tau)
-c                                          ---- rotates the eigenvectors
-              do ir = 1,3
-                g = prc(ir,ip)
-                h = prc(ir,iq)
-                prc(ir,ip) = g - s*(h+g*tau)
-                prc(ir,iq) = h + s*(g-h*tau)
-              end do
-            end if
-            w(ip,iq) = 0.0d0
-          end do
-        end do
-      end do
-c                              ---- if convergence is not achieved stops
-      write (6,*) 'did not converge in eigen calculation.'
-      write (6,*) 'msweep=',msweep
-      write (6,*) 'eps=',eps
-      write (6,*) 'sum=',sum
-      write (6,*) 'stop in ummdp_eigen_sym3'
-      call ummdp_exit ( 9000 )
-c
-      return
-      end subroutine ummdp_utility_eigen_sym3
 c
 c
 c

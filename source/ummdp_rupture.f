@@ -14,7 +14,8 @@ c      5 : Brozzo
 c      6 : Forming Limit Diagram (only plane-stress)
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c     CALCULATE UNCOUPLED RUPTURE CRITERIA
+c
+c     UNCOUPLED RUPTURE CRITERIA
 c
       subroutine ummdp_rupture ( ntens,sdv,nsdv,uvar2,uvar1,nuvarm,
      1                           jrcd,jmac,jmatyp,matlayo,laccfla,
@@ -73,7 +74,7 @@ c
       case default
         write (6,*) 'error in ummdp_rupture'
         write (6,*) 'ntrup error :',ntrup
-        call ummdp_exit ( 9000 )
+        call ummdp_exit ( 205 )
       end select
 c
 c                    ---- terminate analysis if rupture limit is reached
@@ -82,7 +83,7 @@ c                    ---- terminate analysis if rupture limit is reached
         if ( wlimnorm >= 1.0d0 ) then 
           write (6,*) 'analysis terminated by rupture criterion'
           write (6,*) 'stop in uvrm.'
-          call ummdp_exit( 10000 )
+          call ummdp_exit( 500 )
         end if
       end if
 c
@@ -92,7 +93,8 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     Equivalent Plastic Strain
+c
+c     EQUIVALENT PLASTIC STRAIN UNCOUPLED RUPTURE CRITERIA
 c
       subroutine ummdp_rupture_eqvstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                     nt,lim,wlimnorm )
@@ -125,7 +127,8 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     Cockroft and Latham
+c
+c     COCKROFT AND LATHAM UNCOUPLED RUPTURE CRITERIA
 c
       subroutine ummdp_rupture_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                    jrcd,jmac,jmatyp,matlayo,
@@ -193,7 +196,8 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     Rice and Tracey
+c
+c     RICE AND TRACEY UNCOUPLED RUPTURE CRITERIA
 c
       subroutine ummdp_rupture_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                jrcd,jmac,jmatyp,matlayo,laccfla,
@@ -261,7 +265,8 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     Ayada
+c
+c     AYADA UNCOUPLED RUPTURE CRITERIA
 c
       subroutine ummdp_rupture_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                 jrcd,jmac,jmatyp,matlayo,laccfla,
@@ -329,7 +334,8 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     Brozzo
+c
+c     BROZZO UNCOUPLED RUPTURE CRITERIA
 c
       subroutine ummdp_rupture_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                  jrcd,jmac,jmatyp,matlayo,
@@ -411,8 +417,8 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     Forming Limit Diagram (FLD)
-c       . only plane-stress formulation
+c
+c     FORMING LIMIT DIAGRAM UNCOUPLED RUPTURE CRITERIA
 c
       subroutine ummdp_rupture_fld ( ntens,uvar2,uvar1,nuvarm,
      1                               jrcd,jmac,jmatyp,matlayo,laccfla,

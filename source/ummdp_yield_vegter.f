@@ -1,10 +1,12 @@
 ************************************************************************
-c     YEGTER YIELD FUNCTION AND DERIVATIVES
+c
+c     YEGTER YIELD FUNCTION
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2005.04.009
 c
       subroutine ummdp_yield_vegter ( s,se,dseds,d2seds2,nreq,pryld,
      1                                ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -20,7 +22,7 @@ c-----------------------------------------------------------------------
 c
       nf = nint(pryld(2)) - 1
       call ummdp_yield_vegter_core ( s,se,dseds,d2seds2,nreq,pryld,
-     1                               ndyld,nf )           
+     1                               ndyld,nf )
 c
       return
       end subroutine ummdp_yield_vegter
@@ -28,10 +30,12 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     VEGTER CORE SUBROUTINE
 c
       subroutine ummdp_yield_vegter_core ( s,se,dseds,d2seds2,nreq,
      1                                     pryld,ndyld,nf )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -64,7 +68,7 @@ c     test angle  : 90/(nf)*i
 c     pryld(n0+1) : phi_un(i) ! uniaxial
 c     pryld(n0+2) : phi_sh(i) ! pure shear
 c     pryld(n0+3) : phi_ps(i) ! plane strain
-c     pryld(n0+4) : omg(   i) 
+c     pryld(n0+4) : omg(   i)
 c
 c     this program assumes 2 type of tests
 c       type 1 : 3 tests (0,45,90 deg)
@@ -76,7 +80,7 @@ c-----------------------------------------------------------------------
 c
       pi = acos(-1.0d0)
       tol = 1.0d-4       ! exception treatment tolerance of vsin2t
-      tol0 = 1.0d-8      ! exception treatment tolerance of stress state 
+      tol0 = 1.0d-8      ! exception treatment tolerance of stress state
       tol2 = 1.0d-2      ! se tolerance change f(1) to f(2)
 c
       f_bi0 = pryld(3)
@@ -104,7 +108,7 @@ c     isflag  : 0 s(i,i=1,3)=0
 c             : 1 not s(i)=0
 c                                 ---- exception treatment if all s(i)=0
 c
-      if ( (abs(s(1)) <= tol0) .and. 
+      if ( (abs(s(1)) <= tol0) .and.
      1     (abs(s(2)) <= tol0) .and.
      2     (abs(s(3)) <= tol0) ) then
       isflag = 0
@@ -191,15 +195,15 @@ c                                 ---- case distribution by stress state
 c
 c     iareaflag    :stress state flag(i=0~6)
 c
-      if ( (x(1) > 0.0d0) .and. 
+      if ( (x(1) > 0.0d0) .and.
      1     (alfa < 0.0d0) .and.
      2     (alfa >= fsh2/fsh1)) then
         iareaflag = 1
-      else if ( (x(1) > 0.0d0) .and. 
-     1          (alfa >= 0.0d0) .and. 
+      else if ( (x(1) > 0.0d0) .and.
+     1          (alfa >= 0.0d0) .and.
      2          (alfa < fps2/fps1) ) then
         iareaflag = 2
-      else if ( (x(1) > 0.0d0) .and. 
+      else if ( (x(1) > 0.0d0) .and.
      1          (alfa >= fps2/fps1) .and.
      2          (alfa <= 1.0d0) ) then
         iareaflag = 3
@@ -223,7 +227,7 @@ c
 c
 c                                       ---- calc. hingepoint b(i,i=1~2)
       select case ( iareaflag )
-c                                            
+c
       case ( 1 )                                           ! iareaflag=1
         a(1) = fsh1
         a(2) = fsh2
@@ -234,7 +238,7 @@ c
         mm(1) = 1.0d0
         mm(2) = run
         call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
-c                                            
+c
       case ( 2 )                                           ! iareaflag=2
         a(1) = fun1
         a(2) = fun2
@@ -245,7 +249,7 @@ c
         mm(1) = 1.0d0
         mm(2) = rps
         call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
-c                                   
+c
       case ( 3 )                                           ! iareaflag=3
         a(1) = fps1
         a(2) = fps2
@@ -256,7 +260,7 @@ c
         mm(1) = 1.0d0
         mm(2) = rbi
         call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
-c                                            
+c
       case ( 4 )                                           ! iareaflag=4
         a(1) = -fbi1
         a(2) = -fbi2
@@ -267,7 +271,7 @@ c
         mm(1) = -rpsr
         mm(2) = -1.0d0
         call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
-c                                            
+c
       case ( 5 )                                           ! iareaflag=5
         a(1) = -fps2r
         a(2) = -fps1r
@@ -278,7 +282,7 @@ c
         mm(1) = -runr
         mm(2) = -1.0d0
         call ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,s )
-c                                    
+c
       case ( 6 )                                           ! iareaflag=6
         a(1) = -fun2r
         a(2) = -fun1r
@@ -330,7 +334,7 @@ c
       dmdc = 0.0d0
 c
       select case ( iareaflag )
-c                                            
+c
       case ( 1 )                                           ! iareaflag=1
         if ( abs(vsin2t) >= tol ) then
           do m = 0,nf
@@ -374,7 +378,7 @@ c
         end if
         call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1                                 dmdc,iareaflag,P,nnmm )
-c                                            
+c
       case ( 2 )                                           ! iareaflag=2
         if ( abs(vsin2t) >= tol ) then
           do m = 0,nf
@@ -416,7 +420,7 @@ c
         call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1                                 dmdc,iareaflag,P,nnmm )
 c
-c                                           
+c
       case ( 3 )                                           ! iareaflag=3
         if ( abs(vsin2t) >= tol ) then
           do m = 0,nf
@@ -435,7 +439,7 @@ c
         dmdc(2) = 2.0d0*(r_bi0*r_bi0-1.0d0)/(dmdctmp*dmdctmp)
         call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1                                 dmdc,iareaflag,P,nnmm )
-c                                            
+c
       case ( 4 )                                           ! iareaflag=4
 c
         if ( abs(vsin2t) >= tol ) then
@@ -456,7 +460,7 @@ c
 c
         call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1                                 dmdc,iareaflag,P,nnmm)
-c                                            
+c
       case ( 5 )                                           ! iareaflag=5
        if(abs(vsin2t)>=TOL) then
         do m=0,nf
@@ -502,7 +506,7 @@ c
       call ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                               dndc,dmdc,iareaflag,P,nnmm)
 c
-c                                            
+c
       case ( 6 )                                           ! iareaflag=6
           dadc(1)=0.0d0
        if(abs(vsin2t)>=TOL) then
@@ -584,7 +588,7 @@ c                        ---- if theta<=0.002865deg then apply exception
 c
       if(abs(vsin2t)<=TOL) then
          ithetaflag=1
-      else 
+      else
          ithetaflag=0
       end if
 c
@@ -618,7 +622,7 @@ c
       end if
 c
       select case ( iareaflag )
-c                                            
+c
       case ( 1 )                                           ! iareaflag=1
          do m=0,nf
           d2adc2(1)=d2adc2(1)+phi_sh(m)*dble(m)*vvtmp(m)
@@ -640,7 +644,7 @@ c
       call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
-c                                            
+c
       case ( 2 )                                           ! iareaflag=2
          do m=0,nf
           d2adc2(1)=d2adc2(1)+phi_un(m)*dble(m)*vvtmp(m)
@@ -662,9 +666,9 @@ c
       call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
-c                                            
+c
       case ( 3 )                                           ! iareaflag=3
-         do m=0,nf  
+         do m=0,nf
           d2adc2(1)=d2adc2(1)+phi_ps(m)*dble(m)*vvtmp(m)
          end do
           d2adc2(2)=0.5d0*d2adc2(1)
@@ -682,7 +686,7 @@ c
       call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
-c                                            
+c
       case ( 4 )                                          !  iareaflag=4
           d2adc2(1)=0.0d0
           d2adc2(2)=0.0d0
@@ -702,7 +706,7 @@ c
       call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
-c                                           
+c
       case ( 5 )                                           ! iareaflag=5
          do m=0,nf
           d2adc2(2)=d2adc2(2)+phi_ps(m)*dble(m)*vvtmp_rv(m)
@@ -724,7 +728,7 @@ c
       call ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,
      1     dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,P,nnmm,s)
 c
-c                                            
+c
       case ( 6 )                                           ! iareaflag=6
           d2adc2(1)=0.0d0
          do m=0,nf
@@ -771,10 +775,12 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     CALCULATE HINGEPOINT b(i,i=1~2)
 c
       subroutine ummdp_yield_vegter_hingepoint ( a,b,c,mm,nn,iareaflag,
      1                                           s )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -806,15 +812,17 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     CALCULATE FOURIER COEFFICIENT mu(0<=mu<=1)
+c
+c     FOURIER COEFFICIENT
 c
       subroutine ummdp_yield_vegter_mu ( x,a,b,c,mu,iareaflag,s,theta,
      1                                   aa,bb,cc,dd)
+c
 c-----------------------------------------------------------------------
       implicit none
 c
       integer,intent(in) :: iareaflag
-      real*8 ,intent(in) :: theta 
+      real*8 ,intent(in) :: theta
       real*8 ,intent(in) :: x(4),a(2),b(2),c(2),s(3)
 c
       real*8,intent(out) :: mu
@@ -866,9 +874,11 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     CALCULATE NORMALIZED YIELD LOCUS
+c
+c     NORMALIZED YIELD LOCUS
 c
       subroutine ummdp_yield_vegter_fi ( x,a,b,c,mu,f )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -890,10 +900,12 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     CAKCULATE dbdc(i) (i=1~2) eq.(A.7)
 c
       subroutine ummdp_yield_vegter_dbdc ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                                     dndc,dmdc,iareaflag,P,nnmm )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -902,7 +914,7 @@ c
      1                      nn(2),dndc(2),dmdc(2)
 c
       real*8,intent(out) :: nnmm
-      real*8,intent(out) :: dbdc(2),P(2)     
+      real*8,intent(out) :: dbdc(2),P(2)
 c
       integer i
       real*8 tol,nminv
@@ -932,12 +944,14 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     calc. dphidx(i) (i=1~3)  eq.(21)~(23)
+c
+c     CALCULATE dphidx(i) (i=1~3)  eq.(21)~(23)
 c
       subroutine ummdp_yield_vegter_dphidx ( dphidx,se,a,b,c,dadc,dbdc,
-     1                                       dcdc,mm,nn,dndc,dmdc,f,  
+     1                                       dcdc,mm,nn,dndc,dmdc,f,
      2                                       iareaflag,mu,x,dfdmu,dfdc )
-c-----------------------------------------------------------------------   
+c
+c-----------------------------------------------------------------------
       implicit none
 c
       integer,intent(in) :: iareaflag
@@ -950,7 +964,7 @@ c
       integer i
       real*8 tol1,tol2,tol3,dphidxcoe,dphidxcinv,tmp_u,tmp_b,vtan
       real*8 dphidxtmp(3)
-c-----------------------------------------------------------------------       
+c-----------------------------------------------------------------------
 c
       tol1 = 0.996515d0         ! =44.9deg
       tol2 = 1.003497d0         ! =45.1deg
@@ -992,7 +1006,7 @@ c
         dphidxtmp(2) = -dfdmu(1)
         dphidxtmp(3) = tmp_u / tmp_b
 c
-      else if ( iareaflag == 3 .and. vtan >= tol1 
+      else if ( iareaflag == 3 .and. vtan >= tol1
      1          .and. vtan <= tol2 ) then
 c
         tmp_u = 1.0d0*(2.0d0*mu*dbdc(2)+(1.0d0-mu)*dadc(2))*dfdmu(1)
@@ -1021,11 +1035,13 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     CALCULATE FIRST ORDER DERIVATIVE
+c
+c     1ST ORDER DERIVATIVE
 c
       subroutine ummdp_yield_vegter_dseds ( dseds,x,dphidx,vcos2t,
      1                                      vsin2t,iareaflag,isflag,
      2                                      dxds )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1034,11 +1050,11 @@ c
       real*8 ,intent(in) :: x(4),dphidx(3)
 c
       real*8,intent(out) :: dseds(3)
-      real*8,intent(out) :: dxds(3,3) 
+      real*8,intent(out) :: dxds(3,3)
 c
       integer i,j
       real*8 tol1,tol2,vtan
-      real*8 dxds_t(3,3)  
+      real*8 dxds_t(3,3)
 c-----------------------------------------------------------------------
 c
       tol1 = 0.996515d0       ! =44.9deg
@@ -1064,7 +1080,7 @@ c
         dxds(3,3) = -2.0d0 * vsin2t * vcos2t
         dxds_t = transpose(dxds)
 c
-      else if ( iareaflag == 4 .and. vtan >= tol1 
+      else if ( iareaflag == 4 .and. vtan >= tol1
      1          .and. vtan <= tol2) then
         dxds(1,1) = 0.5d0 * (1.0d0+vcos2t)
         dxds(2,1) = 0.5d0 * (1.0d0-vcos2t)
@@ -1104,12 +1120,14 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     CALCULATE d2bdc2(i) (i=1~2)
 c
       subroutine ummdp_yield_vegter_d2bdc2 ( a,b,c,dadc,dbdc,dcdc,mm,nn,
      1                                       dndc,dmdc,iareaflag,d2adc2,
      2                                       d2bdc2,d2cdc2,d2ndc2,
-     3                                       d2mdc2,P,nnmm,s )      
+     3                                       d2mdc2,P,nnmm,s )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1129,12 +1147,12 @@ c-----------------------------------------------------------------------
 c
       dnnmmdc = dndc(1)*mm(2)+nn(1)*dmdc(2)-dmdc(1)*nn(2)-mm(1)*dndc(2)
 c
-      dPdc(1) = dndc(1)*dadc(1) + nn(1)*d2adc2(1) 
+      dPdc(1) = dndc(1)*dadc(1) + nn(1)*d2adc2(1)
      1          + d2ndc2(1)*(a(1)-b(1)) + dndc(1)*(dadc(1)-dbdc(1))
-     2          + dndc(2)*dadc(2) + nn(2)*d2adc2(2)                      
-     2          + d2ndc2(2)*(a(2)-b(2)) + dndc(2)*(dadc(2)-dbdc(2))              
+     2          + dndc(2)*dadc(2) + nn(2)*d2adc2(2)
+     2          + d2ndc2(2)*(a(2)-b(2)) + dndc(2)*(dadc(2)-dbdc(2))
 c
-      dPdc(2) = dmdc(1)*dcdc(1) + mm(1)*d2cdc2(1) 
+      dPdc(2) = dmdc(1)*dcdc(1) + mm(1)*d2cdc2(1)
      1          + d2mdc2(1)*(c(1)-b(1)) + dmdc(1)*(dcdc(1)-dbdc(1))
      2          + dmdc(2)*dcdc(2) + mm(2)*d2cdc2(2)
      3          + d2mdc2(2)*(c(2)-b(2)) + dmdc(2)*(dcdc(2)-dbdc(2))
@@ -1155,6 +1173,7 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     CALCULATE d2phidx2(k,l) (k,l=1~3)
 c
       subroutine ummdp_yield_vegter_d2phidx2 ( d2phidx2,se,a,b,c,dadc,
@@ -1163,6 +1182,7 @@ c
      3                                         d2adc2,d2bdc2,d2cdc2,
      4                                         d2ndc2,d2mdc2,dfdmu,dfdc,
      5                                         s,aa,bb,cc,dd,dphidx )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1193,7 +1213,7 @@ c
 c
       daadx(3) = x(2)*(dadc(1)+dcdc(1)-2.0d0*dbdc(1))
      1           - x(1)*(dadc(2)+dcdc(2)-2.0d0*dbdc(2))
-      dbbdx(3) = 2.0d0*x(2)*(dbdc(1)-dadc(1)) 
+      dbbdx(3) = 2.0d0*x(2)*(dbdc(1)-dadc(1))
      1           - 2.0d0*x(1)*(dbdc(2)-dadc(2))
       dccdx(3) = x(2)*dadc(1) - x(1)*dadc(2)
 c
@@ -1283,13 +1303,15 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     CALCULATE d2seds2(i,j) (i,j=1~3)
+c
+c     2ND ORDER DERIVATIVES
 c
       subroutine ummdp_yield_vegter_d2seds2 ( d2seds2,d2phidx2,se,a,b,c,
      1                                        mu,x,vcos2t,vsin2t,
      2                                        iareaflag,dxds,dphidx,
      3                                        isflag,s,dseds,pryld,
-     4                                        ndyld )      
+     4                                        ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1298,10 +1320,10 @@ c
       real*8 ,intent(in) :: a(2),b(2),c(2),x(4),dphidx(3),s(3),
      1                       dseds(3),pryld(ndyld)
       real*8 ,intent(in) :: d2phidx2(3,3),dxds(3,3)
-c            
+c
       real*8,intent(out) :: d2seds2(3,3)
 c
-      integer i,j,k,l,iflag 
+      integer i,j,k,l,iflag
       real*8 tol1,tol2,tol3a,tol3b,tol4,tol4a,tol4b,vtan,vx1x2
       real*8 d2xds2(3,3,3)
 c-----------------------------------------------------------------------
@@ -1411,10 +1433,12 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     numerical differential for 2nd order differentials
+c
+c     NUMERICAL DIFFERENTIATION FOR 2ND ORDER DERIVATIVES
 c
       subroutine ummdp_yield_vegter_d2seds2n ( d2seds2,s,dseds,pryld,
      1                                         ndyld,se )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -1426,7 +1450,7 @@ c
 c
       integer j,k
       real*8 delta,sea,seb,a,b,seba,seaa,sebb,seab,se0
-      real*8 s0(3),ss(3)     
+      real*8 s0(3),ss(3)
 c-----------------------------------------------------------------------
 c
       delta = 1.0d-3
@@ -1479,10 +1503,12 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     calc. equivalent stress for d2seds2n
+c
+c     EQUIVALENT STRESS FOR NUMERICAL DIFFERENTIATION
 c
       subroutine ummdp_yield_vegter_yieldfunc ( nttl,s,se,dseds,d2seds2,
      1                                          nreq,pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c

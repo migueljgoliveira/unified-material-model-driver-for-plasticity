@@ -1,6 +1,6 @@
 ************************************************************************
 c
-c     YLD2000-2D YIELD FUNCTION AND DERIVATIVES
+c     YLD2000-2D YIELD FUNCTION
 c
 c       doi: https://doi.org/10.1016/S0749-6419(02)00019-0
 c
@@ -240,7 +240,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     SET 1ST ORDER DERIVATIVE OF PARAMETERS
+c     1ST ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine ummdp_yield_yld2000_ds1 ( em,am,x,y,phi,dsedphi,
      1                                     dphidx,dxdy,dyds,se )     
@@ -329,7 +329,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     SET 2ND ORDER DERIVATIVE OF PARAMETERS
+c     2ND ORDER DERIVATIVE OF PARAMETERS
 c
       subroutine ummdp_yield_yld2000_ds2 ( phi,x,y,em,d2sedphi2,
      1                                     d2phidx2,d2xdy2,se )

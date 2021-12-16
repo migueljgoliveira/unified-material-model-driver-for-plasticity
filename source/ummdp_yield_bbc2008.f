@@ -1,10 +1,12 @@
 ************************************************************************
-c     BBC2008 YIELD FUNCTION AND DERIVATIVES
+c
+c     BBC2008 YIELD FUNCTION
 c
 c       doi: 
 c
       subroutine ummdp_yield_bbc2008 ( s,se,dseds,d2seds2,nreq,pryld,
      1                                 ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -30,8 +32,12 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
+c     BBC2008 CORE SUBROUTINE
+c
       subroutine ummdp_yield_bbc2008_core ( s,se,dseds,d2seds2,nreq,
      1                                      pryld,ndyld,sp,kp )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -207,11 +213,12 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     ummdp_bbc2008_get_w_phi ()
-c     A subroutine to get w^(i-1), w^(s-i) and phiX variables
 c
       subroutine ummdp_yield_bbc2008_w_phi ( wpi,phiL,phiM,phiN,csp,sp,
      1                                       wp,Lp,Mp,Np,s )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -238,9 +245,11 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     CALCULATE EQUIVALENT STRESS
 c
       real*8 function ummdp_yield_bbc2008_se ( sp,kp,wp,s,Lp,Mp,Np,kCm )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -294,6 +303,7 @@ c     ummdp_bbc2008_get_phiX (Xp, s, csp , sp)
 c     A function to calculate s(a)*X(a,b)*s(b) (summation convention)
 c
       real*8 function ummdp_yield_bbc2008_phiX ( Xp,s,csp,sp )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -330,12 +340,14 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     ummdp_bbc2008_get_dphiXds (dphiXds, Xp, s, csp, lambda,sp)
 c     A subroutine to calculate d(phiX^(lambda))/ds.
 c     It returns dphiXds(nc).
 c
       subroutine ummdp_yield_bbc2008_dphiXds ( dphiXds,Xp,s,csp,lambda,
      1                                         sp )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -397,12 +409,14 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     ummdp_bbc2008_get_d2phiXds2 (d2phiXds2, Xp, s, csp, lambda,sp)
 c     A subroutine to calculate d2(phiX^(lambda))/(dsds').
 c     It returns d2phiXdsds(nc,nc).
 c
       subroutine ummdp_yield_bbc2008_d2phiXds2 ( d2phiXds2,Xp,s,csp,
      1                                           lambda,sp )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -465,11 +479,13 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     setup_bbc2008_parameters()
 c     A routine to setup local variables.
 c
       subroutine ummdp_yield_bbc2008_setup ( pryld,ndyld,sp,kp,wp,Lp,Mp,
      1                                       Np,kCm,se1 )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -557,15 +573,17 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     setup_MN_tensors (ic,csp,pryld,ndyld, Xp,sp)
 c       ic: initial counter
-c       
+c
 c       This routine returns Mp or Np tensor.
 c       Mp and Np tensors are the same style,
 c       thus this subroutine has been created.
 c
       subroutine ummdp_yield_bbc2008_setup_MN_tensors ( ic,csp,pryld,
      1                                                  ndyld,Xp,sp )
+c
 c-----------------------------------------------------------------------
       implicit none
 c

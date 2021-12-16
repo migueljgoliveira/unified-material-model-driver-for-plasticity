@@ -1,10 +1,12 @@
 ************************************************************************
-c     HU2005 YIELD FUNCTION AND DERIVATIVES
+c
+c     HU2005 YIELD FUNCTION
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2004.11.004
 c
       subroutine ummdp_yield_hu2005 ( s,se,dseds,d2seds2,nreq,pryld,
      1                                ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c

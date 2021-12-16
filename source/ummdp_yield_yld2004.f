@@ -1,10 +1,12 @@
 ************************************************************************
-c     YLD2004-18p YIELD FUNCTION AND DERIVATIVES
+c
+c     YLD2004-18p YIELD FUNCTION
 c
 c       doi: 
 c
       subroutine ummdp_yield_yld2004 ( s,se,dseds,d2seds2,nreq,pryld,
      1                                 ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -124,8 +126,8 @@ c                               ---- coefficient of equivalent stress dc
 c      call ummdp_yield_yld2004_coef ( cp1,cp2,pi,am,dc )
 c                                  ---- calculation of equivalent stress
       call ummdp_yield_yld2004_yf ( ctp1,ctp2,s,am,ami,dc,pi,sp1,sp2,
-     &                              psp1,psp2,hp1,hp2,cetpq1,cetpq2,
-     &                              fai,se )
+     1                              psp1,psp2,hp1,hp2,cetpq1,cetpq2,fai,
+     2                              se )
 c
 c                                            ---- 1st order differential
       if ( nreq >= 1 ) then
@@ -135,9 +137,9 @@ c                                                     ---- d(fai)/d(psp)
         do i = 1,3
           do j = 1,3
             dfadpsp1(i) = dfadpsp1(i) + (psp1(i)-psp2(j)) *
-     &                    abs(psp1(i)-psp2(j))**(am-2.0d0)
+     1                    abs(psp1(i)-psp2(j))**(am-2.0d0)
             dfadpsp2(i) = dfadpsp2(i) + (psp1(j)-psp2(i)) *
-     &                    abs(psp1(j)-psp2(i))**(am-2.0d0)
+     2                    abs(psp1(j)-psp2(i))**(am-2.0d0)
           end do
           dfadpsp1(i) = dfadpsp1(i) * am
           dfadpsp2(i) = dfadpsp2(i) * (-am)
@@ -149,7 +151,7 @@ c                                         ---- d(psp)/d(hp)&d(fai)/d(hp)
         dfadhp2 = 0.0d0
 c                                                  ---- theta'<>0 & <>pi
         if ( abs(cetpq1-1.0d0) >= eps2 .and. 
-     &       abs(cetpq1+1.0d0) >= eps2 ) then
+     1       abs(cetpq1+1.0d0) >= eps2 ) then
           do i = 1,3
             call ummdp_yield_yld2004_dpsdhp ( i,psp1,hp1,dpsdhp1 )
           end do
@@ -174,7 +176,7 @@ c                                                         ---- theta'=pi
         end if
 c                                                 ---- theta''<>0 & <>pi
         if ( abs(cetpq2-1.0d0) >= eps2 .and. 
-     &       abs(cetpq2+1.0d0) >= eps2 ) then
+     1       abs(cetpq2+1.0d0) >= eps2 ) then
           do i = 1,3
             call ummdp_yield_yld2004_dpsdhp ( i,psp2,hp2,dpsdhp2 ) 
           end do
@@ -249,8 +251,8 @@ c                                                       ---- d(fai)/d(s)
               xx2(j,l) = xx2(j,l) + dhdsp2(j,k)*dsdsp2(k,l)
             end do
             dfads(l) = dfads(l) +
-     &                 dfadhp1(j)*xx1(j,l) + 
-     &                 dfadhp2(j)*xx2(j,l)
+     1                 dfadhp1(j)*xx1(j,l) + 
+     2                 dfadhp2(j)*xx2(j,l)
           end do
         end do
 c                                                        ---- d(se)/d(s)
@@ -440,9 +442,11 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     CALCULATE COEFFICIENT OF EQUIVALENT STRESS 1
+c
+c     COEFFICIENT OF EQUIVALENT STRESS I
 c
       subroutine ummdp_yield_yld2004_coef ( cp1,cp2,pi,am,dc )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -468,9 +472,11 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     CALCULATE COEFFICIENT OF EQUIVALENT STRESS 2
+c
+c     COEFFICIENT OF EQUIVALENT STRESS II
 c
       subroutine ummdp_yield_yld2004_coef_sub ( cp,pi,bbp )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -503,11 +509,13 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     CALCULATE YIELD FUNCTION 1
+c
+c     YIELD FUNCTION I
 c
       subroutine ummdp_yield_yld2004_yf ( ctp1,ctp2,s,am,ami,dc,pi,sp1,
      1                                    sp2,psp1,psp2,hp1,hp2,cetpq1,
      2                                    cetpq2,fai,se )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -535,10 +543,12 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     CALCULATE YIELD FUNCTION 2
+c
+c     CALCULATE YIELD FUNCTION II
 c
       subroutine ummdp_yield_yld2004_yfsub ( ctp,s,pi,sp,psp,hp,cetpq )
-     1                                           
+     1
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -587,10 +597,12 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     NUMERICAL DIFFERENTIATION FOR 2ND ORDER DERIVATIVES
 c
       subroutine ummdp_yield_yld2004_nu2 ( ctp1,ctp2,s,se,am,ami,dc,pi,
      1                                     del,d2seds2 )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -655,9 +667,11 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     CALCULATE d(psp)/d(hp)
 c
       subroutine ummdp_yield_yld2004_dpsdhp ( i,psp,hp,dpsdhp )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -679,9 +693,11 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     CALCULATE d2(psp)/d(hp)2
 c
       subroutine ummdp_yield_yld2004_d2psdhp ( i,psp,hp,d2psdhp )
+c
 c-----------------------------------------------------------------------
       implicit none
 c

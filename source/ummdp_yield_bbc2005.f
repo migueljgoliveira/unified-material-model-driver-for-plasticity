@@ -1,10 +1,12 @@
 ************************************************************************
-c     BBC2005 YIELD FUNCTION AND DERIVATIVES
+c
+c     BBC2005 YIELD FUNCTION
 c
 c       doi: 
 c
       subroutine ummdp_yield_bbc2005 ( s,se,dseds,d2seds2,nreq,pryld,
      1                                 ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -264,15 +266,17 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     SOLVE FACTORIAL
 c
       integer function fact(n) result(m)
+c
 c-----------------------------------------------------------------------
       ! implicit none
 c
       integer,intent(in) :: n
 c
-      ! integer i
+      integer i
 c-----------------------------------------------------------------------
 c
       m = 1

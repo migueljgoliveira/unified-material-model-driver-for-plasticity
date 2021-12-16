@@ -1,7 +1,7 @@
 ************************************************************************
 *                                                                      *
 *                                  UMMDp                               *
-*                                                                      *           
+*                                                                      *
 *                             <><><><><><><>                           *
 *                                                                      *
 *              UNIFIED MATERIAL MODEL DRIVER FOR PLASTICITY            *
@@ -20,7 +20,7 @@
 *       . Linked kinematic hardening laws to the core of UMMDp         *
 *       . Added Chaboche kinematic hardening law as used by Abaqus     *
 *     	. Implemented uncoupled rupture criteria                       *
-*       . Modified code to use only explicit variables                 *
+*       . Modified code to explicit declaration                        *
 *                                                                      *
 ************************************************************************
 c
@@ -46,15 +46,9 @@ c-----------------------------------------------------------------------
       common /ummdp3/nsdv
       common /ummdp4/propdim
 c
-      parameter (mxpbs=10)
-c
-      dimension s2(ntens),dpe(ntens),x1(mxpbs,ntens),x2(mxpbs,ntens),
-     &          pe(ntens)
-c
-      dimension ustatev(6)
-c
-      parameter (mxprop=100)
-      dimension prop(mxprop)
+      parameter (mxpbs=10,mxprop=100)
+      real*8 s2(ntens),dpe(ntens),pe(ntens),ustatev(ntens),prop(mxprop)
+      real*8 x1(mxpbs,ntens),x2(mxpbs,ntens)
 c-----------------------------------------------------------------------
 c
       ne = noel
@@ -77,14 +71,13 @@ c                                             ---- print input arguments
         call ummdp_print_inout ( 0,stress,dstran,ddsdde,ntens,statev,
      1                           nstatv )
       end if
-c
 c                                           ---- set material properties
       do i = 2,nprops
         prop(i-1) = props(i)
       end do
 c
       call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
-     1                      npbs,ndrup )                       
+     1                      npbs,ndrup )
       if ( npbs > mxpbs ) then
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
@@ -96,13 +89,13 @@ c                                                      ---- check nstatv
 c                             ---- copy current internal state variables
       call ummdp_isvprof ( isvrsvd,isvsclr )
       call ummdp_isv2pex ( isvrsvd,isvsclr,statev,nstatv,p,pe,x1,ntens,
-     1                     mxpbs,npbs )                    
+     1                     mxpbs,npbs )
 c
 c                             ---- update stress and set tangent modulus
       mjac = 1
       call ummdp_plasticity ( stress,s2,dstran,p,dp,dpe,de33,x1,x2,
      1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
-     2                        prop,nprop,propdim )                      
+     2                        prop,nprop,propdim )
 c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
@@ -262,7 +255,7 @@ c                                               ---- get state variables
       end do
 c                                           ---- set material properties
       call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
-     1                      npbs,ndrup )                        
+     1                      npbs,ndrup )
       allocate( prela(ndela) )
       allocate( pryld(ndyld) )
       allocate( prihd(ndihd) )
@@ -293,7 +286,7 @@ c
 c                                                  ---- calc back stress
       call ummdp_isvprof ( isvrsvd,isvsclr )
       call ummdp_isv2pex ( isvrsvd,isvsclr,sdv,maxsdv,p,pe,x,ntens,
-     1                     mxpbs,npbs )                      
+     1                     mxpbs,npbs )
       do i = 1,ntens
          xsum(i) = 0.0
       end do
@@ -310,7 +303,7 @@ c                                                 ---- equivalent stress
           eta(i) = s(i) - xsum(i)
         end do
         call ummdp_yield ( se,dseds,d2seds2,0,eta,ntens,ndi,nshr,pryld,
-     1                     ndyld )                        
+     1                     ndyld )
         uvar(1) = se
       end if
 c                                                       ---- flow stress
@@ -333,7 +326,7 @@ c                                                 ---- rupture criterion
         if ( nuvarm >= (3+nt) ) then
           call ummdp_rupture ( ntens,sdv,nsdv,uvar,uvar1,nuvarm,jrcd,
      1                         jmac,jmatyp,matlayo,laccfla,nt,ndrup,
-     2                         prrup) 
+     2                         prrup)
         end if
       end if
 c
@@ -364,17 +357,26 @@ c
 c
 c     EXIT PROGRAM BY ERROR
 c
-      subroutine ummdp_exit (nexit)
+      subroutine ummdp_exit ( nexit )
 c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
       common /ummdp1/ne,ip,lay
+      character*50 fmt1,fmt2,tmp
 c-----------------------------------------------------------------------
-      write (6,*) 'error code :',nexit
-      write (6,*) 'element no.           :',ne
-      write (6,*) 'integration point no. :',ip
-      write (6,*) 'layer no.             :',lay
+c
+      fmt1 = '(/12xA,A)'
+      fmt2 =  '(12xA,A)'
+c
+      write (tmp,'(I)') nexit
+      write (6,fmt1) '            Error :',adjustl(tmp)
+      write (tmp,'(I)') ne
+      write (6,fmt2) '          Element :',adjustl(tmp)
+      write (tmp,'(I)') ip
+      write (6,fmt2) 'Integration Point :',adjustl(tmp)
+      write (tmp,'(I)') lay
+      write (6,fmt2) '            Layer :',adjustl(tmp)
 c
       call xit
 c

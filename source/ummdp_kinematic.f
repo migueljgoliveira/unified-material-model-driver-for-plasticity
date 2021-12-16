@@ -13,7 +13,8 @@ c      5 : Chaboche (1979) - Ziegler
 c      6 : Yoshida-Uemori
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c     CALCULATE KINEMATIC HARDENING LAW
+c
+c     KINEMATIC HARDENING LAW
 c
       subroutine ummdp_kinematic ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,x,xt,
      1                             nttl,nnrm,nshr,mxpbs,npbs,prkin,
@@ -64,18 +65,18 @@ c
      1                                 x,xt,nttl,nnrm,nshr,mxpbs,npbs,
      2                                 prkin,ndkin,pryld,ndyld )
 c
-      case ( 3 )                          ! Armstrong & Frederick (1966)
+      case ( 3 )                                 ! Armstrong & Frederick
         call ummdp_kinematic_armstrong ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,
      1                                   s,x,xt,nttl,nnrm,nshr,mxpbs,
      2                                   npbs,prkin,ndkin,pryld,ndyld )
 c
-      case ( 4 )                                       ! Chaboche (1979)
-        call ummdp_kinematic_chaboche ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,
+      case ( 4 )                                            ! Chaboche I
+        call ummdp_kinematic_chabocheI ( vk,dvkdp,dvkds,dvkdx,dvkdxt,p,
      1                                  s,x,xt, nttl,nnrm,nshr,mxpbs,
      2                                  npbs,prkin,ndkin,pryld,ndyld )
 c
-      case ( 5 )                             ! Chaboche (1979) - Ziegler
-        call ummdp_kinematic_chaboche_ziegler ( vk,dvkdp,dvkds,dvkdx,
+      case ( 5 )                                           ! Chaboche II
+        call ummdp_kinematic_chabocheII ( vk,dvkdp,dvkds,dvkdx,
      1                                          dvkdxt,p,s,x,xt,nttl,
      2                                          nnrm,nshr,mxpbs,npbs,
      3                                          prkin,ndkin,pryld,
@@ -89,7 +90,7 @@ c
 c
       case default
         write (6,*) 'still not be supported. ntkin=',ntkin
-        call ummdp_exit ( 9000 )
+        call ummdp_exit ( 204 )
       end select
 c
       return
@@ -98,10 +99,12 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     CALCULATE 1ST AND 2ND DERIVATIVES FOR KINEMATIC HARDENING LAWS
 c
       subroutine ummdp_kinematic_dseds ( eta,seta,dseds,d2seds2,nttl,
      1                                   nnrm,nshr,pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -151,11 +154,13 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     PRAGER KINEMATIC HARDENING LAW
 c
       subroutine ummdp_kinematic_prager ( vk,dvkdp,dvkds,dvkdx,dvkdxt,
      1                                    p,s,x,xt,nttl,nnrm,nshr,mxpbs,
      2                                    npbs,prkin,ndkin,pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -206,12 +211,14 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     ZIEGLER KINEMATIC HARDENING LAW
 c
       subroutine ummdp_kinematic_ziegler ( vk,dvkdp,dvkds,dvkdx,dvkdxt,
      1                                     p,s,x,xt,nttl,nnrm,nshr,
      2                                     mxpbs,npbs,prkin,ndkin,
      3                                     pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -260,12 +267,14 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     ARMSTRONG-FREDERICK (1966) KINEMATIC HARDENING LAW
+c
+c     ARMSTRONG-FREDERICK KINEMATIC HARDENING LAW
 c
       subroutine ummdp_kinematic_armstrong ( vk,dvkdp,dvkds,dvkdx,
      1                                       dvkdxt,p,s,x,xt,nttl,nnrm,
      2                                       nshr,mxpbs,npbs,prkin,
      3                                       ndkin,pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -318,12 +327,14 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     CHABOCHE (1979) KINEMATIC HARDENING LAW
 c
-      subroutine ummdp_kinematic_chaboche ( vk,dvkdp,dvkds,dvkdx,dvkdxt,
-     1                                      p,s,x,xt,nttl,nnrm,nshr,
-     2                                      mxpbs,npbs,prkin,ndkin,
-     3                                      pryld,ndyld )
+c     CHABOCHE I KINEMATIC HARDENING LAW
+c
+      subroutine ummdp_kinematic_chabocheI ( vk,dvkdp,dvkds,dvkdx,
+     1                                       dvkdxt,p,s,x,xt,nttl,nnrm,
+     2                                       nshr,mxpbs,npbs,prkin,
+     3                                       ndkin,pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -371,18 +382,19 @@ c
       end do
 c
       return
-      end subroutine ummdp_kinematic_chaboche
+      end subroutine ummdp_kinematic_chabocheI
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c     CHABOCHE (1979) - ZIEGLER KINEMATIC HARDENING LAW
 c
-      subroutine ummdp_kinematic_chaboche_ziegler ( vk,dvkdp,dvkds,
-     1                                              dvkdx,dvkdxt,p,s,x,
-     2                                              xt,nttl,nnrm,nshr,
-     3                                              mxpbs,npbs,prkin,
-     4                                              ndkin,pryld,ndyld )
+c     CHABOCHE II KINEMATIC HARDENING LAW
+c
+      subroutine ummdp_kinematic_chabocheII ( vk,dvkdp,dvkds,dvkdx,
+     1                                        dvkdxt,p,s,x,xt,nttl,nnrm,
+     2                                        nshr,mxpbs,npbs,prkin,
+     3                                        ndkin,pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -430,11 +442,12 @@ c
       end do
 c
       return
-      end subroutine ummdp_kinematic_chaboche_ziegler
+      end subroutine ummdp_kinematic_chabocheII
 c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     YOSHIDA-UEMORI KINEMATIC HARDENING LAW
 c
       subroutine ummdp_kinematic_yoshida_uemori ( vk,dvkdp,dvkds,dvkdx,
@@ -442,6 +455,7 @@ c
      2                                            nnrm,nshr,mxpbs,npbs,
      3                                            prkin,ndkin,pryld,
      4                                            ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c

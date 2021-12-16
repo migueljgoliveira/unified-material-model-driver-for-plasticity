@@ -1,10 +1,11 @@
 ************************************************************************
-c     HILL 1990 YIELD FUNCTION AND DERIVATIVES
+c     HILL 1990 YIELD FUNCTION
 c
 c       doi: https://doi.org/10.1016/0022-5096(90)90006-P
 c
       subroutine ummdp_yield_hill1990 ( s,se,dseds,d2seds2,nreq,pryld,
-     1                                  ndyld )                    
+     1                                  ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c

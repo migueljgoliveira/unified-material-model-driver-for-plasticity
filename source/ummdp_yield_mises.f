@@ -1,7 +1,9 @@
 ************************************************************************
-c     VON MISES YIELD FUNCTION AND DERIVATIVES
+c
+c     VON MISES YIELD FUNCTION
 c
       subroutine ummdp_yield_mises ( s,se,dseds,d2seds2,nreq )
+c
 c-----------------------------------------------------------------------
       implicit none
 c

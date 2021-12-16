@@ -1,10 +1,12 @@
 ************************************************************************
-c     Hill 1948 YIELD FUNCTION AND DERIVATIVES
+c
+c     Hill 1948 YIELD FUNCTION
 c
 c       doi:
 c
       subroutine ummdp_yield_hill1948 ( s,se,dseds,d2seds2,nreq,pryld,
      1                                  ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c

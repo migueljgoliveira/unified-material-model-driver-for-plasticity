@@ -1,10 +1,12 @@
 ************************************************************************
-c     YOSHIDA2011 YIELD FUNCTION AND DERIVATIVES
+c
+c     YOSHIDA2011 YIELD FUNCTION
 c
 c       doi: https://doi.org/10.1016/j.ijplas.2013.01.010
 c
       subroutine ummdp_yield_yoshida2011 ( s,se,dseds,d2seds2,nreq,
      1                                     pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -74,10 +76,12 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     HU2005 & YOSHIDA2011 STYLE POLYNOMIAL TYPE YIELD FUNCTION
 c
       subroutine ummdp_yield_hy_polytype ( s,se,dseds,d2seds2,nreq,nd0,
      1                                     a,ipow,maxa,nterms )
+c
 c-----------------------------------------------------------------------
       implicit none
 c

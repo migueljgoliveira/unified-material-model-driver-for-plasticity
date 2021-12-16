@@ -1,10 +1,12 @@
 ************************************************************************
-c     YLD89 YIELD FUNCTION AND DERIVATIVES
+c
+c     YLD89 YIELD FUNCTION
 c
 c       doi: 
 c
       subroutine ummdp_yield_yld89 ( s,se,dseds,d2seds2,nreq,pryld,
      1                               ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -69,10 +71,12 @@ c
 c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
 c     BRANCH OF YLD89
 c
       subroutine ummdp_yield_yld89_branch ( s,se,dseds,d2seds2,nreq,
      1                                      pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c

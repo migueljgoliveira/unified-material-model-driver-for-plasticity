@@ -20,15 +20,15 @@
 *       . Linked kinematic hardening laws to the core of UMMDp         *
 *       . Added Chaboche kinematic hardening law as used by Abaqus     *
 *     	. Implemented uncoupled rupture criteria                       *
-*       . Modified code to use only explicit variables                 *
+*       . Modified code to explicit declaration                        *
 *                                                                      *
 ************************************************************************
 c
 c     UMMDP-VFM MAIN SUBROUTINE
 c
-      subroutine ummdp_vfm ( stress,statev,strain,dstrain,ndi,nshr,
+      subroutine ummdp_vfm ( stress1,statev1,strain,dstrain,ndi,nshr,
      1                       ntens,nstatev,props,nprops,noel,npt,kinc,
-     2                       nexit )
+     2                       stress2,statev2,nexit )
 c
 c-----------------------------------------------------------------------
       implicit none
@@ -41,11 +41,11 @@ c
 c
       integer,intent(in) :: ndi,nshr,ntens,nstatev,nprops,noel,npt,kinc                      
       real*8 ,intent(in) :: props(nprops)
-      real*8 ,intent(in) :: strain(ntens),dstrain(ntens)
-c
-      real*8 ,intent(inout) :: stress(ntens),statev(nstatev)
+      real*8 ,intent(in) :: stress1(ntens),statev1(nstatev),
+     1                      strain(ntens),dstrain(ntens)
 c
       integer,intent(out) :: nexit
+      real*8 ,intent(out) :: stress2(ntens),statev2(nstatev)
 c 
       integer mxpbs,mxprop,nrot
       parameter (mxpbs=10,mxprop=100)
@@ -55,16 +55,16 @@ c
       real*8 de33,p,dp
       real*8 ustatev(ntens),s2(ntens),dpe(ntens),pe(ntens),prop(mxprop)
       real*8 x1(mxpbs,ntens),x2(mxpbs,ntens),ddsdde(ntens,ntens)
+      character*100 text
 c-----------------------------------------------------------------------
 c
-cf2py intent(in,out) stress,statev
-cf2py intent(in) strain,dstrain
+cf2py intent(in) stress1,statev1,strain,dstrain
 cf2py intent(in) ndi,nshr,ntens,nstatev
 cf2py intent(in) props,nprops
 cf2py intent(in) noel,npt,kspt,kinc
-cf2py intent(out) nexit
-cf2py depend(ntens) stress,strain,dstrain
-cf2py depend(nstatev) statev
+cf2py intent(out) stress2,statev2,nexit
+cf2py depend(ntens) stress1,stress2,strain,dstrain
+cf2py depend(nstatev) statev1,statev2
 cf2py depend(nprops) props
 c
 c-----------------------------------------------------------------------
@@ -75,7 +75,7 @@ c                                                   ---- open debug file
       else
         open(6,file='ummdp_vfm.log',access='APPEND',status='OLD')
       end if
-c
+c 
       ne = noel
       ip = npt
       lay = 1
@@ -92,7 +92,7 @@ c                                       ---- print detailed information
 c                                             ---- print input arguments
       if ( nvbs >= 4 ) then
         ddsdde = 0.0d0
-        call ummdp_print_inout ( 0,stress,dstrain,ddsdde,ntens,statev,
+        call ummdp_print_inout ( 0,stress1,dstrain,ddsdde,ntens,statev1,
      1                           nstatev )
       end if
 c                                           ---- set material properties
@@ -112,38 +112,38 @@ c                                                     ---- check nstatev
       call ummdp_check_nisv ( nstatev,ntens,npbs )
 c                             ---- copy current internal state variables
       call ummdp_isvprof ( isvrsvd,isvsclr )
-      call ummdp_isv2pex ( isvrsvd,isvsclr,statev,nstatev,p,pe,x1,ntens,
-     1                     mxpbs,npbs )
+      call ummdp_isv2pex ( isvrsvd,isvsclr,statev1,nstatev,p,pe,x1,
+     1                     ntens,mxpbs,npbs )
 c
 c                             ---- update stress and set tangent modulus
       mjac = 0
-      call ummdp_plasticity ( stress,s2,dstrain,p,dp,dpe,de33,x1,x2,
+      call ummdp_plasticity ( stress1,s2,dstrain,p,dp,dpe,de33,x1,x2,
      1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
      2                        prop,nprop,propdim )
 c                                                     ---- update stress
       do i = 1,ntens
-        stress(i) = s2(i)
+        stress2(i) = s2(i)
       end do
 c                                  ---- update equivalent plastic strain
-      statev(isvrsvd+1) = p + dp
+      statev2(isvrsvd+1) = p + dp
 c                                  ---- update plastic strain components
       do i = 1,ntens
         is = isvrsvd + isvsclr + i
-        statev(is) = statev(is) + dpe(i)
+        statev2(is) = statev1(is) + dpe(i)
       end do
 c                                     ---- update back stress components
       if ( npbs /= 0 ) then
         do n = 1,npbs
           do i = 1,ntens
             is = isvrsvd + isvsclr + ntens*n + i
-            statev(is) = x2(n,i)
+            statev2(is) = x2(n,i)
           end do
         end do
       end if
 c                                            ---- print output arguments
       if ( nvbs >= 4 ) then
-        call ummdp_print_inout ( 1,stress,dstrain,ddsdde,ntens,statev,
-     1                           nstatev )
+        call ummdp_print_inout ( 1,stress2,dstrain,ddsdde,ntens,
+     1                           statev2,nstatev )
       end if
 c                                                  ---- close debug file
       close(6)
@@ -191,12 +191,20 @@ c
       integer,intent(in) :: nexit
 c
       integer ne,ip,lay,nexito
+      character*50 fmt1,fmt2,tmp
 c-----------------------------------------------------------------------
 c
-      write (6,*) 'error code :',nexit
-      write (6,*) 'element no.           :',ne
-      write (6,*) 'integration point no. :',ip
-      write (6,*) 'layer no.             :',lay           
+      fmt1 = '(/12xA,A)'
+      fmt2 =  '(12xA,A)'
+c
+      write (tmp,'(I)') nexit
+      write (6,fmt1) '            Error :',adjustl(tmp)
+      write (tmp,'(I)') ne
+      write (6,fmt2) '          Element :',adjustl(tmp)
+      write (tmp,'(I)') ip
+      write (6,fmt2) 'Integration Point :',adjustl(tmp)
+      write (tmp,'(I)') lay
+      write (6,fmt2) '            Layer :',adjustl(tmp)
 c
       nexito = -1
 c

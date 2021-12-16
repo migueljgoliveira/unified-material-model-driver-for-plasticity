@@ -1,5 +1,6 @@
 ************************************************************************
-c     CPB2006 YIELD FUNCTION AND DERIVATIVES
+c
+c     CPB2006 YIELD FUNCTION
 c
 c       doi: 
 c
@@ -8,6 +9,7 @@ c     Plane stress condition is NOT implemented in this code.
 c
       subroutine ummdp_yield_cpb2006 ( s,se,dseds,d2seds2,nreq,pryld,
      1                                 ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c

@@ -29,9 +29,11 @@ c     ummdp_print_inout
 c       print informations for debug (input/output)
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     PRINT UMMDP SEPARATOR
 c
       subroutine ummdp_print_ummdp ( )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -47,9 +49,11 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     PRINT ELASTICITY PARAMETERS
 c
       subroutine ummdp_print_elastic ( prela,ndela )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -57,22 +61,13 @@ c
       real*8 prela(ndela)
 c
       integer ntela,i
-      character*50 fmtid,fmtpr
+      character*50 fmtpr
 c-----------------------------------------------------------------------
 c
-      fmtid = '(16xA,I1)'
-      fmtpr = '(16xA10,I1,A3,E20.12)'
-c
-      write (6,'(/12xA)') '> Elasticity'
-c
       ntela = nint(prela(1))
-      select case ( ntela )
-      case ( 0 )
-        write (6,fmtid) '. Young Modulus & Poisson Ratio | ',ntela
-      case ( 1 )
-        write (6,fmtid) '. Bulk Modulus & Modulus of Rigidity | ',ntela
-      end select
+      write (6,'(/12xA,i1)') '> Elasticity | ',ntela
 c
+      fmtpr = '(16xA10,I1,A3,E20.12)'
       do i = 1,ndela-1
         write (6,fmtpr) '. prela(1+',i,') =',prela(i+1)
       end do
@@ -83,9 +78,11 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     PRINT YIELD FUNCTION PARAMETERS
 c
       subroutine ummdp_print_yield ( pryld,ndyld )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -93,90 +90,20 @@ c
       real*8 pryld(ndyld)
 c
       integer i,j
-      integer ntyld,n0,n
-      character*50 fmtid1,fmtid2,fmtpr
+      integer ntyld
+      character*50 fmtid,fmtpr
 c-----------------------------------------------------------------------
 c
-      fmtid1 = '(16xA,I1)'
-      fmtid2 = '(16xA,I2)'
-      fmtpr = '(16xA10,I1,A3,E20.12)'
-c
-      write (6,'(/12XA)') '> Yield Function'
+      fmtid = '(/12XA,I1)'
 c
       ntyld = pryld(1)
-      select case ( ntyld )
-      case ( 0 )
-        write (6,fmtid1) '. von Mises | ',ntyld
-      case ( 1 )
-        write (6,fmtid1) '. Hill 1948 | ',ntyld
-      case ( 2 )
-        write (6,fmtid1) '. Yld2004-18p | ',ntyld
-      case ( 3 )
-        write (6,fmtid1) '. CPB 2006 | ',ntyld
-      case ( 4 )
-        write (6,fmtid1) '. Karafillis-Boyce 1993 | ',ntyld
-      case ( 5 )
-        write (6,fmtid1) '. Hu 2005 | ',ntyld
-      case ( 6 )
-        write (6,fmtid1) '. Yoshida 2011 | ',ntyld
-c
-      case ( -1 )
-        write (6,fmtid2) '. Gotoh | ',ntyld
-      case ( -2 )
-        write (6,fmtid2) '. Yld2000-2d | ',ntyld
-      case ( -3 )
-        write (6,fmtid2) '. Vegter | ',ntyld
-      case ( -4 )
-        write (6,fmtid2) '. BBC 2005 | ',ntyld
-      case ( -5 )
-        write (6,fmtid2) '. Yld89 | ',ntyld
-      case ( -6 )
-        write (6,fmtid2) '. BBC 2008 | ',ntyld
-      case ( -7 )
-        write (6,fmtid2) '. Hill 1990 | ',ntyld
-      end select
-c
-      select case ( ntyld )
-      case ( -3 )                                               ! Vegter
-        write (6,*) 'nf=',nint(pryld(2))
-        write (6,*) 'f_bi0=',pryld(3)
-        write (6,*) 'r_bi0=',pryld(4)
-        do i = 0,nint(pryld(2))
-          write (6,*) 'test angle=',90.0d0*float(i)/pryld(2)
-          write (6,*) 'phi_un(',i,')=',pryld(4+i*4+1)
-          write (6,*) 'phi_sh(',i,')=',pryld(4+i*4+2)
-          write (6,*) 'phi_ps(',i,')=',pryld(4+i*4+3)
-          write (6,*) 'omg(   ',i,')=',pryld(4+i*4+4)
-        end do
-c       do i = 1,7
-c         write (6,*) 'phi_un(',i-1,')=',pryld(1+i   )
-c         write (6,*) 'phi_sh(',i-1,')=',pryld(1+i+ 7)
-c         write (6,*) 'phi_ps(',i-1,')=',pryld(1+i+14)
-c         write (6,*) 'omg   (',i-1,')=',pryld(1+i+23)
-c       end do
-c       write (6,*)   'f_bi0=',pryld(1+22)
-c       write (6,*)   'r_bi0=',pryld(1+23)
-c       write (6,*)   'nf   =',nint(pryld(1+31))
-      case ( -6 )                                             ! BBC 2008
-        write (6,*) 's      =',nint(pryld(1+1))
-        write (6,*) 'k      =',nint(pryld(1+2))
-        do i = 1,nint(pryld(1+1))
-          write (6,*) 'i=',i
-          n = 2 + (i-1)*8
-          write (6,*) 'l_1=',pryld(n+1)
-          write (6,*) 'l_2=',pryld(n+2)
-          write (6,*) 'm_1=',pryld(n+3)
-          write (6,*) 'm_2=',pryld(n+4)
-          write (6,*) 'm_3=',pryld(n+5)
-          write (6,*) 'n_1=',pryld(n+6)
-          write (6,*) 'n_2=',pryld(n+7)
-          write (6,*) 'n_3=',pryld(n+8)
-        end do
-      case default
-        do i = 1,ndyld-1
-          write (6,fmtpr) '. pryld(1+',i,') =',pryld(i+1)
-        end do
-      end select
+      if ( ntyld < 0 ) fmtid = '(/12XA,I2)'
+      write (6,fmtid) '> Yield Function | ',ntyld
+C
+      fmtpr = '(16xA10,I1,A3,E20.12)'
+      do i = 1,ndyld-1
+        write (6,fmtpr) '. pryld(1+',i,') =',pryld(i+1)
+      end do
 c
       return
       end subroutine ummdp_print_yield
@@ -184,9 +111,11 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     PRINT ISOTROPIC HARDENING LAW PARAMETERS
 c
       subroutine ummdp_print_isotropic ( prihd,ndihd )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -194,32 +123,14 @@ c
       real*8 prihd(ndihd)
 c
       integer ntihd,i
-      character*50 fmtid,fmtpr
+      character*50 fmtpr
 c-----------------------------------------------------------------------
 c
-      fmtid = '(16xA,I1)'
-      fmtpr = '(16xA10,I1,A3,E20.12)'
-c
-      write (6,'(/12xA)') '> Isotropic Hardening Law'
-c
       ntihd = nint(prihd(1))
-      select case ( ntihd )
-      case ( 0 )
-        write (6,fmtid) '. Perfect Plasticity | ',ntihd
-      case ( 1 )
-        write (6,fmtid) '. Linear | ',ntihd
-      case ( 2 )
-        write (6,fmtid) '. Swift | ',ntihd
-      case ( 3 )
-        write (6,fmtid) '. Ludwick | ',ntihd
-      case ( 4 )
-        write (6,fmtid) '. Voce | ',ntihd
-      case ( 5 )
-        write (6,fmtid) '. Voce & Linear | ',ntihd
-      case ( 6 )
-        write (6,fmtid) '. Voce & Swift | ',ntihd
-      end select
 c
+      write (6,'(/12xA,I1)') '> Isotropic Hardening Law | ',ntihd
+c
+      fmtpr = '(16xA10,I1,A3,E20.12)'
       do i = 1,ndihd-1
         write (6,fmtpr) '. prihd(1+',i,') =',prihd(i+1)
       end do
@@ -230,43 +141,27 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     PRINT KINEMATIC HARDENING LAW PARAMETERS
 c
-      subroutine ummdp_print_kinematic ( prkin,ndkin,npbs )
+      subroutine ummdp_print_kinematic ( prkin,ndkin )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
-      integer ndkin,npbs
+      integer ndkin
       real*8 prkin(ndkin)
 c
       integer i
-      integer ntkin,n0
-      character*50 fmtid,fmtpr
+      integer ntkin
+      character*50 fmtpr
 c-----------------------------------------------------------------------
 c
-      fmtid = '(16xA,I1)'
-      fmtpr = '(16xA10,I1,A3,E20.12)'
-c
-      write (6,'(/12xA)') '> Kinematic Hardening Law'
-c
       ntkin = nint(prkin(1))
-      select case ( ntkin )
-      case ( 0 )
-        write (6,fmtid) '. None | ',ntkin
-      case ( 1 )
-        write (6,fmtid) '. Prager | ',ntkin
-      case ( 2 )
-        write (6,fmtid) '. Ziegler | ',ntkin
-      case ( 3 )
-        write (6,fmtid) '. Armstrong-Frederick | ',ntkin
-      case ( 4 )
-        write (6,fmtid) '. Chaboche I | ',ntkin
-      case ( 5 )
-        write (6,fmtid) '. Chaboche II | ',ntkin
-      case ( 6 )
-        write (6,fmtid) '. Yoshida-Uemori | ',ntkin
-      end select
 c
+      write (6,'(/12xA,I1)') '> Kinematic Hardening Law | ',ntkin
+c
+      fmtpr = '(16xA10,I1,A3,E20.12)'
       do i = 1,ndkin-1
         write (6,fmtpr) '. prkin(1+',i,') =',prkin(i+1)
       end do
@@ -277,9 +172,11 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     PRINT UNCOUPLED RUPTURE CRITERION PARAMETERS
 c
       subroutine ummdp_print_rupture ( prrup,ndrup )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -287,32 +184,14 @@ c
       real*8 prrup(ndrup)
 c
       integer ntrup,i
-      character*50 fmtid,fmtpr
+      character*50 fmtpr
 c-----------------------------------------------------------------------
 c
-      fmtid = '(16xA,I1)'
-      fmtpr = '(16xA10,I1,A3,E20.12)'
-c
-      write (6,'(/12xA)') '>> Uncoupled Rupture Criterion'
-c
       ntrup = nint(prrup(1))
-      select case ( ntrup )
-      case ( 0 )
-        write (6,fmtid) '. None | ',ntrup
-      case ( 1 )
-        write (6,fmtid) '. Equivalent Plastic Strain | ',ntrup
-      case ( 2 )
-        write (6,fmtid) '. Cockroft and Latham | ',ntrup
-      case ( 3 )
-        write (6,fmtid) '. Rice and Tracey | ',ntrup
-      case ( 4 )
-        write (6,fmtid) '. Ayada | ',ntrup
-      case ( 5 )
-        write (6,fmtid) '. Brozzo | ',ntrup
-      case ( 6 )
-        write (6,fmtid) '. Forming Limit Diagram | ',ntrup
-      end select
 c
+      write (6,'(/12xA,I1)') '> Uncoupled Rupture Criterion | ',ntrup
+c
+      fmtpr = '(16xA10,I1,A3,E20.12)'
       do i = 1,ndrup-1
         write (6,fmtpr) '. prrup(1+',i,') =',prrup(i+1)
       end do
@@ -323,9 +202,11 @@ c
 c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c     PRINT INFORMATIONS FOR DEBUG (INFO)
 c
       subroutine ummdp_print_info ( inc,nnrm,nshr )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -336,6 +217,7 @@ c
 			integer ne,ip,lay,nttl,nerr
       character*50 fmt1,fmt2,fmt3,fmt4,ptype,tmp
 c-----------------------------------------------------------------------
+c
       fmt1 = '(/12xA,A)'
       fmt2 =  '(12xA,A)'
       fmt3 = '(/12xA,I1)'
@@ -394,9 +276,11 @@ c
 c
 c
 ************************************************************************
+c
 c     PRINT INFORMATIONS FOR DEBUG (INPUT/OUTPUT)
 c
       subroutine ummdp_print_inout ( io,s,de,d,nttl,stv,nstv )
+c
 c-----------------------------------------------------------------------
       implicit none
 c

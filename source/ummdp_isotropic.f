@@ -13,9 +13,11 @@ c      5 : Voce + Linear
 c      6 : Voce + Swift
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c     CALCULATE ISOTROPIC HARDENING LAW 
 c
-      subroutine ummdp_isotropic ( sy,dsydp,d2sydp2,nreq,p,prihd,ndihd )              
+c     ISOTROPIC HARDENING LAW
+c
+      subroutine ummdp_isotropic ( sy,dsydp,d2sydp2,nreq,p,prihd,ndihd )
+c
 c-----------------------------------------------------------------------
       implicit none
 c
@@ -126,7 +128,7 @@ c
 c
       case default
         write (6,*) 'hardening type error',ntihd
-        call ummdp_exit (9000)
+        call ummdp_exit ( 203 )
       end select
 c
       return
