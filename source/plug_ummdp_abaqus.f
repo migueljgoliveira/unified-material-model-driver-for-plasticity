@@ -62,15 +62,18 @@ c
 c                                        ---- set debug and verbose mode
       nvbs0 = props(1)
       call ummdp_debugmode ( nvbs,nvbs0 )
+c
 c                                        ---- print detailed information
       if ( nvbs >= 1 ) then
         call ummdp_print_info  ( kinc,ndi,nshr )
       end if
+c
 c                                             ---- print input arguments
       if ( nvbs >= 4 ) then
         call ummdp_print_inout ( 0,stress,dstran,ddsdde,ntens,statev,
      1                           nstatv )
       end if
+c
 c                                           ---- set material properties
       do i = 2,nprops
         prop(i-1) = props(i)
@@ -84,24 +87,29 @@ c
         write (6,*) 'mxpbs=',mxpbs
         call ummdp_exit ( 301 )
       end if
+c
 c                                                      ---- check nstatv
       call ummdp_check_nisv ( nstatv,ntens,npbs )
+c
 c                             ---- copy current internal state variables
       call ummdp_isvprof ( isvrsvd,isvsclr )
       call ummdp_isv2pex ( isvrsvd,isvsclr,statev,nstatv,p,pe,x1,ntens,
      1                     mxpbs,npbs )
 c
-c                             ---- update stress and set tangent modulus
+c                                ---- compute stress and tangent modulus
       mjac = 1
       call ummdp_plasticity ( stress,s2,dstran,p,dp,dpe,de33,x1,x2,
      1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
      2                        prop,nprop,propdim )
+c
 c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
       end do
+c
 c                                  ---- update equivalent plastic strain
       statev(isvrsvd+1) = p + dp
+c
 c                                  ---- update plastic strain components
       call rotsig ( statev(isvrsvd+2),drot,ustatev,2,ndi,nshr )
 c
@@ -109,6 +117,7 @@ c
         is = isvrsvd + isvsclr + i
         statev(is) = ustatev(i) + dpe(i)
       end do
+c
 c                                     ---- update back stress components
       if ( npbs /= 0 ) then
         do n = 1,npbs
@@ -118,6 +127,7 @@ c                                     ---- update back stress components
           end do
         end do
       end if
+c
 c                                            ---- print output arguments
       if ( nvbs >= 4 ) then
         call ummdp_print_inout ( 1,stress,dstran,ddsdde,ntens,statev,

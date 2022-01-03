@@ -214,9 +214,11 @@ c
         nout = 1
       end if
 c
+c                                             ---- print ummdp separator
       if ( (nvbs >= 1) .or. (nout /= 0) ) then
         call ummdp_print_ummdp ( )
       end if
+c
 c                                          ---- copy material properties
       n = 0
       do i = 1,ndela
@@ -248,6 +250,7 @@ c
         call ummdp_print_kinematic ( prkin,ndkin,npbs )
         call ummdp_print_rupture   ( prrup,ndrup )
       end if
+c
 c                                                           ---- set [U]
       um = 0.0d0
       i1 = 1
@@ -262,6 +265,7 @@ c                                                           ---- set [U]
           end if
         end do
       end do
+c
 c                                                     ---- default value
       if ( npbs == 0 ) then
         do n = 1,mxpbs
@@ -299,6 +303,7 @@ c                                                  ---- print out arrays
           call ummdp_utility_print1 ( text,xt1,nttl,0 )
         end if
       end if
+c
 c                                                ---- elastic prediction
       if ( nvbs >= 5 ) then
         write(6,'(//8xA)') '>> Elastic Prediction'
@@ -415,8 +420,8 @@ c                                          ---- start of multistage loop
           end if
         end if
 c
-        knr = 0
 c                                      ---- start of Newton-Raphson loop
+        knr = 0
         if ( nvbs >= 3 ) then
           write (6,'(//8xA)') ' >> Newton-Raphson Loop'
         end if
@@ -432,7 +437,7 @@ c
         end if
 c
         pt = p + dp
-c                       ---- calculate equivalent stress and derivatives
+c                                 ---- equivalent stress and derivatives
         do i = 1,nttl
           eta(i) = s2(i) - xt2(i)
         end do
@@ -453,7 +458,8 @@ c
           text = '2nd Yield Function Derivative'
           call ummdp_utility_print2 ( text,d2seds2,nttl,nttl,4 )
         end if
-c                             ---- calculate flow stress and derivatives
+c
+c                                       ---- flow stress and derivatives
         call ummdp_isotropic ( sy,dsydp,d2sydp2,1,pt,prihd,ndihd )
 c
         if ( nvbs >= 5 ) then
@@ -612,7 +618,8 @@ c                              ---- ddp=(g1-{m}^T[C]{G})/(H+{m}^T[C]{W})
         call ummdp_utility_vvs ( bot0,dseds,vv,nttl )
         bot = dsydp + bot0
         ddp = top / bot
-c                                                         ---- update dp
+c
+c                        ---- update equivalent plastic strain increment
         dp = dp + ddp
         if ( nvbs >= 3 ) then
           write(6,'(//16xA)') '> Update'
@@ -628,7 +635,8 @@ c                                                         ---- update dp
           end if
           goto 400
         end if
-c                                                  ---- update s2 and x2
+c
+c                                     ---- update stress and back stress
         do i1 = 1,npbs+1
           vv = 0.0d0
           do j1 = 1,nttl
@@ -681,11 +689,11 @@ c
       end do
 c                                            ---- end of multistage loop
 c
-c
-c                                                 ---- plast.strain inc.
+c                                          ---- plastic strain increment
       do i = 1,nttl
         dpe(i) = dp * dseds(i)
       end do
+c
 c                                               ---- print out converged
       if ( nvbs >= 4 ) then
         write(6,'(//8xA)') '>> Convergence'
@@ -700,6 +708,7 @@ c                                               ---- print out converged
           call ummdp_utility_print1 ( text,xt2,nttl,0 )
         end if
       end if
+c
 c                                        ---- thickness strain increment
       if ( (nttl == 3) .or. (nttl == 5) ) then
         de33 = -dpe(1) - dpe(2)
@@ -711,6 +720,7 @@ c                                        ---- thickness strain increment
           call ummdp_utility_print3 ( text,de33,0 )
         end if
       end if
+c
 c
       if ( nvbs >= 1 ) then
         if ( nest /= 0 ) then
@@ -981,8 +991,7 @@ c                                     ---- plane stress or shell element
             end do
           end do
         end do
-c                         ---- elastic strain in thickness direction e_t
-c                                             ---- e_t=SUM(d33d(i)*e(i))
+c                             ---- elastic strain in thickness direction
         do i = 1,nttl
           if ( i <= nnrm ) then
             id = i
@@ -1058,10 +1067,12 @@ c-----------------------------------------------------------------------
 c
 c                                         ---- equivalent plastic strain
       p = stv(isvrsvd+1)
+c
 c                                         ---- plastic strain components
       do i = 1,nttl
         pe(i) = stv(isvrsvd + isvsclr + i)
       end do
+c
 c                                    ---- partial back stress components
       if ( npbs /= 0 ) then
         do nb = 1,npbs
