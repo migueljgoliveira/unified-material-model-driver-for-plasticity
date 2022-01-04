@@ -38,12 +38,12 @@ c
         goto 100
       end if
 c
-      ss = 0.0
+      ss = 0.0d0
       do i = 1,nttl
         ss = ss + cs(i)**2
       end do
-      if ( (ss <= 0.0) .and. (nreq == 0) ) then
-        se = 0.0
+      if ( (ss <= 0.0d0) .and. (nreq == 0) ) then
+        se = 0.0d0
         return
       end if
 c

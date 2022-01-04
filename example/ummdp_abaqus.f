@@ -46,7 +46,7 @@ c-----------------------------------------------------------------------
       common /ummdp3/nsdv
       common /ummdp4/propdim
 c
-      parameter (mxpbs=10,mxprop=100)
+      parameter (mxpbs=1,mxprop=100)
       real*8 s2(ntens),dpe(ntens),pe(ntens),ustatev(ntens),prop(mxprop)
       real*8 x1(mxpbs,ntens),x2(mxpbs,ntens)
 c-----------------------------------------------------------------------
@@ -62,15 +62,18 @@ c
 c                                        ---- set debug and verbose mode
       nvbs0 = props(1)
       call ummdp_debugmode ( nvbs,nvbs0 )
+c
 c                                        ---- print detailed information
       if ( nvbs >= 1 ) then
         call ummdp_print_info  ( kinc,ndi,nshr )
       end if
+c
 c                                             ---- print input arguments
       if ( nvbs >= 4 ) then
         call ummdp_print_inout ( 0,stress,dstran,ddsdde,ntens,statev,
      1                           nstatv )
       end if
+c
 c                                           ---- set material properties
       do i = 2,nprops
         prop(i-1) = props(i)
@@ -78,30 +81,39 @@ c                                           ---- set material properties
 c
       call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
      1                      npbs,ndrup )
+c
       if ( npbs > mxpbs ) then
+        ! write (6,'(/12xA)' ) '            Error : 301'
+        ! write (6,'(/12xA)') 'npbs = ',npbs
+        ! write (6,*) 'mxpbs = ',mxpbs
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
         write (6,*) 'mxpbs=',mxpbs
         call ummdp_exit ( 301 )
       end if
+c
 c                                                      ---- check nstatv
       call ummdp_check_nisv ( nstatv,ntens,npbs )
+c
 c                             ---- copy current internal state variables
       call ummdp_isvprof ( isvrsvd,isvsclr )
       call ummdp_isv2pex ( isvrsvd,isvsclr,statev,nstatv,p,pe,x1,ntens,
      1                     mxpbs,npbs )
 c
-c                             ---- update stress and set tangent modulus
+c                                ---- compute stress and tangent modulus
       mjac = 1
       call ummdp_plasticity ( stress,s2,dstran,p,dp,dpe,de33,x1,x2,
      1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
      2                        prop,nprop,propdim )
+c
 c                                                     ---- update stress
       do i = 1,ntens
         stress(i) = s2(i)
       end do
+c
 c                                  ---- update equivalent plastic strain
       statev(isvrsvd+1) = p + dp
+c
 c                                  ---- update plastic strain components
       call rotsig ( statev(isvrsvd+2),drot,ustatev,2,ndi,nshr )
 c
@@ -109,6 +121,7 @@ c
         is = isvrsvd + isvsclr + i
         statev(is) = ustatev(i) + dpe(i)
       end do
+c
 c                                     ---- update back stress components
       if ( npbs /= 0 ) then
         do n = 1,npbs
@@ -118,6 +131,7 @@ c                                     ---- update back stress components
           end do
         end do
       end if
+c
 c                                            ---- print output arguments
       if ( nvbs >= 4 ) then
         call ummdp_print_inout ( 1,stress,dstran,ddsdde,ntens,statev,
@@ -363,20 +377,17 @@ c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
       common /ummdp1/ne,ip,lay
-      character*50 fmt1,fmt2,tmp
+      character*50 tmp
 c-----------------------------------------------------------------------
 c
-      fmt1 = '(/12xA,A)'
-      fmt2 =  '(12xA,A)'
+      write(6,'(4/8xA)') '!!!!!!!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!!!!!'
 c
       write (tmp,'(I)') nexit
-      write (6,fmt1) '            Error :',adjustl(tmp)
-      write (tmp,'(I)') ne
-      write (6,fmt2) '          Element :',adjustl(tmp)
-      write (tmp,'(I)') ip
-      write (6,fmt2) 'Integration Point :',adjustl(tmp)
-      write (tmp,'(I)') lay
-      write (6,fmt2) '            Layer :',adjustl(tmp)
+      write (6,'(/12xA,A)') '             Code : ',adjustl(tmp)
+c
+      call ummdp_print_element ( )
+c
+      write(6,'(/8xA)') '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 c
       call xit
 c
@@ -600,9 +611,11 @@ c
         nout = 1
       end if
 c
+c                                             ---- print ummdp separator
       if ( (nvbs >= 1) .or. (nout /= 0) ) then
         call ummdp_print_ummdp ( )
       end if
+c
 c                                          ---- copy material properties
       n = 0
       do i = 1,ndela
@@ -634,6 +647,7 @@ c
         call ummdp_print_kinematic ( prkin,ndkin,npbs )
         call ummdp_print_rupture   ( prrup,ndrup )
       end if
+c
 c                                                           ---- set [U]
       um = 0.0d0
       i1 = 1
@@ -648,6 +662,7 @@ c                                                           ---- set [U]
           end if
         end do
       end do
+c
 c                                                     ---- default value
       if ( npbs == 0 ) then
         do n = 1,mxpbs
@@ -685,6 +700,7 @@ c                                                  ---- print out arrays
           call ummdp_utility_print1 ( text,xt1,nttl,0 )
         end if
       end if
+c
 c                                                ---- elastic prediction
       if ( nvbs >= 5 ) then
         write(6,'(//8xA)') '>> Elastic Prediction'
@@ -801,8 +817,8 @@ c                                          ---- start of multistage loop
           end if
         end if
 c
-        knr = 0
 c                                      ---- start of Newton-Raphson loop
+        knr = 0
         if ( nvbs >= 3 ) then
           write (6,'(//8xA)') ' >> Newton-Raphson Loop'
         end if
@@ -818,7 +834,7 @@ c
         end if
 c
         pt = p + dp
-c                       ---- calculate equivalent stress and derivatives
+c                                 ---- equivalent stress and derivatives
         do i = 1,nttl
           eta(i) = s2(i) - xt2(i)
         end do
@@ -839,7 +855,8 @@ c
           text = '2nd Yield Function Derivative'
           call ummdp_utility_print2 ( text,d2seds2,nttl,nttl,4 )
         end if
-c                             ---- calculate flow stress and derivatives
+c
+c                                       ---- flow stress and derivatives
         call ummdp_isotropic ( sy,dsydp,d2sydp2,1,pt,prihd,ndihd )
 c
         if ( nvbs >= 5 ) then
@@ -998,7 +1015,8 @@ c                              ---- ddp=(g1-{m}^T[C]{G})/(H+{m}^T[C]{W})
         call ummdp_utility_vvs ( bot0,dseds,vv,nttl )
         bot = dsydp + bot0
         ddp = top / bot
-c                                                         ---- update dp
+c
+c                        ---- update equivalent plastic strain increment
         dp = dp + ddp
         if ( nvbs >= 3 ) then
           write(6,'(//16xA)') '> Update'
@@ -1014,7 +1032,8 @@ c                                                         ---- update dp
           end if
           goto 400
         end if
-c                                                  ---- update s2 and x2
+c
+c                                     ---- update stress and back stress
         do i1 = 1,npbs+1
           vv = 0.0d0
           do j1 = 1,nttl
@@ -1067,11 +1086,11 @@ c
       end do
 c                                            ---- end of multistage loop
 c
-c
-c                                                 ---- plast.strain inc.
+c                                          ---- plastic strain increment
       do i = 1,nttl
         dpe(i) = dp * dseds(i)
       end do
+c
 c                                               ---- print out converged
       if ( nvbs >= 4 ) then
         write(6,'(//8xA)') '>> Convergence'
@@ -1086,6 +1105,7 @@ c                                               ---- print out converged
           call ummdp_utility_print1 ( text,xt2,nttl,0 )
         end if
       end if
+c
 c                                        ---- thickness strain increment
       if ( (nttl == 3) .or. (nttl == 5) ) then
         de33 = -dpe(1) - dpe(2)
@@ -1097,6 +1117,7 @@ c                                        ---- thickness strain increment
           call ummdp_utility_print3 ( text,de33,0 )
         end if
       end if
+c
 c
       if ( nvbs >= 1 ) then
         if ( nest /= 0 ) then
@@ -1281,11 +1302,13 @@ c-----------------------------------------------------------------------
 c
       ntela = nint(prela(1))
       select case ( ntela )
-      case ( 0 )    !  isotropic linear elasticity (Hooke)
+c
+      case ( 0 ) ! Young Modulus and Poisson Ratio
         eyoung = prela(2)                           ! Young modulus
         epoas = prela(3)                            ! Poisson ratio
         erigid = eyoung / 2.0d0 / (1.0d0+epoas)     ! Rigidity
-      case ( 1 )
+c
+      case ( 1 ) ! Bulk Modulus and Modulus of Rigidity
         ek = prela(2)                               ! Bulk modulus
         eg = prela(3)                               ! Rigidity
         eyoung = 9.0d0*ek*eg / (3.0d0*ek+eg)        ! Young modulus
@@ -1367,8 +1390,7 @@ c                                     ---- plane stress or shell element
             end do
           end do
         end do
-c                         ---- elastic strain in thickness direction e_t
-c                                             ---- e_t=SUM(d33d(i)*e(i))
+c                             ---- elastic strain in thickness direction
         do i = 1,nttl
           if ( i <= nnrm ) then
             id = i
@@ -1444,10 +1466,12 @@ c-----------------------------------------------------------------------
 c
 c                                         ---- equivalent plastic strain
       p = stv(isvrsvd+1)
+c
 c                                         ---- plastic strain components
       do i = 1,nttl
         pe(i) = stv(isvrsvd + isvsclr + i)
       end do
+c
 c                                    ---- partial back stress components
       if ( npbs /= 0 ) then
         do nb = 1,npbs
@@ -2562,13 +2586,12 @@ c
 			integer inc,nnrm,nshr
 c
 			integer ne,ip,lay,nttl,nerr
-      character*50 fmt1,fmt2,fmt3,fmt4,ptype,tmp
+      character*50 fmt1,fmt2,fmt3,ptype,tmp
 c-----------------------------------------------------------------------
 c
       fmt1 = '(/12xA,A)'
-      fmt2 =  '(12xA,A)'
-      fmt3 = '(/12xA,I1)'
-      fmt4 =  '(12xA,I1)'
+      fmt2 = '(/12xA,I1)'
+      fmt3 =  '(12xA,I1)'
 c
       nttl = nnrm + nshr
 c
@@ -2577,17 +2600,12 @@ c
       write (tmp,'(I)') inc
       write (6,fmt1) '        Increment : ',adjustl(tmp)
 c
-      write (tmp,'(I)') ne
-      write (6,fmt1) '          Element : ',adjustl(tmp)
-      write (tmp,'(I)') ip
-      write (6,fmt2) 'Integration Point : ',adjustl(tmp)
-      write (tmp,'(I)') lay
-      write (6,fmt2) '            Layer : ',adjustl(tmp)
-! c
-      write (6,fmt3) ' Total Components : ',nttl
-      write (6,fmt4) 'Normal Components : ',nnrm
-      write (6,fmt4) ' Shear Components : ',nshr
-! c
+      call ummdp_print_element ( )
+c
+      write (6,fmt2) ' Total Components : ',nttl
+      write (6,fmt3) 'Normal Components : ',nnrm
+      write (6,fmt3) ' Shear Components : ',nshr
+c
       nerr = 0
       if ( nnrm == 3 ) then
         if ( nshr == 3 ) then
@@ -2657,6 +2675,37 @@ c
 c
       return
       end subroutine ummdp_print_inout
+c
+c
+c
+************************************************************************
+c
+c     PRINT ELEMENT, INTEGRATION POINT AND LAYER INFO
+c
+      subroutine ummdp_print_element ( )
+c
+c-----------------------------------------------------------------------
+      implicit none
+c
+      common /ummdp1/ne,ip,lay
+      integer ne,ip,lay
+      character*100 fmt1,fmt2,tmp
+c-----------------------------------------------------------------------
+c
+      fmt1 = '(/12xA,A)'
+      fmt2 =  '(12xA,A)'
+c
+      write (tmp,'(I)') ne
+      write (6,fmt1) '          Element : ',adjustl(tmp)
+c
+      write (tmp,'(I)') ip
+      write (6,fmt2) 'Integration Point : ',adjustl(tmp)
+c
+      write (tmp,'(I)') lay
+      write (6,fmt2) '            Layer : ',adjustl(tmp)
+c
+      return
+      end subroutine ummdp_print_element
 c
 c
 c************************************************************************
@@ -3799,26 +3848,6 @@ c
 *     YIELD FUNCTIONS
 *
 ************************************************************************
-c
-c      0 : von Mises (1913)
-c
-c     3D
-c       1 : Hill 1948
-c       2 : Yld2004-18p
-c       3 : CPB 2006
-c       4 : Karafillis-Boyce 1993
-c       5 : Hu 2005
-c       6 : Yoshida 2011
-c
-c     2D
-c      -1 : Gotoh Biquadratic
-c      -2 : Yld2000-2d
-c      -3 : Vegter
-c      -4 : BBC 2005
-c      -5 : Yld89
-c      -6 : BBC 2008
-c      -7 : Hill 1990
-c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
 c     YIELD FUNCTION
@@ -3854,12 +3883,12 @@ c
         goto 100
       end if
 c
-      ss = 0.0
+      ss = 0.0d0
       do i = 1,nttl
         ss = ss + cs(i)**2
       end do
-      if ( (ss <= 0.0) .and. (nreq == 0) ) then
-        se = 0.0
+      if ( (ss <= 0.0d0) .and. (nreq == 0) ) then
+        se = 0.0d0
         return
       end if
 c

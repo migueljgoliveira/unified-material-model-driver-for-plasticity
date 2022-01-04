@@ -23,10 +23,13 @@ c     ummdp_print_rupture ( prrup,ndrup )
 c       print uncoupled rupture criterion parameters
 c
 c     ummdp_print_info
-c       print informations for debug (info)
+c       print info for debug (info)
 c
 c     ummdp_print_inout
-c       print informations for debug (input/output)
+c       print info for debug (input/output)
+c
+c     ummdp_print_element ( )
+c       print element info
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
@@ -203,7 +206,7 @@ c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-c     PRINT INFORMATIONS FOR DEBUG (INFO)
+c     PRINT INFO FOR DEBUG (INFO)
 c
       subroutine ummdp_print_info ( inc,nnrm,nshr )
 c
@@ -215,13 +218,12 @@ c
 			integer inc,nnrm,nshr
 c
 			integer ne,ip,lay,nttl,nerr
-      character*50 fmt1,fmt2,fmt3,fmt4,ptype,tmp
+      character*50 fmt1,fmt2,fmt3,ptype,tmp
 c-----------------------------------------------------------------------
 c
       fmt1 = '(/12xA,A)'
-      fmt2 =  '(12xA,A)'
-      fmt3 = '(/12xA,I1)'
-      fmt4 =  '(12xA,I1)'
+      fmt2 = '(/12xA,I1)'
+      fmt3 =  '(12xA,I1)'
 c
       nttl = nnrm + nshr
 c
@@ -230,17 +232,12 @@ c
       write (tmp,'(I)') inc
       write (6,fmt1) '        Increment : ',adjustl(tmp)
 c
-      write (tmp,'(I)') ne
-      write (6,fmt1) '          Element : ',adjustl(tmp)
-      write (tmp,'(I)') ip
-      write (6,fmt2) 'Integration Point : ',adjustl(tmp)
-      write (tmp,'(I)') lay
-      write (6,fmt2) '            Layer : ',adjustl(tmp)
-! c
-      write (6,fmt3) ' Total Components : ',nttl
-      write (6,fmt4) 'Normal Components : ',nnrm
-      write (6,fmt4) ' Shear Components : ',nshr
-! c
+      call ummdp_print_element ( )
+c
+      write (6,fmt2) ' Total Components : ',nttl
+      write (6,fmt3) 'Normal Components : ',nnrm
+      write (6,fmt3) ' Shear Components : ',nshr
+c
       nerr = 0
       if ( nnrm == 3 ) then
         if ( nshr == 3 ) then
@@ -277,7 +274,7 @@ c
 c
 ************************************************************************
 c
-c     PRINT INFORMATIONS FOR DEBUG (INPUT/OUTPUT)
+c     PRINT INFO FOR DEBUG (INPUT/OUTPUT)
 c
       subroutine ummdp_print_inout ( io,s,de,d,nttl,stv,nstv )
 c
@@ -310,6 +307,37 @@ c
 c
       return
       end subroutine ummdp_print_inout
+c
+c
+c
+************************************************************************
+c
+c     PRINT ELEMENT INFO
+c
+      subroutine ummdp_print_element ( )
+c
+c-----------------------------------------------------------------------
+      implicit none
+c
+      common /ummdp1/ne,ip,lay
+      integer ne,ip,lay
+      character*100 fmt1,fmt2,tmp
+c-----------------------------------------------------------------------
+c
+      fmt1 = '(/12xA,A)'
+      fmt2 =  '(12xA,A)'
+c
+      write (tmp,'(I)') ne
+      write (6,fmt1) '          Element : ',adjustl(tmp)
+c
+      write (tmp,'(I)') ip
+      write (6,fmt2) 'Integration Point : ',adjustl(tmp)
+c
+      write (tmp,'(I)') lay
+      write (6,fmt2) '            Layer : ',adjustl(tmp)
+c
+      return
+      end subroutine ummdp_print_element
 c
 c
 c

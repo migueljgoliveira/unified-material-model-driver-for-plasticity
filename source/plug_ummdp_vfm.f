@@ -194,17 +194,15 @@ c
       character*50 fmt1,fmt2,tmp
 c-----------------------------------------------------------------------
 c
-      fmt1 = '(/12xA,A)'
-      fmt2 =  '(12xA,A)'
+      write(6,'(4/8xA)') '!!!!!!!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!!!!!'
 c
       write (tmp,'(I)') nexit
-      write (6,fmt1) '            Error :',adjustl(tmp)
-      write (tmp,'(I)') ne
-      write (6,fmt2) '          Element :',adjustl(tmp)
-      write (tmp,'(I)') ip
-      write (6,fmt2) 'Integration Point :',adjustl(tmp)
-      write (tmp,'(I)') lay
-      write (6,fmt2) '            Layer :',adjustl(tmp)
+      write (6,'(/12xA,A)') '             Code : ',adjustl(tmp)
+c
+      call ummdp_print_element ( )
+c
+      write(6, '(/8xA)') '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+c
 c
       nexito = -1
 c

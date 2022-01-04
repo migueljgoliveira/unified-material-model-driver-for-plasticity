@@ -46,7 +46,7 @@ c-----------------------------------------------------------------------
       common /ummdp3/nsdv
       common /ummdp4/propdim
 c
-      parameter (mxpbs=10,mxprop=100)
+      parameter (mxpbs=1,mxprop=100)
       real*8 s2(ntens),dpe(ntens),pe(ntens),ustatev(ntens),prop(mxprop)
       real*8 x1(mxpbs,ntens),x2(mxpbs,ntens)
 c-----------------------------------------------------------------------
@@ -81,6 +81,7 @@ c                                           ---- set material properties
 c
       call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
      1                      npbs,ndrup )
+c
       if ( npbs > mxpbs ) then
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
@@ -353,6 +354,7 @@ c
 c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
+c-----------------------------------------------------------------------
 c
       isvrsvd = 0             ! no reserved variables
 c
@@ -373,20 +375,17 @@ c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
 c
       common /ummdp1/ne,ip,lay
-      character*50 fmt1,fmt2,tmp
+      character*50 tmp
 c-----------------------------------------------------------------------
 c
-      fmt1 = '(/12xA,A)'
-      fmt2 =  '(12xA,A)'
+      write(6,'(4/8xA)') '!!!!!!!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!!!!!'
 c
       write (tmp,'(I)') nexit
-      write (6,fmt1) '            Error :',adjustl(tmp)
-      write (tmp,'(I)') ne
-      write (6,fmt2) '          Element :',adjustl(tmp)
-      write (tmp,'(I)') ip
-      write (6,fmt2) 'Integration Point :',adjustl(tmp)
-      write (tmp,'(I)') lay
-      write (6,fmt2) '            Layer :',adjustl(tmp)
+      write (6,'(/12xA,A)') '             Code : ',adjustl(tmp)
+c
+      call ummdp_print_element ( )
+c
+      write(6,'(/8xA)') '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 c
       call xit
 c
