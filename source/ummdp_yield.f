@@ -3,26 +3,6 @@
 *     YIELD FUNCTIONS
 *
 ************************************************************************
-c
-c      0 : von Mises (1913)
-c
-c     3D
-c       1 : Hill 1948
-c       2 : Yld2004-18p
-c       3 : CPB 2006
-c       4 : Karafillis-Boyce 1993
-c       5 : Hu 2005
-c       6 : Yoshida 2011
-c
-c     2D
-c      -1 : Gotoh Biquadratic
-c      -2 : Yld2000-2d
-c      -3 : Vegter
-c      -4 : BBC 2005
-c      -5 : Yld89
-c      -6 : BBC 2008
-c      -7 : Hill 1990
-c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
 c     YIELD FUNCTION

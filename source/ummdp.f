@@ -905,11 +905,13 @@ c-----------------------------------------------------------------------
 c
       ntela = nint(prela(1))
       select case ( ntela )
-      case ( 0 )    !  isotropic linear elasticity (Hooke)
+c
+      case ( 0 ) ! Young Modulus and Poisson Ratio
         eyoung = prela(2)                           ! Young modulus
         epoas = prela(3)                            ! Poisson ratio
         erigid = eyoung / 2.0d0 / (1.0d0+epoas)     ! Rigidity
-      case ( 1 )
+c
+      case ( 1 ) ! Bulk Modulus and Modulus of Rigidity
         ek = prela(2)                               ! Bulk modulus
         eg = prela(3)                               ! Rigidity
         eyoung = 9.0d0*ek*eg / (3.0d0*ek+eg)        ! Young modulus

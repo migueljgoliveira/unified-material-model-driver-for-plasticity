@@ -1,0 +1,1116 @@
+\documentclass[11pt,a4paper,twoside,final,onecolumn,titlepage]{article}
+
+% PACKAGES
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage[T1]{fontenc}
+\usepackage{lipsum}
+\usepackage{geometry}
+\usepackage[useregional]{datetime2}
+\hypersetup{colorlinks,citecolor=black,filecolor=black,linkcolor=black,urlcolor=black}
+\usepackage{tikz}
+\usetikzlibrary{shapes}
+\raggedbottom
+% -------------------------------------------------------
+% Preâmbulo do documento - Margens e Mancha Gráfica
+% -------------------------------------------------------
+\geometry{a4paper,
+ 		  total  = {160mm,247mm},
+ 	      left   = 25mm,
+		  right  = 25mm,
+ 		  top    = 25mm,
+		  bottom = 25mm
+ }
+% \setlength{\textwidth}{150mm}     % Largura da Mancha Gráfica
+% \setlength{\textheight}{225mm}    % Altura da Mancha Gráfica
+% \setlength{\topmargin}{0mm}       % Margem de Topo (default=1in)
+% \setlength\oddsidemargin{8mm}     % Margem Direita Páginas Direitas
+% \setlength\evensidemargin{8mm}    % Margem Esquerda Páginas Esquerdas
+
+\newcommand{\verified}{\hspace{0.5pt} {\LARGE $\checkmark$}}
+
+\begin{document}
+
+\begin{titlepage}
+\topskip0pt
+\LARGE JANCAE
+
+\large Japan Association for Nonlinear CAE
+
+\vspace*{150pt}
+\Huge \textbf{UMMDp}
+
+\vspace*{10pt}
+\LARGE Unified Material Model Driver for Plasticity
+
+\vspace*{50pt}
+\begin{flushright}
+\Huge \textbf{User's Guide}
+
+\LARGE Abaqus
+\end{flushright}
+
+\vspace*{50pt}
+\begin{center}
+
+\vspace*{180pt}
+\large \today
+
+\large Adapted from original document.
+
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+
+\newpage
+\section{Preface}
+\vspace{0.5cm}
+
+The Unified Material Model Driver for Plasticity (UMMDp) library is distributed as Fortran source codes. The Fortran compiler specified by the software vender in your analysis environment must be prepared. Please see the Abaqus manual for details of the environment required for compiling user subroutines. 
+
+In this guide, the sections of Abaqus' manual related to the use of the UMMDp are described below, as well as the details on how to use the UMMDp with Abaqus. In the following procedures, the prompts “\%” and “\textgreater” represent the examples in UNIX/Linux and Windows, respectively. The common steps for using the UMMDp with Abaqus are:
+
+\begin{enumerate}
+	\item Preparation of the UMMDp source files
+	\begin{itemize}
+     	\item Merge the UMMDp source files into one file.\\
+  	\end{itemize}
+  	\item Writing procedure to call tye UMMDp in the input data
+  	\begin{itemize}
+     	\item To call the material user subroutine, specific keywords are required to be written in the input data. The keywords include the material constants, such as the coefficients of the yield criterion.\\
+  	\end{itemize}
+  	\item Execution of Abaqus with the UMMDp
+  	\begin{itemize}
+     	\item When a command is typed to execute Abaqus, options are added to compile the UMMDp and to link it to Abaqus.\\
+  	\end{itemize}
+\end{enumerate}
+
+\newpage
+\section{Related Sections of Abaqus User's Manual}
+\vspace{0.5cm}
+
+\begin{enumerate}
+	\item Command to execute with user-subroutine
+	 \begin{itemize}
+     	\item Abaqus Analysis User's Guide
+     	\begin{itemize}
+     		\item[$\circ$] 3.2.2 Abaqus/Standard, Abaqus/Explicit, and Abaqus/CFD execution.\\
+		\end{itemize}
+  	\end{itemize}
+  	\item Option for execution without compile
+  	\begin{itemize}
+     	\item Abaqus Analysis User's Guide
+     	\begin{itemize}
+     		\item[$\circ$] 3.2.18 Making user-defined executables and subroutines.\\
+		\end{itemize}
+  	\end{itemize}
+  	 \item Keywords for setup of the UMMDp
+  	\begin{itemize}
+     	\item Abaqus Keywords Reference Guide
+     	\begin{itemize}
+     		\item[$\circ$] *DEPVAR: define the number of solution-dependent state variables.
+     		\item[$\circ$] *ORIENTATION: define local material axis for anisotropy.
+     		\item[$\circ$] *USER MATERIAL: define the material constants used in UMAT.
+     		\item[$\circ$] *USER OUTPUT VARIABLE: define the number of user output variables.\\
+     	\end{itemize}
+  	\end{itemize}
+  	 \item Specification of Abaqus user subroutines used in the UMMDp
+  	\begin{itemize}
+     	\item Abaqus User Subroutines Reference Guide
+     	\begin{itemize}
+     		\item[$\circ$] 1.1.44 UMAT: user subroutine to define a material's mechanical behavior.
+     		\item[$\circ$] 1.1.58 UVARM: user subroutine to generate element output.\\
+     	\end{itemize}
+  	\end{itemize}
+  	 \item User defined mechanical properties with UMAT
+  	 \begin{itemize}
+    	 \item Abaqus Analysis User's Guide
+     	\begin{itemize}
+     		\item[$\circ$] 26.7.1 User-defined mechanical material behavior.
+     	\end{itemize}
+  	\end{itemize}
+\end{enumerate}
+
+\newpage
+\section{Setup}
+\vspace{0.5cm}
+
+\subsection{Source Files}
+\vspace{0.2cm}
+
+Concatenate the UMMDp source files into one single file with the plug-in file first. Simply use the batch files (.sh/.bat) or run each command separately.
+
+\begin{itemize}
+	\item Unix/Linux\\
+	\par
+	\texttt{\fbox{
+		\begin{minipage}{0.9\textwidth}
+			\% \, cd \, dir\_ummdp\\
+			\% \, cp \, plug\_ummdp\_abaqus.f \, jobname\_ummdp.f\\
+			\% \, cat \, ummdp*.f \textgreater\!\textgreater \,jobname\_ummdp.f
+				\end{minipage}
+	}}
+\end{itemize}
+\par\medskip
+\begin{itemize}
+	\item Windows\\
+	\par
+	\texttt{\fbox{
+		\begin{minipage}{0.9\textwidth}
+			\textgreater \, cd \, dir\_ummdp\\
+			\textgreater \, copy \, plug\_ummdp\_abaqus.f \, jobname\_ummdp.f\\
+			\textgreater \, type \, ummdp*.f \textgreater\!\textgreater  \,jobname\_ummdp.f
+		\end{minipage}
+	}}
+\end{itemize}
+
+\vspace{0.2cm}
+\subsection{Abaqus Input File}
+\vspace{0.2cm}
+
+This section describes the keywords in the input data file for use in the UMMDp.
+
+\begin{enumerate}
+	\item Definition of the principal axis for the material anisotropy (refer to the manual)
+	\par\bigskip
+	\texttt{\fbox{
+		\begin{minipage}{0.9\textwidth}
+			*ORIENTATION, NAME=ORI-1\\
+			1., 0., 0., 0., 1., 0.\\
+			3, 0.
+		\end{minipage}
+	}}
+	\par\bigskip
+\end{enumerate}
+
+\begin{enumerate}
+	\item[2.] Definition of the material model (the details will be provided later)\\
+	\par
+	\texttt{\fbox{
+		\begin{minipage}{0.9\textwidth}
+			*MATERIAL, NAME=UMMDp\\
+			*USER MATERIAL, CONSTANTS=27\\
+			0, 0, 1000.0, 0.3, 2, -0.069, 0.936, 0.079,\\
+			1.003, 0.524, 1.363, 0.954, 1.023, 1.069, 0.981, 0.476,\\
+			0.575, 0.866, 1.145, -0.079, 1.404, 1.051, 1.147, 8.0,\\
+			0, 1.0, 0
+		\end{minipage}
+	}}
+	\item[] Note that each line accedpts a maximum of 8 constants.
+	\par\bigskip
+\end{enumerate}
+
+\begin{enumerate}
+	\item[3.] Define the number of internal state variables (SDV)
+	\item[] Set the number of state variables to 1+NTENS, where NTENS is the number of components of the tensor variables. NTENS=3 for plane stress or a shell element, and NTENS=6 for a solid element. The 1st “1” is reserved for the equivalent plastic strain, and NTENS is reserved for the plastic strain components. The following example corresponds to a solid element without kinematic hardening:\\
+	\par
+	\texttt{\fbox{
+		\begin{minipage}{0.9\textwidth}
+			*DEPVAR\\
+			 7,
+		\end{minipage}
+	}}
+	\par\bigskip
+	\item[] In the case of kinematic hardening, the number of internal state variables corresponds to the equivalent plastic strain, plastic strain components and components of each partial back-stress tensor. 
+	\par\bigskip
+\end{enumerate}
+
+\begin{enumerate}
+	\item[4.] Define the user output variables (UVAR)
+	\item[] The UMMDp can output some user output variables. The request for user output variables is not mandatory, except when an uncoupled rupture criterion is used. If user output variables are requested, the following variales are output in the presented order:
+	\begin{itemize}
+		\item \texttt{UVAR(1)}: equivalent stress computed through the yield criteria
+		\item \texttt{UVAR(2)}: flow stress computed through the isotropic hardening law
+		\item \texttt{UVAR(3:2+NTENS)}: total back-stress tensor components (when using a kinematic hardening law)
+		\item \texttt{UVAR(3+NTENS:end)}: rupture criterion parameter and variables (when using a kinematic hardening law)
+		\item \texttt{UVAR(3:2+NTENS)}: rupture criterion parameter and variables (when not using a kinematic hardening law)
+	\end{itemize}
+	\par\bigskip
+	\texttt{\fbox{
+		\begin{minipage}{0.9\textwidth}
+			*USER OUTPUT VARIABLES\\
+			 8,
+		\end{minipage}
+	}}
+	\par\bigskip
+\end{enumerate}
+
+\begin{enumerate}
+	\item[5.] Define output variables for post processing
+	\item[] This keyword controls the output variables (e.g., equivalent plastic strain and equivalent stress) for post processing.\\
+	\par
+	\texttt{\fbox{
+		\begin{minipage}{0.9\textwidth}
+			*OUTPUT, FIELD\\
+			*ELEMENT OUTPUT\\
+			 LE, S, SDV, UVARM
+		\end{minipage}
+	}}	
+	\par\bigskip
+\end{enumerate}
+
+\vspace{0.2cm}
+\subsection{Program Execution}
+\vspace{0.2cm}
+
+To execute the program there are two options: (a) link the user subroutine in source code and (b) link the user subroutine previously compiled.
+
+\begin{enumerate}
+	\item[(a)] To execute the program with the user subroutine in source code, execute the command:\\
+	\par
+	\texttt{\fbox{
+		\begin{minipage}{0.9\textwidth}
+			\%\textgreater \, abaqus job=jobname user=jobname\_ummdp.f
+		\end{minipage}
+	}}
+	\par\bigskip
+\end{enumerate}
+
+\begin{enumerate}
+\item[(b)] To execute the program with the user subroutine previously compiled, execute the commands:\\
+	\par
+	\texttt{\fbox{
+		\begin{minipage}{0.9\textwidth}
+			\textgreater \, abaqus job=jobname user=jobname\_ummdp.obj
+		\end{minipage}
+	}}
+	\par\bigskip
+	\par
+	\texttt{\fbox{
+		\begin{minipage}{0.9\textwidth}
+			\% \,abaqus job=jobname user=jobname\_ummdp.o
+		\end{minipage}
+	}}
+	\par\bigskip
+\item[] The command that compiles the file \texttt{jobname\_ummdp.obj/o} is:\\
+	\par
+	\texttt{\fbox{
+		\begin{minipage}{0.9\textwidth}
+			\%\textgreater \, abaqus make library=jobname\_ummdp.f
+		\end{minipage}
+	}}
+	\par\bigskip
+\end{enumerate}
+
+\newpage
+\section{Input}
+\vspace{0.5cm}
+
+The input data in UMMDp is defined as follows:
+
+\begin{enumerate}
+	\item Parameter for Debug and Print
+	\item Parameters for Elasticity
+	\item Parameters for Yield Function
+	\item Parameters for Isotropic Hardening Law
+	\item Parameters for Kinematic Hardening Law
+	\item Parameters for Uncoupled Rupture Criterion
+\end{enumerate}
+
+\noindent The detail of data is shown as follows and in addition, an example of input data is described.
+
+\vspace{0.2cm}
+\subsection{Debug and Print}
+\vspace{0.2cm}
+
+The first input parameter corresponds to the definition of debug and print mode, defined by the variable \texttt{nvbs0}. The option selected here will have an effect on the .dat file from Abaqus execution. It is a mandatory parameter and the options are:
+
+\begin{itemize}
+	\item 0 - Error Messages Only
+	\item 1 - Summary of Multistage Return Mapping
+	\item 2 - Detail of Multistage Return Mapping and Summary of Newton-Raphson
+	\item 3 - Detail of Newton-Raphson
+	\item 4 - Input/Output
+	\item 5 - All Status for Debug and Print
+\end{itemize}
+
+\vspace{0.2cm}
+\subsection{Elasticity}
+\vspace{0.2cm}
+
+\begin{itemize}
+	\item \texttt{prela(1)} - ID for elasticity
+	\item \texttt{prela(2$\mathtt{\sim}$)} - Data depends on ID
+\end{itemize}
+
+\noindent Only isotropic Hooke elasticity can be defined. There are 2 ways to define it:
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Young's Modulus and Poisson’s Ratio \verified{}
+	\begin{itemize}
+		\item[•] ID: $0$
+		\item[•] Parameters: $2$\\
+		\item[$\circ$] \texttt{prela(1) = 0}
+		\item[$\circ$] \texttt{prela(2) = 200.0E+3} (Young’s modulus $E$)
+		\item[$\circ$] \texttt{prela(3) = 0.3} (Poisson's ratio $\nu$)
+	\end{itemize}
+\end{itemize}
+
+\newpage
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Bulk Modulus and Modulus of Rigidity \verified{}
+	\begin{itemize}
+		\item[•] ID: $1$
+		\item[•] Parameters: $2$\\
+		\item[$\circ$] \texttt{prela(1) = 1}
+		\item[$\circ$] \texttt{prela(2) = 166666.7} (Bulk modulus $K=E(1-2\nu)/3$))
+		\item[$\circ$] \texttt{prela(3) = 76923.08} (Modulus of rigidity $G=E(1+\nu)/2$)
+	\end{itemize}
+\end{itemize}
+
+\vspace{0.2cm}
+\subsection{Yield Function}
+\vspace{0.2cm}
+
+\begin{itemize}
+	\item \texttt{pryld(1)} - ID for yield function
+	\begin{itemize}
+	\item[] (Negative values specify plane stress yield functions)
+	\end{itemize}
+	\item \texttt{pryld(2$\mathtt{\sim}$)} - Data depends on ID
+\end{itemize}
+
+\noindent Identification number for yield function and required parameters are introduced. Please refer to the original papers for more detail on the formulation and meaning of parameters.
+\vspace{0.1cm}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] von Mises \verified{}
+	\begin{itemize}
+		\item[\tiny$\square$] {\small von Mises, R., 1913. Mechanik der festen Korper im plastisch deformablen Zustand. Gottin Nachr Math Phys, 1:582–592.}\\
+		\item[•] ID: $0$\\
+		\item[$\circ$] \texttt{pryld(1) = 0}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Hill 1948 \verified{}
+	\begin{itemize}
+		\item[\tiny$\square$] {\small \href{https://doi.org/10.1098/rspa.1949.0110}{Hill, R., 1949. The theory of plane plastic strain for anisotropic metals. Proc Royal Soc Lond Ser Math Phys Sci 198, 428–437.}}\\
+		\item[•] ID: $1$
+		\item[•] Parameters: $6$\\
+		\item[$\circ$] \texttt{pryld(1)\,\,\,\,\,\,\,\,\,= 1}
+		\item[$\circ$] \texttt{pryld(1+1) =} F
+		\item[$\circ$] \texttt{pryld(1+2) =} G
+		\item[$\circ$] \texttt{pryld(1+3) =} H
+		\item[$\circ$] \texttt{pryld(1+4) =} L
+		\item[$\circ$] \texttt{pryld(1+5) =} M
+		\item[$\circ$] \texttt{pryld(1+6) =} N\\
+		\item[\tiny$\square$] {\small The parameters are the same as Hill's original paper. When F=G=H=1 and L=M=N=3, Hill's function is identical to von Mises.}\\
+	\end{itemize}
+	
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Yld2004-18p \verified{}
+	\begin{itemize}
+		\item[\tiny$\square$] {\small \href{https://doi.org/10.1016/j.ijplas.2004.06.004}{Barlat, F., Aretz, H., Yoon, J.-H., Karabin, M.E., Brem, J.C., Dick, R.E., 2005. Linear transfomation-based anisotropic yield functions. Int J Plasticity 21, 1009–1039.}}\\
+		\item[•] ID: $2$
+		\item[•] Parameters: $19$\\
+		\item[$\circ$] \texttt{pryld(1)\,\,\,\,\,\,\,\,\,\,\,\,= 2}
+		\item[$\circ$] \texttt{pryld(1+1)\,\,\,\,\,\,= $c'_{12}$}
+		\item[$\circ$] \texttt{pryld(1+2)\,\,\,\,\,\,= $c'_{13}$}
+		\item[$\circ$] \texttt{pryld(1+3)\,\,\,\,\,\,= $c'_{21}$}
+		\item[$\circ$] \texttt{pryld(1+4)\,\,\,\,\,\,= $c'_{23}$}
+		\item[$\circ$] \texttt{pryld(1+5)\,\,\,\,\,\,= $c'_{31}$}
+		\item[$\circ$] \texttt{pryld(1+6)\,\,\,\,\,\,= $c'_{32}$}
+		\item[$\circ$] \texttt{pryld(1+7)\,\,\,\,\,\,= $c'_{44}$}
+		\item[$\circ$] \texttt{pryld(1+8)\,\,\,\,\,\,= $c'_{55}$}
+		\item[$\circ$] \texttt{pryld(1+9)\,\,\,\,\,\,= $c'_{66}$}
+		\item[$\circ$] \texttt{pryld(1+10) = $c''_{12}$}
+		\item[$\circ$] \texttt{pryld(1+11) = $c''_{13}$}
+		\item[$\circ$] \texttt{pryld(1+12) = $c''_{21}$}
+		\item[$\circ$] \texttt{pryld(1+13) = $c''_{23}$}
+		\item[$\circ$] \texttt{pryld(1+14) = $c''_{31}$}
+		\item[$\circ$] \texttt{pryld(1+15) = $c''_{32}$}
+		\item[$\circ$] \texttt{pryld(1+16) = $c''_{44}$}
+		\item[$\circ$] \texttt{pryld(1+17) = $c''_{55}$}
+		\item[$\circ$] \texttt{pryld(1+18) = $c'_{66}$}
+		\item[$\circ$] \texttt{pryld(1+19) = $a$} (exponent)\\
+		\item[\tiny$\square$] {\small The order of parameters given as input is the same as in the original paper.}\\
+	\end{itemize}
+\end{itemize}
+
+\newpage
+\begin{itemize}
+	\item[\tiny$\blacksquare$] CPB 2006 \verified{}
+	\begin{itemize}
+		\item[\tiny$\square$] {\small \href{https://doi.org/10.1016/j.ijplas.2005.06.001}{Cazacu, O., Plunkett, B., Barlat, F., 2006. Orthotropic yield criterion for hexagonal closed packed metals. Int J Plasticity 22, 1171–1194.}}\\
+		\item[•] ID: $3$
+		\item[•] Parameters: $14$\\
+		\item[$\circ$] \texttt{pryld(1)\,\,\,\,\,\,\,\,\,\,\,\,= 3}
+		\item[$\circ$] \texttt{pryld(1+1)\,\,\,\,\,\,= $C_{11}$}
+		\item[$\circ$] \texttt{pryld(1+2)\,\,\,\,\,\,= $C_{12}$}
+		\item[$\circ$] \texttt{pryld(1+3)\,\,\,\,\,\,= $C_{13}$}
+		\item[$\circ$] \texttt{pryld(1+4)\,\,\,\,\,\,= $C_{21}$}
+		\item[$\circ$] \texttt{pryld(1+5)\,\,\,\,\,\,= $C_{22}$}
+		\item[$\circ$] \texttt{pryld(1+6)\,\,\,\,\,\,= $C_{23}$}
+		\item[$\circ$] \texttt{pryld(1+7)\,\,\,\,\,\,= $C_{31}$}
+		\item[$\circ$] \texttt{pryld(1+8)\,\,\,\,\,\,= $C_{32}$}
+		\item[$\circ$] \texttt{pryld(1+9)\,\,\,\,\,\,= $C_{33}$}
+		\item[$\circ$] \texttt{pryld(1+10) = $C_{44}$}
+		\item[$\circ$] \texttt{pryld(1+11) = $C_{55}$}
+		\item[$\circ$] \texttt{pryld(1+12) = $C_{66}$}
+		\item[$\circ$] \texttt{pryld(1+13) = $a$} (exponent) 
+		\item[$\circ$] \texttt{pryld(1+14) = $k$} (tension-compression ratio)\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Karafillis-Boyce 1993
+	\begin{itemize}
+		\item[\tiny$\square$] {\small \href{https://doi.org/10.1016/0022-5096(93)90073-o}{Karafillis, A.P., Boyce, M.C., 1993. A general anisotropic yield criterion using bounds and a transformation weighting tensor. J Mech Phys Solids 41, 1859–1886.}}\\
+		\item[•] ID: $4$
+		\item[•] Parameters: $8$\\
+		\item[$\circ$] \texttt{pryld(1)\,\,\,\,\,\,\,\,\,= 4}
+		\item[$\circ$] \texttt{pryld(1+1) = $C$}
+		\item[$\circ$] \texttt{pryld(1+2) = $\alpha_1$}
+		\item[$\circ$] \texttt{pryld(1+3) = $\alpha_2$}
+		\item[$\circ$] \texttt{pryld(1+4) = $\gamma_1$}
+		\item[$\circ$] \texttt{pryld(1+5) = $\gamma_2$}
+		\item[$\circ$] \texttt{pryld(1+6) = $\gamma_3$}
+		\item[$\circ$] \texttt{pryld(1+7) = $c$}
+		\item[$\circ$] \texttt{pryld(1+8) = $k$} ($k$ of exponent $2k$)\\
+	\end{itemize}
+\end{itemize}
+
+\newpage
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Hu 2005
+	\begin{itemize}
+		\item[\tiny$\square$] {\small \href{https://doi.org/10.1016/j.ijplas.2004.11.004}{Hu, W., 2005. An orthotropic yield criterion in a 3-D general stress state. Int J Plasticity 21, 1771–1796.}}\\
+		\item[•] ID: $5$
+		\item[•] Parameters: $10$\\
+		\item[$\circ$] \texttt{pryld(1)\,\,\,\,\,\,\,\,\,\,\,\,= 5}
+		\item[$\circ$] \texttt{pryld(1+1)\,\,\,\,\,\,= $X_1$}
+		\item[$\circ$] \texttt{pryld(1+2)\,\,\,\,\,\,= $X_2$}
+		\item[$\circ$] \texttt{pryld(1+3)\,\,\,\,\,\,= $X_3$}
+		\item[$\circ$] \texttt{pryld(1+4)\,\,\,\,\,\,= $X_4$}
+		\item[$\circ$] \texttt{pryld(1+5)\,\,\,\,\,\,= $X_5$}
+		\item[$\circ$] \texttt{pryld(1+6)\,\,\,\,\,\,= $X_6$}
+		\item[$\circ$] \texttt{pryld(1+7)\,\,\,\,\,\,= $X_7$}
+		\item[$\circ$] \texttt{pryld(1+8)\,\,\,\,\,\,= $C_1$}
+		\item[$\circ$] \texttt{pryld(1+9)\,\,\,\,\,\,= $C_2$}
+		\item[$\circ$] \texttt{pryld(1+10) = $C_3$}\\
+	\end{itemize}
+\end{itemize}
+
+\newpage
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Yoshida 6th Polynomial
+	\begin{itemize}
+		\item[\tiny$\square$] {\small \href{https://doi.org/10.1016/j.ijplas.2013.01.010}{Yoshida, F., Hamasaki, H., Uemori, T., 2013. A user-friendly 3D yield function to describe anisotropy of steel sheets. Int J Plasticity 45, 119–139.}}\\
+		\item[•] ID: $6$
+		\item[•] Parameters: $16$\\
+		\item[$\circ$] \texttt{pryld(1)\,\,\,\,\,\,\,\,\,\,\,\,= 6}
+		\item[$\circ$] \texttt{pryld(1+1)\,\,\,\,\,\,= $C_1$}
+		\item[$\circ$] \texttt{pryld(1+2)\,\,\,\,\,\,= $C_2$}
+		\item[$\circ$] \texttt{pryld(1+3)\,\,\,\,\,\,= $C_3$}
+		\item[$\circ$] \texttt{pryld(1+4)\,\,\,\,\,\,= $C_4$}
+		\item[$\circ$] \texttt{pryld(1+5)\,\,\,\,\,\,= $C_5$}
+		\item[$\circ$] \texttt{pryld(1+6)\,\,\,\,\,\,= $C_6$}
+		\item[$\circ$] \texttt{pryld(1+7)\,\,\,\,\,\,= $C_7$}
+		\item[$\circ$] \texttt{pryld(1+8)\,\,\,\,\,\,= $C_8$}
+		\item[$\circ$] \texttt{pryld(1+9)\,\,\,\,\,\,= $C_9$}
+		\item[$\circ$] \texttt{pryld(1+10) = $C_{10}$}
+		\item[$\circ$] \texttt{pryld(1+11) = $C_{11}$}
+		\item[$\circ$] \texttt{pryld(1+12) = $C_{12}$}
+		\item[$\circ$] \texttt{pryld(1+13) = $C_{13}$}
+		\item[$\circ$] \texttt{pryld(1+14) = $C_{14}$}
+		\item[$\circ$] \texttt{pryld(1+15) = $C_{15}$}
+		\item[$\circ$] \texttt{pryld(1+16) = $C_{16}$}\\
+	\end{itemize}
+\end{itemize}
+
+\newpage
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Gotoh Biquadratic
+	\begin{itemize}
+		\item[\tiny$\square$] {\small \href{https://doi.org/10.1016/0020-7403(77)90043-1}{Gotoh, M., 1977. A theory of plastic anisotropy based on a yield function of fourth order (plane stress state)—I. Int J Mech Sci 19, 505–512.}}\\
+		\item[•] ID: $-1$
+		\item[•] Parameters: $9$\\
+		\item[$\circ$] \texttt{pryld(1)\,\,\,\,\,\,\,\,\,= -1}
+		\item[$\circ$] \texttt{pryld(1+1) = $A_1$}
+		\item[$\circ$] \texttt{pryld(1+2) = $A_2$}
+		\item[$\circ$] \texttt{pryld(1+3) = $A_3$}
+		\item[$\circ$] \texttt{pryld(1+4) = $A_4$}
+		\item[$\circ$] \texttt{pryld(1+5) = $A_5$}
+		\item[$\circ$] \texttt{pryld(1+6) = $A_6$}
+		\item[$\circ$] \texttt{pryld(1+7) = $A_7$}
+		\item[$\circ$] \texttt{pryld(1+8) = $A_8$}
+		\item[$\circ$] \texttt{pryld(1+9) = $A_9$}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Yld2000-2d \verified{}
+	\begin{itemize}
+		\item[\tiny$\square$] {\small \href{https://doi.org/10.1016/s0749-6419(02)00019-0}{Barlat, F., Brem, J.C., Yoon, J.-H., Chung, K., Dick, R.E., Lege, D.J., Pourboghrat, F., Choi, S.-H., Chu, E., 2003. Plane stress yield function for aluminum alloy sheets—part 1: theory. Int J Plasticity 19, 1297–1319.}}\\
+		\item[•] ID: $-2$
+		\item[•] Parameters: $9$\\
+		\item[$\circ$] \texttt{pryld(1)\,\,\,\,\,\,\,\,\,= -2}
+		\item[$\circ$] \texttt{pryld(1+1) = $\alpha_1$}
+		\item[$\circ$] \texttt{pryld(1+2) = $\alpha_2$}
+		\item[$\circ$] \texttt{pryld(1+3) = $\alpha_3$}
+		\item[$\circ$] \texttt{pryld(1+4) = $\alpha_4$}
+		\item[$\circ$] \texttt{pryld(1+5) = $\alpha_5$}
+		\item[$\circ$] \texttt{pryld(1+6) = $\alpha_6$}
+		\item[$\circ$] \texttt{pryld(1+7) = $\alpha_7$}
+		\item[$\circ$] \texttt{pryld(1+8) = $\alpha_8$}
+		\item[$\circ$] \texttt{pryld(1+9) = $a$} (exponent)\\
+	\end{itemize}
+\end{itemize}
+
+\newpage
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Vegter
+	\begin{itemize}
+		\item[\tiny$\square$] {\small \href{https://doi.org/10.1016/j.ijplas.2005.04.009}{Vegter, H., van den Boogaard, A.H., 2006. A plane stress yield function for anisotropic sheet material by interpolation of biaxial stress states. Int J Plasticity 22, 557–580.}}\\
+		\item[•] ID: $-3$
+		\item[•] Parameters: $3+4n$\\
+		\item[$\circ$] \texttt{pryld(1)\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,= -3}
+		\item[$\circ$] \texttt{pryld(1+1)\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,= n} (max of $i$)
+		\item[$\circ$] \texttt{pryld(1+2)\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,= f\_bi0}
+		\item[$\circ$] \texttt{pryld(1+3)\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,= r\_bi0}
+		\item[$\circ$] \texttt{pryld(1+3+(i-1)*4+1) = phi\_uniaxial(i)}
+		\item[$\circ$] \texttt{pryld(1+3+(i-1)*4+2) = phi\_shear(i)}
+		\item[$\circ$] \texttt{pryld(1+3+(i-1)*4+3) = ph\_planestrain(i)}
+		\item[$\circ$] \texttt{pryld(1+3+(i-1)*4+4) = omega(i)}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] BBC 2005
+	\begin{itemize}
+		\item[\tiny$\square$] {\small \href{https://doi.org/10.1016/j.ijplas.2004.04.003}{Banabic, D., Aretz, H., Comsa, D.S., Paraianu, L., 2005. An improved analytical description of orthotropy in metallic sheets. Int J Plasticity 21, 493–512.}}\\
+		\item[•] ID: $-4$
+		\item[•] Parameters: $9$\\
+		\item[$\circ$] \texttt{pryld(1)\,\,\,\,\,\,\,\,\,= -4}
+		\item[$\circ$] \texttt{pryld(1+1) = $k$} ($k$ of exponent $2k$)
+		\item[$\circ$] \texttt{pryld(1+2) = $a$}
+		\item[$\circ$] \texttt{pryld(1+3) = $b$}
+		\item[$\circ$] \texttt{pryld(1+4) = $L$}
+		\item[$\circ$] \texttt{pryld(1+5) = $M$}
+		\item[$\circ$] \texttt{pryld(1+6) = $N$}
+		\item[$\circ$] \texttt{pryld(1+7) = $P$}
+		\item[$\circ$] \texttt{pryld(1+8) = $Q$}
+		\item[$\circ$] \texttt{pryld(1+9) = $R$}\\
+	\end{itemize}
+\end{itemize}
+
+\newpage
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Yld89
+	\begin{itemize}
+		\item[\tiny$\square$] {\small \href{https://doi.org/10.1016/0749-6419(89)90019-3}{Barlat, F., Lian, K., 1989. Plastic behavior and stretchability of sheet metals. Part I: A yield function for orthotropic sheets under plane stress conditions. Int J Plasticity 5, 51–66.}}\\
+		\item[•] ID: $-5$
+		\item[•] Parameters: $4$\\
+		\item[$\circ$] \texttt{pryld(1)\,\,\,\,\,\,\,\,\,= -5}
+		\item[$\circ$] \texttt{pryld(1+1) = $M$} (exponent)
+		\item[$\circ$] \texttt{pryld(1+2) = $a$}
+		\item[$\circ$] \texttt{pryld(1+3) = $h$}
+		\item[$\circ$] \texttt{pryld(1+4) = $p$}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] BBC 2008
+	\begin{itemize}
+		\item[\tiny$\square$] {\small \href{http://users.utcluj.ro/~banabic/documents/researchfields/NUMISHEET%202008_2.pdf}{Comsa, D.-S., Banabic, D., 2008. Plane-stress yield criterion for highly-anisotropic sheet metals, in: NUMISHEET 2008, pp. 43–48.}}\\
+		\item[•] ID: $-6$
+		\item[•] Parameters: $2+8s$\\
+		\item[$\circ$] \texttt{pryld(1)\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,= -6}
+		\item[$\circ$] \texttt{pryld(1+1)\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,= $s$} (max of $i$)
+		\item[$\circ$] \texttt{pryld(1+2)\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,= $k$} ($k$ of exponent $2k$)
+		\item[$\circ$] \texttt{pryld(1+2+(i-1)*8+1) = $l_1$}
+		\item[$\circ$] \texttt{pryld(1+2+(i-1)*8+2) = $l_2$}
+		\item[$\circ$] \texttt{pryld(1+2+(i-1)*8+3) = $m_1$}
+		\item[$\circ$] \texttt{pryld(1+2+(i-1)*8+4) = $m_2$}
+		\item[$\circ$] \texttt{pryld(1+2+(i-1)*8+5) = $m_3$}
+		\item[$\circ$] \texttt{pryld(1+2+(i-1)*8+6) = $n_1$}
+		\item[$\circ$] \texttt{pryld(1+2+(i-1)*8+7) = $n_2$}
+		\item[$\circ$] \texttt{pryld(1+2+(i-1)*8+8) = $n_3$}\\
+	\end{itemize}
+\end{itemize}
+
+\newpage
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Hill 1990
+	\begin{itemize}
+		\item[\tiny$\square$] {\small \href{https://doi.org/10.1016/0022-5096(90)90006-p}{Hill, R., 1990. Constitutive modelling of orthotropic plasticity in sheet metals. J Mech Phys Solids 38, 405–417.}}\\
+		\item[•] ID: $-7$
+		\item[•] Parameters: $5$\\
+		\item[$\circ$] \texttt{pryld(1)\,\,\,\,\,\,\,\,\,= -7}
+		\item[$\circ$] \texttt{pryld(1+1) = $a$}
+		\item[$\circ$] \texttt{pryld(1+2) = $b$}
+		\item[$\circ$] \texttt{pryld(1+3) = $\tau$}
+		\item[$\circ$] \texttt{pryld(1+4) = $\sigma_{b}$}
+		\item[$\circ$] \texttt{pryld(1+5) = $m$}\\
+	\end{itemize}
+\end{itemize}
+
+\vspace{0.2cm}
+\subsection{Isotropic Hardening Laws}
+\vspace{0.2cm}
+
+\begin{itemize}
+	\item \texttt{prihd(1)} - ID for isotropic hardening law
+	\item \texttt{prihd(2$\mathtt{\sim}$)} - Data depends on ID
+\end{itemize}
+
+\noindent The equation of flow curve is introduced for each law, where $\sigma_{\textrm{y}}$ is the yield stress, $\sigma_{\textrm{y}_0}$ is the initial yield stress and $p$ the equivalent plastic strain.
+\vspace{0.1cm}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Perfectly Plastic\,\,\,\,\,\verified{} 
+	\begin{itemize}
+		\item[•] ID: $0$
+		\item[•] Parameters: $1$\\
+		\item[$\circ$] \texttt{prihd(1)\,\,\,\,\,\,\,\,\,= 0}
+		\item[$\circ$] \texttt{prihd(1+1) = $\sigma_{y}$}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Linear Hardening: $\displaystyle \sigma_{\textrm{y}} = \sigma_{\textrm{y}_0} + Hp$\,\,\,\,\,\verified{} 
+	\begin{itemize}
+		\item[•] ID: $1$
+		\item[•] Parameters: $2$\\
+		\item[$\circ$] \texttt{prihd(1)\,\,\,\,\,\,\,\,\,= 1}
+		\item[$\circ$] \texttt{prihd(1+1) = $\sigma_{\textrm{y}_0} $}
+		\item[$\circ$] \texttt{prihd(1+2) = $H$}\\
+	\end{itemize}
+\end{itemize}
+
+\newpage
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Swift: $\displaystyle \sigma_{\textrm{y}} = K\left(\varepsilon_{0}+p\right)^n$\,\,\,\,\,\verified{} 
+	\begin{itemize}
+		\item[•] ID: $2$
+		\item[•] Parameters: $3$\\
+		\item[$\circ$] \texttt{prihd(1)\,\,\,\,\,\,\,\,\,= 2}
+		\item[$\circ$] \texttt{prihd(1+1) = $K$} 
+		\item[$\circ$] \texttt{prihd(1+2) = $\varepsilon_0$} 
+		\item[$\circ$] \texttt{prihd(1+3) = $n$}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Ludwick: $\displaystyle \sigma_{\textrm{y}} = \sigma_{\textrm{y}_0} +cp^n$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $3$
+		\item[•] Parameters: $3$\\
+		\item[$\circ$] \texttt{prihd(1)\,\,\,\,\,\,\,\,\,= 3}
+		\item[$\circ$] \texttt{prihd(1+1) = $\sigma_{\textrm{y}_0} $}
+		\item[$\circ$] \texttt{prihd(1+2) = $c$}
+		\item[$\circ$] \texttt{prihd(1+3) = $n$}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Voce: $\displaystyle \sigma_{\textrm{y}} = \sigma_{\textrm{y}_0} +Q\left(1-\textrm{exp}(-bp)\right)$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $4$
+		\item[•] Parameters: $3$\\
+		\item[$\circ$] \texttt{prihd(1)\,\,\,\,\,\,\,\,\,= 4}
+		\item[$\circ$] \texttt{prihd(1+1) = $\sigma_{\textrm{y}_0} $}
+		\item[$\circ$] \texttt{prihd(1+2) = $Q$}
+		\item[$\circ$] \texttt{prihd(1+3) = $b$}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Voce + Linear: $\displaystyle \sigma_{\textrm{y}} = \sigma_{\textrm{y}_0} +Q\left(1-\textrm{exp}(-bp)\right)+Hp$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $5$
+		\item[•] Parameters: $4$\\
+		\item[$\circ$] \texttt{prihd(1)\,\,\,\,\,\,\,\,\,= 5}
+		\item[$\circ$] \texttt{prihd(1+1) = $\sigma_{\textrm{y}_0} $}
+		\item[$\circ$] \texttt{prihd(1+2) = $Q$}
+		\item[$\circ$] \texttt{prihd(1+3) = $b$}
+		\item[$\circ$] \texttt{prihd(1+4) = $H$}\\
+	\end{itemize}
+\end{itemize}
+
+\newpage
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Voce + Swift: $\displaystyle \sigma_{\textrm{y}} = a\left[\sigma_{\textrm{y}_0} + Q\left(1-\textrm{exp}(-bp)\right)\right]+ (1-a)\left[K(\varepsilon_0+p)^n\right]$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $6$
+		\item[•] Parameters: $7$\\
+		\item[$\circ$] \texttt{prihd(1)\,\,\,\,\,\,\,\,\,= 6}
+		\item[$\circ$] \texttt{prihd(1+1) = $a$}
+		\item[$\circ$] \texttt{prihd(1+2) = $\sigma_{\textrm{y}_0} $}
+		\item[$\circ$] \texttt{prihd(1+3) = $Q$} 
+		\item[$\circ$] \texttt{prihd(1+4) = $b$} 
+		\item[$\circ$] \texttt{prihd(1+5) = $K$} 
+		\item[$\circ$] \texttt{prihd(1+6) = $\varepsilon_0$} 
+		\item[$\circ$] \texttt{prihd(1+7) = $n$}
+	\end{itemize}
+\end{itemize}
+
+\vspace{0.2cm}
+\subsection{Kinematic Hardening Laws}
+\vspace{0.2cm}
+
+\begin{itemize}
+	\item \texttt{prkin(1)} - ID for kinematic hardening law
+	\item \texttt{prkin(2$\mathtt{\sim}$)} - Data depends on ID
+\end{itemize}
+
+\noindent The equation of backstress is introduced for each law, where $\dot{\bm{\alpha}}$ is the increment of the total backstress tensor, $\dot{\bm{\alpha}_i}$ is the increment of the partial backstress tensor, $\bm{\alpha}$ is the total backstress tensor, $\bm{\alpha_i}$ is the partial backstress tensor, $\dot{\bm{\varepsilon}}^\textrm{p}$ is the increment of plastic strain tensor, and $\dot{p}$ is the increment of equivalent plastic strain. Depending on the law, a specific number of additional state variables (\texttt{SDV}) and user output variables (\texttt{UVAR}) are required. The variable $k$ represents the number of tensor components\,(\texttt{NTENS}). 
+\vspace{0.1cm}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] No Kinematic Hardening \verified{}
+	\begin{itemize}
+		\item[•] ID: $0$\\
+		\item[$\circ$] \texttt{prkin(1) = 0}
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Prager: $\displaystyle \dot{\bm{\alpha}}=\frac{2}{3}c\dot{\bm{\varepsilon}}^\textrm{p}$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $1$
+		\item[•] Parameters: $1$
+		\item[•] State Variables: + $k$\\
+		\item[$\circ$] \texttt{prkin(1)\,\,\,\,\,\,\,\,\,= 1}
+		\item[$\circ$] \texttt{prkin(1+1) = $c$}\\
+	\end{itemize}
+\end{itemize}
+
+\pagebreak
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Ziegler: $\displaystyle \dot{\bm{\alpha}}=c\left(\bm{\sigma}-\bm{\alpha}\right)\dot{p}$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $2$
+		\item[•] Parameters: $1$
+		\item[•] State Variables: + $k$\\
+		\item[$\circ$] \texttt{prkin(1)\,\,\,\,\,\,\,\,\,= 2}
+		\item[$\circ$] \texttt{prkin(1+1) = $c$}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Armstrong-Frederick: $\displaystyle \dot{\bm{\alpha}}=\frac{2}{3}c\dot{\bm{\varepsilon}}^\textrm{p} -\gamma\bm{\alpha}\dot{p}$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $3$
+		\item[•] Parameters: $2$
+		\item[•] State Variables: + $k$\\
+		\item[$\circ$] \texttt{prkin(1)\,\,\,\,\,\,\,\,\,= 3}
+		\item[$\circ$] \texttt{prkin(1+1) = $c$}
+		\item[$\circ$] \texttt{prkin(1+2) = $\gamma$}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Chaboche I: $\displaystyle \dot{\bm{\alpha}}=\sum_{i=1}^{n}\dot{\bm{\alpha}_i}=\sum_{i=1}^{n}\left(\frac{2}{3}c_i\dot{\bm{\varepsilon}}^\textrm{p} -\gamma_{i}\bm{\alpha}_i\dot{p}\right)$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $4$
+		\item[•] Parameters: $1+2n$
+		\item[•] State Variables: + $n$ $\times$ $k$
+		\item[•] User Output Variables: + $k$\\
+		\item[$\circ$] \texttt{prkin(1)\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,= 4}
+		\item[$\circ$] \texttt{prkin(1+1)\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,= $n$}
+		\item[$\circ$] \texttt{prkin(1+1+(i*1)) = $c_i$}
+		\item[$\circ$] \texttt{prkin(1+1+(i*2)) = $\gamma_i$}\\
+	\end{itemize}
+\end{itemize}
+
+\pagebreak
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Chaboche II: $\displaystyle \dot{\bm{\alpha}}=\sum_{i=1}^{n}\dot{\bm{\alpha}_i}=\sum_{i=1}^{n}\left(\frac{c_i}{\bar{\eta}}\left(\bm{\sigma}-\bm{\alpha}\right)-\gamma_{i}\bm{\alpha}_i\right)\dot{p}$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $5$
+		\item[•] Parameters: $1+2n$
+		\item[•] State Variables: + $n$ $\times$ $k$
+		\item[•] User Output Variables: + $k$\\
+		\item[$\circ$] \texttt{prkin(1)\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,= 5}
+		\item[$\circ$] \texttt{prkin(1+1)\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,= $n$}
+		\item[$\circ$] \texttt{prkin(1+1+(i*1)) = $c_i$}
+		\item[$\circ$] \texttt{prkin(1+1+(i*2)) = $\gamma_i$}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Yoshida-Uemori %$\dot{\bm{\alpha}}=...$
+	\begin{itemize}
+		\item[•] ID: $6$
+		\item[•] Parameters: $5$\\
+		\item[$\circ$] \texttt{prkin(1)\,\,\,\,\,\,\,\,\,= 6}
+		\item[$\circ$] \texttt{prkin(1+1) = $C$}
+		\item[$\circ$] \texttt{prkin(1+2) = $Y$}
+		\item[$\circ$] \texttt{prkin(1+3) = $a$}
+		\item[$\circ$] \texttt{prkin(1+4) = $k$}
+		\item[$\circ$] \texttt{prkin(1+5) = $b$}
+	\end{itemize}
+\end{itemize}
+
+\vspace{0.2cm}
+\subsection{Uncoupled Rupture Criteria}
+\vspace{0.2cm}
+
+\begin{itemize}
+	\item \texttt{prrup(1)} - ID for uncoupled rupture criterion
+	\item \texttt{prrup(2)} - Flag to complete (0) or terminate (1) analysis if critical value is reached
+	\item \texttt{prrup(3$\mathtt{\sim}$)} - Data depends on ID
+\end{itemize}
+
+\noindent The equation of the uncoupled rupture criterion is introduced for each criterion, where $W$ is the rupture parameter, $\sigma_{1}$ is the maximum principal stress, $\sigma_{\textrm{h}}$ is the hydrostatic stress, $\bar{\sigma}$ is the equivalent stress, $\dot{p}$ the equivalent plastic strain rate, and $W_\textrm{L}$ the user-defined critical value. Depending on the criterion, a specific number of additional user output variables (\texttt{UVAR}) are required.
+\vspace{0.1cm}
+
+\begin{itemize}
+	\item No Uncoupled Rupture Criterion \verified{}
+	\begin{itemize}
+		\item[•] ID: $0$\\
+		\item[$\circ$] \texttt{prrup(1) = 0}
+	\end{itemize}
+\end{itemize}
+
+\pagebreak
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Equivalent Plastic Strain: $\displaystyle W = \int_{0}^{\varepsilon_\textrm{f}} \dot{p}\,\text{d}t$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $1$
+		\item[•] Parameters: $1$
+		\item[•] User Output Variables: + 2\\
+		\item[$\circ$] \texttt{prrup(1)\,\,\,\,\,\,\,\,\,= 1}
+		\item[$\circ$] \texttt{prrup(1+2) = $W_\textrm{L}$}\\
+		\item[\tiny$\square$] \texttt{UVAR(\_+1) = equivalent plastic strain}
+		\item[\tiny$\square$] \texttt{UVAR(\_+2) = rupture parameter normalised by critical value}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Cockroft and Latham: $\displaystyle W =  \int_{0}^{\varepsilon_\textrm{f}}\frac{\sigma_{1}}{\bar{\sigma}}\,\text{d}p$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $2$
+		\item[•] Parameters: $1$
+		\item[•] User Output Variables: + 4\\
+		\item[$\circ$] \texttt{prrup(1)\,\,\,\,\,\,\,\,\,= 2}
+		\item[$\circ$] \texttt{prrup(1+2) = $W_\textrm{L}$}\\
+		\item[\tiny$\square$] \texttt{UVAR(\_+1) = equivalent plastic strain}
+		\item[\tiny$\square$] \texttt{UVAR(\_+2) = maximum principal stress}
+		\item[\tiny$\square$] \texttt{UVAR(\_+3) = rupture parameter}
+		\item[\tiny$\square$] \texttt{UVAR(\_+4) = rupture parameter normalised by critical value}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Rice and Tracey: $\displaystyle W = \int_{0}^{\varepsilon_\textrm{f}} \text{exp}\left(\frac{3}{2}\frac{\sigma_h}{\bar{\sigma}}\right)\,\text{d}p$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $3$
+		\item[•] Parameters: $1$
+		\item[•] User Output Variables: + 4\\
+		\item[$\circ$] \texttt{prrup(1)\,\,\,\,\,\,\,\,\,= 3}
+		\item[$\circ$] \texttt{prrup(1+2) = $W_\textrm{L}$}\\
+		\item[\tiny$\square$] \texttt{UVAR(\_+1) = equivalent plastic strain}
+		\item[\tiny$\square$] \texttt{UVAR(\_+2) = hydrostatic stress}
+		\item[\tiny$\square$] \texttt{UVAR(\_+3) = rupture parameter}
+		\item[\tiny$\square$] \texttt{UVAR(\_+4) = rupture parameter normalised by critical value}\\
+	\end{itemize}
+\end{itemize}
+
+\pagebreak
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Ayada: $\displaystyle W =  \int_{0}^{\varepsilon_\textrm{f}}\frac{\sigma_{h}}{\bar{\sigma}}\,\text{d}p$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $4$
+		\item[•] Parameters: $1$
+		\item[•] User Output Variables: + 4\\
+		\item[$\circ$] \texttt{prrup(1)\,\,\,\,\,\,\,\,\,= 4}
+		\item[$\circ$] \texttt{prrup(1+2) = $W_\textrm{L}$}\\
+		\item[\tiny$\square$] \texttt{UVAR(\_+1) = equivalent plastic strain}
+		\item[\tiny$\square$] \texttt{UVAR(\_+2) = hydrostatic stress}
+		\item[\tiny$\square$] \texttt{UVAR(\_+3) = rupture parameter}
+		\item[\tiny$\square$] \texttt{UVAR(\_+4) = rupture parameter normalised by critical value}\\
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Brozzo: $\displaystyle W =  \int_{0}^{\varepsilon_\textrm{f}}\frac{2\sigma_{1}}{3\left(\sigma_{1}-\sigma_{h}\right)}\,\text{d}p$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $5$
+		\item[•] Parameters: $1$
+		\item[•] User Output Variables: + 5\\
+		\item[$\circ$] \texttt{prrup(1)\,\,\,\,\,\,\,\,\,= 5}
+		\item[$\circ$] \texttt{prrup(1+2) = $W_\textrm{L}$}\\
+		\item[\tiny$\square$] \texttt{UVAR(\_+1) = equivalent plastic strain}
+		\item[\tiny$\square$] \texttt{UVAR(\_+2) = maximum principal stress} 
+		\item[\tiny$\square$] \texttt{UVAR(\_+3) = hydrostatic stress}
+		\item[\tiny$\square$] \texttt{UVAR(\_+4) = rupture parameter}
+		\item[\tiny$\square$] \texttt{UVAR(\_+5) = rupture parameter normalised by critical value}\\
+	\end{itemize}
+\end{itemize}
+
+\pagebreak
+\begin{itemize}
+	\item[\tiny$\blacksquare$] Forming Limit Diagram: $\displaystyle W = \frac{\varepsilon_1}{\varepsilon_1^\textrm{\tiny FLD}}$ \verified{}
+	\begin{itemize}
+		\item[•] ID: $6$
+		\item[•] Parameters: $1$
+		\item[•] User Output Variables: + 5\\
+		\item[$\circ$] \texttt{prrup(1)\,\,\,\,\,\,\,\,\,= 6}
+		\item[$\circ$] \texttt{prrup(1+2) = $W_\textrm{L}$}\\
+		\item[\tiny$\square$] \texttt{UVAR(\_+1) = maximum principal strain}
+		\item[\tiny$\square$] \texttt{UVAR(\_+2) = minimum principal strain}
+		\item[\tiny$\square$] \texttt{UVAR(\_+3) = projection of maximum principal strain on FLD} 
+		\item[\tiny$\square$] \texttt{UVAR(\_+4) = rupture parameter}
+		\item[\tiny$\square$] \texttt{UVAR(\_+5) = rupture parameter normalised by critical value}\\
+		\item[•] Additionaly, this rupture criterion requires the definition of data points, representative of the forming limit curve major and minor strains. The following lines should be added to the input file below the material definition, where in \textcolor{red}{red} are indicated the fields to be modified. Do not change anything else. The number of properties should be modified according to the number of data points. Below \texttt{*PROPERTY TABLE, TYPE=FLD1} insert the major strain data points, and below \texttt{*PROPERTY TABLE, TYPE=FLD2} insert the minor strain data points. Please note that each line only accepts a maximum of 8 properties, while multiple lines are accepted.
+		\par\bigskip
+		\texttt{\fbox{
+		\begin{minipage}{0.85\textwidth}
+			*PROPERTY TABLE TYPE, NAME=FLD1, PROPERTIES=\textcolor{red}{5}\\
+			*PROPERTY TABLE TYPE, NAME=FLD2, PROPERTIES=\textcolor{red}{5}\\
+			*TABLE COLLECTION, NAME=FLD\\
+			*PROPERTY TABLE, TYPE=FLD1\\
+			\textcolor{red}{ 0.3,  0.2, 0.1, 0.2, 0.3}\\
+			*PROPERTY TABLE, TYPE=FLD2\\
+			\textcolor{red}{-0.2, -0.1, 0.0, 0.1, 0.2}
+		\end{minipage}
+		}}
+		\par\bigskip
+	\end{itemize}
+\end{itemize}
+
+
+\newpage
+\section{Example}
+\vspace{0.5cm}
+
+\begin{itemize}
+	\item Debug and Print: Error messages only
+	\item Elasticity: Young's Modulus and Poisson's Ratio
+	\item Yield Function: Yld2000-2d
+	\item Isotropic Hardening Law: Voce + Linear
+	\item Kinematic Hardening Law: Chaboche II
+	\item Uncoupled Rupture Criterion: Cockroft and Latham
+\end{itemize}
+
+\noindent The material parameters and IDs are given as input to the UMMDp in one dimensional array, named by default \texttt{props} in the program. In the beginning of the UMMDp, this array is copied to a new variable \texttt{prop}, and the variable to define debug and print mode is excluded from this new array.
+
+\noindent
+\begin{minipage}{0.4\textwidth}
+	\begin{itemize}
+		\item[]
+		\item[$\circ$] \texttt{props(1)\,\,\,\,\,\,= \textcolor{red}{0}}
+		\item[$\circ$] \texttt{props(2)\,\,\,\,\,\,= \textcolor{red}{0}}
+		\item[$\circ$] \texttt{props(3)\,\,\,\,\,\,= 200000.0}
+		\item[$\circ$] \texttt{props(4)\,\,\,\,\,\,= 0.3}
+		\item[$\circ$] \texttt{props(5)\,\,\,\,\,\,= \textcolor{red}{-2}}
+		\item[$\circ$] \texttt{props(6)\,\,\,\,\,\,= 1.0}
+		\item[$\circ$] \texttt{props(7)\,\,\,\,\,\,= 1.0}
+		\item[$\circ$] \texttt{props(8)\,\,\,\,\,\,= 1.0}
+		\item[$\circ$] \texttt{props(9)\,\,\,\,\,\,= 1.0}
+		\item[$\circ$] \texttt{props(10) = 1.0}
+		\item[$\circ$] \texttt{props(11) = 1.0}
+		\item[$\circ$] \texttt{props(12) = 1.0}
+		\item[$\circ$] \texttt{props(13) = 1.0}
+		\item[$\circ$] \texttt{props(14) = 8.0}
+		\item[$\circ$] \texttt{props(15) = \textcolor{red}{5}}
+		\item[$\circ$] \texttt{props(16) = 180.0}
+		\item[$\circ$] \texttt{props(17) = 5.06}
+		\item[$\circ$] \texttt{props(18) = 2.11}
+		\item[$\circ$] \texttt{props(19) = 52.2}
+	\end{itemize} 
+\end{minipage}
+\begin{minipage}{0.6\textwidth}
+	\begin{itemize}
+		\item[]
+		\item[] Debug and Print ID
+		\item[] Elasticity ID
+		\item[] $E$
+		\item[] $\nu$
+		\item[] Yield Function ID
+		\item[] $\alpha_1$
+		\item[] $\alpha_2$
+		\item[] $\alpha_3$
+		\item[] $\alpha_4$
+		\item[] $\alpha_5$
+		\item[] $\alpha_6$
+		\item[] $\alpha_7$
+		\item[] $\alpha_8$
+		\item[] $a$
+		\item[] Isotropic Hardening Law ID
+		\item[] $\sigma_{\textrm{y}_0}$
+		\item[] $Q$
+		\item[] $b$
+		\item[] $H$
+	\end{itemize}
+\end{minipage}
+
+\noindent
+\begin{minipage}{0.4\textwidth}
+	\begin{itemize}
+		\item[$\circ$] \texttt{props(20) = \textcolor{red}{5}}
+		\item[$\circ$] \texttt{props(21) = 3}
+		\item[$\circ$] \texttt{props(22) = 824.9}
+		\item[$\circ$] \texttt{props(23) = 56.5} 
+		\item[$\circ$] \texttt{props(24) = 135.4}
+		\item[$\circ$] \texttt{props(25) = 0.0684}
+		\item[$\circ$] \texttt{props(26) = 27509.4}
+		\item[$\circ$] \texttt{props(27) = 415.55}
+		\item[$\circ$] \texttt{props(28) = \textcolor{red}{2}}
+		\item[$\circ$] \texttt{props(29) = 1}
+		\item[$\circ$] \texttt{props(30) = 0.5}
+		\item[] 
+	\end{itemize} 
+\end{minipage}
+\begin{minipage}{0.6\textwidth}
+	\begin{itemize}
+		\item[] Kinematic Hardening Law ID
+		\item[] $n$
+		\item[] $c_1$
+		\item[] $\gamma_1$
+		\item[] $c_2$
+		\item[] $\gamma_2$
+		\item[] $c_3$
+		\item[] $\gamma_3$
+		\item[] Uncoupled Rupture Criterion ID
+		\item[] Flag of Analysis Completion/Termination 
+		\item[] $W_\textrm{L}$
+		\item[] 
+	\end{itemize}
+\end{minipage}
+
+\noindent This \texttt{prop(i)} array is divided in the UMMDp as follow:
+\begin{itemize}
+	\item \texttt{prela(i)} - Elasticity
+	\item \texttt{pryld(i)} - Yield Function
+	\item \texttt{prihd(i)} - Isotropic Hardening Law
+	\item \texttt{prkin(i)} -  Kinematic Hardening Law
+	\item \texttt{prrup(i)} -  Uncoupled Rupture Criterion\\
+\end{itemize}
+
+\noindent The model ID is stored in the top of each of these arrays. Here, it is shown some parts of a plane stress example for the Abaqus input file. The red letter indicates ID of each properties.
+\par\bigskip
+\par\bigskip
+\noindent
+\hspace{0.0cm}
+\texttt{\fbox{
+	\begin{minipage}{0.95\textwidth}
+	*MATERIAL, NAME=UMMDp\\
+	*USER MATERIAL, CONSTANTS=30\\
+	\textcolor{red}{0}, \textcolor{red}{0}, 200000.0, 0.3, \textcolor{red}{-2}, 1.0, 1.0, 1.0 \\
+	1.0, 1.0, 1.0, 1.0, 1.0, 8.0, \textcolor{red}{5}, 180.0,\\
+	5.06, 2.11, 52.2, \textcolor{red}{5}, 3, 824.9, 56.5, 135.4,\\
+	0.0684, 27509.4, 415.55, \textcolor{red}{2}, 1, 0.5\\
+	**\\
+	*DEPVAR\\
+	13,\\
+	**\\
+	*USER OUTPUT VARIABLES\\
+	9,
+	\end{minipage}
+}}
+\par\bigskip
+
+\end{document}

@@ -34,7 +34,6 @@ cd compiled
 del ummdp_vfm.pyd >nul
 
 python -m numpy.f2py -c -m ummdp_vfm ummdp_vfm.f --fcompiler=intelvem --opt=/heap-arrays:0 1> ummdp_vfm.log
-rem 
 
 rename ummdp_vfm.*.pyd ummdp_vfm.pyd >nul
 
