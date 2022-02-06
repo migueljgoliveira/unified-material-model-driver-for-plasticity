@@ -46,7 +46,7 @@ c-----------------------------------------------------------------------
       common /ummdp3/nsdv
       common /ummdp4/propdim
 c
-      parameter (mxpbs=1,mxprop=100)
+      parameter (mxpbs=10,mxprop=100)
       real*8 s2(ntens),dpe(ntens),pe(ntens),ustatev(ntens),prop(mxprop)
       real*8 x1(mxpbs,ntens),x2(mxpbs,ntens)
 c-----------------------------------------------------------------------
@@ -83,9 +83,6 @@ c
      1                      npbs,ndrup )
 c
       if ( npbs > mxpbs ) then
-        ! write (6,'(/12xA)' ) '            Error : 301'
-        ! write (6,'(/12xA)') 'npbs = ',npbs
-        ! write (6,*) 'mxpbs = ',mxpbs
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
         write (6,*) 'mxpbs=',mxpbs
@@ -357,6 +354,7 @@ c
 c
 c-----------------------------------------------------------------------
       INCLUDE 'ABA_PARAM.INC'
+c-----------------------------------------------------------------------
 c
       isvrsvd = 0             ! no reserved variables
 c
@@ -2394,10 +2392,13 @@ c     ummdp_print_rupture ( prrup,ndrup )
 c       print uncoupled rupture criterion parameters
 c
 c     ummdp_print_info
-c       print informations for debug (info)
+c       print info for debug (info)
 c
 c     ummdp_print_inout
-c       print informations for debug (input/output)
+c       print info for debug (input/output)
+c
+c     ummdp_print_element ( )
+c       print element info
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
@@ -2574,7 +2575,7 @@ c
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-c     PRINT INFORMATIONS FOR DEBUG (INFO)
+c     PRINT INFO FOR DEBUG (INFO)
 c
       subroutine ummdp_print_info ( inc,nnrm,nshr )
 c
@@ -2642,7 +2643,7 @@ c
 c
 ************************************************************************
 c
-c     PRINT INFORMATIONS FOR DEBUG (INPUT/OUTPUT)
+c     PRINT INFO FOR DEBUG (INPUT/OUTPUT)
 c
       subroutine ummdp_print_inout ( io,s,de,d,nttl,stv,nstv )
 c
@@ -2680,7 +2681,7 @@ c
 c
 ************************************************************************
 c
-c     PRINT ELEMENT, INTEGRATION POINT AND LAYER INFO
+c     PRINT ELEMENT INFO
 c
       subroutine ummdp_print_element ( )
 c

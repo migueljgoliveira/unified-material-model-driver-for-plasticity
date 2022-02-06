@@ -46,7 +46,7 @@ c-----------------------------------------------------------------------
       common /ummdp3/nsdv
       common /ummdp4/propdim
 c
-      parameter (mxpbs=1,mxprop=100)
+      parameter (mxpbs=10,mxprop=100)
       real*8 s2(ntens),dpe(ntens),pe(ntens),ustatev(ntens),prop(mxprop)
       real*8 x1(mxpbs,ntens),x2(mxpbs,ntens)
 c-----------------------------------------------------------------------
