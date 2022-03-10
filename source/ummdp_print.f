@@ -64,11 +64,20 @@ c
       real*8 prela(ndela)
 c
       integer ntela,i
-      character*50 fmtpr
+      character*50 fmtid,fmtpr,idela
 c-----------------------------------------------------------------------
 c
       ntela = nint(prela(1))
-      write (6,'(/12xA,i1)') '> Elasticity | ',ntela
+c
+      select case ( ntela )
+        case ( 0 )
+          idela = 'Young Modulus & Poisson Ratio'
+        case ( 1 )
+          idela = 'Bulk Modulus & Modulus of Rigidity'
+      end select
+c
+      fmtid = '(/12xA,1xI1,1xA1,1xA50)'
+      write (6,fmtid) '> Elasticity |',ntela,'|',idela
 c
       fmtpr = '(16xA10,I1,A3,E20.12)'
       do i = 1,ndela-1
@@ -94,14 +103,46 @@ c
 c
       integer i,j
       integer ntyld
-      character*50 fmtid,fmtpr
+      character*50 fmtid,fmtpr,idyld
 c-----------------------------------------------------------------------
 c
-      fmtid = '(/12XA,I1)'
+      ntyld = nint(pryld(1))
 c
-      ntyld = pryld(1)
-      if ( ntyld < 0 ) fmtid = '(/12XA,I2)'
-      write (6,fmtid) '> Yield Function | ',ntyld
+      select case ( ntyld )
+        case ( 0 )
+          idyld = 'von Mises'
+        case ( 1 )
+          idyld = 'Hill 1948'
+        case ( 2 )
+          idyld = 'Yld2004-18p'
+        case ( 3 )
+          idyld = 'CPB 2006'
+        case ( 4 )
+          idyld = 'Karafillis-Boyce'
+        case ( 5 )
+          idyld = 'Hu 2005'
+        case ( 6 )
+          idyld = 'Yoshida 2011'
+c
+        case ( -1 )
+          idyld = 'Gotoh'
+        case ( -2 )
+          idyld = 'Yld2000-2d'
+        case ( -3 )
+          idyld = 'Vegter'
+        case ( -4 )
+          idyld = 'BBC 2005'
+        case ( -5 )
+          idyld = 'Yld89'
+        case ( -6 )
+          idyld = 'BBC 2008'
+        case ( -7 )
+          idyld = 'Hill 1990'
+      end select
+c
+      fmtid = '(/12xA,1xI1,1xA1,1xA30)'
+      if ( ntyld < 0 ) fmtid = '(/12xA,1xI2,1xA1,1xA30)'
+      write (6,fmtid) '> Yield Function |',ntyld,'|',idyld
 C
       fmtpr = '(16xA10,I2,A3,E20.12)'
       do i = 1,ndyld-1
@@ -126,12 +167,30 @@ c
       real*8 prihd(ndihd)
 c
       integer ntihd,i
-      character*50 fmtpr
+      character*50 fmtid,fmtpr,idihd
 c-----------------------------------------------------------------------
 c
       ntihd = nint(prihd(1))
 c
-      write (6,'(/12xA,I1)') '> Isotropic Hardening Law | ',ntihd
+      select case ( ntihd )
+        case ( 0 )
+          idihd = 'Perfectly Plastic'
+        case ( 1 )
+          idihd = 'Linear'
+        case ( 2 )
+          idihd = 'Swift'
+        case ( 3 )
+          idihd = 'Ludwik'
+        case ( 4 )
+          idihd = 'Voce'
+        case ( 5 )
+          idihd = 'Voce & Linear'
+        case ( 6 )
+          idihd = 'Voce & Swift'
+      end select
+c
+      fmtid = '(/12xA,1xI1,1xA1,1xA30)'
+      write (6,fmtid) '> Isotropic Hardening Law |',ntihd,'|',idihd
 c
       fmtpr = '(16xA10,I1,A3,E20.12)'
       do i = 1,ndihd-1
@@ -157,12 +216,30 @@ c
 c
       integer i
       integer ntkin
-      character*50 fmtpr
+      character*50 fmtid,fmtpr,idkin
 c-----------------------------------------------------------------------
 c
       ntkin = nint(prkin(1))
 c
-      write (6,'(/12xA,I1)') '> Kinematic Hardening Law | ',ntkin
+      select case ( ntkin )
+        case ( 0 )
+          idkin = 'None'
+        case ( 1 )
+          idkin = 'Prager'
+        case ( 2 )
+          idkin = 'Ziegler'
+        case ( 3 )
+          idkin = 'Armstrong & Frederick'
+        case ( 4 )
+          idkin = 'Chaboche I'
+        case ( 5 )
+          idkin = 'Chaboche II'
+        case ( 6 )
+          idkin = 'Yoshida-Uemori'
+      end select
+c
+      fmtid ='(/12xA,1xI1,1xA1,1xA30)'
+      write (6,fmtid) '> Kinematic Hardening Law |',ntkin,'|',idkin
 c
       fmtpr = '(16xA10,I1,A3,E20.12)'
       do i = 1,ndkin-1
@@ -187,12 +264,30 @@ c
       real*8 prrup(ndrup)
 c
       integer ntrup,i
-      character*50 fmtpr
+      character*50 fmtpr,fmtid,idrup
 c-----------------------------------------------------------------------
 c
       ntrup = nint(prrup(1))
 c
-      write (6,'(/12xA,I1)') '> Uncoupled Rupture Criterion | ',ntrup
+      select case ( ntrup )
+        case ( 0 )
+          idrup = 'None'
+        case ( 1 )
+          idrup = 'Equivalent Plastic Strain'
+        case ( 2 )
+          idrup = 'Cockroft & Latham'
+        case ( 3 )
+          idrup = 'Rice & Tracey'
+        case ( 4 )
+          idrup = 'Ayada'
+        case ( 5 )
+          idrup = 'Brozzo'
+        case ( 6 )
+          idrup = 'Forming Limit Diagram'
+      end select
+c
+      fmtid = '(/12xA,1xI1,1xA1,1xA30)'
+      write (6,fmtid) '> Uncoupled Rupture Criterion |',ntrup,'|',idrup
 c
       fmtpr = '(16xA10,I1,A3,E20.12)'
       do i = 1,ndrup-1

@@ -28,7 +28,7 @@ c     UMMDP-VFM MAIN SUBROUTINE
 c
       subroutine ummdp_vfm ( stress1,statev1,strain,dstrain,ndi,nshr,
      1                       ntens,nstatev,props,nprops,noel,npt,kinc,
-     2                       stress2,statev2,nexit )
+     2                       stress2,statev2,de33,nexit )
 c
 c-----------------------------------------------------------------------
       implicit none
@@ -45,6 +45,7 @@ c
      1                      strain(ntens),dstrain(ntens)
 c
       integer,intent(out) :: nexit
+      real*8 ,intent(out) :: de33
       real*8 ,intent(out) :: stress2(ntens),statev2(nstatev)
 c 
       integer mxpbs,mxprop,nrot
@@ -52,7 +53,7 @@ c
       integer ne,ip,lay,nsdv,propdim,nexito,i,k,n,is,nprop,nvbs0,nvbs,
      1        ndela,ndyld,ndihd,ndkin,npbs,ndrup,mjac,isvrsvd,isvsclr,
      2        maxsdv
-      real*8 de33,p,dp
+      real*8 p,dp
       real*8 ustatev(ntens),s2(ntens),dpe(ntens),pe(ntens),prop(mxprop)
       real*8 x1(mxpbs,ntens),x2(mxpbs,ntens),ddsdde(ntens,ntens)
       character*100 text

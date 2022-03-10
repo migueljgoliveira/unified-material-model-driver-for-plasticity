@@ -1734,7 +1734,7 @@ c
       real*8,intent(out) :: sy,dsydp,d2sydp2
 c
       integer ntihd
-      real*8 sy0,hard,c,e0,en,q,b,a
+      real*8 sy0,hard,c,e0,en,q,b,a,p1
 c-----------------------------------------------------------------------
 c
       ntihd = nint(prihd(1))
@@ -1781,7 +1781,8 @@ c
 c
         sy = sy0 + c*p**en
         if ( nreq >= 1 ) then
-          dsydp = en*c*p**(en-1.0d0)
+          p1 = max(p,1.0d-16)
+          dsydp = en*c*p1**(en-1.0d0)
           if ( nreq >= 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*p**(en-2.0d0)
           end if
@@ -2472,7 +2473,7 @@ c
       if ( ntyld < 0 ) fmtid = '(/12XA,I2)'
       write (6,fmtid) '> Yield Function | ',ntyld
 C
-      fmtpr = '(16xA10,I1,A3,E20.12)'
+      fmtpr = '(16xA10,I2,A3,E20.12)'
       do i = 1,ndyld-1
         write (6,fmtpr) '. pryld(1+',i,') =',pryld(i+1)
       end do

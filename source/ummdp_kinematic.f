@@ -4,12 +4,12 @@
 *
 ************************************************************************
 c
-c      0 : No Kinematic Hardening
+c      0 : None
 c      1 : Prager
 c      2 : Ziegler
-c      3 : Armstrong & Frederick (1966)
-c      4 : Chaboche (1979)
-c      5 : Chaboche (1979) - Ziegler
+c      3 : Armstrong & Frederick
+c      4 : Chaboche I
+c      5 : Chaboche II
 c      6 : Yoshida-Uemori
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

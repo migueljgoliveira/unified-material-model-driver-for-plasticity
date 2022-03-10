@@ -1,7 +1,7 @@
 c
 c                               OVER THIS LINE IS CODE DEPENDENT
 c<<-->><<-->><<-->><<->><<-->><<-->><<-->><<-->><<-->><<-->><<-->><<-->>
-c                            UNDER THIS LINE IS DOCE INDEPENDENT
+c                            UNDER THIS LINE IS CODE INDEPENDENT
 c
 c     UMMDp: UNIFIED MATERIAL MODEL DRIVER FOR PLASTICITY
 c
@@ -1198,7 +1198,7 @@ c
           nd = 6
         case ( 2 ) ! Yld2004-18p
           nd = 19
-        case ( 3 ) ! CPB2005
+        case ( 3 ) ! CPB 2005
           nd = 14
         case ( 4 ) ! Karafillis-Boyce
           nd = 8
@@ -1213,14 +1213,14 @@ c
           nd = 9
         case ( -3 ) ! Vegter
           nd = 3 + 4*nint(prop(n+2))
-        case ( -4 ) ! BBC2005
+        case ( -4 ) ! BBC 2005
           nd = 9
         case ( -5 ) ! Yld89
           nd = 4
-        case ( -6 ) ! BBC2008
+        case ( -6 ) ! BBC 2008
           nd = 2 + 8*nint(prop(n+2))
-        case ( -7 ) ! Hill1990
-          nd = 0.5d0
+        case ( -7 ) ! Hill 1990
+          nd = 5
         case default
           write (6,*) 'Yield Function ID :',nyld
           call ummdp_exit ( 202 )
@@ -1236,13 +1236,13 @@ c
           nd = 2
         case ( 2 ) ! Swift
           nd = 3
-        case ( 3 ) ! Ludwick
+        case ( 3 ) ! Ludwik
           nd = 3
         case ( 4 ) ! Voce
           nd = 3
-        case ( 5 ) ! Voce + Linear
+        case ( 5 ) ! Voce & Linear
           nd = 4
-        case ( 6 ) ! Voce + Swift
+        case ( 6 ) ! Voce & Swift
           nd = 7
         case default
           write (6,*) 'Isotropic Hardening Law ID :',nihd
@@ -1288,9 +1288,9 @@ c
           nd = 0
         case ( 1 ) ! Equivalent Plastic Strain
           nd = 1
-        case ( 2 ) ! Cockroft and Latham
+        case ( 2 ) ! Cockroft & Latham
           nd = 1
-        case ( 3 ) ! Rice and Tracey
+        case ( 3 ) ! Rice & Tracey
           nd = 1
         case ( 4 ) ! Ayada
           nd = 1

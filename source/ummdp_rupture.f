@@ -7,15 +7,15 @@ c
 c      0 : No Rupture Criterion
 c
 c      1 : Equivalent Plastic Strain
-c      2 : Cockroft and Latham
-c      3 : Rice and Tracey
+c      2 : Cockroft & Latham
+c      3 : Rice & Tracey
 c      4 : Ayada
 c      5 : Brozzo
 c      6 : Forming Limit Diagram (only plane-stress)
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-c     UNCOUPLED RUPTURE CRITERIA
+c     UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture ( ntens,sdv,nsdv,uvar2,uvar1,nuvarm,
      1                           jrcd,jmac,jmatyp,matlayo,laccfla,
@@ -33,25 +33,25 @@ c      prrup(1) : criteria id
 c      prrup(2) : flag to terminate analysis if limit is reached
 c      prrup(3) : rupture limit
 c
-c 																		       ---- rupture criteria limit
+c 																		      ---- rupture criterion limit
       lim = prrup(3)
-c                                           ---- select rupture criteria
+c                                ---- select uncoupled rupture criterion
       ntrup = nint(prrup(1))
       select case ( ntrup )
 c
-      case ( 0 )                                  ! No Rupture Criterion
+      case ( 0 )                                                  ! None
         return
 c
       case ( 1 )                             ! Equivalent Plastic Strain
         call ummdp_rupture_eqvstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                 nt,lim,wlimnorm )
 c
-      case ( 2 )                                   ! Cockroft and Latham
+      case ( 2 )                                     ! Cockroft & Latham
         call ummdp_rupture_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                jrcd,jmac,jmatyp,matlayo,laccfla,
      2                                nt,lim,wlimnorm )
 c
-      case ( 3 )                                       ! Rice and Tracey
+      case ( 3 )                                         ! Rice & Tracey
         call ummdp_rupture_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                            jrcd,jmac,jmatyp,matlayo,laccfla,
      2                            nt,lim,wlimnorm )
@@ -94,7 +94,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     EQUIVALENT PLASTIC STRAIN UNCOUPLED RUPTURE CRITERIA
+c     EQUIVALENT PLASTIC STRAIN UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture_eqvstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                     nt,lim,wlimnorm )
@@ -128,7 +128,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     COCKROFT AND LATHAM UNCOUPLED RUPTURE CRITERIA
+c     COCKROFT & LATHAM UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                    jrcd,jmac,jmatyp,matlayo,
@@ -197,7 +197,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     RICE AND TRACEY UNCOUPLED RUPTURE CRITERIA
+c     RICE & TRACEY UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                jrcd,jmac,jmatyp,matlayo,laccfla,
@@ -266,7 +266,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     AYADA UNCOUPLED RUPTURE CRITERIA
+c     AYADA UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                 jrcd,jmac,jmatyp,matlayo,laccfla,
@@ -335,7 +335,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     BROZZO UNCOUPLED RUPTURE CRITERIA
+c     BROZZO UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                  jrcd,jmac,jmatyp,matlayo,
@@ -418,7 +418,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     FORMING LIMIT DIAGRAM UNCOUPLED RUPTURE CRITERIA
+c     FORMING LIMIT DIAGRAM UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture_fld ( ntens,uvar2,uvar1,nuvarm,
      1                               jrcd,jmac,jmatyp,matlayo,laccfla,

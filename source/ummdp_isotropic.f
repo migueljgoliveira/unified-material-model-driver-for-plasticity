@@ -9,8 +9,8 @@ c      1 : Linear
 c      2 : Swift
 c      3 : Ludwick
 c      4 : Voce
-c      5 : Voce + Linear
-c      6 : Voce + Swift
+c      5 : Voce & Linear
+c      6 : Voce & Swift
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
@@ -28,7 +28,7 @@ c
       real*8,intent(out) :: sy,dsydp,d2sydp2
 c
       integer ntihd
-      real*8 sy0,hard,c,e0,en,q,b,a
+      real*8 sy0,hard,c,e0,en,q,b,a,p1
 c-----------------------------------------------------------------------
 c
       ntihd = nint(prihd(1))
@@ -68,14 +68,15 @@ c
           end if
         end if
 c
-      case ( 3 )                                               ! Ludwick
+      case ( 3 )                                                ! Ludwik
         sy0 = prihd(1+1)
         c   = prihd(1+2)
         en  = prihd(1+3)
 c
         sy = sy0 + c*p**en
         if ( nreq >= 1 ) then
-          dsydp = en*c*p**(en-1.0d0)
+          p1 = max(p,1.0d-16)
+          dsydp = en*c*p1**(en-1.0d0)
           if ( nreq >= 2 ) then
             d2sydp2 = en*c*(en-1.0d0)*p**(en-2.0d0)
           end if
