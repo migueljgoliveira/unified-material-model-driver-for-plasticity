@@ -396,7 +396,7 @@ c
 cc
 c                               OVER THIS LINE IS CODE DEPENDENT
 c<<-->><<-->><<-->><<->><<-->><<-->><<-->><<-->><<-->><<-->><<-->><<-->>
-c                            UNDER THIS LINE IS DOCE INDEPENDENT
+c                            UNDER THIS LINE IS CODE INDEPENDENT
 c
 c     UMMDp: UNIFIED MATERIAL MODEL DRIVER FOR PLASTICITY
 c
@@ -1593,7 +1593,7 @@ c
           nd = 6
         case ( 2 ) ! Yld2004-18p
           nd = 19
-        case ( 3 ) ! CPB2005
+        case ( 3 ) ! CPB 2005
           nd = 14
         case ( 4 ) ! Karafillis-Boyce
           nd = 8
@@ -1608,14 +1608,14 @@ c
           nd = 9
         case ( -3 ) ! Vegter
           nd = 3 + 4*nint(prop(n+2))
-        case ( -4 ) ! BBC2005
+        case ( -4 ) ! BBC 2005
           nd = 9
         case ( -5 ) ! Yld89
           nd = 4
-        case ( -6 ) ! BBC2008
+        case ( -6 ) ! BBC 2008
           nd = 2 + 8*nint(prop(n+2))
-        case ( -7 ) ! Hill1990
-          nd = 0.5d0
+        case ( -7 ) ! Hill 1990
+          nd = 5
         case default
           write (6,*) 'Yield Function ID :',nyld
           call ummdp_exit ( 202 )
@@ -1631,13 +1631,13 @@ c
           nd = 2
         case ( 2 ) ! Swift
           nd = 3
-        case ( 3 ) ! Ludwick
+        case ( 3 ) ! Ludwik
           nd = 3
         case ( 4 ) ! Voce
           nd = 3
-        case ( 5 ) ! Voce + Linear
+        case ( 5 ) ! Voce & Linear
           nd = 4
-        case ( 6 ) ! Voce + Swift
+        case ( 6 ) ! Voce & Swift
           nd = 7
         case default
           write (6,*) 'Isotropic Hardening Law ID :',nihd
@@ -1683,9 +1683,9 @@ c
           nd = 0
         case ( 1 ) ! Equivalent Plastic Strain
           nd = 1
-        case ( 2 ) ! Cockroft and Latham
+        case ( 2 ) ! Cockroft & Latham
           nd = 1
-        case ( 3 ) ! Rice and Tracey
+        case ( 3 ) ! Rice & Tracey
           nd = 1
         case ( 4 ) ! Ayada
           nd = 1
@@ -1715,8 +1715,8 @@ c      1 : Linear
 c      2 : Swift
 c      3 : Ludwick
 c      4 : Voce
-c      5 : Voce + Linear
-c      6 : Voce + Swift
+c      5 : Voce & Linear
+c      6 : Voce & Swift
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
@@ -1774,7 +1774,7 @@ c
           end if
         end if
 c
-      case ( 3 )                                               ! Ludwick
+      case ( 3 )                                                ! Ludwik
         sy0 = prihd(1+1)
         c   = prihd(1+2)
         en  = prihd(1+3)
@@ -1849,12 +1849,12 @@ c
 *
 ************************************************************************
 c
-c      0 : No Kinematic Hardening
+c      0 : None
 c      1 : Prager
 c      2 : Ziegler
-c      3 : Armstrong & Frederick (1966)
-c      4 : Chaboche (1979)
-c      5 : Chaboche (1979) - Ziegler
+c      3 : Armstrong & Frederick
+c      4 : Chaboche I
+c      5 : Chaboche II
 c      6 : Yoshida-Uemori
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2434,11 +2434,20 @@ c
       real*8 prela(ndela)
 c
       integer ntela,i
-      character*50 fmtpr
+      character*50 fmtid,fmtpr,idela
 c-----------------------------------------------------------------------
 c
       ntela = nint(prela(1))
-      write (6,'(/12xA,i1)') '> Elasticity | ',ntela
+c
+      select case ( ntela )
+        case ( 0 )
+          idela = 'Young Modulus & Poisson Ratio'
+        case ( 1 )
+          idela = 'Bulk Modulus & Modulus of Rigidity'
+      end select
+c
+      fmtid = '(/12xA,1xI1,1xA1,1xA50)'
+      write (6,fmtid) '> Elasticity |',ntela,'|',idela
 c
       fmtpr = '(16xA10,I1,A3,E20.12)'
       do i = 1,ndela-1
@@ -2464,14 +2473,46 @@ c
 c
       integer i,j
       integer ntyld
-      character*50 fmtid,fmtpr
+      character*50 fmtid,fmtpr,idyld
 c-----------------------------------------------------------------------
 c
-      fmtid = '(/12XA,I1)'
+      ntyld = nint(pryld(1))
 c
-      ntyld = pryld(1)
-      if ( ntyld < 0 ) fmtid = '(/12XA,I2)'
-      write (6,fmtid) '> Yield Function | ',ntyld
+      select case ( ntyld )
+        case ( 0 )
+          idyld = 'von Mises'
+        case ( 1 )
+          idyld = 'Hill 1948'
+        case ( 2 )
+          idyld = 'Yld2004-18p'
+        case ( 3 )
+          idyld = 'CPB 2006'
+        case ( 4 )
+          idyld = 'Karafillis-Boyce'
+        case ( 5 )
+          idyld = 'Hu 2005'
+        case ( 6 )
+          idyld = 'Yoshida 2011'
+c
+        case ( -1 )
+          idyld = 'Gotoh'
+        case ( -2 )
+          idyld = 'Yld2000-2d'
+        case ( -3 )
+          idyld = 'Vegter'
+        case ( -4 )
+          idyld = 'BBC 2005'
+        case ( -5 )
+          idyld = 'Yld89'
+        case ( -6 )
+          idyld = 'BBC 2008'
+        case ( -7 )
+          idyld = 'Hill 1990'
+      end select
+c
+      fmtid = '(/12xA,1xI1,1xA1,1xA30)'
+      if ( ntyld < 0 ) fmtid = '(/12xA,1xI2,1xA1,1xA30)'
+      write (6,fmtid) '> Yield Function |',ntyld,'|',idyld
 C
       fmtpr = '(16xA10,I2,A3,E20.12)'
       do i = 1,ndyld-1
@@ -2496,12 +2537,30 @@ c
       real*8 prihd(ndihd)
 c
       integer ntihd,i
-      character*50 fmtpr
+      character*50 fmtid,fmtpr,idihd
 c-----------------------------------------------------------------------
 c
       ntihd = nint(prihd(1))
 c
-      write (6,'(/12xA,I1)') '> Isotropic Hardening Law | ',ntihd
+      select case ( ntihd )
+        case ( 0 )
+          idihd = 'Perfectly Plastic'
+        case ( 1 )
+          idihd = 'Linear'
+        case ( 2 )
+          idihd = 'Swift'
+        case ( 3 )
+          idihd = 'Ludwik'
+        case ( 4 )
+          idihd = 'Voce'
+        case ( 5 )
+          idihd = 'Voce & Linear'
+        case ( 6 )
+          idihd = 'Voce & Swift'
+      end select
+c
+      fmtid = '(/12xA,1xI1,1xA1,1xA30)'
+      write (6,fmtid) '> Isotropic Hardening Law |',ntihd,'|',idihd
 c
       fmtpr = '(16xA10,I1,A3,E20.12)'
       do i = 1,ndihd-1
@@ -2527,12 +2586,30 @@ c
 c
       integer i
       integer ntkin
-      character*50 fmtpr
+      character*50 fmtid,fmtpr,idkin
 c-----------------------------------------------------------------------
 c
       ntkin = nint(prkin(1))
 c
-      write (6,'(/12xA,I1)') '> Kinematic Hardening Law | ',ntkin
+      select case ( ntkin )
+        case ( 0 )
+          idkin = 'None'
+        case ( 1 )
+          idkin = 'Prager'
+        case ( 2 )
+          idkin = 'Ziegler'
+        case ( 3 )
+          idkin = 'Armstrong & Frederick'
+        case ( 4 )
+          idkin = 'Chaboche I'
+        case ( 5 )
+          idkin = 'Chaboche II'
+        case ( 6 )
+          idkin = 'Yoshida-Uemori'
+      end select
+c
+      fmtid ='(/12xA,1xI1,1xA1,1xA30)'
+      write (6,fmtid) '> Kinematic Hardening Law |',ntkin,'|',idkin
 c
       fmtpr = '(16xA10,I1,A3,E20.12)'
       do i = 1,ndkin-1
@@ -2557,12 +2634,30 @@ c
       real*8 prrup(ndrup)
 c
       integer ntrup,i
-      character*50 fmtpr
+      character*50 fmtpr,fmtid,idrup
 c-----------------------------------------------------------------------
 c
       ntrup = nint(prrup(1))
 c
-      write (6,'(/12xA,I1)') '> Uncoupled Rupture Criterion | ',ntrup
+      select case ( ntrup )
+        case ( 0 )
+          idrup = 'None'
+        case ( 1 )
+          idrup = 'Equivalent Plastic Strain'
+        case ( 2 )
+          idrup = 'Cockroft & Latham'
+        case ( 3 )
+          idrup = 'Rice & Tracey'
+        case ( 4 )
+          idrup = 'Ayada'
+        case ( 5 )
+          idrup = 'Brozzo'
+        case ( 6 )
+          idrup = 'Forming Limit Diagram'
+      end select
+c
+      fmtid = '(/12xA,1xI1,1xA1,1xA30)'
+      write (6,fmtid) '> Uncoupled Rupture Criterion |',ntrup,'|',idrup
 c
       fmtpr = '(16xA10,I1,A3,E20.12)'
       do i = 1,ndrup-1
@@ -2719,15 +2814,15 @@ c
 c      0 : No Rupture Criterion
 c
 c      1 : Equivalent Plastic Strain
-c      2 : Cockroft and Latham
-c      3 : Rice and Tracey
+c      2 : Cockroft & Latham
+c      3 : Rice & Tracey
 c      4 : Ayada
 c      5 : Brozzo
 c      6 : Forming Limit Diagram (only plane-stress)
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-c     UNCOUPLED RUPTURE CRITERIA
+c     UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture ( ntens,sdv,nsdv,uvar2,uvar1,nuvarm,
      1                           jrcd,jmac,jmatyp,matlayo,laccfla,
@@ -2745,25 +2840,25 @@ c      prrup(1) : criteria id
 c      prrup(2) : flag to terminate analysis if limit is reached
 c      prrup(3) : rupture limit
 c
-c 																		       ---- rupture criteria limit
+c 																		      ---- rupture criterion limit
       lim = prrup(3)
-c                                           ---- select rupture criteria
+c                                ---- select uncoupled rupture criterion
       ntrup = nint(prrup(1))
       select case ( ntrup )
 c
-      case ( 0 )                                  ! No Rupture Criterion
+      case ( 0 )                                                  ! None
         return
 c
       case ( 1 )                             ! Equivalent Plastic Strain
         call ummdp_rupture_eqvstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                 nt,lim,wlimnorm )
 c
-      case ( 2 )                                   ! Cockroft and Latham
+      case ( 2 )                                     ! Cockroft & Latham
         call ummdp_rupture_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                jrcd,jmac,jmatyp,matlayo,laccfla,
      2                                nt,lim,wlimnorm )
 c
-      case ( 3 )                                       ! Rice and Tracey
+      case ( 3 )                                         ! Rice & Tracey
         call ummdp_rupture_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                            jrcd,jmac,jmatyp,matlayo,laccfla,
      2                            nt,lim,wlimnorm )
@@ -2806,7 +2901,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     EQUIVALENT PLASTIC STRAIN UNCOUPLED RUPTURE CRITERIA
+c     EQUIVALENT PLASTIC STRAIN UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture_eqvstrain ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                     nt,lim,wlimnorm )
@@ -2840,7 +2935,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     COCKROFT AND LATHAM UNCOUPLED RUPTURE CRITERIA
+c     COCKROFT & LATHAM UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture_cockroft ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                    jrcd,jmac,jmatyp,matlayo,
@@ -2909,7 +3004,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     RICE AND TRACEY UNCOUPLED RUPTURE CRITERIA
+c     RICE & TRACEY UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture_rice ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                jrcd,jmac,jmatyp,matlayo,laccfla,
@@ -2978,7 +3073,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     AYADA UNCOUPLED RUPTURE CRITERIA
+c     AYADA UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture_ayada ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                 jrcd,jmac,jmatyp,matlayo,laccfla,
@@ -3047,7 +3142,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     BROZZO UNCOUPLED RUPTURE CRITERIA
+c     BROZZO UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture_brozzo ( sdv,nsdv,uvar2,uvar1,nuvarm,
      1                                  jrcd,jmac,jmatyp,matlayo,
@@ -3130,7 +3225,7 @@ c
 c
 c~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 c
-c     FORMING LIMIT DIAGRAM UNCOUPLED RUPTURE CRITERIA
+c     FORMING LIMIT DIAGRAM UNCOUPLED RUPTURE CRITERION
 c
       subroutine ummdp_rupture_fld ( ntens,uvar2,uvar1,nuvarm,
      1                               jrcd,jmac,jmatyp,matlayo,laccfla,
@@ -3847,12 +3942,29 @@ c
 c
 ************************************************************************
 *
-*     YIELD FUNCTIONS
+*     YIELD CRITERIA
 *
 ************************************************************************
+c
+c      0 : von Mises
+c      1 : Hill 1948
+c      2 : Yld2004-18p
+c      3 : CPB 2006
+c      4 : Karafillis-Boyce
+c      5 : Hu 2005
+c      6 : Yoshida 2011
+c
+c     -1 : Gotoh
+c     -2 : Yld200-2d
+c     -3 : Vegter
+c     -4 : BBC 2005
+c     -5 : Yld89
+c     -6 : BBC 2008
+c     -7 : Hill 1990
+c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-c     YIELD FUNCTION
+c     YIELD CRITERION
 c
       subroutine ummdp_yield ( se,cdseds,cd2seds2,nreq,cs,nttl,nnrm,
      1                         nshr,pryld,ndyld )
@@ -3921,29 +4033,37 @@ c                                                          ---- set s(i)
       end do
 c
       select case ( ntyld )
-      case ( 0 )
-        call ummdp_yield_mises ( s,se,dseds,d2seds2,nreq )
-      case ( 1 )
-        call ummdp_yield_hill1948 ( s,se,dseds,d2seds2,nreq,pryld,
-     1                              ndyld )
-      case ( 2 )
-        call ummdp_yield_yld2004 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
-     1
-      case ( 3 )
-        call ummdp_yield_cpb2006 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
-      case ( 4 )
-        call ummdp_yield_karafillisboyce ( s,se,dseds,d2seds2,nreq,
-     1                                     pryld,ndyld )
-      case ( 5 )
-        call ummdp_yield_hu2005 ( s,se,dseds,d2seds2,nreq,pryld,ndyld )
-      case ( 6 )
-        call ummdp_yield_yoshida2011 ( s,se,dseds,d2seds2,nreq,pryld,
-     1                                 ndyld )
+        case ( 0 )                                           ! von Mises
+          call ummdp_yield_mises ( s,se,dseds,d2seds2,nreq )
 c
-      case default
-        write (6,*) 'error in ummdp_yield'
-        write (6,*) 'ntyld error :',ntyld
-        call ummdp_exit ( 202 )
+        case ( 1 )                                           ! Hill 1948
+          call ummdp_yield_hill1948 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                ndyld )
+c
+        case ( 2 )                                         ! Yld2004-18p
+          call ummdp_yield_yld2004 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                               ndyld )
+c
+        case ( 3 )                                            ! CPB 2006
+          call ummdp_yield_cpb2006 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                               ndyld )
+c
+        case ( 4 )                                    ! Karafillis-Boyce
+          call ummdp_yield_karafillisboyce ( s,se,dseds,d2seds2,nreq,
+     1                                       pryld,ndyld )
+c
+        case ( 5 )                                             ! Hu 2005
+          call ummdp_yield_hu2005 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                              ndyld )
+c
+        case ( 6 )                                        ! Yoshida 2011
+          call ummdp_yield_yoshida2011 ( s,se,dseds,d2seds2,nreq,pryld,
+     1                                   ndyld )
+c
+        case default
+          write (6,*) 'error in ummdp_yield'
+          write (6,*) 'ntyld error :',ntyld
+          call ummdp_exit ( 202 )
       end select
 c
 c                                                        ---- set dse/ds
@@ -3972,31 +4092,38 @@ c
 c                                       ---- plane stress yield criteria
 c
       select case ( ntyld )
-      case ( -1 )
-        call ummdp_yield_gotoh ( cs,se,cdseds,cd2seds2,nreq,pryld,
-     1                           ndyld )
-      case ( -2 )
-        call ummdp_yield_yld2000 ( cs,se,cdseds,cd2seds2,nreq,pryld,
+        case ( -1 )                                              ! Gotoh
+          call ummdp_yield_gotoh ( cs,se,cdseds,cd2seds2,nreq,pryld,
      1                             ndyld )
-      case ( -3 )
-        call ummdp_yield_vegter ( cs,se,cdseds,cd2seds2,nreq,pryld,
-     1                            ndyld )
-      case ( -4 )
-        call ummdp_yield_bbc2005 ( cs,se,cdseds,cd2seds2,nreq,pryld,
-     1                             ndyld )
-      case ( -5 )
-        call ummdp_yield_yld89 ( cs,se,cdseds,cd2seds2,nreq, pryld,
-     1                           ndyld )
-      case ( -6 )
-        call ummdp_yield_bbc2008 ( cs,se,cdseds,cd2seds2,nreq,pryld,
-     1                             ndyld )
-      case ( -7 )
-        call ummdp_yield_hill1990 ( cs,se,cdseds,cd2seds2,nreq,pryld,
+c
+        case ( -2 )                                         ! Yld2000-2d
+          call ummdp_yield_yld2000 ( cs,se,cdseds,cd2seds2,nreq,pryld,
+     1                               ndyld )
+c
+        case ( -3 )                                             ! Vegter
+          call ummdp_yield_vegter ( cs,se,cdseds,cd2seds2,nreq,pryld,
      1                              ndyld )
-      case default
-        write (6,*) 'error in ummdp_yield'
-        write (6,*) 'ntyld error :',ntyld
-        call ummdp_exit ( 202 )
+c
+        case ( -4 )                                           ! BBC 2005
+          call ummdp_yield_bbc2005 ( cs,se,cdseds,cd2seds2,nreq,pryld,
+     1                               ndyld )
+c
+        case ( -5 )                                              ! Yld89
+          call ummdp_yield_yld89 ( cs,se,cdseds,cd2seds2,nreq, pryld,
+     1                             ndyld )
+c
+        case ( -6 )                                           ! BBC 2008
+          call ummdp_yield_bbc2008 ( cs,se,cdseds,cd2seds2,nreq,pryld,
+     1                               ndyld )
+c
+        case ( -7 )                                          ! Hill 1990
+          call ummdp_yield_hill1990 ( cs,se,cdseds,cd2seds2,nreq,pryld,
+     1                                ndyld )
+c
+        case default
+          write (6,*) 'error in ummdp_yield'
+          write (6,*) 'ntyld error :',ntyld
+          call ummdp_exit ( 202 )
       end select
 c
       return

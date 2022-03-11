@@ -24,7 +24,7 @@
 *                                                                      *
 ************************************************************************
 c
-c     UMMDP-VFM MAIN SUBROUTINE
+c     UMMDp-VFM MAIN SUBROUTINE
 c
       subroutine ummdp_vfm ( stress1,statev1,strain,dstrain,ndi,nshr,
      1                       ntens,nstatev,props,nprops,noel,npt,kinc,
@@ -63,7 +63,7 @@ cf2py intent(in) stress1,statev1,strain,dstrain
 cf2py intent(in) ndi,nshr,ntens,nstatev
 cf2py intent(in) props,nprops
 cf2py intent(in) noel,npt,kspt,kinc
-cf2py intent(out) stress2,statev2,nexit
+cf2py intent(out) stress2,statev2,de33,nexit
 cf2py depend(ntens) stress1,stress2,strain,dstrain
 cf2py depend(nstatev) statev1,statev2
 cf2py depend(nprops) props
@@ -117,7 +117,7 @@ c                             ---- copy current internal state variables
      1                     ntens,mxpbs,npbs )
 c
 c                             ---- update stress and set tangent modulus
-      mjac = 0
+      mjac = 1
       call ummdp_plasticity ( stress1,s2,dstrain,p,dp,dpe,de33,x1,x2,
      1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
      2                        prop,nprop,propdim )
@@ -416,7 +416,7 @@ c       ndiv    | division number of multistage
 c
 c-----------------------------------------------------------------------
 c
-      tol = 1.0d-8
+      tol = 1.0d-5
       maxnr = 25
       ndiv =  5
       maxnest = 10
@@ -3202,7 +3202,7 @@ c
 c
 ************************************************************************
 *
-*     YIELD FUNCTIONS
+*     YIELD CRITERIA
 *
 ************************************************************************
 c
@@ -3224,7 +3224,7 @@ c     -7 : Hill 1990
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-c     YIELD FUNCTION
+c     YIELD CRITERION
 c
       subroutine ummdp_yield ( se,cdseds,cd2seds2,nreq,cs,nttl,nnrm,
      1                         nshr,pryld,ndyld )

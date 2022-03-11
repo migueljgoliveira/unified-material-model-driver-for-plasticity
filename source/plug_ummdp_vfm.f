@@ -24,7 +24,7 @@
 *                                                                      *
 ************************************************************************
 c
-c     UMMDP-VFM MAIN SUBROUTINE
+c     UMMDp-VFM MAIN SUBROUTINE
 c
       subroutine ummdp_vfm ( stress1,statev1,strain,dstrain,ndi,nshr,
      1                       ntens,nstatev,props,nprops,noel,npt,kinc,
@@ -63,7 +63,7 @@ cf2py intent(in) stress1,statev1,strain,dstrain
 cf2py intent(in) ndi,nshr,ntens,nstatev
 cf2py intent(in) props,nprops
 cf2py intent(in) noel,npt,kspt,kinc
-cf2py intent(out) stress2,statev2,nexit
+cf2py intent(out) stress2,statev2,de33,nexit
 cf2py depend(ntens) stress1,stress2,strain,dstrain
 cf2py depend(nstatev) statev1,statev2
 cf2py depend(nprops) props
@@ -84,7 +84,7 @@ c
       nprop = mxprop
       propdim = nprops - 1
 c                                        ---- set debug and verbose mode
-      nvbs0 = props(1)
+      nvbs0 = nint(props(1))
       call ummdp_debugmode ( nvbs,nvbs0 )
 c                                       ---- print detailed information
       if ( nvbs >= 1 ) then

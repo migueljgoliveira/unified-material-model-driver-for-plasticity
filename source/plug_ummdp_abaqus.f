@@ -60,7 +60,7 @@ c
       propdim = nprops - 1
 c
 c                                        ---- set debug and verbose mode
-      nvbs0 = props(1)
+      nvbs0 = nint(props(1))
       call ummdp_debugmode ( nvbs,nvbs0 )
 c
 c                                        ---- print detailed information
