@@ -26,8 +26,8 @@
 c
 c     UMMDp-VFM MAIN SUBROUTINE
 c
-      subroutine ummdp_vfm ( stress1,statev1,strain,dstrain,ndi,nshr,
-     1                       ntens,nstatev,props,nprops,noel,npt,kinc,
+      subroutine ummdp_vfm ( stress1,statev1,dstrain,ndi,nshr,
+     1                       ntens,nstatev,props,nprops,noel,kinc,
      2                       stress2,statev2,de33,nexit )
 c
 c-----------------------------------------------------------------------
@@ -39,15 +39,15 @@ c
       common /ummdp4/propdim
       common /ummdp5/nexito
 c
-      integer,intent(in) :: ndi,nshr,ntens,nstatev,nprops,noel,npt,kinc                      
+      integer,intent(in) :: ndi,nshr,ntens,nstatev,nprops,noel,kinc
       real*8 ,intent(in) :: props(nprops)
       real*8 ,intent(in) :: stress1(ntens),statev1(nstatev),
-     1                      strain(ntens),dstrain(ntens)
+     1                      dstrain(ntens)
 c
       integer,intent(out) :: nexit
       real*8 ,intent(out) :: de33
       real*8 ,intent(out) :: stress2(ntens),statev2(nstatev)
-c 
+c
       integer mxpbs,mxprop,nrot
       parameter (mxpbs=10,mxprop=100)
       integer ne,ip,lay,nsdv,propdim,nexito,i,k,n,is,nprop,nvbs0,nvbs,
@@ -59,12 +59,12 @@ c
       character*100 text
 c-----------------------------------------------------------------------
 c
-cf2py intent(in) stress1,statev1,strain,dstrain
+cf2py intent(in) stress1,statev1,dstrain
 cf2py intent(in) ndi,nshr,ntens,nstatev
 cf2py intent(in) props,nprops
-cf2py intent(in) noel,npt,kspt,kinc
+cf2py intent(in) noel,kspt,kinc
 cf2py intent(out) stress2,statev2,de33,nexit
-cf2py depend(ntens) stress1,stress2,strain,dstrain
+cf2py depend(ntens) stress1,stress2,dstrain
 cf2py depend(nstatev) statev1,statev2
 cf2py depend(nprops) props
 c
@@ -76,15 +76,15 @@ c                                                   ---- open debug file
       else
         open(6,file='ummdp_vfm.log',access='APPEND',status='OLD')
       end if
-c 
+c
       ne = noel
-      ip = npt
+      ip = 1
       lay = 1
       nsdv = nstatev
       nprop = mxprop
       propdim = nprops - 1
 c                                        ---- set debug and verbose mode
-      nvbs0 = props(1)
+      nvbs0 = nint(props(1))
       call ummdp_debugmode ( nvbs,nvbs0 )
 c                                       ---- print detailed information
       if ( nvbs >= 1 ) then
@@ -117,7 +117,7 @@ c                             ---- copy current internal state variables
      1                     ntens,mxpbs,npbs )
 c
 c                             ---- update stress and set tangent modulus
-      mjac = 1
+      mjac = 0
       call ummdp_plasticity ( stress1,s2,dstrain,p,dp,dpe,de33,x1,x2,
      1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
      2                        prop,nprop,propdim )
@@ -152,7 +152,7 @@ c                                                 ---- return error code
       nexit = nexito
 c
       return
-      end
+      end subroutine ummdp_vfm
 c
 c
 c
@@ -357,7 +357,7 @@ c
 c       s2      | stress after update                              (out)
 c       dp      | equivalent plastic strain increment              (out)
 c       dpe     | plastic strain increment components              (out)
-c       de33    | strain increment in thickness direction          (out)
+c       de33    | total strain increment in thickness direction    (out)
 c       ddsdde  | material Jacobian Dds/Dde                        (out)
 c       x2      | partial back stress after update                 (out)
 c
@@ -416,7 +416,7 @@ c       ndiv    | division number of multistage
 c
 c-----------------------------------------------------------------------
 c
-      tol = 1.0d-5
+      tol = 1.0d-8
       maxnr = 25
       ndiv =  5
       maxnest = 10
@@ -489,11 +489,9 @@ c                                                     ---- default value
         end do
       end if
 c
-      de33 = 0.0d0
       dp = 0.0d0
-      do i = 1,nttl
-        dpe(i) = 0.0d0
-      end do
+      dpe = 0.0d0
+      de33 = 0.0d0
       do n = 1,npbs
         do i = 1,nttl
           x2(n,i) = x1(n,i)
@@ -569,7 +567,6 @@ c
       if ( se <= sy ) then
         if ( nvbs >= 3 ) write (6,'(/12xA)') 'JUDGE : ELASTIC'
         if ( (nttl == 3) .or. (nttl == 5) ) then
-          de33 = 0.0d0
           do i = 1,nttl
             de33 = de33 + d33d(i)*de(i)
           end do
@@ -579,7 +576,6 @@ c
           end if
         end if
         goto 500
-        ! return
       else
         if ( nvbs >= 3 ) write (6,'(/12xA)') 'JUDGE : PLASTIC'
       end if
@@ -742,7 +738,7 @@ c
             end if
           end if
         end if
-c                      ---- calc. dependencies common for NR and Dds/Dde
+c                  ---- calculate dependencies common for NR and Dds/Dde
 c                                                              * set [A]
         call ummdp_utility_setunitm ( am,nnn )
         call ummdp_utility_mm ( em,delast,d2seds2,nttl,nttl,nttl )
@@ -787,7 +783,7 @@ c                                                           ---- set {W}
             end if
           end do
         end do
-c                                                      ---- calc. [A]^-1
+c                                                  ---- calculate [A]^-1
         call ummdp_utility_minv ( ami,am,nnn,det )
 c                                                     ---- [C]=[U][A]^-1
         call ummdp_utility_mm ( cm,um,ami,nttl,nnn,nnn )
@@ -926,7 +922,7 @@ c                                        ---- thickness strain increment
       if ( (nttl == 3) .or. (nttl == 5) ) then
         de33 = -dpe(1) - dpe(2)
         do i = 1,nttl
-          de33 = de33 + d33d(i)*(de(i)-dpe(i))
+          de33 = de33 + d33d(i)*(de(i) - dpe(i))
         end do
         if ( nvbs >= 4 ) then
           text = 'Thickness Strain'
@@ -1206,7 +1202,7 @@ c                                     ---- plane stress or shell element
             end do
           end do
         end do
-c                             ---- elastic strain in thickness direction
+c                 ---- elastic strain coefficient in thickness direction
         do i = 1,nttl
           if ( i <= nnrm ) then
             id = i

@@ -26,8 +26,8 @@
 c
 c     UMMDp-VFM MAIN SUBROUTINE
 c
-      subroutine ummdp_vfm ( stress1,statev1,strain,dstrain,ndi,nshr,
-     1                       ntens,nstatev,props,nprops,noel,npt,kinc,
+      subroutine ummdp_vfm ( stress1,statev1,dstrain,ndi,nshr,
+     1                       ntens,nstatev,props,nprops,noel,kinc,
      2                       stress2,statev2,de33,nexit )
 c
 c-----------------------------------------------------------------------
@@ -39,15 +39,15 @@ c
       common /ummdp4/propdim
       common /ummdp5/nexito
 c
-      integer,intent(in) :: ndi,nshr,ntens,nstatev,nprops,noel,npt,kinc                      
+      integer,intent(in) :: ndi,nshr,ntens,nstatev,nprops,noel,kinc
       real*8 ,intent(in) :: props(nprops)
       real*8 ,intent(in) :: stress1(ntens),statev1(nstatev),
-     1                      strain(ntens),dstrain(ntens)
+     1                      dstrain(ntens)
 c
       integer,intent(out) :: nexit
       real*8 ,intent(out) :: de33
       real*8 ,intent(out) :: stress2(ntens),statev2(nstatev)
-c 
+c
       integer mxpbs,mxprop,nrot
       parameter (mxpbs=10,mxprop=100)
       integer ne,ip,lay,nsdv,propdim,nexito,i,k,n,is,nprop,nvbs0,nvbs,
@@ -59,12 +59,12 @@ c
       character*100 text
 c-----------------------------------------------------------------------
 c
-cf2py intent(in) stress1,statev1,strain,dstrain
+cf2py intent(in) stress1,statev1,dstrain
 cf2py intent(in) ndi,nshr,ntens,nstatev
 cf2py intent(in) props,nprops
-cf2py intent(in) noel,npt,kspt,kinc
+cf2py intent(in) noel,kspt,kinc
 cf2py intent(out) stress2,statev2,de33,nexit
-cf2py depend(ntens) stress1,stress2,strain,dstrain
+cf2py depend(ntens) stress1,stress2,dstrain
 cf2py depend(nstatev) statev1,statev2
 cf2py depend(nprops) props
 c
@@ -76,9 +76,9 @@ c                                                   ---- open debug file
       else
         open(6,file='ummdp_vfm.log',access='APPEND',status='OLD')
       end if
-c 
+c
       ne = noel
-      ip = npt
+      ip = 1
       lay = 1
       nsdv = nstatev
       nprop = mxprop
@@ -152,7 +152,7 @@ c                                                 ---- return error code
       nexit = nexito
 c
       return
-      end
+      end subroutine ummdp_vfm
 c
 c
 c

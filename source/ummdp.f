@@ -144,7 +144,7 @@ c
 c       s2      | stress after update                              (out)
 c       dp      | equivalent plastic strain increment              (out)
 c       dpe     | plastic strain increment components              (out)
-c       de33    | strain increment in thickness direction          (out)
+c       de33    | total strain increment in thickness direction    (out)
 c       ddsdde  | material Jacobian Dds/Dde                        (out)
 c       x2      | partial back stress after update                 (out)
 c
@@ -276,11 +276,9 @@ c                                                     ---- default value
         end do
       end if
 c
-      de33 = 0.0d0
       dp = 0.0d0
-      do i = 1,nttl
-        dpe(i) = 0.0d0
-      end do
+      dpe = 0.0d0
+      de33 = 0.0d0
       do n = 1,npbs
         do i = 1,nttl
           x2(n,i) = x1(n,i)
@@ -356,7 +354,6 @@ c
       if ( se <= sy ) then
         if ( nvbs >= 3 ) write (6,'(/12xA)') 'JUDGE : ELASTIC'
         if ( (nttl == 3) .or. (nttl == 5) ) then
-          de33 = 0.0d0
           do i = 1,nttl
             de33 = de33 + d33d(i)*de(i)
           end do
@@ -366,7 +363,6 @@ c
           end if
         end if
         goto 500
-        ! return
       else
         if ( nvbs >= 3 ) write (6,'(/12xA)') 'JUDGE : PLASTIC'
       end if
@@ -529,7 +525,7 @@ c
             end if
           end if
         end if
-c                      ---- calc. dependencies common for NR and Dds/Dde
+c                  ---- calculate dependencies common for NR and Dds/Dde
 c                                                              * set [A]
         call ummdp_utility_setunitm ( am,nnn )
         call ummdp_utility_mm ( em,delast,d2seds2,nttl,nttl,nttl )
@@ -574,7 +570,7 @@ c                                                           ---- set {W}
             end if
           end do
         end do
-c                                                      ---- calc. [A]^-1
+c                                                  ---- calculate [A]^-1
         call ummdp_utility_minv ( ami,am,nnn,det )
 c                                                     ---- [C]=[U][A]^-1
         call ummdp_utility_mm ( cm,um,ami,nttl,nnn,nnn )
@@ -713,7 +709,7 @@ c                                        ---- thickness strain increment
       if ( (nttl == 3) .or. (nttl == 5) ) then
         de33 = -dpe(1) - dpe(2)
         do i = 1,nttl
-          de33 = de33 + d33d(i)*(de(i)-dpe(i))
+          de33 = de33 + d33d(i)*(de(i) - dpe(i))
         end do
         if ( nvbs >= 4 ) then
           text = 'Thickness Strain'
@@ -993,7 +989,7 @@ c                                     ---- plane stress or shell element
             end do
           end do
         end do
-c                             ---- elastic strain in thickness direction
+c                 ---- elastic strain coefficient in thickness direction
         do i = 1,nttl
           if ( i <= nnrm ) then
             id = i

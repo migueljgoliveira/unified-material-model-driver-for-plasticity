@@ -22,7 +22,7 @@ type ummdp_yield_mises.f >> tmp.f
 type ummdp_yield_vegter.f >> tmp.f
 type ummdp_yield_yld2000.f >> tmp.f
 type ummdp_yield_yld2004.f >> tmp.f
-type ummdp_yield_yld89.f >> tmp.f"
+type ummdp_yield_yld89.f >> tmp.f
 type ummdp_yield_yoshida2011.f >> tmp.f
 
 cd .. 
