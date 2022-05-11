@@ -88,13 +88,13 @@ c
 c
       integer,intent(in) :: mxpbs,nnrm,nshr,nttl,nvbs,mjac,nprop,npbs,
      1                      ndela,ndyld,ndihd,ndkin,ndrup,nnn
-      real*8 ,intent(in) :: p
-      real*8 ,intent(in) :: s1(nttl),de(nttl),prop(nprop)
+      real*8,intent(in) :: p
+      real*8,intent(in) :: s1(nttl),de(nttl),prop(nprop)
 c
       real*8,intent(out) :: de33,dp
       real*8,intent(out) :: s2(nttl),dpe(nttl),ddsdde(nttl,nttl)
      1
-      real*8 ,intent(inout) :: x1(mxpbs,nttl),x2(mxpbs,nttl)
+      real*8,intent(inout) :: x1(mxpbs,nttl),x2(mxpbs,nttl)
 c
       integer ne,ip,lay,n1234,i,j,k,n,m,maxnr,ndiv,maxnest,nout,i1,i2,
      1        j1,j2,k1,k2,nest,newmstg,nite,nstg,mstg,knr,ip1,ip2,nsym
@@ -268,12 +268,8 @@ c                                                           ---- set [U]
 c
 c                                                     ---- default value
       if ( npbs == 0 ) then
-        do n = 1,mxpbs
-          do i = 1,nttl
-            x2(n,i) = 0.0d0
-            x1(n,i) = 0.0d0
-          end do
-        end do
+        x2 = 0.0d0
+        x1 = 0.0d0
       end if
 c
       dp = 0.0d0
@@ -283,7 +279,7 @@ c
         do i = 1,nttl
           x2(n,i) = x1(n,i)
         end do
-      end do
+      end do  
       call ummdp_backsum ( npbs,xt1,x1,nttl,mxpbs )
       call ummdp_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
@@ -730,11 +726,7 @@ c
       end if
 c
       if ( mjac == 0 ) then
-        do i = 1,nttl
-          do j = 1,nttl
-            ddsdde(i,j) = 0.0d0
-          end do
-        end do
+        ddsdde = 0.0d0
         goto 500
       end if
 c
@@ -1103,9 +1095,7 @@ c
       integer i,j
 c-----------------------------------------------------------------------
 c
-      do i = 1,nttl
-        xt(i) = 0.0
-      end do
+      xt = 0.0d0
       if ( npbs == 0 ) return
 c
       do i = 1,nttl
@@ -1135,8 +1125,6 @@ c
       integer i,j
       real*8 xx(npbs,nttl)
 c-----------------------------------------------------------------------
-c
-      if ( npbs == 0 ) return
 c
       do i = 1,nttl
         do j = 1,npbs
@@ -1240,6 +1228,8 @@ c
           nd = 4
         case ( 6 ) ! Voce & Swift
           nd = 7
+        case ( 7 ) ! p-Model
+          nd = 5
         case default
           write (6,*) 'Isotropic Hardening Law ID :',nihd
           call ummdp_exit ( 203 )
@@ -1283,17 +1273,17 @@ c
         case ( 0 ) ! None
           nd = 0
         case ( 1 ) ! Equivalent Plastic Strain
-          nd = 1
+          nd = 1 + 1
         case ( 2 ) ! Cockroft & Latham
-          nd = 1
+          nd = 1 + 1
         case ( 3 ) ! Rice & Tracey
-          nd = 1
+          nd = 1 + 1
         case ( 4 ) ! Ayada
-          nd = 1
+          nd = 1 + 1
         case ( 5 ) ! Brozzo
-          nd = 1
+          nd = 1 + 1
         case ( 6 ) ! Forming Limit Diagram
-          nd = 1
+          nd = 1 + 1
         case default
           write (6,*) 'Uncoupled Rupture Criterion ID :',nrup
           call ummdp_exit ( 205 )

@@ -1,3 +1,74 @@
+
+      subroutine ummdp_vfm ( strain,ne,ndi,nshr,ntens,nstatev,
+     1                       props,nprops,nf,fout,
+     2                       stress,statev,de33 )
+c
+c-----------------------------------------------------------------------
+      implicit none
+c
+      common /ummdpa/n1234
+c
+      integer      ,intent(in) :: ne,ndi,nshr,ntens,nstatev,nprops,nf
+      real*8       ,intent(in) :: props(nprops)
+      real*8       ,intent(in) :: strain(nf,ne,ntens)
+      character*100,intent(in) :: fout
+c
+      real*8,intent(out) :: de33(nf,ne)
+      real*8,intent(out) :: stress(nf,ne,ntens),statev(nf,ne,nstatev)
+c
+      integer n1234,i,j,kinc,noel,nexit
+      real*8 dstrain(ntens)
+c-----------------------------------------------------------------------
+c
+cf2py intent(in) strain,ne,ndi,nshr,ntens,nstatev,props,nprops,nf,fout
+cf2py intent(out) stress,statev,de33
+cf2py depend(nprops) props
+cf2py depend(nf,ne) de33
+cf2py depend(nf,ne,ntens) stress,strain
+cf2py depend(nf,ne,nstatev) statev
+c
+c-----------------------------------------------------------------------
+c
+c                                                   ---- open debug file
+      if ( nint(props(1)) /= -1 ) then
+        open(6,file='output/'//trim(fout)//'/'//trim(fout)//'.ummdp')
+        n1234 = 0
+      else
+        n1234 = 1234
+      end if
+c
+c                                      ---- stress integration variables
+      stress = 0.0d0
+      statev = 0.0d0
+      de33 = 0.0d0
+c                                         ---- loop over time increments
+      do i = 2,nf
+        kinc = i - 1
+c                                                ---- loop over elements
+        do j = 1,ne
+          noel = j
+c                                            ---- total strain increment
+          dstrain = strain(i,j,:)  - strain(i-1,j,:)
+c
+c                  ---- stress integration in corotational material csys
+          call plug_ummdp_vfm ( stress(i-1,j,:),statev(i-1,j,:),dstrain,
+     1                          ndi,nshr,ntens,nstatev,props,nprops,
+     2                          noel,kinc,stress(i,j,:),statev(i,j,:),
+     3                          de33(i,j),nexit)
+c
+c                               ---- total strain in thickness direction
+          de33(i,j) = de33(i,j) + de33(i-1,j)
+
+        end do
+      end do
+
+c                                                  ---- close debug file
+      if ( nint(props(1)) /= -1 ) then
+        close(6)
+      end if
+
+      end subroutine ummdp_vfm
+
 ************************************************************************
 *                                                                      *
 *                                  UMMDp                               *
@@ -24,11 +95,11 @@
 *                                                                      *
 ************************************************************************
 c
-c     UMMDp-VFM MAIN SUBROUTINE
+c     UMMDp-VFM Plug-In
 c
-      subroutine ummdp_vfm ( stress1,statev1,dstrain,ndi,nshr,
-     1                       ntens,nstatev,props,nprops,noel,kinc,
-     2                       stress2,statev2,de33,nexit )
+      subroutine plug_ummdp_vfm ( stress1,statev1,dstrain,ndi,nshr,
+     1                            ntens,nstatev,props,nprops,noel,kinc,
+     2                            stress2,statev2,de33,nexit )
 c
 c-----------------------------------------------------------------------
       implicit none
@@ -38,6 +109,7 @@ c
       common /ummdp3/nsdv
       common /ummdp4/propdim
       common /ummdp5/nexito
+      common /ummdpa/n1234
 c
       integer,intent(in) :: ndi,nshr,ntens,nstatev,nprops,noel,kinc
       real*8 ,intent(in) :: props(nprops)
@@ -48,7 +120,7 @@ c
       real*8 ,intent(out) :: de33
       real*8 ,intent(out) :: stress2(ntens),statev2(nstatev)
 c
-      integer mxpbs,mxprop,nrot
+      integer n1234,mxpbs,mxprop,nrot
       parameter (mxpbs=10,mxprop=100)
       integer ne,ip,lay,nsdv,propdim,nexito,i,k,n,is,nprop,nvbs0,nvbs,
      1        ndela,ndyld,ndihd,ndkin,npbs,ndrup,mjac,isvrsvd,isvsclr,
@@ -62,7 +134,7 @@ c
 cf2py intent(in) stress1,statev1,dstrain
 cf2py intent(in) ndi,nshr,ntens,nstatev
 cf2py intent(in) props,nprops
-cf2py intent(in) noel,kspt,kinc
+cf2py intent(in) noel,kinc
 cf2py intent(out) stress2,statev2,de33,nexit
 cf2py depend(ntens) stress1,stress2,dstrain
 cf2py depend(nstatev) statev1,statev2
@@ -70,47 +142,35 @@ cf2py depend(nprops) props
 c
 c-----------------------------------------------------------------------
 c
-c                                                   ---- open debug file
-      if ( kinc == 1 ) then
-        open(6,file='ummdp_vfm.log')
-      else
-        open(6,file='ummdp_vfm.log',access='APPEND',status='OLD')
-      end if
-c
       ne = noel
       ip = 1
       lay = 1
       nsdv = nstatev
       nprop = mxprop
       propdim = nprops - 1
+c
 c                                        ---- set debug and verbose mode
-      nvbs0 = nint(props(1))
+      nvbs0 = 0
       call ummdp_debugmode ( nvbs,nvbs0 )
-c                                       ---- print detailed information
-      if ( nvbs >= 1 ) then
-        call ummdp_print_info  ( kinc,ndi,nshr )
-      end if
-c                                             ---- print input arguments
-      if ( nvbs >= 4 ) then
-        ddsdde = 0.0d0
-        call ummdp_print_inout ( 0,stress1,dstrain,ddsdde,ntens,statev1,
-     1                           nstatev )
-      end if
+c
 c                                           ---- set material properties
-      do i = 2,nprops
-        prop(i-1) = props(i)
+      do i = 1,nprops
+        prop(i) = props(i)
       end do
 c
       call ummdp_prop_dim ( prop,nprop,propdim,ndela,ndyld,ndihd,ndkin,
      1                      npbs,ndrup )
+c
       if ( npbs > mxpbs ) then
         write (6,*) 'npbs > mxpbs error in umat'
         write (6,*) 'npbs =',npbs
         write (6,*) 'mxpbs=',mxpbs
         call ummdp_exit ( 301 )
       end if
+c
 c                                                     ---- check nstatev
       call ummdp_check_nisv ( nstatev,ntens,npbs )
+c
 c                             ---- copy current internal state variables
       call ummdp_isvprof ( isvrsvd,isvsclr )
       call ummdp_isv2pex ( isvrsvd,isvsclr,statev1,nstatev,p,pe,x1,
@@ -121,17 +181,21 @@ c                             ---- update stress and set tangent modulus
       call ummdp_plasticity ( stress1,s2,dstrain,p,dp,dpe,de33,x1,x2,
      1                        mxpbs,ddsdde,ndi,nshr,ntens,nvbs,mjac,
      2                        prop,nprop,propdim )
+c
 c                                                     ---- update stress
       do i = 1,ntens
         stress2(i) = s2(i)
       end do
+c
 c                                  ---- update equivalent plastic strain
       statev2(isvrsvd+1) = p + dp
+c
 c                                  ---- update plastic strain components
       do i = 1,ntens
         is = isvrsvd + isvsclr + i
         statev2(is) = statev1(is) + dpe(i)
       end do
+c
 c                                     ---- update back stress components
       if ( npbs /= 0 ) then
         do n = 1,npbs
@@ -141,18 +205,12 @@ c                                     ---- update back stress components
           end do
         end do
       end if
-c                                            ---- print output arguments
-      if ( nvbs >= 4 ) then
-        call ummdp_print_inout ( 1,stress2,dstrain,ddsdde,ntens,
-     1                           statev2,nstatev )
-      end if
-c                                                  ---- close debug file
-      close(6)
+c
 c                                                 ---- return error code
       nexit = nexito
 c
       return
-      end subroutine ummdp_vfm
+      end subroutine plug_ummdp_vfm
 c
 c
 c

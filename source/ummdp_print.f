@@ -187,6 +187,8 @@ c
           idihd = 'Voce & Linear'
         case ( 6 )
           idihd = 'Voce & Swift'
+        case ( 7 )
+          idihd = 'p-Model'
       end select
 c
       fmtid = '(/12xA,1xI1,1xA1,1xA30)'

@@ -25,7 +25,7 @@ type ummdp_yield_yld2004.f >> tmp.f
 type ummdp_yield_yld89.f >> tmp.f
 type ummdp_yield_yoshida2011.f >> tmp.f
 
-cd .. 
+cd ..
 
 move "source\tmp.f" "compiled\ummdp_vfm.f"
 
@@ -33,7 +33,11 @@ cd compiled
 
 del ummdp_vfm.pyd >nul
 
-python -m numpy.f2py -c -m ummdp_vfm ummdp_vfm.f --fcompiler=intelvem --opt=/heap-arrays:0 1> ummdp_vfm.log
+:: ifort optimization flags
+:: /heap-arrays temporary arrays of minimum size n (in kilobytes) are allocated in heap memory rather than on the stack
+:: /Ofast = /O3 /Qprec-div- /fp:fast=2
+:: /QxHost : generate instructions for the highest instruction set and processor available on the compilation host machine
+python -m numpy.f2py -c -m ummdp_vfm ummdp_vfm.f --fcompiler=intelvem --opt="/heap-arrays /Ofast /QxHost" 1> ummdp_vfm.log
 
 rename ummdp_vfm.*.pyd ummdp_vfm.pyd >nul
 

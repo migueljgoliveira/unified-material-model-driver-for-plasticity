@@ -60,7 +60,7 @@ c
       propdim = nprops - 1
 c
 c                                        ---- set debug and verbose mode
-      nvbs0 = props(1)
+      nvbs0 = nint(props(1))
       call ummdp_debugmode ( nvbs,nvbs0 )
 c
 c                                        ---- print detailed information
@@ -483,13 +483,13 @@ c
 c
       integer,intent(in) :: mxpbs,nnrm,nshr,nttl,nvbs,mjac,nprop,npbs,
      1                      ndela,ndyld,ndihd,ndkin,ndrup,nnn
-      real*8 ,intent(in) :: p
-      real*8 ,intent(in) :: s1(nttl),de(nttl),prop(nprop)
+      real*8,intent(in) :: p
+      real*8,intent(in) :: s1(nttl),de(nttl),prop(nprop)
 c
       real*8,intent(out) :: de33,dp
       real*8,intent(out) :: s2(nttl),dpe(nttl),ddsdde(nttl,nttl)
      1
-      real*8 ,intent(inout) :: x1(mxpbs,nttl),x2(mxpbs,nttl)
+      real*8,intent(inout) :: x1(mxpbs,nttl),x2(mxpbs,nttl)
 c
       integer ne,ip,lay,n1234,i,j,k,n,m,maxnr,ndiv,maxnest,nout,i1,i2,
      1        j1,j2,k1,k2,nest,newmstg,nite,nstg,mstg,knr,ip1,ip2,nsym
@@ -539,7 +539,7 @@ c
 c       s2      | stress after update                              (out)
 c       dp      | equivalent plastic strain increment              (out)
 c       dpe     | plastic strain increment components              (out)
-c       de33    | strain increment in thickness direction          (out)
+c       de33    | total strain increment in thickness direction    (out)
 c       ddsdde  | material Jacobian Dds/Dde                        (out)
 c       x2      | partial back stress after update                 (out)
 c
@@ -663,24 +663,18 @@ c                                                           ---- set [U]
 c
 c                                                     ---- default value
       if ( npbs == 0 ) then
-        do n = 1,mxpbs
-          do i = 1,nttl
-            x2(n,i) = 0.0d0
-            x1(n,i) = 0.0d0
-          end do
-        end do
+        x2 = 0.0d0
+        x1 = 0.0d0
       end if
 c
-      de33 = 0.0d0
       dp = 0.0d0
-      do i = 1,nttl
-        dpe(i) = 0.0d0
-      end do
+      dpe = 0.0d0
+      de33 = 0.0d0
       do n = 1,npbs
         do i = 1,nttl
           x2(n,i) = x1(n,i)
         end do
-      end do
+      end do  
       call ummdp_backsum ( npbs,xt1,x1,nttl,mxpbs )
       call ummdp_backsum ( npbs,xt2,x2,nttl,mxpbs )
 c
@@ -751,7 +745,6 @@ c
       if ( se <= sy ) then
         if ( nvbs >= 3 ) write (6,'(/12xA)') 'JUDGE : ELASTIC'
         if ( (nttl == 3) .or. (nttl == 5) ) then
-          de33 = 0.0d0
           do i = 1,nttl
             de33 = de33 + d33d(i)*de(i)
           end do
@@ -761,7 +754,6 @@ c
           end if
         end if
         goto 500
-        ! return
       else
         if ( nvbs >= 3 ) write (6,'(/12xA)') 'JUDGE : PLASTIC'
       end if
@@ -924,7 +916,7 @@ c
             end if
           end if
         end if
-c                      ---- calc. dependencies common for NR and Dds/Dde
+c                  ---- calculate dependencies common for NR and Dds/Dde
 c                                                              * set [A]
         call ummdp_utility_setunitm ( am,nnn )
         call ummdp_utility_mm ( em,delast,d2seds2,nttl,nttl,nttl )
@@ -969,7 +961,7 @@ c                                                           ---- set {W}
             end if
           end do
         end do
-c                                                      ---- calc. [A]^-1
+c                                                  ---- calculate [A]^-1
         call ummdp_utility_minv ( ami,am,nnn,det )
 c                                                     ---- [C]=[U][A]^-1
         call ummdp_utility_mm ( cm,um,ami,nttl,nnn,nnn )
@@ -1108,7 +1100,7 @@ c                                        ---- thickness strain increment
       if ( (nttl == 3) .or. (nttl == 5) ) then
         de33 = -dpe(1) - dpe(2)
         do i = 1,nttl
-          de33 = de33 + d33d(i)*(de(i)-dpe(i))
+          de33 = de33 + d33d(i)*(de(i) - dpe(i))
         end do
         if ( nvbs >= 4 ) then
           text = 'Thickness Strain'
@@ -1129,11 +1121,7 @@ c
       end if
 c
       if ( mjac == 0 ) then
-        do i = 1,nttl
-          do j = 1,nttl
-            ddsdde(i,j) = 0.0d0
-          end do
-        end do
+        ddsdde = 0.0d0
         goto 500
       end if
 c
@@ -1388,7 +1376,7 @@ c                                     ---- plane stress or shell element
             end do
           end do
         end do
-c                             ---- elastic strain in thickness direction
+c                 ---- elastic strain coefficient in thickness direction
         do i = 1,nttl
           if ( i <= nnrm ) then
             id = i
@@ -1502,9 +1490,7 @@ c
       integer i,j
 c-----------------------------------------------------------------------
 c
-      do i = 1,nttl
-        xt(i) = 0.0
-      end do
+      xt = 0.0d0
       if ( npbs == 0 ) return
 c
       do i = 1,nttl
@@ -1534,8 +1520,6 @@ c
       integer i,j
       real*8 xx(npbs,nttl)
 c-----------------------------------------------------------------------
-c
-      if ( npbs == 0 ) return
 c
       do i = 1,nttl
         do j = 1,npbs
@@ -1639,6 +1623,8 @@ c
           nd = 4
         case ( 6 ) ! Voce & Swift
           nd = 7
+        case ( 7 ) ! p-Model
+          nd = 5
         case default
           write (6,*) 'Isotropic Hardening Law ID :',nihd
           call ummdp_exit ( 203 )
@@ -1682,17 +1668,17 @@ c
         case ( 0 ) ! None
           nd = 0
         case ( 1 ) ! Equivalent Plastic Strain
-          nd = 1
+          nd = 1 + 1
         case ( 2 ) ! Cockroft & Latham
-          nd = 1
+          nd = 1 + 1
         case ( 3 ) ! Rice & Tracey
-          nd = 1
+          nd = 1 + 1
         case ( 4 ) ! Ayada
-          nd = 1
+          nd = 1 + 1
         case ( 5 ) ! Brozzo
-          nd = 1
+          nd = 1 + 1
         case ( 6 ) ! Forming Limit Diagram
-          nd = 1
+          nd = 1 + 1
         case default
           write (6,*) 'Uncoupled Rupture Criterion ID :',nrup
           call ummdp_exit ( 205 )
@@ -1717,6 +1703,7 @@ c      3 : Ludwick
 c      4 : Voce
 c      5 : Voce & Linear
 c      6 : Voce & Swift
+c      7 : p-Model
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
@@ -1734,7 +1721,7 @@ c
       real*8,intent(out) :: sy,dsydp,d2sydp2
 c
       integer ntihd
-      real*8 sy0,hard,c,e0,en,q,b,a,p1
+      real*8 sy0,hard,c,e0,en,q,b,a,p1,emax
 c-----------------------------------------------------------------------
 c
       ntihd = nint(prihd(1))
@@ -1742,11 +1729,13 @@ c
 c
       case ( 0 )                                     ! Perfectly Plastic
         sy = prihd(1+1)
+c
         if ( nreq >= 1 ) then
           dsydp = 0.0d0
-          if ( nreq >= 2 ) then
-            d2sydp2 = 0.0d0
-          end if
+        end if
+c
+        if ( nreq >= 2 ) then
+          d2sydp2 = 0.0d0
         end if
 c
       case ( 1 )                                                ! Linear
@@ -1754,11 +1743,13 @@ c
         hard = prihd(1+2)
 c
         sy = sy0 + hard*p
+c
         if ( nreq >= 1 ) then
           dsydp = hard
-          if ( nreq >= 2 ) then
-            d2sydp2 = 0.0d0
-          end if
+        end if
+c
+        if ( nreq >= 2 ) then
+          d2sydp2 = 0.0d0
         end if
 c
       case ( 2 )                                                 ! Swift
@@ -1767,11 +1758,13 @@ c
         en = prihd(1+3)
 c
         sy = c * (e0+p)**en
+c
         if ( nreq >= 1 ) then
           dsydp = en*c*(e0+p)**(en-1.0d0)
-          if ( nreq >= 2 ) then
-            d2sydp2 = en*c*(en-1.0d0)*(e0+p)**(en-2.0d0)
-          end if
+        end if
+c
+        if ( nreq >= 2 ) then
+          d2sydp2 = en*c*(en-1.0d0)*(e0+p)**(en-2.0d0)
         end if
 c
       case ( 3 )                                                ! Ludwik
@@ -1780,12 +1773,14 @@ c
         en  = prihd(1+3)
 c
         sy = sy0 + c*p**en
+c
         if ( nreq >= 1 ) then
           p1 = max(p,1.0d-16)
           dsydp = en*c*p1**(en-1.0d0)
-          if ( nreq >= 2 ) then
-            d2sydp2 = en*c*(en-1.0d0)*p**(en-2.0d0)
-          end if
+        end if
+c
+        if ( nreq >= 2 ) then
+          d2sydp2 = en*c*(en-1.0d0)*p**(en-2.0d0)
         end if
 c
       case ( 4 )                                                  ! Voce
@@ -1794,11 +1789,13 @@ c
         b   = prihd(1+3)
 c
         sy = sy0 + q*(1.0d0-exp(-b*p))
+c
         if ( nreq >= 1 ) then
-          dsydp = q * b  *exp(-b*p)
-          if ( nreq >= 2 ) then
-            d2sydp2 = -q * b * b * exp(-b*p)
-          end if
+          dsydp = q*b*exp(-b*p)
+        end if
+c
+        if ( nreq >= 2 ) then
+          d2sydp2 = -q*b*b*exp(-b*p)
         end if
 c
       case ( 5 )                                         ! Voce & Linear
@@ -1808,11 +1805,13 @@ c
         c   = prihd(1+4)
 c
         sy = sy0 + q*(1.0d0-exp(-b*p)) + c*p
+c
         if ( nreq >= 1 ) then
           dsydp = q*b*exp(-b*p) + c
-          if ( nreq >= 2 ) then
-            d2sydp2 = -q*b*b*exp(-b*p)
-          end if
+        end if
+c
+        if ( nreq >= 2 ) then
+          d2sydp2 = -q*b*b*exp(-b*p)
         end if
 c
       case ( 6 )                                          ! Voce & Swift
@@ -1825,11 +1824,44 @@ c
         en  = prihd(1+7)
 c
         sy = a*(sy0+q*(1.0d0-exp(-b*p))) + (1.0d0-a)*(c*(e0+p)**en)
+c
         if ( nreq >= 1 ) then
-          dsydp = a*(q*b*exp(-b*p)) +(1.0d0-a)*(en*c*(e0+p)**(en-1.0d0))
-          if ( nreq >= 2 ) then
-            d2sydp2 = a*(-q*b*b*exp(-b*p))
-     1                + (1.0d0-a)*(en*c*(en-1.0d0)*(e0+p)**(en-2.0d0))
+          dsydp = a*(q*b*exp(-b*p)) 
+     1            + (1.0d0-a)*(en*c*(e0+p)**(en-1.0d0))
+        end if
+c
+        if ( nreq >= 2 ) then
+          d2sydp2 = a*(-q*b*b*exp(-b*p))
+     1              + (1.0d0-a)*(en*c*(en-1.0d0)*(e0+p)**(en-2.0d0))
+        end if
+c
+      case ( 7 )                                               ! p-Model
+        c    = prihd(1+1)
+        e0   = prihd(1+2)
+        en   = prihd(1+3)
+        emax = prihd(1+4)
+        b    = prihd(1+5)
+c
+        if ( p <= emax ) then
+          sy = c*(e0+p)**en
+        else
+          q = (c*en*(e0+emax)**(en-1))/b
+          sy = c*(e0+emax)**en + q*(1-exp(-b*(p-emax)))
+        end if
+c
+        if ( nreq >= 1 ) then
+          if ( p <= emax ) then
+            dsydp = en*c*(e0+p)**(en-1.0d0)
+          else
+            dsydp = q*b*exp(-b*(p-emax))
+          end if
+        end if
+c
+        if ( nreq >= 2 ) then
+          if ( p <= emax ) then
+            d2sydp2 = en*c*(en-1.0d0)*(e0+p)**(en-2.0d0)
+          else
+            d2sydp2 = -q*b*b*exp(-b*(p-emax))
           end if
         end if
 c
@@ -2557,6 +2589,8 @@ c
           idihd = 'Voce & Linear'
         case ( 6 )
           idihd = 'Voce & Swift'
+        case ( 7 )
+          idihd = 'p-Model'
       end select
 c
       fmtid = '(/12xA,1xI1,1xA1,1xA30)'
