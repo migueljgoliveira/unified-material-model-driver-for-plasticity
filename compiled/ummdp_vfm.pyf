@@ -1,0 +1,991 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module ummdp_vfm ! in 
+    interface  ! in :ummdp_vfm
+        subroutine ummdp_vfm(strain,ne,ndi,nshr,ntens,nstatev,props,nprops,nf,fout,stress,statev,de33) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(nf,ne,ntens),intent(in),depend(nf,ne,ntens) :: strain
+            integer intent(in) :: ne
+            integer intent(in) :: ndi
+            integer intent(in) :: nshr
+            integer intent(in) :: ntens
+            integer intent(in) :: nstatev
+            real*8 dimension(nprops),intent(in),depend(nprops) :: props
+            integer intent(in) :: nprops
+            integer intent(in) :: nf
+            character*100 intent(in) :: fout
+            real*8 dimension(nf,ne,ntens),intent(out),depend(nf,ne,ntens) :: stress
+            real*8 dimension(nf,ne,nstatev),intent(out),depend(nf,ne,nstatev) :: statev
+            real*8 dimension(nf,ne),intent(out),depend(nf,ne) :: de33
+            integer :: n1234
+            common /ummdpa/ n1234
+        end subroutine ummdp_vfm
+        subroutine plug_ummdp_vfm(stress1,statev1,dstrain,ndi,nshr,ntens,nstatev,props,nprops,noel,kinc,stress2,statev2,de33) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(ntens),intent(in),depend(ntens) :: stress1
+            real*8 dimension(nstatev),intent(in),depend(nstatev) :: statev1
+            real*8 dimension(ntens),intent(in),depend(ntens) :: dstrain
+            integer intent(in) :: ndi
+            integer intent(in) :: nshr
+            integer intent(in) :: ntens
+            integer intent(in) :: nstatev
+            real*8 dimension(nprops),intent(in),depend(nprops) :: props
+            integer intent(in) :: nprops
+            integer intent(in) :: noel
+            integer intent(in) :: kinc
+            real*8 dimension(ntens),intent(out),depend(ntens) :: stress2
+            real*8 dimension(nstatev),intent(out),depend(nstatev) :: statev2
+            real*8 intent(out) :: de33
+            integer :: ne
+            integer :: ip
+            integer :: lay
+            real*8 dimension(100) :: prop
+            integer :: nsdv
+            integer :: propdim
+            integer :: n1234
+            common /ummdp1/ ne,ip,lay
+            common /ummdp2/ prop
+            common /ummdp3/ nsdv
+            common /ummdp4/ propdim
+            common /ummdpa/ n1234
+        end subroutine plug_ummdp_vfm
+        subroutine ummdp_isvprof(isvrsvd,isvsclr) ! in :ummdp_vfm:ummdp_vfm.f
+            integer intent(out) :: isvrsvd
+            integer intent(out) :: isvsclr
+        end subroutine ummdp_isvprof
+        subroutine ummdp_exit(nexit) ! in :ummdp_vfm:ummdp_vfm.f
+            integer intent(in) :: nexit
+            integer :: ne
+            integer :: ip
+            integer :: lay
+            common /ummdp1/ ne,ip,lay
+        end subroutine ummdp_exit
+        subroutine ummdp_plasticity(s1,s2,de,p,dp,dpe,de33,x1,x2,mxpbs,ddsdde,nnrm,nshr,nttl,nvbs,mjac,prop,nprop,propdim) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(nttl),intent(in) :: s1
+            real*8 dimension(nttl),intent(out),depend(nttl) :: s2
+            real*8 dimension(nttl),intent(in),depend(nttl) :: de
+            real*8 intent(in) :: p
+            real*8 intent(out) :: dp
+            real*8 dimension(nttl),intent(out),depend(nttl) :: dpe
+            real*8 intent(out) :: de33
+            real*8 dimension(mxpbs,nttl),intent(inout),depend(nttl) :: x1
+            real*8 dimension(mxpbs,nttl),intent(inout),depend(mxpbs,nttl) :: x2
+            integer, optional,intent(in),check(shape(x1,0)==mxpbs),depend(x1) :: mxpbs=shape(x1,0)
+            real*8 dimension(nttl,nttl),intent(out),depend(nttl,nttl) :: ddsdde
+            integer intent(in) :: nnrm
+            integer intent(in) :: nshr
+            integer, optional,intent(in),check(len(s1)>=nttl),depend(s1) :: nttl=len(s1)
+            integer intent(in) :: nvbs
+            integer intent(inout) :: mjac
+            real*8 dimension(nprop),intent(inout) :: prop
+            integer, optional,intent(in),check(len(prop)>=nprop),depend(prop) :: nprop=len(prop)
+            integer intent(in) :: propdim
+        end subroutine ummdp_plasticity
+        subroutine ummdp_plasticity_core(s1,s2,de,p,dp,dpe,de33,x1,x2,mxpbs,ddsdde,nnrm,nshr,nttl,nvbs,mjac,prop,nprop,npbs,ndela,ndyld,ndihd,ndkin,ndrup,nnn) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(nttl),intent(in) :: s1
+            real*8 dimension(nttl),intent(out),depend(nttl) :: s2
+            real*8 dimension(nttl),intent(in),depend(nttl) :: de
+            real*8 intent(in) :: p
+            real*8 intent(out) :: dp
+            real*8 dimension(nttl),intent(out),depend(nttl) :: dpe
+            real*8 intent(out) :: de33
+            real*8 dimension(mxpbs,nttl),intent(inout),depend(nttl) :: x1
+            real*8 dimension(mxpbs,nttl),intent(inout),depend(mxpbs,nttl) :: x2
+            integer, optional,intent(in),check(shape(x1,0)==mxpbs),depend(x1) :: mxpbs=shape(x1,0)
+            real*8 dimension(nttl,nttl),intent(out),depend(nttl,nttl) :: ddsdde
+            integer intent(in) :: nnrm
+            integer intent(in) :: nshr
+            integer, optional,intent(in),check(len(s1)>=nttl),depend(s1) :: nttl=len(s1)
+            integer intent(in) :: nvbs
+            integer intent(in) :: mjac
+            real*8 dimension(nprop),intent(in) :: prop
+            integer, optional,intent(in),check(len(prop)>=nprop),depend(prop) :: nprop=len(prop)
+            integer intent(in) :: npbs
+            integer intent(in) :: ndela
+            integer intent(in) :: ndyld
+            integer intent(in) :: ndihd
+            integer intent(in) :: ndkin
+            integer intent(in) :: ndrup
+            integer intent(in) :: nnn
+            integer :: ne
+            integer :: ip
+            integer :: lay
+            integer :: n1234
+            common /ummdp1/ ne,ip,lay
+            common /ummdpa/ n1234
+        end subroutine ummdp_plasticity_core
+        subroutine ummdp_debugmode(nvbs,nvbs0) ! in :ummdp_vfm:ummdp_vfm.f
+            integer intent(out) :: nvbs
+            integer intent(in) :: nvbs0
+            integer :: ne
+            integer :: ip
+            integer :: lay
+            common /ummdp1/ ne,ip,lay
+        end subroutine ummdp_debugmode
+        subroutine ummdp_setdelast(delast,prela,ndela,nttl,nnrm,nshr,d33d) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(nttl,nttl),intent(out),depend(nttl,nttl) :: delast
+            real*8 dimension(ndela),intent(in) :: prela
+            integer, optional,intent(in),check(len(prela)>=ndela),depend(prela) :: ndela=len(prela)
+            integer intent(in) :: nttl
+            integer intent(in) :: nnrm
+            integer intent(in) :: nshr
+            real*8 dimension(nttl),intent(out),depend(nttl) :: d33d
+        end subroutine ummdp_setdelast
+        subroutine ummdp_check_nisv(nisv,nttl,npbs) ! in :ummdp_vfm:ummdp_vfm.f
+            integer intent(in) :: nisv
+            integer intent(in) :: nttl
+            integer intent(in) :: npbs
+        end subroutine ummdp_check_nisv
+        subroutine ummdp_isv2pex(isvrsvd,isvsclr,stv,nstv,p,pe,x,nttl,mxpbs,npbs) ! in :ummdp_vfm:ummdp_vfm.f
+            integer intent(in) :: isvrsvd
+            integer intent(in) :: isvsclr
+            real*8 dimension(nstv),intent(in) :: stv
+            integer, optional,intent(in),check(len(stv)>=nstv),depend(stv) :: nstv=len(stv)
+            real*8 intent(out) :: p
+            real*8 dimension(nttl),intent(out),depend(nttl) :: pe
+            real*8 dimension(mxpbs,nttl),intent(out),depend(mxpbs,nttl) :: x
+            integer intent(in) :: nttl
+            integer intent(in) :: mxpbs
+            integer intent(in) :: npbs
+        end subroutine ummdp_isv2pex
+        subroutine ummdp_backsum(npbs,xt,x,nttl,mxpbs) ! in :ummdp_vfm:ummdp_vfm.f
+            integer intent(in) :: npbs
+            real*8 dimension(nttl),intent(out),depend(nttl) :: xt
+            real*8 dimension(mxpbs,nttl),intent(in) :: x
+            integer, optional,intent(in),check(shape(x,1)==nttl),depend(x) :: nttl=shape(x,1)
+            integer, optional,intent(in),check(shape(x,0)==mxpbs),depend(x) :: mxpbs=shape(x,0)
+        end subroutine ummdp_backsum
+        subroutine ummdp_backprint(text,npbs,x,nttl,mxpbs) ! in :ummdp_vfm:ummdp_vfm.f
+            character*100 intent(in) :: text
+            integer intent(in) :: npbs
+            real*8 dimension(mxpbs,nttl),intent(in) :: x
+            integer, optional,intent(in),check(shape(x,1)==nttl),depend(x) :: nttl=shape(x,1)
+            integer, optional,intent(in),check(shape(x,0)==mxpbs),depend(x) :: mxpbs=shape(x,0)
+        end subroutine ummdp_backprint
+        subroutine ummdp_prop_dim(prop,mxprop,propdim,ndela,ndyld,ndihd,ndkin,npbs,ndrup) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(mxprop),intent(in) :: prop
+            integer, optional,intent(in),check(len(prop)>=mxprop),depend(prop) :: mxprop=len(prop)
+            integer intent(in) :: propdim
+            integer intent(out) :: ndela
+            integer intent(out) :: ndyld
+            integer intent(out) :: ndihd
+            integer intent(out) :: ndkin
+            integer intent(out) :: npbs
+            integer intent(out) :: ndrup
+        end subroutine ummdp_prop_dim
+        subroutine ummdp_isotropic(sy,dsydp,d2sydp2,nreq,p,prihd,ndihd) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 intent(out) :: sy
+            real*8 intent(out) :: dsydp
+            real*8 intent(out) :: d2sydp2
+            integer intent(in) :: nreq
+            real*8 intent(in) :: p
+            real*8 dimension(ndihd),intent(in) :: prihd
+            integer, optional,intent(in),check(len(prihd)>=ndihd),depend(prihd) :: ndihd=len(prihd)
+        end subroutine ummdp_isotropic
+        subroutine ummdp_kinematic(vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,x,xt,nttl,nnrm,nshr,mxpbs,npbs,prkin,ndkin,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(npbs,nttl) :: vk
+            real*8 dimension(npbs,nttl),depend(npbs,nttl) :: dvkdp
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkds
+            real*8 dimension(npbs,npbs,nttl,nttl),depend(npbs,npbs,nttl,nttl) :: dvkdx
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkdxt
+            real*8 :: p
+            real*8 dimension(nttl),depend(nttl) :: s
+            real*8 dimension(mxpbs,nttl),depend(nttl) :: x
+            real*8 dimension(nttl),depend(nttl) :: xt
+            integer, optional,check(shape(vk,1)==nttl),depend(vk) :: nttl=shape(vk,1)
+            integer :: nnrm
+            integer :: nshr
+            integer, optional,check(shape(x,0)==mxpbs),depend(x) :: mxpbs=shape(x,0)
+            integer, optional,check(shape(vk,0)==npbs),depend(vk) :: npbs=shape(vk,0)
+            real*8 dimension(ndkin) :: prkin
+            integer, optional,check(len(prkin)>=ndkin),depend(prkin) :: ndkin=len(prkin)
+            real*8 dimension(ndyld) :: pryld
+            integer, optional,check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_kinematic
+        subroutine ummdp_kinematic_dseds(eta,seta,dseds,d2seds2,nttl,nnrm,nshr,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(nttl) :: eta
+            real*8 :: seta
+            real*8 dimension(nttl),depend(nttl) :: dseds
+            real*8 dimension(nttl,nttl),depend(nttl,nttl) :: d2seds2
+            integer, optional,check(len(eta)>=nttl),depend(eta) :: nttl=len(eta)
+            integer :: nnrm
+            integer :: nshr
+            real*8 dimension(ndyld) :: pryld
+            integer, optional,check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_kinematic_dseds
+        subroutine ummdp_kinematic_prager(vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,x,xt,nttl,nnrm,nshr,mxpbs,npbs,prkin,ndkin,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(npbs,nttl) :: vk
+            real*8 dimension(npbs,nttl),depend(npbs,nttl) :: dvkdp
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkds
+            real*8 dimension(npbs,npbs,nttl,nttl),depend(npbs,npbs,nttl,nttl) :: dvkdx
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkdxt
+            real*8 :: p
+            real*8 dimension(nttl),depend(nttl) :: s
+            real*8 dimension(mxpbs,nttl),depend(nttl) :: x
+            real*8 dimension(nttl),depend(nttl) :: xt
+            integer, optional,check(shape(vk,1)==nttl),depend(vk) :: nttl=shape(vk,1)
+            integer :: nnrm
+            integer :: nshr
+            integer, optional,check(shape(x,0)==mxpbs),depend(x) :: mxpbs=shape(x,0)
+            integer, optional,check(shape(vk,0)==npbs),depend(vk) :: npbs=shape(vk,0)
+            real*8 dimension(ndkin) :: prkin
+            integer, optional,check(len(prkin)>=ndkin),depend(prkin) :: ndkin=len(prkin)
+            real*8 dimension(ndyld) :: pryld
+            integer, optional,check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_kinematic_prager
+        subroutine ummdp_kinematic_ziegler(vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,x,xt,nttl,nnrm,nshr,mxpbs,npbs,prkin,ndkin,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(npbs,nttl) :: vk
+            real*8 dimension(npbs,nttl),depend(npbs,nttl) :: dvkdp
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkds
+            real*8 dimension(npbs,npbs,nttl,nttl),depend(npbs,npbs,nttl,nttl) :: dvkdx
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkdxt
+            real*8 :: p
+            real*8 dimension(nttl),depend(nttl) :: s
+            real*8 dimension(mxpbs,nttl),depend(nttl) :: x
+            real*8 dimension(nttl),depend(nttl) :: xt
+            integer, optional,check(shape(vk,1)==nttl),depend(vk) :: nttl=shape(vk,1)
+            integer :: nnrm
+            integer :: nshr
+            integer, optional,check(shape(x,0)==mxpbs),depend(x) :: mxpbs=shape(x,0)
+            integer, optional,check(shape(vk,0)==npbs),depend(vk) :: npbs=shape(vk,0)
+            real*8 dimension(ndkin) :: prkin
+            integer, optional,check(len(prkin)>=ndkin),depend(prkin) :: ndkin=len(prkin)
+            real*8 dimension(ndyld) :: pryld
+            integer, optional,check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_kinematic_ziegler
+        subroutine ummdp_kinematic_armstrong(vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,x,xt,nttl,nnrm,nshr,mxpbs,npbs,prkin,ndkin,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(npbs,nttl) :: vk
+            real*8 dimension(npbs,nttl),depend(npbs,nttl) :: dvkdp
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkds
+            real*8 dimension(npbs,npbs,nttl,nttl),depend(npbs,npbs,nttl,nttl) :: dvkdx
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkdxt
+            real*8 :: p
+            real*8 dimension(nttl),depend(nttl) :: s
+            real*8 dimension(mxpbs,nttl),depend(nttl) :: x
+            real*8 dimension(nttl),depend(nttl) :: xt
+            integer, optional,check(shape(vk,1)==nttl),depend(vk) :: nttl=shape(vk,1)
+            integer :: nnrm
+            integer :: nshr
+            integer, optional,check(shape(x,0)==mxpbs),depend(x) :: mxpbs=shape(x,0)
+            integer, optional,check(shape(vk,0)==npbs),depend(vk) :: npbs=shape(vk,0)
+            real*8 dimension(ndkin) :: prkin
+            integer, optional,check(len(prkin)>=ndkin),depend(prkin) :: ndkin=len(prkin)
+            real*8 dimension(ndyld) :: pryld
+            integer, optional,check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_kinematic_armstrong
+        subroutine ummdp_kinematic_chabochei(vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,x,xt,nttl,nnrm,nshr,mxpbs,npbs,prkin,ndkin,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(npbs,nttl) :: vk
+            real*8 dimension(npbs,nttl),depend(npbs,nttl) :: dvkdp
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkds
+            real*8 dimension(npbs,npbs,nttl,nttl),depend(npbs,npbs,nttl,nttl) :: dvkdx
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkdxt
+            real*8 :: p
+            real*8 dimension(nttl),depend(nttl) :: s
+            real*8 dimension(mxpbs,nttl),depend(nttl) :: x
+            real*8 dimension(nttl),depend(nttl) :: xt
+            integer, optional,check(shape(vk,1)==nttl),depend(vk) :: nttl=shape(vk,1)
+            integer :: nnrm
+            integer :: nshr
+            integer, optional,check(shape(x,0)==mxpbs),depend(x) :: mxpbs=shape(x,0)
+            integer, optional,check(shape(vk,0)==npbs),depend(vk) :: npbs=shape(vk,0)
+            real*8 dimension(ndkin) :: prkin
+            integer, optional,check(len(prkin)>=ndkin),depend(prkin) :: ndkin=len(prkin)
+            real*8 dimension(ndyld) :: pryld
+            integer, optional,check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_kinematic_chabochei
+        subroutine ummdp_kinematic_chabocheii(vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,x,xt,nttl,nnrm,nshr,mxpbs,npbs,prkin,ndkin,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(npbs,nttl) :: vk
+            real*8 dimension(npbs,nttl),depend(npbs,nttl) :: dvkdp
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkds
+            real*8 dimension(npbs,npbs,nttl,nttl),depend(npbs,npbs,nttl,nttl) :: dvkdx
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkdxt
+            real*8 :: p
+            real*8 dimension(nttl),depend(nttl) :: s
+            real*8 dimension(mxpbs,nttl),depend(nttl) :: x
+            real*8 dimension(nttl),depend(nttl) :: xt
+            integer, optional,check(shape(vk,1)==nttl),depend(vk) :: nttl=shape(vk,1)
+            integer :: nnrm
+            integer :: nshr
+            integer, optional,check(shape(x,0)==mxpbs),depend(x) :: mxpbs=shape(x,0)
+            integer, optional,check(shape(vk,0)==npbs),depend(vk) :: npbs=shape(vk,0)
+            real*8 dimension(ndkin) :: prkin
+            integer, optional,check(len(prkin)>=ndkin),depend(prkin) :: ndkin=len(prkin)
+            real*8 dimension(ndyld) :: pryld
+            integer, optional,check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_kinematic_chabocheii
+        subroutine ummdp_kinematic_yoshida_uemori(vk,dvkdp,dvkds,dvkdx,dvkdxt,p,s,x,xt,nttl,nnrm,nshr,mxpbs,npbs,prkin,ndkin,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(npbs,nttl) :: vk
+            real*8 dimension(npbs,nttl),depend(npbs,nttl) :: dvkdp
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkds
+            real*8 dimension(npbs,npbs,nttl,nttl),depend(npbs,npbs,nttl,nttl) :: dvkdx
+            real*8 dimension(npbs,nttl,nttl),depend(npbs,nttl,nttl) :: dvkdxt
+            real*8 :: p
+            real*8 dimension(nttl),depend(nttl) :: s
+            real*8 dimension(mxpbs,nttl),depend(nttl) :: x
+            real*8 dimension(nttl),depend(nttl) :: xt
+            integer, optional,check(shape(vk,1)==nttl),depend(vk) :: nttl=shape(vk,1)
+            integer :: nnrm
+            integer :: nshr
+            integer, optional,check(shape(x,0)==mxpbs),depend(x) :: mxpbs=shape(x,0)
+            integer, optional,check(shape(vk,0)==npbs),depend(vk) :: npbs=shape(vk,0)
+            real*8 dimension(ndkin) :: prkin
+            integer, optional,check(len(prkin)>=ndkin),depend(prkin) :: ndkin=len(prkin)
+            real*8 dimension(ndyld) :: pryld
+            integer, optional,check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_kinematic_yoshida_uemori
+        subroutine ummdp_print_ummdp ! in :ummdp_vfm:ummdp_vfm.f
+        end subroutine ummdp_print_ummdp
+        subroutine ummdp_print_elastic(prela,ndela) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(ndela) :: prela
+            integer, optional,check(len(prela)>=ndela),depend(prela) :: ndela=len(prela)
+        end subroutine ummdp_print_elastic
+        subroutine ummdp_print_yield(pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(ndyld) :: pryld
+            integer, optional,check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_print_yield
+        subroutine ummdp_print_isotropic(prihd,ndihd) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(ndihd) :: prihd
+            integer, optional,check(len(prihd)>=ndihd),depend(prihd) :: ndihd=len(prihd)
+        end subroutine ummdp_print_isotropic
+        subroutine ummdp_print_kinematic(prkin,ndkin) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(ndkin) :: prkin
+            integer, optional,check(len(prkin)>=ndkin),depend(prkin) :: ndkin=len(prkin)
+        end subroutine ummdp_print_kinematic
+        subroutine ummdp_print_rupture(prrup,ndrup) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(ndrup) :: prrup
+            integer, optional,check(len(prrup)>=ndrup),depend(prrup) :: ndrup=len(prrup)
+        end subroutine ummdp_print_rupture
+        subroutine ummdp_print_info(inc,nnrm,nshr) ! in :ummdp_vfm:ummdp_vfm.f
+            integer :: inc
+            integer :: nnrm
+            integer :: nshr
+            integer :: ne
+            integer :: ip
+            integer :: lay
+            common /ummdp1/ ne,ip,lay
+        end subroutine ummdp_print_info
+        subroutine ummdp_print_inout(io,s,de,d,nttl,stv,nstv) ! in :ummdp_vfm:ummdp_vfm.f
+            integer :: io
+            real*8 dimension(nttl) :: s
+            real*8 dimension(nttl),depend(nttl) :: de
+            real*8 dimension(nttl,nttl),depend(nttl,nttl) :: d
+            integer, optional,check(len(s)>=nttl),depend(s) :: nttl=len(s)
+            real*8 dimension(nstv) :: stv
+            integer, optional,check(len(stv)>=nstv),depend(stv) :: nstv=len(stv)
+        end subroutine ummdp_print_inout
+        subroutine ummdp_print_element ! in :ummdp_vfm:ummdp_vfm.f
+            integer :: ne
+            integer :: ip
+            integer :: lay
+            common /ummdp1/ ne,ip,lay
+        end subroutine ummdp_print_element
+        subroutine ummdp_utility_setunitm(a,n) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(n,n),intent(out),depend(n,n) :: a
+            integer intent(in) :: n
+        end subroutine ummdp_utility_setunitm
+        subroutine ummdp_utility_print1(text,a,n,tab) ! in :ummdp_vfm:ummdp_vfm.f
+            character*100 intent(in) :: text
+            real*8 dimension(n),intent(in) :: a
+            integer, optional,intent(in),check(len(a)>=n),depend(a) :: n=len(a)
+            integer intent(in) :: tab
+        end subroutine ummdp_utility_print1
+        subroutine ummdp_utility_print2(text,a,n,m,tab) ! in :ummdp_vfm:ummdp_vfm.f
+            character*100 intent(in) :: text
+            real*8 dimension(n,m),intent(in) :: a
+            integer, optional,intent(in),check(shape(a,0)==n),depend(a) :: n=shape(a,0)
+            integer, optional,intent(in),check(shape(a,1)==m),depend(a) :: m=shape(a,1)
+            integer intent(in) :: tab
+        end subroutine ummdp_utility_print2
+        subroutine ummdp_utility_print3(text,a,tab) ! in :ummdp_vfm:ummdp_vfm.f
+            character*100 intent(in) :: text
+            real*8 intent(in) :: a
+            integer intent(in) :: tab
+        end subroutine ummdp_utility_print3
+        subroutine ummdp_utility_mv(v,a,u,nv,nu) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(nv),intent(out),depend(nv) :: v
+            real*8 dimension(nv,nu),intent(in) :: a
+            real*8 dimension(nu),intent(in),depend(nu) :: u
+            integer, optional,intent(in),check(shape(a,0)==nv),depend(a) :: nv=shape(a,0)
+            integer, optional,intent(in),check(shape(a,1)==nu),depend(a) :: nu=shape(a,1)
+        end subroutine ummdp_utility_mv
+        subroutine ummdp_utility_mm(a,b,c,na1,na2,nbc) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(na1,na2),intent(out),depend(na1,na2) :: a
+            real*8 dimension(na1,nbc),intent(in) :: b
+            real*8 dimension(nbc,na2),intent(in),depend(nbc) :: c
+            integer, optional,intent(in),check(shape(b,0)==na1),depend(b) :: na1=shape(b,0)
+            integer, optional,intent(in),check(shape(c,1)==na2),depend(c) :: na2=shape(c,1)
+            integer, optional,intent(in),check(shape(b,1)==nbc),depend(b) :: nbc=shape(b,1)
+        end subroutine ummdp_utility_mm
+        subroutine ummdp_utility_vvs(s,u,v,n) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 intent(out) :: s
+            real*8 dimension(n),intent(in) :: u
+            real*8 dimension(n),intent(in),depend(n) :: v
+            integer, optional,intent(in),check(len(u)>=n),depend(u) :: n=len(u)
+        end subroutine ummdp_utility_vvs
+        subroutine ummdp_utility_minv(b,a,n,d) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(n,n) :: b
+            real*8 dimension(n,n),depend(n,n) :: a
+            integer, optional,check(shape(b,0)==n),depend(b) :: n=shape(b,0)
+            real*8 :: d
+        end subroutine ummdp_utility_minv
+        subroutine ummdp_utility_ludcmp(a,n,indx,d,eps) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(n,n) :: a
+            integer, optional,check(shape(a,0)==n),depend(a) :: n=shape(a,0)
+            integer dimension(n),depend(n) :: indx
+            real*8 :: d
+            real*8 :: eps
+        end subroutine ummdp_utility_ludcmp
+        subroutine ummdp_utility_lubksb(a,n,indx,b,eps) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(n,n) :: a
+            integer, optional,check(shape(a,0)==n),depend(a) :: n=shape(a,0)
+            integer dimension(n),depend(n) :: indx
+            real*8 dimension(n),depend(n) :: b
+            real*8 :: eps
+        end subroutine ummdp_utility_lubksb
+        subroutine ummdp_utility_minv2(b,a,deta,eps) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(2,2),intent(out) :: b
+            real*8 dimension(2,2),intent(in) :: a
+            real*8 intent(out) :: deta
+            real*8 intent(in) :: eps
+        end subroutine ummdp_utility_minv2
+        subroutine ummdp_utility_minv3(b,a,deta,eps) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3,3),intent(out) :: b
+            real*8 dimension(3,3),intent(in) :: a
+            real*8 intent(out) :: deta
+            real*8 intent(in) :: eps
+        end subroutine ummdp_utility_minv3
+        function ummdp_utility_file_exist(flname) ! in :ummdp_vfm:ummdp_vfm.f
+            character*16 intent(in) :: flname
+            logical :: ummdp_utility_file_exist
+        end function ummdp_utility_file_exist
+        subroutine ummdp_yield(se,cdseds,cd2seds2,nreq,cs,nttl,nnrm,nshr,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 :: se
+            real*8 dimension(nttl) :: cdseds
+            real*8 dimension(nttl,nttl),depend(nttl,nttl) :: cd2seds2
+            integer :: nreq
+            real*8 dimension(nttl),depend(nttl) :: cs
+            integer, optional,check(len(cdseds)>=nttl),depend(cdseds) :: nttl=len(cdseds)
+            integer :: nnrm
+            integer :: nshr
+            real*8 dimension(ndyld) :: pryld
+            integer, optional,check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield
+        subroutine ummdp_yield_bbc2005(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(3),intent(out) :: dseds
+            real*8 dimension(3,3),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_bbc2005
+        function fact(n) result (m) ! in :ummdp_vfm:ummdp_vfm.f
+            integer intent(in) :: n
+            integer :: m
+        end function fact
+        subroutine ummdp_yield_bbc2008(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(3),intent(out) :: dseds
+            real*8 dimension(3,3),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_bbc2008
+        subroutine ummdp_yield_bbc2008_core(s,se,dseds,d2seds2,nreq,pryld,ndyld,sp,kp) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(3),intent(out) :: dseds
+            real*8 dimension(3,3),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+            integer intent(in) :: sp
+            integer intent(in) :: kp
+        end subroutine ummdp_yield_bbc2008_core
+        subroutine ummdp_yield_bbc2008_w_phi(wpi,phil,phim,phin,csp,sp,wp,lp,mp,np,s) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(2),intent(out) :: wpi
+            real*8 intent(out) :: phil
+            real*8 intent(out) :: phim
+            real*8 intent(out) :: phin
+            integer intent(in) :: csp
+            integer, optional,intent(in),check(shape(lp,0)==sp),depend(lp) :: sp=shape(lp,0)
+            real*8 intent(in) :: wp
+            real*8 dimension(sp,3,3),intent(in) :: lp
+            real*8 dimension(sp,3,3),intent(in),depend(sp) :: mp
+            real*8 dimension(sp,3,3),intent(in),depend(sp) :: np
+            real*8 dimension(3),intent(in) :: s
+        end subroutine ummdp_yield_bbc2008_w_phi
+        function ummdp_yield_bbc2008_se(sp,kp,wp,s,lp,mp,np,kcm) ! in :ummdp_vfm:ummdp_vfm.f
+            integer, optional,intent(in),check(shape(lp,0)==sp),depend(lp) :: sp=shape(lp,0)
+            integer, optional,intent(in),check((len(kcm)-1)>=kp),depend(kcm) :: kp=(len(kcm)-1)
+            real*8 intent(in) :: wp
+            real*8 dimension(3),intent(in) :: s
+            real*8 dimension(sp,3,3),intent(in) :: lp
+            real*8 dimension(sp,3,3),intent(in),depend(sp) :: mp
+            real*8 dimension(sp,3,3),intent(in),depend(sp) :: np
+            real*8 dimension(kp + 1),intent(in) :: kcm
+            real*8 :: ummdp_yield_bbc2008_se
+        end function ummdp_yield_bbc2008_se
+        function ummdp_yield_bbc2008_phix(xp,s,csp,sp) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(sp,3,3),intent(in) :: xp
+            real*8 dimension(3),intent(in) :: s
+            integer intent(in) :: csp
+            integer, optional,intent(in),check(shape(xp,0)==sp),depend(xp) :: sp=shape(xp,0)
+            real*8 :: ummdp_yield_bbc2008_phix
+        end function ummdp_yield_bbc2008_phix
+        subroutine ummdp_yield_bbc2008_dphixds(dphixds,xp,s,csp,lambda,sp) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(out) :: dphixds
+            real*8 dimension(sp,3,3),intent(in) :: xp
+            real*8 dimension(3),intent(in) :: s
+            integer intent(in) :: csp
+            integer intent(in) :: lambda
+            integer, optional,intent(in),check(shape(xp,0)==sp),depend(xp) :: sp=shape(xp,0)
+        end subroutine ummdp_yield_bbc2008_dphixds
+        subroutine ummdp_yield_bbc2008_d2phixds2(d2phixds2,xp,s,csp,lambda,sp) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3,3),intent(out) :: d2phixds2
+            real*8 dimension(sp,3,3),intent(in) :: xp
+            real*8 dimension(3),intent(in) :: s
+            integer intent(in) :: csp
+            integer intent(in) :: lambda
+            integer, optional,intent(in),check(shape(xp,0)==sp),depend(xp) :: sp=shape(xp,0)
+        end subroutine ummdp_yield_bbc2008_d2phixds2
+        subroutine ummdp_yield_bbc2008_setup(pryld,ndyld,sp,kp,wp,lp,mp,np,kcm,se1) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+            integer, optional,intent(in),check(shape(lp,0)==sp),depend(lp) :: sp=shape(lp,0)
+            integer, optional,intent(in),check((len(kcm)-1)>=kp),depend(kcm) :: kp=(len(kcm)-1)
+            real*8 intent(inout) :: wp
+            real*8 dimension(sp,3,3),intent(inout) :: lp
+            real*8 dimension(sp,3,3),intent(inout),depend(sp) :: mp
+            real*8 dimension(sp,3,3),intent(inout),depend(sp) :: np
+            real*8 dimension(kp + 1),intent(inout) :: kcm
+            real*8 intent(inout) :: se1
+        end subroutine ummdp_yield_bbc2008_setup
+        subroutine ummdp_yield_bbc2008_setup_mn_tensors(ic,csp,pryld,ndyld,xp,sp) ! in :ummdp_vfm:ummdp_vfm.f
+            integer intent(in) :: ic
+            integer intent(in) :: csp
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+            real*8 dimension(sp,3,3),intent(inout) :: xp
+            integer, optional,intent(in),check(shape(xp,0)==sp),depend(xp) :: sp=shape(xp,0)
+        end subroutine ummdp_yield_bbc2008_setup_mn_tensors
+        subroutine ummdp_yield_cpb2006(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(6),intent(out) :: dseds
+            real*8 dimension(6,6),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_cpb2006
+        function ummdp_yield_cpb2006_send(s,ct,phi,ck,a,ai) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6) :: s
+            real*8 dimension(6,6) :: ct
+            real*8 dimension(3) :: phi
+            real*8 :: ck
+            real*8 :: a
+            real*8 :: ai
+            real*8 :: ummdp_yield_cpb2006_send
+        end function ummdp_yield_cpb2006_send
+        subroutine ummdp_yield_gotoh(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(3),intent(out) :: dseds
+            real*8 dimension(3,3),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_gotoh
+        subroutine ummdp_yield_hill1948(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(6),intent(out) :: dseds
+            real*8 dimension(6,6),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_hill1948
+        subroutine ummdp_yield_hill1990(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(3),intent(out) :: dseds
+            real*8 dimension(3,3),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_hill1990
+        subroutine ummdp_yield_hu2005(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(6),intent(out) :: dseds
+            real*8 dimension(6,6),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_hu2005
+        subroutine ummdp_yield_karafillisboyce(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(6),intent(out) :: dseds
+            real*8 dimension(6,6),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_karafillisboyce
+        subroutine ummdp_yield_karafillisboyce_pstress(stress,invar,pstress) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6),intent(in) :: stress
+            real*8 dimension(3),intent(out) :: invar
+            real*8 dimension(3),intent(out) :: pstress
+        end subroutine ummdp_yield_karafillisboyce_pstress
+        subroutine ummdp_yield_mises(s,se,dseds,d2seds2,nreq) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(6),intent(out) :: dseds
+            real*8 dimension(6,6),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+        end subroutine ummdp_yield_mises
+        subroutine ummdp_yield_vegter(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(3),intent(out) :: dseds
+            real*8 dimension(3,3),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_vegter
+        subroutine ummdp_yield_vegter_core(s,se,dseds,d2seds2,nreq,pryld,ndyld,nf) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(3),intent(out) :: dseds
+            real*8 dimension(3,3),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+            integer intent(in) :: nf
+        end subroutine ummdp_yield_vegter_core
+        subroutine ummdp_yield_vegter_hingepoint(a,b,c,mm,nn,iareaflag,s) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(2),intent(in) :: a
+            real*8 dimension(2),intent(out) :: b
+            real*8 dimension(2),intent(in) :: c
+            real*8 dimension(2),intent(in) :: mm
+            real*8 dimension(2),intent(in) :: nn
+            integer intent(in) :: iareaflag
+            real*8 dimension(3),intent(in) :: s
+        end subroutine ummdp_yield_vegter_hingepoint
+        subroutine ummdp_yield_vegter_mu(x,a,b,c,mu,iareaflag,s,theta,aa,bb,cc,dd) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(4),intent(in) :: x
+            real*8 dimension(2),intent(in) :: a
+            real*8 dimension(2),intent(in) :: b
+            real*8 dimension(2),intent(in) :: c
+            real*8 intent(out) :: mu
+            integer intent(in) :: iareaflag
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(in) :: theta
+            real*8 :: aa
+            real*8 :: bb
+            real*8 :: cc
+            real*8 :: dd
+        end subroutine ummdp_yield_vegter_mu
+        subroutine ummdp_yield_vegter_fi(x,a,b,c,mu,f) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(4),intent(in) :: x
+            real*8 dimension(2),intent(in) :: a
+            real*8 dimension(2),intent(in) :: b
+            real*8 dimension(2),intent(in) :: c
+            real*8 intent(in) :: mu
+            real*8 dimension(2),intent(out) :: f
+        end subroutine ummdp_yield_vegter_fi
+        subroutine ummdp_yield_vegter_dbdc(a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,dmdc,iareaflag,p,nnmm) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(2),intent(in) :: a
+            real*8 dimension(2),intent(in) :: b
+            real*8 dimension(2),intent(in) :: c
+            real*8 dimension(2),intent(in) :: dadc
+            real*8 dimension(2),intent(out) :: dbdc
+            real*8 dimension(2),intent(in) :: dcdc
+            real*8 dimension(2),intent(in) :: mm
+            real*8 dimension(2),intent(in) :: nn
+            real*8 dimension(2),intent(in) :: dndc
+            real*8 dimension(2),intent(in) :: dmdc
+            integer intent(in) :: iareaflag
+            real*8 dimension(2),intent(out) :: p
+            real*8 intent(out) :: nnmm
+        end subroutine ummdp_yield_vegter_dbdc
+        subroutine ummdp_yield_vegter_dphidx(dphidx,se,a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,dmdc,f,iareaflag,mu,x,dfdmu,dfdc) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(out) :: dphidx
+            real*8 intent(in) :: se
+            real*8 dimension(2),intent(in) :: a
+            real*8 dimension(2),intent(in) :: b
+            real*8 dimension(2),intent(in) :: c
+            real*8 dimension(2),intent(in) :: dadc
+            real*8 dimension(2),intent(in) :: dbdc
+            real*8 dimension(2),intent(in) :: dcdc
+            real*8 dimension(2),intent(in) :: mm
+            real*8 dimension(2),intent(in) :: nn
+            real*8 dimension(2),intent(in) :: dndc
+            real*8 dimension(2),intent(in) :: dmdc
+            real*8 dimension(2),intent(in) :: f
+            integer intent(in) :: iareaflag
+            real*8 intent(in) :: mu
+            real*8 dimension(4),intent(in) :: x
+            real*8 dimension(2),intent(out) :: dfdmu
+            real*8 dimension(2),intent(out) :: dfdc
+        end subroutine ummdp_yield_vegter_dphidx
+        subroutine ummdp_yield_vegter_dseds(dseds,x,dphidx,vcos2t,vsin2t,iareaflag,isflag,dxds) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(out) :: dseds
+            real*8 dimension(4),intent(in) :: x
+            real*8 dimension(3),intent(in) :: dphidx
+            real*8 intent(in) :: vcos2t
+            real*8 intent(in) :: vsin2t
+            integer intent(in) :: iareaflag
+            integer intent(in) :: isflag
+            real*8 dimension(3,3),intent(out) :: dxds
+        end subroutine ummdp_yield_vegter_dseds
+        subroutine ummdp_yield_vegter_d2bdc2(a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,dmdc,iareaflag,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,p,nnmm,s) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(2),intent(in) :: a
+            real*8 dimension(2),intent(in) :: b
+            real*8 dimension(2),intent(in) :: c
+            real*8 dimension(2),intent(in) :: dadc
+            real*8 dimension(2),intent(in) :: dbdc
+            real*8 dimension(2),intent(in) :: dcdc
+            real*8 dimension(2),intent(in) :: mm
+            real*8 dimension(2),intent(in) :: nn
+            real*8 dimension(2),intent(in) :: dndc
+            real*8 dimension(2),intent(in) :: dmdc
+            integer intent(in) :: iareaflag
+            real*8 dimension(2),intent(in) :: d2adc2
+            real*8 dimension(2),intent(out) :: d2bdc2
+            real*8 dimension(2),intent(in) :: d2cdc2
+            real*8 dimension(2),intent(in) :: d2ndc2
+            real*8 dimension(2),intent(in) :: d2mdc2
+            real*8 dimension(2),intent(in) :: p
+            real*8 intent(in) :: nnmm
+            real*8 dimension(3),intent(in) :: s
+        end subroutine ummdp_yield_vegter_d2bdc2
+        subroutine ummdp_yield_vegter_d2phidx2(d2phidx2,se,a,b,c,dadc,dbdc,dcdc,mm,nn,dndc,dmdc,f,iareaflag,mu,x,d2adc2,d2bdc2,d2cdc2,d2ndc2,d2mdc2,dfdmu,dfdc,s,aa,bb,cc,dd,dphidx) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3,3),intent(out) :: d2phidx2
+            real*8 intent(in) :: se
+            real*8 dimension(2),intent(in) :: a
+            real*8 dimension(2),intent(in) :: b
+            real*8 dimension(2),intent(in) :: c
+            real*8 dimension(2),intent(in) :: dadc
+            real*8 dimension(2),intent(in) :: dbdc
+            real*8 dimension(2),intent(in) :: dcdc
+            real*8 dimension(2),intent(in) :: mm
+            real*8 dimension(2),intent(in) :: nn
+            real*8 dimension(2),intent(in) :: dndc
+            real*8 dimension(2),intent(in) :: dmdc
+            real*8 dimension(2),intent(in) :: f
+            integer intent(in) :: iareaflag
+            real*8 intent(in) :: mu
+            real*8 dimension(4),intent(in) :: x
+            real*8 dimension(2),intent(in) :: d2adc2
+            real*8 dimension(2),intent(in) :: d2bdc2
+            real*8 dimension(2),intent(in) :: d2cdc2
+            real*8 dimension(2),intent(in) :: d2ndc2
+            real*8 dimension(2),intent(in) :: d2mdc2
+            real*8 dimension(2),intent(in) :: dfdmu
+            real*8 dimension(2),intent(in) :: dfdc
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(in) :: aa
+            real*8 intent(in) :: bb
+            real*8 intent(in) :: cc
+            real*8 intent(in) :: dd
+            real*8 dimension(3),intent(in) :: dphidx
+        end subroutine ummdp_yield_vegter_d2phidx2
+        subroutine ummdp_yield_vegter_d2seds2(d2seds2,d2phidx2,se,a,b,c,mu,x,vcos2t,vsin2t,iareaflag,dxds,dphidx,isflag,s,dseds,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3,3),intent(out) :: d2seds2
+            real*8 dimension(3,3),intent(in) :: d2phidx2
+            real*8 intent(in) :: se
+            real*8 dimension(2),intent(in) :: a
+            real*8 dimension(2),intent(in) :: b
+            real*8 dimension(2),intent(in) :: c
+            real*8 intent(in) :: mu
+            real*8 dimension(4),intent(in) :: x
+            real*8 intent(in) :: vcos2t
+            real*8 intent(in) :: vsin2t
+            integer intent(in) :: iareaflag
+            real*8 dimension(3,3),intent(in) :: dxds
+            real*8 dimension(3),intent(in) :: dphidx
+            integer intent(in) :: isflag
+            real*8 dimension(3),intent(in) :: s
+            real*8 dimension(3),intent(in) :: dseds
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_vegter_d2seds2
+        subroutine ummdp_yield_vegter_d2seds2n(d2seds2,s,dseds,pryld,ndyld,se) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3,3),intent(out) :: d2seds2
+            real*8 dimension(3),intent(in) :: s
+            real*8 dimension(3),intent(in) :: dseds
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+            real*8 intent(in) :: se
+        end subroutine ummdp_yield_vegter_d2seds2n
+        subroutine ummdp_yield_vegter_yieldfunc(nttl,s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            integer intent(in) :: nttl
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(3),intent(out) :: dseds
+            real*8 dimension(3,3),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_vegter_yieldfunc
+        subroutine ummdp_yield_yld2000(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(3),intent(out) :: dseds
+            real*8 dimension(3,3),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_yld2000
+        subroutine ummdp_yield_yld2000_am(a,am) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(8),intent(in) :: a
+            real*8 dimension(2,3,3),intent(out) :: am
+        end subroutine ummdp_yield_yld2000_am
+        subroutine ummdp_yield_yld2000_xyphi(s,em,am,x,y,phi) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(in) :: em
+            real*8 dimension(2,3,3),intent(in) :: am
+            real*8 dimension(2,2),intent(out) :: x
+            real*8 dimension(2,3),intent(out) :: y
+            real*8 dimension(2),intent(out) :: phi
+        end subroutine ummdp_yield_yld2000_xyphi
+        subroutine ummdp_yield_yld2000_ds1(em,am,x,y,phi,dsedphi,dphidx,dxdy,dyds,se) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 intent(in) :: em
+            real*8 dimension(2,3,3),intent(in) :: am
+            real*8 dimension(2,2),intent(in) :: x
+            real*8 dimension(2,3),intent(in) :: y
+            real*8 dimension(2),intent(in) :: phi
+            real*8 dimension(2),intent(out) :: dsedphi
+            real*8 dimension(2,2),intent(out) :: dphidx
+            real*8 dimension(2,2,3),intent(out) :: dxdy
+            real*8 dimension(2,3,3),intent(out) :: dyds
+            real*8 intent(in) :: se
+        end subroutine ummdp_yield_yld2000_ds1
+        subroutine ummdp_yield_yld2000_ds2(phi,x,y,em,d2sedphi2,d2phidx2,d2xdy2,se) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(2),intent(in) :: phi
+            real*8 dimension(2,2),intent(in) :: x
+            real*8 dimension(2,3),intent(in) :: y
+            real*8 intent(in) :: em
+            real*8 dimension(2,2),intent(out) :: d2sedphi2
+            real*8 dimension(2,2,2),intent(out) :: d2phidx2
+            real*8 dimension(2,2,3,3),intent(out) :: d2xdy2
+            real*8 intent(in) :: se
+        end subroutine ummdp_yield_yld2000_ds2
+        subroutine ummdp_yield_yld2004(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6) :: s
+            real*8 :: se
+            real*8 dimension(6) :: dseds
+            real*8 dimension(6,6) :: d2seds2
+            integer :: nreq
+            real*8 dimension(ndyld) :: pryld
+            integer, optional,check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_yld2004
+        subroutine ummdp_yield_yld2004_coef(cp1,cp2,pi,am,dc) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6,6) :: cp1
+            real*8 dimension(6,6) :: cp2
+            real*8 :: pi
+            real*8 :: am
+            real*8 :: dc
+        end subroutine ummdp_yield_yld2004_coef
+        subroutine ummdp_yield_yld2004_coef_sub(cp,pi,bbp) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6,6) :: cp
+            real*8 :: pi
+            real*8 dimension(3) :: bbp
+        end subroutine ummdp_yield_yld2004_coef_sub
+        subroutine ummdp_yield_yld2004_yf(ctp1,ctp2,s,am,ami,dc,pi,sp1,sp2,psp1,psp2,hp1,hp2,cetpq1,cetpq2,fai,se) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6,6) :: ctp1
+            real*8 dimension(6,6) :: ctp2
+            real*8 dimension(6) :: s
+            real*8 :: am
+            real*8 :: ami
+            real*8 :: dc
+            real*8 :: pi
+            real*8 dimension(6) :: sp1
+            real*8 dimension(6) :: sp2
+            real*8 dimension(3) :: psp1
+            real*8 dimension(3) :: psp2
+            real*8 dimension(3) :: hp1
+            real*8 dimension(3) :: hp2
+            real*8 :: cetpq1
+            real*8 :: cetpq2
+            real*8 :: fai
+            real*8 :: se
+        end subroutine ummdp_yield_yld2004_yf
+        subroutine ummdp_yield_yld2004_yfsub(ctp,s,pi,sp,psp,hp,cetpq) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6,6) :: ctp
+            real*8 dimension(6) :: s
+            real*8 :: pi
+            real*8 dimension(6) :: sp
+            real*8 dimension(3) :: psp
+            real*8 dimension(3) :: hp
+            real*8 :: cetpq
+        end subroutine ummdp_yield_yld2004_yfsub
+        subroutine ummdp_yield_yld2004_nu2(ctp1,ctp2,s,se,am,ami,dc,pi,del,d2seds2) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6,6) :: ctp1
+            real*8 dimension(6,6) :: ctp2
+            real*8 dimension(6) :: s
+            real*8 :: se
+            real*8 :: am
+            real*8 :: ami
+            real*8 :: dc
+            real*8 :: pi
+            real*8 :: del
+            real*8 dimension(6,6) :: d2seds2
+        end subroutine ummdp_yield_yld2004_nu2
+        subroutine ummdp_yield_yld2004_dpsdhp(i,psp,hp,dpsdhp) ! in :ummdp_vfm:ummdp_vfm.f
+            integer :: i
+            real*8 dimension(3) :: psp
+            real*8 dimension(3) :: hp
+            real*8 dimension(3,3) :: dpsdhp
+        end subroutine ummdp_yield_yld2004_dpsdhp
+        subroutine ummdp_yield_yld2004_d2psdhp(i,psp,hp,d2psdhp) ! in :ummdp_vfm:ummdp_vfm.f
+            integer :: i
+            real*8 dimension(3) :: psp
+            real*8 dimension(3) :: hp
+            real*8 dimension(3,3,3) :: d2psdhp
+        end subroutine ummdp_yield_yld2004_d2psdhp
+        subroutine ummdp_yield_yld89(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(3),intent(out) :: dseds
+            real*8 dimension(3,3),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_yld89
+        subroutine ummdp_yield_yld89_branch(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(3),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(3),intent(out) :: dseds
+            real*8 dimension(3,3),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_yld89_branch
+        subroutine ummdp_yield_yoshida2011(s,se,dseds,d2seds2,nreq,pryld,ndyld) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(6),intent(out) :: dseds
+            real*8 dimension(6,6),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            real*8 dimension(ndyld),intent(in) :: pryld
+            integer, optional,intent(in),check(len(pryld)>=ndyld),depend(pryld) :: ndyld=len(pryld)
+        end subroutine ummdp_yield_yoshida2011
+        subroutine ummdp_yield_hy_polytype(s,se,dseds,d2seds2,nreq,nd0,a,ipow,maxa,nterms) ! in :ummdp_vfm:ummdp_vfm.f
+            real*8 dimension(6),intent(in) :: s
+            real*8 intent(out) :: se
+            real*8 dimension(6),intent(out) :: dseds
+            real*8 dimension(6,6),intent(out) :: d2seds2
+            integer intent(in) :: nreq
+            integer intent(in) :: nd0
+            real*8 dimension(maxa),intent(in) :: a
+            integer dimension(maxa,3),intent(in),depend(maxa) :: ipow
+            integer, optional,intent(in),check(len(a)>=maxa),depend(a) :: maxa=len(a)
+            integer intent(in) :: nterms
+        end subroutine ummdp_yield_hy_polytype
+    end interface 
+end python module ummdp_vfm
+
+! This file was auto-generated with f2py (version:1.21.5).
+! See http://cens.ioc.ee/projects/f2py2e/

@@ -27,25 +27,18 @@ type ummdp_yield_yoshida2011.f >> tmp.f
 
 cd ..
 
-move "source\tmp.f" "compiled\ummdp_vfm.f"
+move "source\tmp.f" "compiled\ummdp_vfm_loop.f"
 
 cd compiled 
 
-del ummdp_vfm.pyd >nul
+del ummdp_vfm_loop.pyd >nul
 
 :: ifort optimization flags
 :: /heap-arrays temporary arrays of minimum size n (in kilobytes) are allocated in heap memory rather than on the stack
 :: /Ofast = /O3 /Qprec-div- /fp:fast=2
 :: /QxHost : generate instructions for the highest instruction set and processor available on the compilation host machine
-:: python -m numpy.f2py -c -m ummdp_vfm ummdp_vfm.f --fcompiler=intelvem --opt="/heap-arrays /Ofast /QxHost" 1> ummdp_vfm.log
-python -m numpy.f2py ummdp_vfm.f -m ummdp_vfm -h ummdp_vfm.pyf --overwrite-signature
+python -m numpy.f2py -c -m plug_ummdp_vfm ummdp_vfm.f --fcompiler=intelvem --opt="/heap-arrays /Ofast /QxHost" 1> ummdp_vfm.log
 
-call python SignatureFile.py
-
-python -m numpy.f2py -c ummdp_vfm2.pyf ummdp_vfm.f --fcompiler=intelvem --opt="/heap-arrays /Ofast /QxHost" 1> ummdp_vfm.log
-
-rename ummdp_vfm.*.pyd ummdp_vfm.pyd >nul
-
-@REM del *.pyf >nul
+rename plug_ummdp_vfm.*.pyd ummdp_vfm_loop.pyd >nul
 
 cd ..
