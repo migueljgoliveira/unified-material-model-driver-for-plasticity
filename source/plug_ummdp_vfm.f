@@ -16,7 +16,7 @@ c
       real*8 ,intent(out) :: stress(nf,ne,ntens),statev(nf,ne,nstatev)
 c
       integer n1234,i,j,kinc,noel
-      real*8 dstrain(ntens)
+      real*8 dstrain(nf,ne,ntens)
 c-----------------------------------------------------------------------
 c
 cf2py intent(in) strain,ne,ndi,nshr,ntens,nstatev,props,nprops,nf,fout
@@ -44,21 +44,23 @@ c                                         ---- loop over time increments
       do i = 2,nf
         kinc = i - 1
 c                                                ---- loop over elements
+c$omp parallel do
         do j = 1,ne
           noel = j
 c                                            ---- total strain increment
-          dstrain = strain(i,j,:) - strain(i-1,j,:)
+          dstrain(i,j,:) = strain(i,j,:) - strain(i-1,j,:)
 c
 c                  ---- stress integration in corotational material csys
-          call plug_ummdp_vfm ( stress(i-1,j,:),statev(i-1,j,:),dstrain,
-     1                          ndi,nshr,ntens,nstatev,props,nprops,
-     2                          noel,kinc,stress(i,j,:),statev(i,j,:),
-     3                          de33(i,j) )
+          call plug_ummdp_vfm ( stress(i-1,j,:),statev(i-1,j,:),
+     1                          dstrain(i,j,:),ndi,nshr,ntens,nstatev,
+     2                          props,nprops,noel,kinc,stress(i,j,:),
+     3                          statev(i,j,:),de33(i,j) )
 c
 c                               ---- total strain in thickness direction
           de33(i,j) = de33(i,j) + de33(i-1,j)
 c
         end do
+c$omp end parallel do
       end do
 c
 c                                                  ---- close debug file

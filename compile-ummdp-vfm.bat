@@ -40,7 +40,7 @@ del ummdp_vfm.pyd >nul
 :: python -m numpy.f2py -c -m ummdp_vfm ummdp_vfm.f --fcompiler=intelvem --opt="/heap-arrays /Ofast /QxHost" 1> ummdp_vfm.log
 python -m numpy.f2py ummdp_vfm.f -m ummdp_vfm -h ummdp_vfm.pyf --overwrite-signature
 
-call python SignatureFile.py
+call python SignatureFile.py ummdp_vfm
 
 python -m numpy.f2py -c ummdp_vfm2.pyf ummdp_vfm.f --fcompiler=intelvem --opt="/heap-arrays /Ofast /QxHost" 1> ummdp_vfm.log
 

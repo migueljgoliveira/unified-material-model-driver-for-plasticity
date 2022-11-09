@@ -1774,9 +1774,9 @@ c
 c
         sy = sy0 + c*p**en
 c
+        ! p1 = max(p,1.0d-16)
         if ( nreq >= 1 ) then
-          p1 = max(p,1.0d-16)
-          dsydp = en*c*p1**(en-1.0d0)
+          dsydp = en*c*p**(en-1.0d0)
         end if
 c
         if ( nreq >= 2 ) then
