@@ -44,7 +44,7 @@ c                                         ---- loop over time increments
       do i = 2,nf
         kinc = i - 1
 c                                                ---- loop over elements
-c$omp parallel do
+c
         do j = 1,ne
           noel = j
 c                                            ---- total strain increment
@@ -60,6 +60,7 @@ c                               ---- total strain in thickness direction
           de33(i,j) = de33(i,j) + de33(i-1,j)
 c
         end do
+c
       end do
 c
 c                                                  ---- close debug file

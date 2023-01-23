@@ -27,9 +27,9 @@ type ummdp_yield_yoshida2011.f >> tmp.f
 
 cd ..
 
-move "source\tmp.f" "compiled\ummdp_vfm.f"
+move "source\tmp.f" "build\ummdp_vfm.f"
 
-cd compiled 
+cd build 
 
 del ummdp_vfm.pyd >nul
 
@@ -47,3 +47,6 @@ python -m numpy.f2py -c ummdp_vfm2.pyf ummdp_vfm.f --fcompiler=intelvem --opt="/
 rename ummdp_vfm.*.pyd ummdp_vfm.pyd >nul
 
 cd ..
+
+copy "build\ummdp_vfm.pyd" "release\ummdp_vfm.pyd"
+copy "build\ummdp_vfm.f" "release\ummdp_vfm.f"
