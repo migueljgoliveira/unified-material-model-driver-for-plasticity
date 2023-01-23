@@ -46,6 +46,4 @@ python -m numpy.f2py -c ummdp_vfm2.pyf ummdp_vfm.f --fcompiler=intelvem --opt="/
 
 rename ummdp_vfm.*.pyd ummdp_vfm.pyd >nul
 
-@REM del *.pyf >nul
-
 cd ..
