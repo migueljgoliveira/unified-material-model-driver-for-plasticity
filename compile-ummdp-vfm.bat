@@ -29,7 +29,7 @@ cd ..
 
 move "source\tmp.f" "build\ummdp_vfm.f"
 
-cd build 
+cd build
 
 del ummdp_vfm.pyd >nul
 
